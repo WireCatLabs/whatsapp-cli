@@ -1,7 +1,7 @@
 # Backlog
 
 Open work, most important first. The plan in flight is
-[docs_ai/plans/2026-10-16-foundation.md](../../docs_ai/plans/2026-10-16-foundation.md).
+[the foundation plan](https://github.com/WireCatLabs/cli-private/blob/main/plans/2026-10-16-whatsapp-foundation.md) (private).
 
 1. **The Go engine.** JSON-lines protocol per `src/engine/contract.ts`: hello, history pushes with LID-first chat ids,
    live messages, send with the caller's id, the device lock, open by stored JID. `GoEngine` on the Node side.

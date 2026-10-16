@@ -36,7 +36,7 @@ real adapter and the fake engine. The `ServerReads` cases are skipped by design:
   engine.
 - **Live checks** run the real engine on the owner's number, by hand, with the owner's yes each time, and send only to
   the owner's own chat. `bin/wa-probe` was the first one (results in
-  [protocol-decision.md](../../docs_ai/protocol-decision.md#first-live-link-2026-10-16)).
+  [the protocol decision](https://github.com/WireCatLabs/cli-private/blob/main/research/2026-10-16-whatsapp-protocol-decision.md#first-live-link-2026-10-16), private).
 
 ## Coverage has a floor
 

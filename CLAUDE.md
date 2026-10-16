@@ -1,8 +1,15 @@
 # whatsapp-cli — working rules
 
 **Start with [`docs/dev/ARCHITECTURE.md`](docs/dev/ARCHITECTURE.md)** — the layers and the seams you may not
-cross. Open work is [`docs/dev/BACKLOG.md`](docs/dev/BACKLOG.md); the plan in flight is in
-[`docs_ai/plans/`](docs_ai/plans/), the protocol choice in [`docs_ai/protocol-decision.md`](docs_ai/protocol-decision.md).
+cross. Open work is [`docs/dev/BACKLOG.md`](docs/dev/BACKLOG.md).
+
+`docs_ai/` is the private working folder — research, plans, rulings, live-test results. It is not in this repository:
+it is the private repository `WireCatLabs/cli-private`, shared with the other CLIs; link or clone it into `docs_ai/`.
+WhatsApp's rulings are [`decisions/whatsapp.md`](https://github.com/WireCatLabs/cli-private/blob/main/decisions/whatsapp.md), the plan in flight
+[`plans/2026-10-16-whatsapp-foundation.md`](https://github.com/WireCatLabs/cli-private/blob/main/plans/2026-10-16-whatsapp-foundation.md), the protocol choice
+[`research/2026-10-16-whatsapp-protocol-decision.md`](https://github.com/WireCatLabs/cli-private/blob/main/research/2026-10-16-whatsapp-protocol-decision.md).
+Take journal numbers from the main checkout's `docs_ai/journal/next-id.sh`: a separate clone keeps its own counter
+and hands out numbers that are already taken.
 
 `wa` is the third messenger on [`@wirecat/cli-core`](https://github.com/WireCatLabs/cli-core), beside tg-cli and
 max-cli. **What cli-core already does, this repository does not do again** — commands, the store, search, MCP,

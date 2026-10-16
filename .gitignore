@@ -16,6 +16,8 @@ session.db*
 # bin/wa keeps a worktree's own config, state and cache here.
 /.wa/
 
+# Plans, research, rulings and live results: the private repository WireCatLabs/cli-private, linked or cloned here.
+/docs_ai
 .claude/settings.local.json
 .claude/worktrees/
 /.worktrees/
