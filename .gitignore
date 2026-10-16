@@ -48,3 +48,6 @@ wa-report-*.json
 /.claude/routines
 /.claude/scheduled_tasks.json
 /.claude/workflows
+
+# The engine binary built by `pnpm engine:build`.
+/engine/bin/
