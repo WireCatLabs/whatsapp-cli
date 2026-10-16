@@ -1,0 +1,73 @@
+// wa-engine speaks WhatsApp through whatsmeow for wa. It reads requests as JSON lines on stdin and writes answers
+// and events as JSON lines on stdout; the contract is src/engine/contract.ts. It writes no message, name or number
+// anywhere else: stderr gets fixed wording only, and whatsmeow's own log is off unless WA_ENGINE_LOG names a file.
+package main
+
+import (
+	"context"
+	"flag"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/rs/zerolog"
+	waLog "go.mau.fi/whatsmeow/util/log"
+)
+
+var version = "dev"
+
+func main() {
+	storePath := flag.String("store", "", "the profile's device store (private.db)")
+	holder := flag.String("holder", "wa", "who holds the connection, named to anyone refused it")
+	linking := flag.Bool("link", false, "allow an empty store: this run links a new device")
+	flag.Parse()
+	ownerOnly()
+	out := newWire(os.Stdout)
+	if *storePath == "" {
+		out.refuse(&failure{"validation_error", "the engine needs --store"})
+		os.Exit(2)
+	}
+
+	logger, closeLog := whatsmeowLog()
+	defer closeLog()
+
+	lock, refused := holdLock(*storePath, *holder)
+	if refused != nil {
+		out.refuse(refused)
+		os.Exit(1)
+	}
+	defer lock.Close()
+
+	// SIGINT reaches the whole process group on Ctrl+C; the CLI decides when to stop, through stdin.
+	signal.Ignore(os.Interrupt)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM)
+	defer stop()
+
+	device, refused := openDevice(ctx, *storePath, *linking, logger.Sub("store"))
+	if refused != nil {
+		out.refuse(refused)
+		os.Exit(1)
+	}
+	lookLikeABrowser()
+	e := newEngine(ctx, device, out, logger.Sub("client"))
+	out.hello(hello{Protocol: protocol, Engine: "whatsmeow", Version: version, Self: e.self()})
+	go func() {
+		<-ctx.Done()
+		os.Stdin.Close()
+	}()
+	e.run(os.Stdin)
+}
+
+func whatsmeowLog() (waLog.Logger, func()) {
+	path := os.Getenv("WA_ENGINE_LOG")
+	if path == "" {
+		return waLog.Noop, func() {}
+	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "wa-engine: cannot open WA_ENGINE_LOG; logging off")
+		return waLog.Noop, func() {}
+	}
+	return waLog.Zerolog(zerolog.New(file).With().Timestamp().Logger().Level(zerolog.WarnLevel)), func() { file.Close() }
+}
