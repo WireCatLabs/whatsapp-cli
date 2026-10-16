@@ -5,3 +5,4 @@
 - Manual: on the phone, WhatsApp → Settings → Linked devices → remove the probe's device (labelled "WhatsApp CLI"). 2026-10-16
 - `~/go/pkg/mod` — whatsmeow and its dependencies downloaded for the spike and the probe (Go module cache; `go clean -modcache` clears all of it). 2026-10-16
 - `/var/tmp/claude/claude-1000/-home-leemour-Projects-AI-whatsapp-cli/015ff043-7cb1-42bf-a5e1-a2a816f09c6c/scratchpad/{wm-spike,probe-test,probe-test2,clones}` — spike, probe test dirs and research clones. 2026-10-16
+- `/var/tmp/claude/claude-1000/-home-leemour-Projects-AI-whatsapp-cli/015ff043-7cb1-42bf-a5e1-a2a816f09c6c/scratchpad/docs_ai-public` — copy of the public docs_ai taken before the move to cli-private (now pushed there). 2026-10-16

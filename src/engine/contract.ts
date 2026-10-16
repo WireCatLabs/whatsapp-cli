@@ -7,7 +7,7 @@ import * as v from "valibot"
  *
  * Ids are JIDs as strings. A one-to-one chat is always in its LID form (`…@lid`) when WhatsApp has one for the
  * user, never in phone form: cli-core cannot merge two stored chats, so the engine picks the one id before it
- * emits a chat (docs_ai/plans/2026-10-16-foundation.md, decision 3). Names are what the address book or the
+ * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
 export const PROTOCOL = 1

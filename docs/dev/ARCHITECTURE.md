@@ -38,7 +38,7 @@ the socket carries new messages after that. So `WHATSAPP.history` is `"store"`:
 ## 4. The engine
 
 The protocol runs in a Go program built on [whatsmeow](https://github.com/tulir/whatsmeow), started as a child
-process. Why Go and why whatsmeow: [docs_ai/protocol-decision.md](../../docs_ai/protocol-decision.md).
+process. Why Go and why whatsmeow: [the protocol decision](https://github.com/WireCatLabs/cli-private/blob/main/research/2026-10-16-whatsapp-protocol-decision.md) (private).
 
 - **The contract** is [`src/engine/contract.ts`](../../src/engine/contract.ts): every event and answer as a Valibot
   schema, in WhatsApp's own terms (JIDs, `fromMe`, sync kinds). `PROTOCOL` is checked at the engine's hello.
