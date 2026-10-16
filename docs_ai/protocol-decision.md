@@ -226,3 +226,18 @@ and message search on the server do not exist in WhatsApp either.
 - Cross-compiled linux/darwin/windows × amd64/arm64 from Linux, no extra toolchain: all six built (17–18 MB).
   Only the Linux one was run.
 - Not tested: a real login, history batches, send, macOS/Windows runs.
+
+## First live link, 2026-10-16
+
+`bin/wa-probe link` on the owner's main number (whatsmeow `df33a48`, desktop profile, full sync requested). Totals
+only; no content was stored. **[V]**
+
+- **Pairing code works.** Linked 27 s after start; connected 3 s later. No ban, logout or warning event.
+- **All history came in 4 seconds**, in six pushes: `INITIAL_BOOTSTRAP` (every chat, ~1 message each), `RECENT`,
+  then one `FULL` chunk at progress 100 %. About 1.9k messages over ~200 chats. Nothing more arrived afterwards.
+- **"Full" is far from full.** The phone sent ~1.6k messages in the `FULL` chunk, much less than the account holds.
+  Older history must come from on-demand requests to the phone. **[I]** — the phone decides the size; not yet tested
+  what `BuildHistorySyncRequest` returns.
+- **Most private chats are LIDs.** In the `FULL` chunk, 58 of 71 one-to-one chats had a LID id, not a phone
+  number. LID → phone mapping is a day-one need, not an edge case.
+- **Contacts:** whatsmeow had 0 contacts at the first read, after 7 app-state syncs. To check at the end of the run.
