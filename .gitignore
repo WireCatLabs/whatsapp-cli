@@ -8,8 +8,9 @@ coverage/
 .env.*
 !.env.example
 
-# A WhatsApp session.db holds the keys of the owner's linked device, and a raw capture carries private
+# A WhatsApp private.db holds the keys of the owner's linked device, and a raw capture carries private
 # messages and phone numbers; neither is ever committed. Fixtures are synthetic.
+private.db*
 session.db*
 *.session
 /captures/

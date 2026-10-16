@@ -4,7 +4,7 @@ Read this before you link `wa` to your account. It says what `wa` keeps on your 
 
 ## What `wa` keeps
 
-- **The linked device's keys**, in `~/.local/share/whatsapp-cli/profiles/<profile>/session.db`. Anyone who copies
+- **The linked device's keys**, in `~/.local/share/whatsapp-cli/profiles/<profile>/private.db`. Anyone who copies
   this file can read and send as you until you remove the device on your phone (Settings → Linked devices). Only
   your user can read it.
 - **Your chats and messages**, in the WireCat store shared with tg and max.

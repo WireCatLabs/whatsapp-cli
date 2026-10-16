@@ -27,7 +27,7 @@ vulnerabilities are reported as the [security policy](SECURITY.md) says.
 4. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
    starts the engine.
 5. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces it.
-6. **The device keys (`session.db`), messages and phone numbers never reach a log, a fixture or a document.**
+6. **The device keys (`private.db`), messages and phone numbers never reach a log, a fixture or a document.**
 7. **On the wire we look like a browser, not like ourselves.** No "whatsapp-cli" in any field WhatsApp sees.
 
 Conventional commits, a branch and a PR per change. The pre-commit hook checks staged lint and secrets. Comments

@@ -59,7 +59,7 @@ LID form** when WhatsApp has a LID for the user, and the phone JID only as a lin
 ## 6. One connection per linked device (planned)
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot
-write can each open one. The Go engine will take an exclusive lock beside `session.db`, and the loser will be
+write can each open one. The Go engine will take an exclusive lock beside `private.db`, and the loser will be
 refused with a message naming the holder. Routing writes through a running `serve` is open work
 ([BACKLOG.md](BACKLOG.md)).
 
@@ -67,11 +67,11 @@ refused with a message naming the holder. Routing writes through a running `serv
 
 | Path | What | Mode |
 |---|---|---|
-| `~/.local/share/whatsapp-cli/profiles/<profile>/session.db` | the engine's device store: the linked device's keys | 0600, dir 0700 |
+| `~/.local/share/whatsapp-cli/profiles/<profile>/private.db` | the engine's device store: the linked device's keys | 0600, dir 0700 |
 | cli-core's store (`~/.local/share/WireCat/wirecat.db`) | chats, people, messages for every messenger | cli-core's |
 | `~/.config/whatsapp-cli/` | settings; never a secret | |
 
-One device per `session.db`: the Go engine will open the device by the JID stored for the profile and refuse a file
+One device per `private.db`: the Go engine will open the device by the JID stored for the profile and refuse a file
 with zero or several devices. Nothing is written here until linking ships.
 
 ## 8. On the wire

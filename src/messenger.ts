@@ -4,11 +4,11 @@ import { asFirstWord, type BaseEnvironment, environmentOf, type Messenger } from
 import { whatsAppAdapter } from "./adapter/adapter.js"
 import { resolveSettings, WA } from "./app.js"
 import type { WhatsAppEngine } from "./engine/contract.js"
-import { sessionFile } from "./paths.js"
+import { privateStore } from "./paths.js"
 
 export interface Environment extends BaseEnvironment {
   /** Tests hand in an engine in memory. */
-  engine?: (options: { sessionPath: string; listen: boolean }) => WhatsAppEngine | Promise<WhatsAppEngine>
+  engine?: (options: { storePath: string; listen: boolean }) => WhatsAppEngine | Promise<WhatsAppEngine>
 }
 
 export const SKILL = new URL("../skills/whatsapp-cli/SKILL.md", import.meta.url)
@@ -39,13 +39,13 @@ export const WHATSAPP: Messenger = {
   addsWithHistory: false,
   connect: async (command, base, options = {}) => {
     const { profile } = base.settings
-    const sessionPath = sessionFile(profile, base.env)
+    const storePath = privateStore(profile, base.env)
     const given = environmentOf<Environment>(command).engine
-    if (given) return whatsAppAdapter(await given({ sessionPath, listen: options.listen === true }))
+    if (given) return whatsAppAdapter(await given({ storePath, listen: options.listen === true }))
     const login = `\`wa ${asFirstWord(profile)}session start\``
     throw new CliError(
       "authentication_error",
-      existsSync(sessionPath)
+      existsSync(storePath)
         ? `profile "${profile}" is linked, but this build has no WhatsApp engine yet`
         : `profile "${profile}" is not linked to WhatsApp — run ${login} once it ships`,
     )
