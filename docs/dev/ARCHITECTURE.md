@@ -42,8 +42,8 @@ process. Why Go and why whatsmeow: [docs_ai/protocol-decision.md](../../docs_ai/
 
 - **The contract** is [`src/engine/contract.ts`](../../src/engine/contract.ts): every event and answer as a Valibot
   schema, in WhatsApp's own terms (JIDs, `fromMe`, sync kinds). `PROTOCOL` is checked at the engine's hello.
-- **Two engines implement it**: the Go engine over JSON lines on stdin and stdout (logs on stderr), and
-  `src/testing/fake-engine.ts` in memory for tests. A third — Baileys, or whatsapp-rust — would implement the same
+- **Two engines implement it**: the Go engine over JSON lines on stdin and stdout (logs on stderr) — not built yet;
+  `engine/` holds only the read-only probe — and `src/testing/fake-engine.ts` in memory for tests. A third — Baileys, or whatsapp-rust — would implement the same
   interface without the adapter noticing.
 - **Early events are kept.** An event nobody listens for yet is handed to the first listener of its kind
   ([`events.ts`](../../src/engine/events.ts)), so the history pushed right after connecting reaches `feed` even when
@@ -56,11 +56,11 @@ person's phone JID and once under their LID would split its messages. **The engi
 LID form** when WhatsApp has a LID for the user, and the phone JID only as a linked identity. In the first live run,
 58 of 71 one-to-one chats were already LIDs.
 
-## 6. One connection per linked device
+## 6. One connection per linked device (planned)
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot
-write can each open one. The engine takes an exclusive lock beside `session.db`; the loser is refused with a
-message naming the holder. Routing writes through a running `serve` is open work
+write can each open one. The Go engine will take an exclusive lock beside `session.db`, and the loser will be
+refused with a message naming the holder. Routing writes through a running `serve` is open work
 ([BACKLOG.md](BACKLOG.md)).
 
 ## 7. What is on disk
@@ -71,10 +71,11 @@ message naming the holder. Routing writes through a running `serve` is open work
 | cli-core's store (`~/.local/share/WireCat/wirecat.db`) | chats, people, messages for every messenger | cli-core's |
 | `~/.config/whatsapp-cli/` | settings; never a secret | |
 
-One device per `session.db`: the engine opens the device by the JID stored for the profile and refuses a file with
-zero or several devices.
+One device per `session.db`: the Go engine will open the device by the JID stored for the profile and refuse a file
+with zero or several devices. Nothing is written here until linking ships.
 
 ## 8. On the wire
 
-The engine pairs as `Chrome (Linux)` with the desktop platform, so the phone asks for full history. Nothing
-WhatsApp sees names this tool.
+The probe (`engine/cmd/wa-probe`) pairs as `Chrome (Linux)` with the desktop platform, so the phone sends full
+history, and names the device after the host system. The Go engine keeps both: nothing WhatsApp sees names this
+tool.

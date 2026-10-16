@@ -14,8 +14,8 @@ export default defineConfig({
       include: ["src/**/*.ts"],
       exclude: ["src/**/*.test.ts", "src/testing/**", "src/bin/**"],
       reporter: ["text-summary", "json-summary", "html"],
-      // Floors rise with the code; max-cli holds 92/90/88/79.
-      thresholds: { lines: 80, statements: 80, functions: 75, branches: 70, perFile: { lines: 50 } },
+      // A little under what the suite reaches (2026-10-16: 96/95/90/81), so coverage can rise and not fall.
+      thresholds: { lines: 94, statements: 93, functions: 88, branches: 79, perFile: { lines: 50 } },
     },
   },
 })

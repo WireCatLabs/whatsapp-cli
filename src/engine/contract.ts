@@ -105,7 +105,10 @@ export interface WaSend {
   replyTo?: string
 }
 
-/** A refusal from the engine, already in the closed list of codes. */
+/**
+ * A refusal from the engine, already in the closed list of codes. Its message is fixed wording: it never repeats a
+ * chat name, a JID or anything typed, since errors reach logs and run records.
+ */
 export class EngineError extends Error {
   constructor(
     readonly code: EngineErrorCode,
@@ -121,7 +124,11 @@ export class EngineError extends Error {
  * comes right after connecting is not lost to a `feed` that started a moment after `watch`.
  */
 export interface WhatsAppEngine {
-  /** The linked account, from the engine's own store: no request. `null` before a login. */
+  /**
+   * The linked account, from the engine's own store: no request. `null` before a login. Always the user JID in LID
+   * form with no device part (`…@lid`, not `…:12@s.whatsapp.net`): the store keys the account by it, so a change of
+   * form later would split the account, and the phone form would put a phone number in a stored key.
+   */
   self(): string | null
   /** Resolves once the engine is connected and receiving. */
   ready(signal: AbortSignal): Promise<void>

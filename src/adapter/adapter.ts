@@ -103,9 +103,9 @@ export const whatsAppAdapter = (engine: WhatsAppEngine): WhatsAppAdapter => {
       if (named.length > 1)
         throw new CliError(
           "validation_error",
-          `${named.length} chats are called "${query}" — name one by its id: ${named.map((chat) => chat.jid).join(", ")}`,
+          `${named.length} chats share that name — name one by its id; \`chats list\` shows them`,
         )
-      throw new CliError("not_found", `no chat called "${query}"`)
+      throw new CliError("not_found", "no chat by that name or id; `chats list` shows the chats this profile has")
     },
 
     chat: async (jid: string) => {

@@ -15,3 +15,10 @@ Open work, most important first. The plan in flight is
 6. **Distribution**: the engine as per-platform npm packages, the release workflow, install tests on three systems.
 7. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
 8. **Agent settings like tg's** (`.claude/settings.json`: sandbox on, writes kept inside the project, `bin/wa` excluded so the engine reaches WhatsApp). Left out of the foundation because it changes how agents run here.
+9. **Replace the test-matrix waivers with tests.** `scripts/test-matrix-untested.ts` waives every shared command as
+   tested in cli-core (736 options on 2026-10-16; 23 have wa tests). Each group that gets an engine path gets tests
+   through `run()`, and its waiver goes.
+10. **A one-shot connection may take messages and drop them.** If WhatsApp hands each queued message to a linked
+    device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
+    and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
+    starts — before one-shot connections ship.
