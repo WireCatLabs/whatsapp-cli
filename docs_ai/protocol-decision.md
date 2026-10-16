@@ -243,4 +243,4 @@ only; no content was stored. **[V]**
 - **Sending works.** `bin/wa-probe send-self` sent one text to the account's own chat; the owner saw it on the
   phone.
 - **Contacts arrive through app-state sync**, not history: whatsmeow held ~300 contacts at the end of the 15-minute
-  run. No events arrived after the first minute except 9 live messages. No alert at any point.
+  run. 9 live messages arrived during the run; no alert at any point.
