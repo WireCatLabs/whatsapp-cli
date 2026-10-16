@@ -240,4 +240,7 @@ only; no content was stored. **[V]**
   what `BuildHistorySyncRequest` returns.
 - **Most private chats are LIDs.** In the `FULL` chunk, 58 of 71 one-to-one chats had a LID id, not a phone
   number. LID → phone mapping is a day-one need, not an edge case.
-- **Contacts:** whatsmeow had 0 contacts at the first read, after 7 app-state syncs. To check at the end of the run.
+- **Sending works.** `bin/wa-probe send-self` sent one text to the account's own chat; the owner saw it on the
+  phone.
+- **Contacts arrive through app-state sync**, not history: whatsmeow held ~300 contacts at the end of the 15-minute
+  run. No events arrived after the first minute except 9 live messages. No alert at any point.
