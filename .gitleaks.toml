@@ -1,0 +1,39 @@
+# Secret scanning. The default rules catch the well-known shapes (AWS, GitHub, Stripe, private
+# keys); the rules below catch the ones only this project handles.
+#
+#   gitleaks git --redact .              the whole history
+#   gitleaks git --staged --redact .     what is about to be committed — the pre-commit hook
+#
+# `--redact` matters: without it a finding prints the secret it found into your terminal and your
+# CI log, which is a second leak on top of the first.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "whatsapp-phone-jid"
+description = "A WhatsApp id made of a phone number — names a real person"
+regex = '''\b[1-9]\d{9,14}(?::\d+)?@s\.whatsapp\.net\b'''
+tags = ["pii", "whatsapp"]
+
+[[rules]]
+id = "whatsapp-pairing-code"
+description = "A WhatsApp pairing code — links a device to an account while it is valid"
+regex = '''(?i)pairing[_ -]?code["'\s:=]{1,10}([A-Z0-9]{4}-?[A-Z0-9]{4})\b'''
+tags = ["whatsapp", "credential"]
+
+[[rules]]
+id = "phone-number-e164"
+description = "A phone number — the identifier a WhatsApp account is registered with"
+regex = '''(?i)(?:phone|msisdn|number)["'\s:=]{1,10}\+?[1-9]\d{9,14}'''
+tags = ["pii"]
+
+[allowlist]
+description = "Synthetic values used by tests and documentation"
+regexTarget = "match"
+regexes = [
+  # Fixtures and examples must use obviously fake values; these are the ones we sanction.
+  '''\+?71234567890''',
+  '''71234567890(?::\d+)?@s\.whatsapp\.net''',
+]
+paths = ['''pnpm-lock\.yaml''']

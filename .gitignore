@@ -1,0 +1,47 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# A WhatsApp session.db holds the keys of the owner's linked device, and a raw capture carries private
+# messages and phone numbers; neither is ever committed. Fixtures are synthetic.
+session.db*
+*.session
+/captures/
+# bin/wa keeps a worktree's own config, state and cache here.
+/.wa/
+
+.claude/settings.local.json
+.claude/worktrees/
+/.worktrees/
+
+# Problem reports from `wa doctor report create`; attached to an issue, never committed.
+wa-report-*.json
+
+# What the Bash sandbox lays over these names in the working folder (character devices and empty
+# folders, never on disk): without this, `git add -A` inside the sandbox fails on them.
+/.bash_profile
+/.bashrc
+/.profile
+/.zprofile
+/.zshrc
+/.gitconfig
+/.gitmodules
+/.ripgreprc
+/.mcp.json
+/.idea
+/.vscode
+/.claude/agents
+/.claude/commands
+/.claude/launch.json
+/.claude/loop.md
+/.claude/output-styles
+/.claude/skills
+/.claude/routines
+/.claude/scheduled_tasks.json
+/.claude/workflows

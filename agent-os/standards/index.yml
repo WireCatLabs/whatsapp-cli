@@ -1,0 +1,31 @@
+# Agent OS standards index — /inject-standards reads the descriptions to pick what applies.
+cli:
+  error-messages:
+    description: "Error messages carry the next command"
+  extending-shared-commands:
+    description: "wa-only behaviour wraps shared commands, never forks them"
+  help-and-output:
+    description: "--help layout, and separate pretty and machine paths"
+security:
+  secret-input:
+    description: "Secrets never on argv, stored only after a successful use"
+testing:
+  adapter-fake-client:
+    description: "Adapter tests: the fake engine, never a mocked library"
+  environment-seams:
+    description: "Every side effect comes in through Environment and run()"
+  leak-assertions:
+    description: "Synthetic markers, and a check that they don't leak"
+  profile-per-test:
+    description: "One profile name per test"
+  refuse-connection:
+    description: "A command that must not connect gets a throwing adapter"
+  string-recorders:
+    description: "Record calls as short strings, assert with one toEqual"
+typescript:
+  inference:
+    description: "Let TypeScript infer"
+  no-casts:
+    description: "Narrow types, don't cast them"
+  optional-fields:
+    description: "Optional fields are spread in, never set to undefined"

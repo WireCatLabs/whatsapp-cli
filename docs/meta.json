@@ -1,0 +1,20 @@
+{
+  "title": "wa",
+  "pages": [
+    "---Start---",
+    "index",
+    "installation",
+    "---Guides---",
+    "usage",
+    "---Reference---",
+    "commands",
+    "configuration",
+    "configuration-reference",
+    "---When something goes wrong---",
+    "troubleshooting",
+    "security",
+    "---Project---",
+    "changelog",
+    "roadmap"
+  ]
+}

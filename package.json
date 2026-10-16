@@ -1,0 +1,81 @@
+{
+  "name": "@wirecat/whatsapp-cli",
+  "version": "0.1.0",
+  "description": "A personal WhatsApp account from the terminal, as a linked device \u2014 built for agents and scripts",
+  "license": "Apache-2.0",
+  "author": "Viacheslav Ptsarev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WireCatLabs/whatsapp-cli.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": "^22.16.0 || >=24"
+  },
+  "packageManager": "pnpm@11.20.0",
+  "bin": {
+    "wa": "dist/bin/wa.js"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "install",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc --build --force",
+    "typecheck": "tsc --build --force --emitDeclarationOnly && tsc -p tsconfig.test.json && tsc -p tsconfig.scripts.json",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:matrix": "vitest run >/dev/null && pnpm build >/dev/null && cli-dev test-matrix --program dist/program.js --untested scripts/test-matrix-untested.ts --name wa --check",
+    "test:slow": "vitest run --reporter=json --outputFile=coverage/tests.json >/dev/null; cli-dev slow-tests",
+    "engine:test": "cd engine && go vet ./... && go test ./...",
+    "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts",
+    "smoke:bun": "bun run scripts/smoke.ts",
+    "release:check": "pnpm build && node --experimental-strip-types scripts/release-check.ts",
+    "docs:check": "cli-dev docs-check --rules scripts/release/checks.ts --pages && cspell --no-progress --no-summary README.md 'docs/*.md' && rumdl check --config config/wirecat/rumdl.toml README.md docs/*.md",
+    "parity:check": "pnpm build && node dist/bin/wa.js commands --json | cli-core-parity wa && node dist/bin/wa.js commands --json | cli-core-parity wa --pages README.md docs/*.md",
+    "version:check": "cli-dev version",
+    "version:sync": "cli-dev version --sync",
+    "prepare": "lefthook install || true",
+    "secrets:scan": "gitleaks git --no-banner --redact .",
+    "prepack": "rm -rf dist tsconfig.tsbuildinfo && pnpm build",
+    "postinstall": "node install/postinstall.mjs",
+    "check:agent-docs": "pnpm build && node --experimental-strip-types scripts/check-agent-docs.ts",
+    "standards:check": "node config/wirecat/check.mjs",
+    "docs:lint": "markdownlint-cli2",
+    "docs:spell": "cspell lint --config cspell.json --no-progress README.md",
+    "ci:quick": "pnpm typecheck && pnpm build && pnpm lint:commands",
+    "contracts:check": "cli-contract contracts/plan.json",
+    "security:no-leak": "cli-testing security no-leak . contracts/no-leak.json",
+    "lint:commands": "cli-dev lint --cli dist/bin/wa.js"
+  },
+  "dependencies": {
+    "@wirecat/cli-base": "0.40.0",
+    "@wirecat/cli-core": "0.302.0",
+    "commander": "15.0.0",
+    "valibot": "1.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "@wirecat/cli-testing": "0.4.0",
+    "rumdl": "^0.2.79",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3",
+    "@biomejs/biome": "2.5.15",
+    "@cspell/dict-en-gb": "5.0.34",
+    "@cspell/dict-es-es": "3.0.9",
+    "@cspell/dict-ru_ru": "2.3.3",
+    "cspell": "10.3.6",
+    "lefthook": "2.1.16",
+    "markdownlint-cli2": "0.23.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

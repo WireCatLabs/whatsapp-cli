@@ -1,0 +1,17 @@
+import assert from "node:assert/strict"
+import { readFileSync } from "node:fs"
+import { withVersion } from "@wirecat/cli-base/skill"
+import { validateSkill } from "@wirecat/cli-core/skill-validation"
+import { CONFIG } from "../dist/app.js"
+import { createProgram } from "../dist/program.js"
+import { VERSION } from "../dist/version.js"
+
+const keys = CONFIG.allSettings
+const file = new URL("../skills/whatsapp-cli/SKILL.md", import.meta.url)
+const source = readFileSync(file, "utf8")
+const program = createProgram()
+assert.deepEqual(validateSkill(source, { folder: "whatsapp-cli", file: file.pathname, program }), [])
+assert.deepEqual(validateSkill(withVersion(source, VERSION), { folder: "whatsapp-cli", version: VERSION, program }), [])
+const reference = readFileSync(new URL("../docs/configuration-reference.md", import.meta.url), "utf8")
+for (const key of keys) assert.ok(reference.includes(key), `configuration reference misses ${key}`)
+process.stdout.write("skill/discovery/version and configuration-key reference: ok\n")

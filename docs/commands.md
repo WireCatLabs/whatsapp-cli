@@ -1,0 +1,3832 @@
+<!-- Generated from the command tree by scripts/commands.ts. Do not edit; run `pnpm generate`. -->
+
+# Commands
+
+Every command, option and exit code. This page is **generated from the program itself**, so it
+cannot describe a version that does not exist.
+
+For the same list as JSON, run `wa commands --json`.
+
+How a command line is built:
+
+```sh
+wa [profile] [options] <resource> <verb> [arguments]
+```
+
+**The first word is the profile** when it is not a command: `wa work chats list` lists the chats of
+profile `work`. `WA_PROFILE` does the same for a whole shell session, and `defaultProfile` in the
+config file for good. **No profile is assumed**, not even the only one: without any of them, a command
+that uses an account stops with exit 2 and lists the profiles on this computer. Commands that use no
+account (`--help`, `--version`, `commands`, `skill show`, `account list`, `config show`) run
+without one.
+
+## Options for every command
+
+| Option | What it does |
+|---|---|
+| `-V, --version` | output the version number. |
+| `-v, --verbose` | more detail in what is shown: -v ids, -vv everything we know. Default: `0`. |
+| `--json` | machine-readable output: one JSON value on stdout; --json=id,text keeps only those fields. |
+| `--jsonl` | machine-readable output: one JSON object per line, for streaming and jq. |
+| `--quiet` | diagnostics off; a failure is still said. |
+| `--trace` | the connection's own log lines on stderr — never message content. |
+| `--debug` | on a failure, its whole record — cause and stack — in place of the short line. |
+| `--timeout <duration>` | give up on the whole command after this — 30s, 2m, 500ms. |
+| `--offline` | answer from what was recorded and never connect; fails if nothing was. |
+| `--no-input` | never prompt or open interactive login; piped input remains available. |
+| `--max-input-bytes <bytes>` | maximum buffered input bytes (default: 16777216). |
+| `--max-output-bytes <bytes>` | maximum machine output bytes (default: 4194304; 0 disables). |
+| `--brief` | found messages and mail as reference, title, time, sender and excerpt only. |
+| `--full` | found messages and mail with their whole text and every provider field. |
+| `--dry-run` | preview parsed arguments and permissions before running the action. |
+| `--yes` | go ahead without the question an ask level puts before a write. |
+| `--record` | keep this run — ids and timings, never message content. |
+| `--no-record` | do not keep it, whatever the configuration says. |
+
+## `wa account`
+
+the logged-in account
+
+### `wa account list`
+
+every profile on this computer, and the account each is logged in as; asks the messenger nothing
+
+```sh
+wa account list
+```
+
+### `wa account show`
+
+who this profile is logged in as; the phone number shows its last four digits
+
+```sh
+wa account show [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--show-phone` | print the whole phone number. |
+
+### `wa account update`
+
+change the name, the description or the photo everyone sees on your profile
+
+**Changes something in WhatsApp.**
+
+```sh
+wa account update [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--first-name <name>` | your first name. |
+| `--last-name <name>` | your last name. |
+| `--description <text>` | about you. |
+| `--photo <file>` | a new profile photo — an image file. |
+
+### `wa account sessions`
+
+where else this account is logged in — not `wa session`, which is this tool's own login
+
+#### `wa account sessions list`
+
+every device and app logged in to this account; nothing is ended
+
+```sh
+wa account sessions list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+#### `wa account sessions end`
+
+log out every other device, your phone included; this one stays
+
+**Changes something in WhatsApp.**
+
+```sh
+wa account sessions end [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--others` | every session but this one. |
+
+## `wa chats`
+
+the account's chats
+
+### `wa chats list`
+
+chats, newest first, archived ones included; the query is answered from the local store, so online, where the messenger filters nothing, it needs --offline
+
+```sh
+wa chats list [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--all` | every row, no paging. |
+
+### `wa chats events`
+
+who joined, left, was added or removed, and by whom — from the chat's service messages; the last 7 days unless the query names time
+
+```sh
+wa chats events <chat> [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+### `wa chats inspect`
+
+what an invite or public link leads to, without joining it
+
+```sh
+wa chats inspect <link>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `link` | required | an invite link or a public one. |
+
+### `wa chats show`
+
+one chat: its kind, unread count, last message time and who is in it
+
+```sh
+wa chats show <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats send-as`
+
+who this account may post as in a chat; changes no saved choice
+
+```sh
+wa chats send-as <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats documents`
+
+the Google Docs and Drive documents linked in a chat's stored messages
+
+#### `wa chats documents list`
+
+every document link in the chat, newest first, and whether the store has it
+
+```sh
+wa chats documents list <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+
+### `wa chats members`
+
+who is in a group
+
+#### `wa chats members list`
+
+everyone in a group, a page at a time, with their role and when they were last seen
+
+```sh
+wa chats members list <chat> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--all` | every row, no paging. |
+
+#### `wa chats members audit`
+
+members that look like bots, each with its reasons — read from the member list and the local store; never one request per person, and it removes nobody
+
+```sh
+wa chats members audit <chat> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--max-pages <pages>` | at most this many pages of 200 members, a pause between them (default: 10). |
+| `--deep <n>` | also check the top n in full — profile, photos and everything they wrote — one person a second; the public ban lists cover Telegram only, so nothing is sent. |
+
+#### `wa chats members history`
+
+who joined, who left and whose profile changed, oldest first — what chats members fetch recorded in the local store; never asks the messenger
+
+```sh
+wa chats members history <chat> [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+#### `wa chats members fetch`
+
+read a group's whole member list into the local store's member history: who joined, who left, daily counts and profile changes; someone is recorded as gone only when every member was read
+
+**Changes something on this computer only.**
+
+```sh
+wa chats members fetch <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--track` | also fetch it daily while serve runs; chats tracking lists and edits those chats. |
+| `--max-pages <pages>` | at most this many pages of 200 members, a pause between them (default: 10). |
+
+#### `wa chats members add`
+
+add people; they are told
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats members add <chat> <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `person` | required | an id, or part of a name. |
+
+#### `wa chats members remove`
+
+remove people; their messages stay
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats members remove <chat> <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `person` | required | an id, or part of a name. |
+
+### `wa chats mark-read`
+
+mark a chat read; the other side sees that you read it
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats mark-read <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--until-id <id>` | only up to this message id; the newest by default. |
+
+### `wa chats tracking`
+
+the chats whose member lists serve fetches daily into the local store — chats members fetch --track adds one
+
+#### `wa chats tracking list`
+
+every tracked chat: since when, and its last member count
+
+```sh
+wa chats tracking list
+```
+
+#### `wa chats tracking show`
+
+one chat: whether it is tracked, and its member count per day for the last 30 days
+
+```sh
+wa chats tracking show <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+#### `wa chats tracking add`
+
+fetch this chat's member list daily while serve runs, from its next run
+
+**Changes something on this computer only.**
+
+```sh
+wa chats tracking add <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+#### `wa chats tracking remove`
+
+stop fetching it daily; the history already kept stays
+
+**Changes something on this computer only.**
+
+```sh
+wa chats tracking remove <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats create`
+
+create a group or a channel; the people added are told
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats create <title> [person] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `title` | required | the group's name. |
+| `person` | optional | people to add: an id, or part of a name. |
+
+| Option | What it does |
+|---|---|
+| `--channel` | a private channel instead of a group; people join it by its link. |
+
+### `wa chats join`
+
+join a group or channel by its link; the others in it see that you joined
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats join <link>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `link` | required | an invite link, or a public one. |
+
+### `wa chats leave`
+
+leave a group or channel; the others in it see that you left
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats leave <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats update`
+
+rename a group or channel, change its description, or turn one of its settings on or off
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats update <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--title <title>` | the new name. |
+| `--description <text>` | the new description. |
+| `--all-can-pin <on\|off>` | every member may pin messages. |
+| `--only-admins-add <on\|off>` | only admins may add members. |
+| `--only-admins-call <on\|off>` | only admins may start a call. |
+| `--only-owner-edits-info <on\|off>` | only the owner may change the name and photo. |
+| `--members-see-link <on\|off>` | members may see the invite link. |
+
+### `wa chats link`
+
+a group's invite link
+
+#### `wa chats link show`
+
+the invite link, if you may see it
+
+```sh
+wa chats link show <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+#### `wa chats link revoke`
+
+stop one link; for the group's own link, the answer is the new one
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats link revoke <chat> <link>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `link` | required | the link, as `chats link list` shows it. |
+
+#### `wa chats link reset`
+
+replace the invite link; the old one stops working
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats link reset <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats requests`
+
+requests to join a group that needs an admin's approval
+
+#### `wa chats requests list`
+
+who asked to join, newest first; only admins see them, and reading tells nobody
+
+```sh
+wa chats requests list <chat> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+
+#### `wa chats requests accept`
+
+let them in; the group sees them join
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats requests accept <chat> [person] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `person` | optional | who asked: an id from `chats requests list`. |
+
+| Option | What it does |
+|---|---|
+| `--all` | every pending request, counted against the hourly limit first. |
+| `--link <link>` | with --all: only the requests made by this invite link. |
+
+#### `wa chats requests decline`
+
+turn the request away
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats requests decline <chat> [person] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `person` | optional | who asked: an id from `chats requests list`. |
+
+| Option | What it does |
+|---|---|
+| `--all` | every pending request, counted against the hourly limit first. |
+| `--link <link>` | with --all: only the requests made by this invite link. |
+
+### `wa chats admins`
+
+give or take back a member's admin rights
+
+#### `wa chats admins add`
+
+make a member an admin with these rights
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats admins add <chat> <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `person` | required | an id, or part of a name. |
+
+| Option | What it does |
+|---|---|
+| `--can <rights>` | what they may do, comma-separated: read, members, admins, info, pin, link, post, edit, delete. |
+
+#### `wa chats admins remove`
+
+take an admin's rights back; they stay a member
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats admins remove <chat> <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `person` | required | an id, or part of a name. |
+
+### `wa chats folders`
+
+your chat folders
+
+#### `wa chats folders list`
+
+your chat folders, in the order the app shows them
+
+```sh
+wa chats folders list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+#### `wa chats folders show`
+
+one chat folder, with the names of the chats in it
+
+```sh
+wa chats folders show <folder>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `folder` | required | the folder's id, or its title exactly. |
+
+#### `wa chats folders create`
+
+create a chat folder
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats folders create <title> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `title` | required | the folder's name; the app may refuse a long one. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat to put in it, by id or name; repeat it for more. |
+
+#### `wa chats folders update`
+
+rename a folder, or change which chats are in it
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats folders update <folder> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `folder` | required | folder id, or its title exactly. |
+
+| Option | What it does |
+|---|---|
+| `--title <title>` | a new name. |
+| `--add <chat>` | put a chat in it; repeat it for more. |
+| `--remove <chat>` | take a chat out of it, and off its excluded and pinned lists; repeat it for more. |
+
+#### `wa chats folders delete`
+
+delete a folder; the chats in it stay
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats folders delete <folder>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `folder` | required | folder id, or its title exactly. |
+
+### `wa chats rules`
+
+what `chats moderate` judges a group by, kept in a file of this profile
+
+#### `wa chats rules show`
+
+the group's rules; the defaults, marked not saved, if it has none yet
+
+```sh
+wa chats rules show <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+#### `wa chats rules set`
+
+change one rule; the group's first change writes every rule with its default
+
+**Changes something on this computer only.**
+
+```sh
+wa chats rules set <chat> <key> <value>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `key` | required | one of: trusted, blocked, blockedNames, links, invites, forwards, blockedPeople, flood.messages, flood.minutes, flood.action, newAccount.days, newAccount.action, consent.delete, consent.remove. |
+| `value` | required | the new value; a list is comma-separated. |
+
+#### `wa chats rules unset`
+
+put one rule back to its default
+
+**Changes something on this computer only.**
+
+```sh
+wa chats rules unset <chat> <key>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `key` | required | one of: trusted, blocked, blockedNames, links, invites, forwards, blockedPeople, flood.messages, flood.minutes, flood.action, newAccount.days, newAccount.action, consent.delete, consent.remove. |
+
+### `wa chats moderate`
+
+judge a group's new messages and members by its rules, and act as they allow
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats moderate <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | judge what came after this ISO 8601 time, or 2h / 1d ago; the saved point stays. |
+| `--dry-run` | judge and plan; do nothing. |
+| `--allow-dangerous` | yes to every action whose level in the group's rules is ask. |
+| `--max-actions <n>` | at most this many actions in one run; 10 if not given. |
+
+## `wa contacts`
+
+people this account has a one-to-one chat with
+
+### `wa contacts list`
+
+people you have a one-to-one chat with; name: matches the name, your local alias or the @username, notes: your private notes about them
+
+```sh
+wa contacts list [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--all` | every row, no paging. |
+| `--order <recent\|name>` | newest conversation first, or alphabetical. Default: `recent`. |
+
+### `wa contacts show`
+
+one person and the chats you share with them
+
+```sh
+wa contacts show <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name. |
+
+| Option | What it does |
+|---|---|
+| `--with-notes` | include your private notes, subject to contacts.notes.list permission. |
+
+### `wa contacts profile`
+
+everything the messenger says about one person — handles, flags, last seen, when they registered — and how many of their messages the store holds in each chat you share, the first and the last, and the earlier names and usernames the store saw them with
+
+```sh
+wa contacts profile <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name. |
+
+| Option | What it does |
+|---|---|
+| `--show-phone` | print the whole phone number. |
+
+### `wa contacts context`
+
+what the store holds about one person, in every messenger linked to them: shared chats, the last messages each way, their recent messages, where others mentioned them — never connects
+
+```sh
+wa contacts context <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | at most this many messages in each list; 10 if not given. |
+| `--since-time <time>` | nothing older than this ISO 8601 time, or 2h / 1d ago. |
+| `--chat <chat>` | a chat, by id or name; repeat it for more — then their newest messages in each, 20 unless --limit, short unless -v. |
+| `--sync-first` | with --chat, read their newest messages in each from the messenger first. |
+
+### `wa contacts timeline`
+
+everything one person took part in, in every messenger linked to them — messages they wrote or were mentioned in, chats, mail, meetings, tasks — newest first, from the store; never connects
+
+```sh
+wa contacts timeline <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name. |
+
+| Option | What it does |
+|---|---|
+| `--scope <scope>` | only what belongs to personal or to work accounts: personal or work. |
+| `--since-time <time>` | nothing older than this ISO 8601 time, or 2h / 1d ago. |
+| `--until-time <time>` | through this ISO 8601 time, or 2h / 1d ago. |
+| `--limit <n>` | at most this many; 50 if not given. |
+| `--cursor <cursor>` | go on from where the last page stopped; page.next gives it, with the same filters. |
+
+### `wa contacts check`
+
+whether one person looks like a bot, a fake or a spammer: their profile and what they wrote in the store — a hint, never a verdict; the public ban lists cover Telegram only, so nothing is sent
+
+```sh
+wa contacts check <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name. |
+
+| Option | What it does |
+|---|---|
+| `--no-registries` | do not ask the public ban lists; nothing about them leaves this machine. |
+
+### `wa contacts link`
+
+record that two people in the store are one person — the same name is never enough
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts link <person> <other>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name. |
+| `other` | required | the same in another messenger of the store, as <messenger>:<person> — max:Ana. |
+
+### `wa contacts unlink`
+
+undo contacts link for one identity: it is a person of its own again
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts unlink <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name; <messenger>:<person> for another messenger. |
+
+### `wa contacts lookup`
+
+who has this phone number — asks for it, or reads it from stdin; never an argument
+
+```sh
+wa contacts lookup
+```
+
+### `wa contacts sync`
+
+take the whole contact list from the messenger into the local store
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts sync
+```
+
+### `wa contacts alias`
+
+a private local display name in the selected account
+
+#### `wa contacts alias set`
+
+
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts alias set <person> <alias>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required |  |
+| `alias` | required |  |
+
+#### `wa contacts alias rm`
+
+
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts alias rm <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required |  |
+
+### `wa contacts notes`
+
+your private notes on a stored contact, the same in every account that sees them
+
+#### `wa contacts notes list`
+
+
+
+```sh
+wa contacts notes list <person> [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required |  |
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+#### `wa contacts notes show`
+
+
+
+```sh
+wa contacts notes show <person> <id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required |  |
+| `id` | required |  |
+
+#### `wa contacts notes add`
+
+
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts notes add <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required |  |
+
+| Option | What it does |
+|---|---|
+| `--file <path>` | read note text from a file; omitted or - reads stdin. |
+
+#### `wa contacts notes edit`
+
+
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts notes edit <person> <id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required |  |
+| `id` | required |  |
+
+| Option | What it does |
+|---|---|
+| `--file <path>` | read note text from a file; omitted or - reads stdin. |
+| `--revision <n>` | the revision you read before editing. |
+
+#### `wa contacts notes remove`
+
+
+
+**Changes something on this computer only.**
+
+```sh
+wa contacts notes remove <person> <id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required |  |
+| `id` | required |  |
+
+### `wa contacts add`
+
+add a person to your contacts — `contacts list` still shows only people you have a dialog with
+
+**Changes something in WhatsApp.**
+
+```sh
+wa contacts add <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
+
+### `wa contacts remove`
+
+remove a person from your contacts; the chat stays, a name you gave them may not
+
+**Changes something in WhatsApp.**
+
+```sh
+wa contacts remove <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
+
+### `wa contacts block`
+
+stop a person from writing to you — they need not be a contact
+
+**Changes something in WhatsApp.**
+
+```sh
+wa contacts block <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
+
+### `wa contacts unblock`
+
+let a blocked person write to you again
+
+**Changes something in WhatsApp.**
+
+```sh
+wa contacts unblock <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
+
+### `wa contacts rename`
+
+rename the contact in the messenger address book; use contacts alias for a private local name
+
+**Changes something in WhatsApp.**
+
+```sh
+wa contacts rename <person> <first-name> [last-name]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
+| `first-name` | required | the name you want to see for them. |
+| `last-name` | optional |  |
+
+### `wa contacts import`
+
+upload phone numbers and add the people the messenger has under them
+
+**Changes something in WhatsApp.**
+
+```sh
+wa contacts import <file>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | one person per line: number, then a comma, a tab or a semicolon, then the name. |
+
+## `wa messages`
+
+read and send messages
+
+### `wa messages evidence`
+
+a bounded evidence packet from stored messages, newest first
+
+```sh
+wa messages evidence <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many, 1–100. |
+| `--cursor <cursor>` | go on from where page.next says the last packet stopped. |
+
+### `wa messages list`
+
+a chat's messages, oldest to newest
+
+```sh
+wa messages list <chat> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `query` | optional | where to start: id<42, date>2026-10-01. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many. |
+| `--cursor <cursor>` | go on from where the last page stopped; page.next gives it. |
+| `--transcribe` | turn voice messages not heard yet into text — by the messenger, or a model on this machine; can take minutes. |
+| `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--mark-read` | also mark the chat read up to the newest message shown; the other person sees it. |
+
+### `wa messages send`
+
+send a text message; without [text], the text is read from stdin
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages send <chat> [text] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `text` | optional | the message. |
+
+| Option | What it does |
+|---|---|
+| `--reply-to <message>` | answer this message, by its id in the same chat. |
+| `--send-as <id>` | post as one of the identities `chats send-as` lists; required where the chat posts as someone else by default. |
+| `--operation-id <id>` | repeat a send whose outcome was unknown, without risking a second copy. |
+| `--silent` | deliver without a notification. |
+| `--no-preview` | no preview card for a link in the text. |
+| `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
+| `--file <file>` | attach a file; the text becomes its caption. |
+| `--photo <file>` | attach a .jpg, .png or .webp as a photo; the text becomes its caption. |
+| `--as-file` | send the --file as a file to download, a video included. |
+| `--voice <file>` | send an Ogg Opus file as a voice message, alone, with no text. |
+| `--allow-any-file` | send a file even from credential folders or this CLI's own folders. |
+| `--at-time <time>` | let the messenger send it later, even with this machine off: 2026-09-25T09:00 (local time), or 30m, 2h, 1d from now. |
+
+### `wa messages show`
+
+one message, by its chat and id or by its msg: locator
+
+```sh
+wa messages show <chat> [message]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `message` | optional | the message id. |
+
+### `wa messages context`
+
+a message and what came either side of it, oldest first
+
+```sh
+wa messages context <chat> [message] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `message` | optional | the message id. |
+
+| Option | What it does |
+|---|---|
+| `--thread` | the stored reply chain and replies instead of time neighbours; falls back when no graph exists. |
+| `--thread-hops <n>` | at most this many links from the hit (default: 8). |
+| `--thread-messages <n>` | at most this many messages in each thread context (default: 50). |
+| `--thread-bytes <n>` | at most this many bytes of whole messages and links in each context (default: 65536). |
+| `--thread-within <duration>` | messages within this long either side of the hit (default: 1d). |
+| `--before-n <n>` | how many before it. Default: `5`. |
+| `--after-n <n>` | how many after it. Default: `5`. |
+
+### `wa messages download`
+
+save a message's photos, files, videos and voice notes to a folder — or a whole chat's with --all
+
+**Changes something on this computer only.**
+
+```sh
+wa messages download <chat> [message] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | optional | the message id; left out with --all. |
+
+| Option | What it does |
+|---|---|
+| `--output-dir <dir>` | where to save them; created if missing. Default: `.`. |
+| `--all` | every file of the chat, newest first; run it again to continue where it stopped. |
+| `--pause <duration>` | with --all, a pause between pages, to stay under the provider's limits. Default: `2s`. |
+| `--extract` | read text layers from the files this download maps into the local content index. |
+
+### `wa messages transcribe`
+
+a voice message as text — by WhatsApp where it can, else by a model on this machine
+
+```sh
+wa messages transcribe <chat> <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the id of a voice message. |
+
+| Option | What it does |
+|---|---|
+| `--local` | use the model on this machine, never the messenger. |
+| `--model <id>` | which downloaded model; implies --local (`models audio list`). |
+
+### `wa messages edit`
+
+change the text of your own message; the other side may have read it already
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages edit <chat> <message> [text] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the id of your own message. |
+| `text` | optional | the new text; without it, read from stdin. |
+
+| Option | What it does |
+|---|---|
+| `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
+
+### `wa messages delete`
+
+delete messages for you only; with --for-everyone, for everyone in the chat
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages delete <chat> <messages> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `messages` | required | the message ids, by spaces or commas, at most 10. |
+
+| Option | What it does |
+|---|---|
+| `--for-everyone` | delete for everyone in the chat, not only for you — they cannot get it back. |
+| `--allow-dangerous` | go ahead without the question an ask level puts before a deletion. |
+
+### `wa messages forward`
+
+forward one message to another chat
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages forward <chat> <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | the chat the message is in: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+
+| Option | What it does |
+|---|---|
+| `--to <chat>` | where it goes: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--silent` | deliver it without a notification. |
+| `--send-as <id>` | post as one of the identities `chats send-as` lists for the --to chat; required where the chat posts as someone else by default. |
+| `--operation-id <id>` | repeat a forward whose outcome was unknown, without risking a second copy. |
+
+### `wa messages pin`
+
+pin a message in a chat, quietly unless --notify
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages pin <chat> <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+
+| Option | What it does |
+|---|---|
+| `--notify` | tell the chat's members about the pin. |
+
+### `wa messages unpin`
+
+unpin a message in a chat
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages unpin <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+
+### `wa messages scheduled`
+
+messages waiting to be sent later in a chat, soonest first; cancel one in the app
+
+```sh
+wa messages scheduled <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa messages link`
+
+a message permalink when supported, and its account-scoped locator
+
+```sh
+wa messages link <chat> [message]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `message` | optional | the message id. |
+
+### `wa messages comments`
+
+the comments under a channel post, oldest to newest; they live in its discussion group
+
+```sh
+wa messages comments <chat> <post> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | the channel: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `post` | required | the post's message id in the channel. |
+| `query` | optional | where to start: id<42. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many. |
+| `--cursor <cursor>` | go on from where the last page stopped; page.next gives it. |
+
+### `wa messages links`
+
+why a message is in its conversation: each link it has, and the chain of answers back to the start
+
+```sh
+wa messages links <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+
+### `wa messages sync`
+
+bring a chat's history in the local store up to date, newest first; run it again to continue; --all syncs every chat
+
+**Changes something on this computer only.**
+
+```sh
+wa messages sync [chat] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--all` | every chat, most recently active first — what search needs; the last 90d unless --since-time or --last. |
+| `--limit <n>` | at most this many messages in this run, per chat with --all; 1000 if not given. |
+| `--page-size <n>` | how many messages one request asks for; 50 if not given. |
+| `--pause <duration>` | the least pause between pages, to stay under the provider's limits; each is up to twice that. Default: `2s`. |
+| `--since-time <time>` | stop once it reaches messages older than this: ISO 8601, or 2h / 1d ago. |
+| `--last <n>` | stop once the newest n messages are held. |
+| `--catch-up` | prepare local search after this run; overrides search_catch_up. |
+| `--no-catch-up` | skip local preparation after this run. |
+| `--catch-up-chunks <n>` | at most this many local vector chunks. |
+| `--catch-up-messages <n>` | skip a graph rebuild larger than this many messages. |
+| `--catch-up-time <duration>` | local preparation time budget, 30s by default. |
+| `--background` | run as a job that outlives this command; `store jobs show` follows it. |
+| `--dry-run` | only estimate how many messages, requests and minutes a full fetch would still take — from the store, no request. |
+
+## `wa inbox`
+
+other people's unread messages in every chat; --new for what arrived since the last check
+
+```sh
+wa inbox [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | from when: date>2h, date>2026-10-01; the saved point stays put. |
+
+| Option | What it does |
+|---|---|
+| `--new` | what arrived since the last check, each message once — for scheduled runs. |
+| `--limit <n>` | at most this many per chat, the newest. |
+| `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
+| `--kind <kinds>` | only chats of these kinds, comma-separated: dialog, group, channel, saved. |
+| `--transcribe` | turn voice messages not heard yet into text — by the messenger, or a model on this machine; can take minutes. |
+| `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--mark-read` | also mark each chat shown read, up to the newest message shown; the other side sees it. |
+| `--no-mark-read` | do not, whatever the catch_up_marks_read setting says. |
+
+## `wa review`
+
+every message, yours too, in chats that changed since a point — for reviewing who owes what
+
+```sh
+wa review [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | where the last review ended and which chat: date>2h, chat:"Book club"; 3 days ago if no date. |
+
+| Option | What it does |
+|---|---|
+| `--kind <kinds>` | only chats of these kinds, comma-separated: dialog, group, channel, saved. |
+| `--unanswered [duration]` | only questions to you or a group's admins that nobody answered, asked at least this long ago — 4h, 1d; 24h if not given. |
+| `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
+| `--transcribe` | turn voice messages not heard yet into text — by the messenger, or a model on this machine; can take minutes. |
+| `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--new` | what changed since the last `review --new`, a point per chat — for scheduled runs. |
+| `--mark-read` | also mark each chat shown read, up to the newest message shown; the other side sees it. |
+| `--no-mark-read` | do not, whatever the catch_up_marks_read setting says. |
+
+## `wa watch`
+
+print new messages as they arrive, until Ctrl-C or --timeout (either ends it normally)
+
+```sh
+wa watch [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--events` | also edits, deletions and reactions; every line then names its event. |
+
+## `wa serve`
+
+keep the local store current until stopped — what a systemd or launchd unit runs
+
+**Changes something in WhatsApp.**
+
+```sh
+wa serve
+```
+
+## `wa server`
+
+`wa serve` in the background: start, stop, restart, status, logs; install adds a systemd or launchd unit
+
+### `wa server start`
+
+start serve in the background — through the unit if one is installed — and answer once it connects
+
+**Changes something on this computer only.**
+
+```sh
+wa server start
+```
+
+### `wa server stop`
+
+stop this profile's serve — through the unit if it runs under one
+
+**Changes something on this computer only.**
+
+```sh
+wa server stop
+```
+
+### `wa server restart`
+
+stop it and start it again
+
+**Changes something on this computer only.**
+
+```sh
+wa server restart
+```
+
+### `wa server status`
+
+whether serve runs for this profile, since when, who started it, and the unit if there is one
+
+```sh
+wa server status
+```
+
+### `wa server logs`
+
+serve's latest log lines — from the journal under systemd, else its log file
+
+```sh
+wa server logs [options]
+```
+
+| Option | What it does |
+|---|---|
+| `-n, --limit <n>` | how many lines. Default: `50`. |
+
+### `wa server install`
+
+write a systemd user unit or a launchd agent for this profile; starts nothing
+
+**Changes something on this computer only.**
+
+```sh
+wa server install
+```
+
+### `wa server uninstall`
+
+remove this profile's unit; stop it first
+
+**Changes something on this computer only.**
+
+```sh
+wa server uninstall
+```
+
+## `wa store`
+
+the local store of messages
+
+### `wa store status`
+
+per chat: messages stored, the oldest and newest, and the stretches held completely
+
+```sh
+wa store status [chat]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa store gaps`
+
+inspect recorded interior coverage gaps and explicitly fetch them
+
+#### `wa store gaps plan`
+
+local coverage plan; missing message ids alone do not imply missing history
+
+```sh
+wa store gaps plan <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+#### `wa store gaps repair`
+
+fetch bounded interior gaps and recheck coverage; never delete unseen messages
+
+**Changes something on this computer only.**
+
+```sh
+wa store gaps repair <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | total messages in this repair, 500 by default. |
+| `--max-gaps <n>` | at most this many gaps, 5 by default. |
+| `--repair-time <duration>` | time budget for the repair, 30s by default. Default: `30s`. |
+| `--page-size <n>` | messages per provider page. |
+| `--pause <duration>` | provider pause between pages. Default: `2s`. |
+| `--fingerprint <hash>` | refuse if this previously inspected coverage plan changed. |
+| `--catch-up` | prepare local search after repair; overrides search_catch_up. |
+| `--no-catch-up` | skip local search preparation after repair. |
+| `--catch-up-chunks <n>` | maximum local chunks prepared. |
+| `--catch-up-messages <n>` | maximum stored messages read for preparation. |
+| `--catch-up-time <duration>` | preparation time within the repair's remaining budget. |
+| `--background` | repair as an existing store job; inspect store jobs show. |
+
+### `wa store jobs`
+
+background sync jobs
+
+#### `wa store jobs list`
+
+background sync jobs, newest first
+
+```sh
+wa store jobs list [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--all` | every row, no paging. |
+
+#### `wa store jobs show`
+
+one background job — the newest when none is named — and what the store now holds of its chat
+
+```sh
+wa store jobs show [job]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `job` | optional | the job id `messages sync --background` printed. |
+
+#### `wa store jobs cancel`
+
+stop a running background job after its current page; a later sync resumes where it stopped
+
+**Changes something on this computer only.**
+
+```sh
+wa store jobs cancel <job>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `job` | required | the job id. |
+
+#### `wa store jobs retry`
+
+start a partial, failed or died job again, as a new job; the sync resumes where the store stopped
+
+**Changes something on this computer only.**
+
+```sh
+wa store jobs retry [job] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `job` | optional | the job id. |
+
+| Option | What it does |
+|---|---|
+| `--failed` | every chat whose newest job partial, failed or died. |
+
+#### `wa store jobs clear`
+
+forget finished jobs and remove their logs; a running job is kept
+
+**Changes something on this computer only.**
+
+```sh
+wa store jobs clear
+```
+
+### `wa store export`
+
+a chat's stored messages, oldest first: --jsonl one message per line, --json the list envelope of messages; never asks the messenger
+
+**Changes something on this computer only.**
+
+```sh
+wa store export [chats] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chats` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us); several with --output-dir. |
+
+| Option | What it does |
+|---|---|
+| `--format <format>` | jsonl: one message per line, the default with --output; markdown: a transcript with a heading per day, replies and forwards quoted. |
+| `--since-time <time>` | only from this ISO 8601 time, or 30m / 2h / 1d ago, on. |
+| `--output <file>` | write JSON lines, or the transcript, to this new file, readable only by you. |
+| `--output-dir <dir>` | write into this folder, a file per chat and a manifest; run again on it for only what changed since. |
+| `--include <kinds>` | with --output-dir: every stored chat of these kinds, comma-separated: dialog, group, channel, saved. |
+| `--all` | with --output-dir: every stored chat of this account. |
+| `--encrypt` | compress and encrypt with a password, typed at a hidden prompt or piped on stdin; it is never kept — lose it and the file cannot be opened. |
+
+### `wa store clear`
+
+delete from the store the chats this account has left, with their messages
+
+**Changes something on this computer only.**
+
+```sh
+wa store clear [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--left` | the chats this account has left — the only thing this clears. |
+| `--allow-dangerous` | yes, delete — it cannot be undone, and a chat you left cannot be fetched again. |
+
+### `wa store info`
+
+the store file: where it is, its size, its schema and how many rows it holds; changes nothing
+
+```sh
+wa store info
+```
+
+### `wa store check`
+
+whether the store is healthy — integrity, search indexes, disk, and which chats are behind
+
+```sh
+wa store check
+```
+
+### `wa store migrate`
+
+bring the store up to this build's schema, then normalize, index and stem the messages and notes stored before it
+
+**Changes something on this computer only.**
+
+```sh
+wa store migrate
+```
+
+### `wa store reindex`
+
+rebuild the word index, its typo vocabulary, the stems, the files' word index, the notes' indexes and who took part in what, from what is stored; loses nothing
+
+**Changes something on this computer only.**
+
+```sh
+wa store reindex
+```
+
+### `wa store backup`
+
+copy the store into a new file, while it is in use; never overwrites a file
+
+**Changes something on this computer only.**
+
+```sh
+wa store backup <file> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | the new file. |
+
+| Option | What it does |
+|---|---|
+| `--encrypt` | compress and encrypt with a password, typed at a hidden prompt or piped on stdin; it is never kept — lose it and the file cannot be opened. |
+
+### `wa store restore`
+
+put a backup in place of the store; the store it replaces is kept beside it, never deleted
+
+**Changes something on this computer only.**
+
+```sh
+wa store restore <file>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | a file `store backup` wrote; one written with --encrypt asks for its password. |
+
+### `wa store decrypt`
+
+open a file written with --encrypt into a new file; asks for its password
+
+**Changes something on this computer only.**
+
+```sh
+wa store decrypt <file> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | a file `store backup --encrypt` or `store export --encrypt` wrote. |
+
+| Option | What it does |
+|---|---|
+| `--output <file>` | the new file, readable only by you. |
+
+### `wa store repair`
+
+bring every table to this build's shape, deleting nothing: a table of the wrong shape is kept as a copy beside a new one
+
+**Changes something on this computer only.**
+
+```sh
+wa store repair [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--dry-run` | say what it would do, and change nothing. |
+
+### `wa store reset`
+
+back the store up beside itself, then delete it and start an empty one at this build's schema; asks first, or --yes
+
+**Changes something on this computer only.**
+
+```sh
+wa store reset [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--no-backup` | delete the store without backing it up first. |
+
+### `wa store copies`
+
+the tables `store repair` kept as copies
+
+#### `wa store copies delete`
+
+delete one copy `store repair` kept, named exactly; refuses any other table
+
+**Changes something on this computer only.**
+
+```sh
+wa store copies delete <name>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `name` | required | the copy's name, as `store repair` printed it. |
+
+## `wa conversations`
+
+the conversations inside a chat, found in the stored messages by replies, mentions and who wrote next
+
+### `wa conversations build`
+
+find a chat's conversations in what the store holds, replacing the last build; without --chat, every chat that changed since its build and every group never built; never asks the messenger
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations build [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--analyze` | link batches using the configured analysis provider; requires --chat and remembers consent for this chat/provider. |
+| `--provider <provider>` | analysis: agent, openai or anthropic. |
+| `--model <model>` | analysis model; overrides analysis_model. |
+| `--base-url <url>` | analysis API endpoint; overrides analysis_base_url. |
+| `--size <n>` | analysis answer messages per batch, 10–200; default 50. |
+| `--max-tokens <n>` | analysis input/output reservation cap per run; default 100000. |
+| `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
+
+### `wa conversations list`
+
+a chat's conversations, the newest first: when, how many messages, how many people
+
+```sh
+wa conversations list <chat> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many. |
+
+### `wa conversations show`
+
+one conversation's messages, oldest first — by its id, or the one a message is in
+
+```sh
+wa conversations show <conversation> [message]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `conversation` | required | a conversation id from `conversations list`; or a chat: its name, or its WhatsApp id (…@lid, …@g.us), with a message. |
+| `message` | optional | a message id in that chat: show the conversation it is in. |
+
+### `wa conversations related`
+
+the conversations nearest in meaning to the one a message is in, in every built chat, best first — from the vectors `conversations embed` stored; runs no model
+
+```sh
+wa conversations related <chat> <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | a message id in that chat. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many. |
+| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
+
+### `wa conversations status`
+
+how fresh each built chat's conversations and vectors are: messages the build has not seen, chunks with a current, stale or missing vector
+
+```sh
+wa conversations status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
+
+### `wa conversations batches`
+
+windows of a chat for your own AI agent to link: which earlier message each one answers
+
+#### `wa conversations batches status`
+
+how many messages still wait for an answer, in how many batches, and how much text
+
+```sh
+wa conversations batches status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--size <n>` | messages to answer per batch, 10–200; 50 by default. |
+
+#### `wa conversations batches next`
+
+the next window to answer, with the messages before it; message text goes to stdout only
+
+```sh
+wa conversations batches next [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--size <n>` | messages to answer per batch, 10–200; 50 by default. |
+
+### `wa conversations links`
+
+your agent's answers: which earlier message each message of a batch answers
+
+#### `wa conversations links add`
+
+store your agent's answer to a batch, read as JSON from stdin: { "model", "answers": [{ "message", "parent", "confidence" }] }; all or nothing
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations links add [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--batch <id>` | the batch id `conversations batches next` printed. |
+
+#### `wa conversations links clear`
+
+drop your agent's answers for a chat, or only one model's; messages are never touched
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations links clear [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--model <model>` | only the answers this model gave. |
+
+### `wa conversations consents`
+
+remembered analysis permissions for this account's chats and provider endpoints
+
+#### `wa conversations consents list`
+
+
+
+```sh
+wa conversations consents list
+```
+
+#### `wa conversations consents revoke`
+
+
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations consents revoke [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | revoke only this chat's consents; defaults to every chat. |
+| `--provider <identity>` | exact provider identity from consents list; defaults to every provider. |
+
+### `wa conversations embed`
+
+compute a vector for each chunk of a chat's conversations for search by meaning — on this machine, or with --provider through a service and your key; resumes where it stopped; without --chat, every built chat with chunks left, on this machine only
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations embed [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
+| `--threads <n>` | local: threads in all (default: min(8, cores)). |
+| `--concurrency <n>` | remote: requests at once (default: 4). |
+| `--max-tokens <n>` | remote: stop before a run that could send more tokens than this. |
+| `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
+| `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given, and no limit with --chat. |
+
+#### `wa conversations embed status`
+
+how many chunks of a chat have a vector of the model, how many are left, and what is left costs
+
+```sh
+wa conversations embed status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
+
+#### `wa conversations embed clear`
+
+drop a chat's vectors, or only one model's; messages and conversations are never touched
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations embed clear [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
+
+## `wa attachments`
+
+the files of stored messages: their text in the local store, where search finds it
+
+### `wa attachments extract`
+
+read the text of downloaded files — text, PDF/DOCX text layers, ODT/ODS/XLSX/PPTX/EPUB — into the local store, where search finds them
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments extract [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat's files; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--from-dir <dir>` | match files in this nonrecursive directory; needs --chat. |
+| `--cursor <cursor>` | continue from the cursor returned by a bounded extraction. |
+| `--download` | first save the files no download saved yet, from the messenger, into --output-dir. |
+| `--output-dir <dir>` | with --download, where to save them; created if missing. |
+| `--limit <n>` | read at most this many files; run it again to continue. |
+| `--ocr` | explicitly call models.ocr for bulk image and scanned-PDF text extraction. |
+| `--concurrency <n>` | remote: requests at once (default: 4). |
+
+### `wa attachments list`
+
+files of stored messages, newest first: where each was saved and whether its text is held — never the text
+
+```sh
+wa attachments list [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--all` | every row, no paging. |
+
+### `wa attachments show`
+
+read a bounded chunk of one retained attachment; JSON includes base64 bytes
+
+```sh
+wa attachments show <chat> [message] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator alone. |
+| `message` | optional | the message id. |
+
+| Option | What it does |
+|---|---|
+| `--attachment <n>` | file position from 1; required for several files. |
+| `--page <n>` | render one PDF page as PNG, from 1; optional unpdf/canvas, no OCR. |
+| `--offset-bytes <n>` | byte offset from 0. |
+| `--chunk-bytes <n>` | bytes to return, 1–1048576 (default524288). |
+| `--expected-fingerprint <hash>` | require the whole file SHA-256 from the preceding chunk. |
+
+### `wa attachments text`
+
+the text of one file, as an agent read it
+
+#### `wa attachments text set`
+
+keep the text an agent read from a file — a scan, a photo — so search finds it; nothing is sent
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments text set <chat> [message] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `message` | optional | the message id. |
+
+| Option | What it does |
+|---|---|
+| `--attachment <n>` | which file of the message, from 1; needed when it has more than one. |
+| `--text-file <path>` | read the text from this file; - or none reads stdin. |
+
+## `wa tags`
+
+your own labels on chats, people, messages and tasks, kept in the local store and never sent; tag: in a search finds them
+
+### `wa tags auto`
+
+derive local group/channel tags from cached metadata using keyword rules
+
+**Changes something on this computer only.**
+
+```sh
+wa tags auto [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a stored group/channel; repeat to select several. Default: ``. |
+| `--limit <number>` | process at most 1–500 chats. Default: `50`. |
+| `--sync-first` | read current descriptions from the messenger before classifying. |
+| `--dry-run` | preview cached classification without changing the store. |
+
+### `wa tags add`
+
+put tags on one chat, person, message or task
+
+**Changes something on this computer only.**
+
+```sh
+wa tags add <tag> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `tag` | required | one or more tags: 1–32 letters a–z, digits and hyphens; upper case is lowered. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | the chat to tag, or the chat of --message; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--contact <person>` | the person to tag: their id, @username or name, as the local store knows them. |
+| `--message <message>` | the message to tag: its id in --chat, or a msg: locator alone. |
+| `--task <id>` | the task to tag: its id or key, as tasks list shows it. |
+
+### `wa tags remove`
+
+take tags off one chat, person, message or task
+
+**Changes something on this computer only.**
+
+```sh
+wa tags remove <tag> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `tag` | required | one or more tags: 1–32 letters a–z, digits and hyphens; upper case is lowered. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | the chat to untag, or the chat of --message; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--contact <person>` | the person to untag: their id, @username or name, as the local store knows them. |
+| `--message <message>` | the message to untag: its id in --chat, or a msg: locator alone. |
+| `--task <id>` | the task to untag: its id or key, as tasks list shows it. |
+| `--source <manual\|auto>` | remove only this ownership claim. |
+
+### `wa tags list`
+
+what is tagged: this account's chats, messages and tasks, and the people of its messenger
+
+```sh
+wa tags list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+## `wa mentions`
+
+phones, e-mail, links, documents and people's names found in stored messages
+
+### `wa mentions list`
+
+this account's mentions matching the query, newest first; --new for those found since the last review
+
+```sh
+wa mentions list [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | fields below; a bare word is a value, so a phone typed with 8 finds it written with +7. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--new` | undecided mentions found since the last --new run that showed them all; the first run shows every one. |
+
+### `wa mentions domains`
+
+the sites this account's links point to, most linked first, with chats and first and last time
+
+```sh
+wa mentions domains [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | narrows the links counted: the fields below; dismissed links are never counted. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+
+### `wa mentions show`
+
+one mention, the text around it, and how many other places hold its value
+
+```sh
+wa mentions show <id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the mention's id, from mentions list. |
+
+### `wa mentions confirm`
+
+say what a mention is: a phone's owner everywhere it is written, the stored document, who a name means
+
+**Changes something on this computer only.**
+
+```sh
+wa mentions confirm <id> [person] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the mention's id, from mentions list. |
+| `person` | optional | person:<uid> or organization:<id> that owns the phone or the address; person:<uid> a name means; a document needs none. |
+
+| Option | What it does |
+|---|---|
+| `--all-in-chat` | a name: also every undecided place of the same name in its chat. |
+| `--as-owner` | record it as yours although an agent's terminal runs the tool (AI_AGENT or CLAUDECODE set). |
+
+### `wa mentions reject`
+
+not a real mention: dismiss its value everywhere and on later syncs; a name only where it is
+
+**Changes something on this computer only.**
+
+```sh
+wa mentions reject <id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the mention's id, from mentions list. |
+
+| Option | What it does |
+|---|---|
+| `--all-in-chat` | a name: also every undecided place of the same name in its chat. |
+| `--as-owner` | record it as yours although an agent's terminal runs the tool (AI_AGENT or CLAUDECODE set). |
+
+### `wa mentions rebuild`
+
+find the mentions of every stored message again; decisions are kept
+
+**Changes something on this computer only.**
+
+```sh
+wa mentions rebuild [kind]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `kind` | optional | only this kind: person-name after people were added or renamed. One of: `phone`, `email`, `url`, `document`, `person-name`. |
+
+## `wa stats`
+
+statistics about messages, chats and their authors
+
+### `wa stats messages`
+
+message statistics from the local store
+
+#### `wa stats messages show`
+
+how many stored messages match, by chat, sender, day or hour — the local store only; optionally fetches new messages with --sync-first
+
+```sh
+wa stats messages show [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | a strict Lucene query, as for search messages; none counts every stored message; with --saved, more words AND-ed to it. |
+
+| Option | What it does |
+|---|---|
+| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
+| `--max-chats <n>` | refresh at most this many chats (default: 5). |
+| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
+| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
+| `--by <chat\|sender\|day\|hour>` | what to count by (default: chat). |
+| `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | every account of this messenger held in the store; personal, bots or all — the same as in: in the query. |
+| `--limit <n>` | how many rows. |
+| `--timezone <zone>` | the IANA timezone for calendar days and hours. |
+| `--exact` | bare words and quotes match their exact form only, as exact:word does; text: still matches every form. |
+| `--saved <name\|id>` | count what a saved search or an earlier run matches; options typed here replace its own. |
+
+#### `wa stats messages counters`
+
+per-counter observations and bounded remote refresh
+
+#### `wa stats messages counters show`
+
+show saved counter values and their observation freshness
+
+```sh
+wa stats messages counters show [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | strict Lucene query over stored messages. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | held accounts of this messenger; refresh uses the active account. |
+| `--exact` | bare words match exact forms. |
+| `--timezone <zone>` | IANA timezone for query dates. |
+| `--selection <json>` | pinned counter-targets selection from counters show; conflicts with query and scope. |
+| `--counters <names>` | distinct views,reactions,comments fields; all three by default. |
+| `--limit <n>` | messages, 1–100; 20 by default. |
+| `--max-age <duration>` | maximum fresh observation age; 24h by default. |
+
+#### `wa stats messages counters refresh`
+
+read authoritative counters for bounded messages and update their local observations
+
+**Changes something on this computer only.**
+
+```sh
+wa stats messages counters refresh [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | strict Lucene query over stored messages. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | held accounts of this messenger; refresh uses the active account. |
+| `--exact` | bare words match exact forms. |
+| `--timezone <zone>` | IANA timezone for query dates. |
+| `--selection <json>` | pinned counter-targets selection from counters show; conflicts with query and scope. |
+| `--counters <names>` | distinct views,reactions,comments fields; all three by default. |
+| `--limit <n>` | messages, 1–100; 20 by default. |
+| `--max-messages <n>` | maximum messages to refresh, 1–100. |
+| `--sync-time <duration>` | remote refresh budget; 30s by default, maximum 5m. |
+| `--dry-run` | preview exact stored targets and counter capabilities without connecting. |
+
+#### `wa stats messages unanswered`
+
+oldest detected questions without an observed qualifying explicit reply
+
+```sh
+wa stats messages unanswered [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | a strict Lucene query; none selects every stored message. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | every held account of this messenger; personal, bots or all. |
+| `--exact` | bare words match exact forms rather than stems. |
+| `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--answerer <person>` | stored name, alias, @username, ID or person:provider/account/id; ambiguous names require a choice; repeat for more. |
+| `--older-than <duration>` | minimum age of a question without an observed qualifying answer. |
+
+#### `wa stats messages discussion`
+
+viewed posts with little recorded discussion
+
+```sh
+wa stats messages discussion [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | a strict Lucene query; none selects every stored message. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | every held account of this messenger; personal, bots or all. |
+| `--exact` | bare words match exact forms rather than stems. |
+| `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--min-views <n>` | minimum known cumulative views. |
+| `--max-replies <n>` | maximum observed discussion replies. |
+
+#### `wa stats messages top`
+
+rank stored messages by a measure or explainable score; counters are snapshots with per-field observation freshness
+
+```sh
+wa stats messages top [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | a strict Lucene query; none selects every stored message. |
+
+| Option | What it does |
+|---|---|
+| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
+| `--max-chats <n>` | refresh at most this many chats (default: 5). |
+| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
+| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
+| `--measure <name>` | the ranking metric; not with score or weights. One of: `views`, `reactions`, `forwards`, `comments`, `replies`, `thread-size`. |
+| `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
+| `--weights <json>` | the complete component weights; replaces preset weights. |
+| `--message-kind <kind>` | select proven all, posts or comments before ranking. One of: `all`, `posts`, `comments`. |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | every held account of this messenger; personal, bots or all. |
+| `--timezone <zone>` | the IANA timezone for dates and active days. |
+| `--exact` | bare words match exact forms rather than stems. |
+| `--limit <n>` | ranked rows, 1–100. |
+| `--saved <name\|id>` | run a saved query or ranking run; typed options replace stored options. |
+
+#### `wa stats messages evidence`
+
+bounded messages, answer pairs or retention members from an exact drilldown selection
+
+```sh
+wa stats messages evidence <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `message` | required | the canonical message locator, or retention cohort reference, from drilldown. |
+
+| Option | What it does |
+|---|---|
+| `--selection <json>` | the resolved ranking selection returned in drilldown. |
+| `--component <name>` | the exposed ranking component. |
+| `--limit <n>` | evidence rows, 1–100; 20 if not given. |
+| `--cursor <cursor>` | continue the same component and stored-evidence fingerprint. |
+
+### `wa stats contacts`
+
+statistics about human authors
+
+#### `wa stats contacts responses`
+
+counts and median/p90 latency for selected human answering identities
+
+```sh
+wa stats contacts responses [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | a strict Lucene query; none selects every stored message. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | every held account of this messenger; personal, bots or all. |
+| `--exact` | bare words match exact forms rather than stems. |
+| `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--answerer <person>` | stored name, alias, @username, ID or person:provider/account/id; ambiguous names require a choice; repeat for more. |
+
+#### `wa stats contacts top`
+
+rank the human authors of stored messages by a measure or explainable score; counters are snapshots with per-field observation freshness
+
+```sh
+wa stats contacts top [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | a strict Lucene query; none selects every stored message. |
+
+| Option | What it does |
+|---|---|
+| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
+| `--max-chats <n>` | refresh at most this many chats (default: 5). |
+| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
+| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
+| `--measure <name>` | the ranking metric; not with score or weights. One of: `messages`, `words`, `reactions`, `replies`, `answers`, `answer-time`, `threads`, `active-days`. |
+| `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
+| `--weights <json>` | the complete component weights; replaces preset weights. |
+| `--message-kind <kind>` | select proven all, posts or comments before ranking. One of: `all`, `posts`, `comments`. |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | every held account of this messenger; personal, bots or all. |
+| `--timezone <zone>` | the IANA timezone for dates and active days. |
+| `--exact` | bare words match exact forms rather than stems. |
+| `--limit <n>` | ranked rows, 1–100. |
+| `--saved <name\|id>` | run a saved query or ranking run; typed options replace stored options. |
+| `--min-messages <n>` | minimum selected messages per author; 1, or 5 for engaging. |
+
+#### `wa stats contacts evidence`
+
+bounded messages, answer pairs or retention members from an exact drilldown selection
+
+```sh
+wa stats contacts evidence <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | the exact native person id from the ranking row. |
+
+| Option | What it does |
+|---|---|
+| `--selection <json>` | the resolved ranking selection returned in drilldown. |
+| `--component <name>` | the exposed ranking component. |
+| `--limit <n>` | evidence rows, 1–100; 20 if not given. |
+| `--cursor <cursor>` | continue the same component and stored-evidence fingerprint. |
+
+### `wa stats chats`
+
+statistics about one chat
+
+#### `wa stats chats show`
+
+a group's or channel's numbers for a period: messages, active members, replies, reactions, questions answered, joins and leaves — counted from the local store; joins and leaves are asked of the messenger
+
+```sh
+wa stats chats show <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | ISO 8601, or 2h / 1d ago; 7 days ago if not given. |
+| `--by <day\|week>` | also one row per calendar day or week (weeks start on Monday). |
+| `--timezone <zone>` | the IANA timezone for calendar days. |
+
+#### `wa stats chats newcomers`
+
+known-join members and their help within a join window
+
+```sh
+wa stats chats newcomers <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | from this ISO 8601 time, or 2h / 1d ago; 30d ago if not given. |
+| `--until-time <time>` | through this ISO 8601 time, or 2h / 1d ago. |
+| `--within <duration>` | the help window after a known newcomer join. |
+| `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--answerer <person>` | stored name, alias, @username, ID or person:provider/account/id; ambiguous names require a choice; repeat for more. |
+
+#### `wa stats chats retention`
+
+joining cohorts and observed checkpoint membership from saved roster observations
+
+```sh
+wa stats chats retention <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | joining period starts at ISO 8601 or a relative time; last 90 days by default. |
+| `--until-time <time>` | joining period ends at this time; now by default. |
+| `--checkpoints <durations>` | up to 10 increasing joining ages, comma separated; 1d,7d,30d by default. |
+| `--within <duration>` | activity and early departure window after joining; 7d by default. |
+| `--by <day\|week>` | group joining dates by calendar day or Monday week. One of: `day`, `week`. |
+| `--timezone <zone>` | IANA timezone for joining cohorts. |
+| `--limit <n>` | cohorts and member evidence, 1–100. |
+
+### `wa stats tasks`
+
+task statistics
+
+#### `wa stats tasks show`
+
+per chat: how many tasks are open, the oldest open one, the median time to close
+
+```sh
+wa stats tasks show [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--type <type>` | only this type: question, request, mention or promise. |
+
+### `wa stats charts`
+
+a chart's data from a chat's statistics, and optionally a dark SVG or PNG image
+
+**Changes something on this computer only.**
+
+```sh
+wa stats charts <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--chart-kind <messages\|active\|membership>` | what to draw: messages, active authors, or joins and leaves. Default: `messages`. |
+| `--by <day\|week>` | one point per calendar day or week (weeks start on Monday). Default: `day`. |
+| `--since-time <time>` | ISO 8601, or 2h / 1d ago; 7 days ago if not given. |
+| `--timezone <zone>` | the IANA timezone for calendar days. |
+| `--output <file>` | write a dark image to a new .svg or .png file. |
+
+## `wa tasks`
+
+what waits on you — unanswered questions, mentions, requests, promises — kept in the local store; review and serve add them
+
+### `wa tasks list`
+
+tasks, oldest first, with their message or note source
+
+```sh
+wa tasks list [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many. |
+
+### `wa tasks add`
+
+add a task for a stored message or note — a promise, a request
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks add <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `message` | required | a message locator, msg:<provider>/<account>/<chat>/<message>, or note:<id>. |
+
+| Option | What it does |
+|---|---|
+| `--type <type>` | the task's type: question, request, mention or promise. |
+| `--category <name>` | what it is about, from the list tasks categories prints: money, documents, meeting, …. |
+| `--into <id>` | when tasks add listed tasks that may be the same job: link the message to this one instead of opening a task. |
+| `--new` | when tasks add listed tasks that may be the same job: open the task anyway. |
+| `--title <title>` | one line: the action and its object — send Alex the API token. |
+| `--description <text>` | the detail, in Markdown: who owes whom, done when, next step, keywords. |
+| `--due <time>` | when it must be done: an ISO 8601 time or 2h, 3d from now; none clears it. |
+| `--remind-time <time>` | when to look at it again: an ISO 8601 time or 2h, 3d from now; none clears it. |
+
+### `wa tasks plan`
+
+set a task's title, description, due date, next check and category; nothing reaches the messenger
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks plan <task> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+
+| Option | What it does |
+|---|---|
+| `--category <name>` | what it is about, from the list tasks categories prints: money, documents, meeting, …; a change is kept in the task's history. |
+| `--title <title>` | one line: the action and its object — send Alex the API token. |
+| `--description <text>` | the detail, in Markdown: who owes whom, done when, next step, keywords. |
+| `--due <time>` | when it must be done: an ISO 8601 time or 2h, 3d from now; none clears it. |
+| `--remind-time <time>` | when to look at it again: an ISO 8601 time or 2h, 3d from now; none clears it. |
+
+### `wa tasks link`
+
+link a task to messages, chats, people or URLs — or to another task: task:<id>
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks link <task> [targets] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+| `targets` | optional | msg: locators, person:<id>, document:<id>, note:<id>, a URL; or task:<id>, which links two project tasks. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat it concerns, repeatable; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--kind <kind>` | related-to (default), evidence — it shows the task is real — or created-from; for task:<id>, related-to, blocked-by, follow-up-of, duplicate-of or discovered-from. |
+
+### `wa tasks show`
+
+one task: its plan and everything linked to it
+
+```sh
+wa tasks show <task>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+
+### `wa tasks related`
+
+tasks that may be the same job as this one, best first, each with a band — likely, maybe, different — and the reasons; merges nothing
+
+```sh
+wa tasks related <task> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many, at most 40 (default 10). |
+
+### `wa tasks duplicates`
+
+pairs of tasks a rule opened that may be one job, newest first, with score and reasons: merge, reject or defer each; decision:unsure lists the ones deferred to the owner
+
+```sh
+wa tasks duplicates [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many. |
+
+#### `wa tasks duplicates reject`
+
+two tasks are not the same job: the pair leaves the list and is never offered again
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks duplicates reject <dup> <task>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dup` | required | the task listed as the duplicate, by its id or key. |
+| `task` | required | the task it was paired with. |
+
+#### `wa tasks duplicates defer`
+
+the fields and the text cannot tell: leave the pair to the owner, who lists it with decision:unsure
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks duplicates defer <dup> <task>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dup` | required | the task listed as the duplicate, by its id or key. |
+| `task` | required | the task it was paired with. |
+
+### `wa tasks merge`
+
+one job seen twice: link every message of the duplicate to the task and close the duplicate dismissed, duplicate-of the task; nothing is deleted, and tasks unmerge undoes it
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks merge <dup> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dup` | required | the duplicate, by its id or key; it must be open. |
+
+| Option | What it does |
+|---|---|
+| `--into <id>` | the task that stays, by its id or key. |
+
+### `wa tasks unmerge`
+
+undo a merge: reopen the task and remove its duplicate-of relation; messages the merge linked stay linked
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks unmerge <dup>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dup` | required | the merged task, by its id or key. |
+
+### `wa tasks agenda`
+
+what needs a look today, from the local store and without message text: tasks overdue, due or to check, chats where you owe an answer, chats where you wait for one
+
+```sh
+wa tasks agenda [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--due-within <duration>` | list tasks due within this: 30m, 2h, 1d (default 1d). |
+| `--unanswered <duration>` | list chats where someone else wrote last this long ago (default 1d). |
+| `--waiting <duration>` | list chats where you wrote last this long ago (default 7d). |
+| `--within <duration>` | leave out chats silent longer than this: they ended (default 30d). |
+| `--holder <name>` | who you are for claims: a session id or a chat id; default WIRECAT_HOLDER, else Claude Code's session, else the agent's name. |
+
+### `wa tasks categories`
+
+the categories a task takes, with what each means and the words a rule picks it by
+
+```sh
+wa tasks categories
+```
+
+### `wa tasks claim`
+
+take an open task so no other agent works it at once; the claim lapses by itself
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks claim <task> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+
+| Option | What it does |
+|---|---|
+| `--lease <duration>` | how long the claim lasts: 30m, 2h (default 30m); claiming again extends it. |
+| `--holder <name>` | who you are for claims: a session id or a chat id; default WIRECAT_HOLDER, else Claude Code's session, else the agent's name. |
+
+### `wa tasks release`
+
+give back a task you claimed, before the claim lapses; the owner may release any
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks release <task> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+
+| Option | What it does |
+|---|---|
+| `--holder <name>` | who you are for claims: a session id or a chat id; default WIRECAT_HOLDER, else Claude Code's session, else the agent's name. |
+
+### `wa tasks close`
+
+close a task: done, or dismissed when it needs no answer. An agent (AI_AGENT or CLAUDECODE set) states its --certainty; below config task_agent_close_min, or with task_agent_close off, the task stays open and the close waits on the owner, who confirms it with tasks close or refuses it with tasks reject. A closed task stays closed, unless tasks unmerge reopens a merged one
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks close <task> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+
+| Option | What it does |
+|---|---|
+| `--as <state>` | how it is closed: done, or dismissed — it needs no answer; the owner may leave it out to confirm an agent's close. |
+| `--reason <text>` | why, kept with the task — no-reply-needed, for example. |
+| `--certainty <n>` | an agent's: how sure it is, 0 to 1, that the task needs nothing more. |
+| `--as-owner` | close it as yours although an agent's terminal runs the tool (AI_AGENT or CLAUDECODE set). |
+
+### `wa tasks reject`
+
+refuse the close an agent suggested: the task stays open and leaves close:suggested; the agent may close it again
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks reject <task> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `task` | required | the task's id or key, as tasks list shows it. |
+
+| Option | What it does |
+|---|---|
+| `--as-owner` | refuse it as yours although an agent's terminal runs the tool (AI_AGENT or CLAUDECODE set). |
+
+## `wa search`
+
+find things by text: one resource when you know it (messages, notes), or search all across messages and notes; mail is memo search mail
+
+### `wa search all`
+
+search messenger messages and notes in the local store, and a meeting account's transcripts when --source names one — best match first; not mail (memo search mail), tasks, people, memories or projects. Use it when you do not know where something was written; search messages or notes reads one kind with all its fields
+
+```sh
+wa search all <query> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | required | strict Lucene query: words, "phrases", AND/OR/NOT, field groups and date ranges. |
+
+| Option | What it does |
+|---|---|
+| `--only <resources>` | only these resources, separated by commas: messages, notes; meetings when --source names a meeting account. |
+| `--source <accounts>` | only these accounts, separated by commas: provider:account as a hit shows it, a provider, a kind or group:<name>; each resource reads the ones of its kind, and meetings only when it names one. |
+| `--max-meetings <n>` | how many of the meeting account's meetings to look through, newest first, or all for every one (default 100). |
+| `--limit <n>` | how many. |
+| `--page <n>` | which page, starting at 1. |
+| `--exact` | bare words and quotes match their exact form only, as exact:word does. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+
+### `wa search messages`
+
+search messenger messages in the local store — what was read, fetched or kept by serve; optionally fetches new messages with --sync-first; --discover searches the archive only
+
+```sh
+wa search messages [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | strict Lucene query: words, "phrases", AND/OR/NOT, field groups and date ranges; with --saved, more words AND-ed to it. |
+
+| Option | What it does |
+|---|---|
+| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
+| `--max-chats <n>` | refresh at most this many chats (default: 5). |
+| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
+| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
+| `--thread` | the stored reply chain and replies instead of time neighbours; falls back when no graph exists. |
+| `--thread-hops <n>` | at most this many links from the hit (default: 8). |
+| `--thread-messages <n>` | at most this many messages in each thread context (default: 50). |
+| `--thread-bytes <n>` | at most this many bytes of whole messages and links in each context (default: 65536). |
+| `--thread-within <duration>` | messages within this long either side of the hit (default: 1d). |
+| `--source <accounts>` | every account of this messenger held in the store; personal, bots or all — the same as in: in the query; or a list: group:work,telegram:Alice. |
+| `--limit <n>` | how many. |
+| `--page <n>` | which page, starting at 1. |
+| `--newest` | newest first instead of best first. |
+| `--exact` | bare words and quotes match their exact form only, as exact:word does; text: still matches every form. |
+| `--context <n>` | messages before and after each hit; 2 in the terminal, 0 otherwise. |
+| `--discover` | find partial lexical matches and eligible replies in the local archive; results are evidence, not confirmed answers. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+| `--saved <name\|id>` | run a saved search or an earlier run; options typed here replace its own. |
+
+### `wa search notes`
+
+search the notes — written in memo, or imported from a notes folder — by words and, with the local text model, by meaning; each hit says which found it and what it links to
+
+```sh
+wa search notes <query> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | required | strict Lucene query: words, "phrases", AND/OR/NOT, tag:, type:internal (written in memo) or type:file (from a notes folder) and date ranges. |
+
+| Option | What it does |
+|---|---|
+| `--source <accounts>` | only these notes accounts, separated by commas: notes:internal for notes written in memo, notes:<folder id> as a hit shows it, notes, documents or group:<name>. |
+| `--filter <query>` | a query every hit must also match; it does not change the search by meaning. |
+| `--limit <n>` | how many. |
+| `--page <n>` | which page, starting at 1. |
+| `--exact` | words as written only; meaning is not searched. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+
+### `wa search conversations`
+
+the conversations nearest to a query in meaning and in words, best first, in one chat or every one — meaning after `conversations embed`; runs on this machine
+
+```sh
+wa search conversations <query> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | required | what to look for, in your own words, in any language the model reads. |
+
+| Option | What it does |
+|---|---|
+| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
+| `--max-chats <n>` | at most this many chats; 5 with --sync-first, 20 with --catch-up if not given. |
+| `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given. |
+| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
+| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
+| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
+| `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--since-time <time>` | only those still going at this ISO 8601 time, or 30m / 2h / 1d ago, or later. |
+| `--filter <query>` | strict Lucene filter: any message in a conversation must match; does not change the meaning query. |
+| `--source <accounts>` | accounts to search: personal, bots, all, a provider, or a list like group:work,telegram:Alice,email:me@example.com; defaults to the active account. |
+| `--timezone <zone>` | IANA timezone for filter dates; system timezone by default. |
+| `--limit <n>` | how many. |
+| `--catch-up` | first build and embed, on this machine, the chats in scope that changed or were never built — within --max-chats and --max-chunks. |
+
+## `wa searches`
+
+saved searches and the history of search messages and stats messages show, kept in the local store; --saved runs one
+
+### `wa searches create`
+
+save a search under a name without running it; search messages --saved <name> runs it
+
+**Changes something on this computer only.**
+
+```sh
+wa searches create <name> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `name` | required | up to 64 letters a–z, digits and hyphens, not only digits. |
+| `query` | optional | the query, as for search messages; none matches every stored message. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--source <accounts>` | every account of this messenger held in the store; personal, bots or all — the same as in: in the query; or a list: group:work,telegram:Alice,email:me@example.com. |
+| `--limit <n>` | how many. |
+| `--newest` | newest first instead of best first. |
+| `--exact` | bare words and quotes match their exact form only, as exact:word does; text: still matches every form. |
+| `--context <n>` | messages before and after each hit. |
+| `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
+| `--by <chat\|sender\|day\|hour>` | what stats messages show --saved counts by. |
+| `--selection <json>` | save the resolved parent ranking query and options from a drilldown. |
+| `--replace` | overwrite a saved search of the same name. |
+
+### `wa searches show`
+
+one saved search or earlier run: its query, options and how often it ran
+
+```sh
+wa searches show <name|id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `name\|id` | required | a saved search's name, or the id of any row of searches history. |
+
+### `wa searches list`
+
+the saved searches, by name
+
+```sh
+wa searches list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+### `wa searches history`
+
+the searches and counts that ran, newest first — saved ones included; never their results
+
+```sh
+wa searches history [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--all` | every row, no paging. |
+
+### `wa searches delete`
+
+delete a saved search, or one run from the history
+
+**Changes something on this computer only.**
+
+```sh
+wa searches delete <name|id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `name\|id` | required | a saved search's name, or the id of any row of searches history. |
+
+### `wa searches clear`
+
+empty the history; saved searches stay
+
+**Changes something on this computer only.**
+
+```sh
+wa searches clear
+```
+
+## `wa replies`
+
+rules that answer messages for you, kept in a file of this profile
+
+### `wa replies add`
+
+add a rule with every default written out, off until you edit and enable it
+
+**Changes something on this computer only.**
+
+```sh
+wa replies add <id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | lower-case letters, digits and -; unique in this profile. |
+
+### `wa replies on`
+
+enable one reply rule; its template must be ready
+
+**Changes something on this computer only.**
+
+```sh
+wa replies on <id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the rule's id. |
+
+### `wa replies off`
+
+disable one reply rule
+
+**Changes something on this computer only.**
+
+```sh
+wa replies off <id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the rule's id. |
+
+### `wa replies edit`
+
+change only the named fields of a reply rule; lists replace the whole list
+
+**Changes something on this computer only.**
+
+```sh
+wa replies edit <id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the rule's id. |
+
+| Option | What it does |
+|---|---|
+| `--do <actions>` | actions: reply, task, or both, comma-separated. |
+| `--kinds <kinds>` | chat kinds: dialog, group; comma-separated, empty for any. |
+| `--allow-chats <ids>` | only these chat ids, comma-separated; empty for any. |
+| `--deny-chats <ids>` | leave these chat ids out, comma-separated; empty clears. |
+| `--words <words>` | match any of these whole words, comma-separated; empty clears. |
+| `--question` | match only questions. |
+| `--no-question` | do not require a question. |
+| `--mentions-me` | require a mention of you or a reply to you. |
+| `--no-mentions-me` | do not require a mention of you or a reply to you. |
+| `--allow-people <ids>` | only these sender ids, comma-separated; empty for any. |
+| `--deny-people <ids>` | leave these sender ids out, comma-separated; empty clears. |
+| `--contacts-only` | match only contacts. |
+| `--no-contacts-only` | do not require a contact. |
+| `--template <text>` | the reply template. |
+| `--model <mode>` | legacy template mode: fill-only or may-reword; use ai blocks instead. |
+| `--as-reply` | send as a reply to the matched message. |
+| `--no-as-reply` | send without linking to the matched message. |
+| `--per-chat <limit>` | at most this many per chat, such as 1/12h. |
+| `--per-person <limit>` | at most this many per person, such as 1/1d. |
+| `--outside <hours>` | answer outside this 24-hour window, such as 09:00-19:00. |
+| `--days <days>` | days of the working window, such as mon-fri or sat,sun. |
+| `--timezone <zone>` | the IANA timezone for the working window. |
+| `--no-hours` | clear the working window. |
+
+### `wa replies audience`
+
+show the reply audience, who the rules may answer, or replace its named fields; a new file answers everyone a rule matches
+
+**Changes something on this computer only.**
+
+```sh
+wa replies audience [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--reply <mode>` | answer all or only listed senders and chats: all, listed. |
+| `--allow-people <ids>` | replace allowed sender ids, comma-separated; empty clears. |
+| `--allow-chats <ids>` | replace allowed chat ids, comma-separated; empty clears. |
+| `--deny-people <ids>` | replace denied sender ids, comma-separated; empty clears; deny wins. |
+| `--deny-chats <ids>` | replace denied chat ids, comma-separated; empty clears; deny wins. |
+
+### `wa replies consents`
+
+consent for reply models once per profile and endpoint, with chat opt-outs
+
+#### `wa replies consents show`
+
+show the reply model consent and chat opt-outs; never calls a model
+
+```sh
+wa replies consents show
+```
+
+#### `wa replies consents grant`
+
+allow incoming message data to go to the configured reply model for this profile; chat opt-outs remain
+
+**Changes something on this computer only.**
+
+```sh
+wa replies consents grant
+```
+
+#### `wa replies consents revoke`
+
+revoke the profile's reply model consent immediately; chat opt-outs remain
+
+**Changes something on this computer only.**
+
+```sh
+wa replies consents revoke
+```
+
+#### `wa replies consents deny`
+
+keep this chat's incoming data away from the reply model
+
+**Changes something on this computer only.**
+
+```sh
+wa replies consents deny <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | the native chat id, used as written; never resolved over the network. |
+
+#### `wa replies consents allow`
+
+remove this chat's model opt-out; does not grant profile consent
+
+**Changes something on this computer only.**
+
+```sh
+wa replies consents allow <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | the native chat id, used as written; never resolved over the network. |
+
+### `wa replies test`
+
+what the rules would have answered in the stored messages, to whom and why — sends nothing, changes nothing, never connects
+
+```sh
+wa replies test [rule] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `rule` | optional | only this rule, by its id; every rule in file order if not given. |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | from this ISO 8601 time, or 2h / 1d ago; 7d ago if not given. |
+| `--ai` | call the configured reply model with stored message data; requires reply consent, otherwise uses fallback. |
+
+### `wa replies pause`
+
+stop every reply rule of this profile at once, a running serve too; resume undoes it
+
+**Changes something on this computer only.**
+
+```sh
+wa replies pause
+```
+
+### `wa replies resume`
+
+let the reply rules answer again after pause
+
+**Changes something on this computer only.**
+
+```sh
+wa replies resume
+```
+
+### `wa replies status`
+
+whether the rules may send, which are on, and who they may answer
+
+```sh
+wa replies status
+```
+
+## `wa recipients`
+
+the chats this profile may send to, when the list is on
+
+### `wa recipients list`
+
+the chats on the list; empty and off until the first add
+
+```sh
+wa recipients list
+```
+
+### `wa recipients add`
+
+allow sending to this chat; the first add turns the list on
+
+**Changes something on this computer only.**
+
+```sh
+wa recipients add <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa recipients remove`
+
+stop allowing this chat; the list stays on
+
+**Changes something on this computer only.**
+
+```sh
+wa recipients remove <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | chat id, or the title as the list shows it. |
+
+### `wa recipients clear`
+
+delete the list, which turns it off: this profile may send to any chat again
+
+**Changes something on this computer only.**
+
+```sh
+wa recipients clear
+```
+
+## `wa sends`
+
+every attempt to send from this profile — never the text
+
+### `wa sends list`
+
+attempts to send, newest first: sent, refused, failed, or not known
+
+```sh
+wa sends list [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+| `--all` | every row, no paging. |
+
+## `wa runs`
+
+recorded runs — what this tool did, and when
+
+### `wa runs list`
+
+recorded runs, newest first
+
+```sh
+wa runs list [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. Default: `20`. |
+| `--page <n>` | which page, starting at 1. Default: `1`. |
+
+### `wa runs show`
+
+one run: what it was, how it ended, and every event it logged
+
+```sh
+wa runs show <run-id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `run-id` | required | an id from `wa runs list`. |
+
+| Option | What it does |
+|---|---|
+| `--problems` | only failed responses, warnings and crashes. |
+
+### `wa runs search`
+
+search recorded diagnostic metadata and events; no message contents
+
+```sh
+wa runs search [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | case-insensitive literal diagnostic text. |
+
+| Option | What it does |
+|---|---|
+| `--status <status>` | run outcome. One of: `success`, `failed`, `partial`, `running`. |
+| `--error-code <code>` | one stable error code. |
+| `--operation <name>` | one operation, such as messages.download. |
+| `--profile <name>` | one recorded profile. |
+| `--since-time <time>` | runs starting on or after an ISO time or 2h / 1d ago. |
+| `--limit <n>` | matches per page, at most 100. Default: `20`. |
+| `--page <n>` | result page. Default: `1`. |
+
+### `wa runs path`
+
+the directory holding one run
+
+```sh
+wa runs path <run-id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `run-id` | required | an id from `wa runs list`. |
+
+## `wa config`
+
+the settings in force, and where each one came from
+
+### `wa config show`
+
+the profile, the profiles that exist, and each setting with where it came from
+
+```sh
+wa config show [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--bot` | the settings a bot command on this profile gets, rather than the personal account's. |
+
+### `wa config set`
+
+save a setting to the configuration file
+
+**Changes something on this computer only.**
+
+```sh
+wa config set <setting> <value> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, account_groups.<name>. |
+| `value` | required | a number, true or false, or for allow a list like send,reaction; for a group tg:work,max:Alice,email:me@x. |
+
+| Option | What it does |
+|---|---|
+| `--defaults` | change what every profile gets, rather than this profile. |
+| `--personal` | only for personal accounts — the personal section of the file. |
+| `--bot` | only for bots — the bot section of the file. |
+
+### `wa config unset`
+
+remove a setting from the configuration file
+
+**Changes something on this computer only.**
+
+```sh
+wa config unset <setting> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, account_groups.<name>. |
+
+| Option | What it does |
+|---|---|
+| `--defaults` | change what every profile gets, rather than this profile. |
+| `--personal` | only for personal accounts — the personal section of the file. |
+| `--bot` | only for bots — the bot section of the file. |
+
+## `wa doctor`
+
+the state this installation is in, without connecting unless --online
+
+```sh
+wa doctor [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--online` | also connect once and read the account; sends nothing. |
+
+### `wa doctor report`
+
+what a problem report holds; writes nothing
+
+#### `wa doctor report create`
+
+write a problem report to a file, and say where to send it
+
+**Changes something on this computer only.**
+
+```sh
+wa doctor report create [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--run <id>` | the run the report is about; the newest failed one if not given. |
+| `--output <file>` | where to write it; a new file in this directory if not given. |
+
+## `wa commands`
+
+commands, options and exit codes as JSON — inspect one command path per call
+
+### `wa commands schema`
+
+one command's argv and result schemas, effects, permissions and retry guidance
+
+```sh
+wa commands schema <path>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | one command path, for example: stats messages show. |
+
+## `wa complete`
+
+shell completion: `wa complete zsh` prints the script to source
+
+```sh
+wa complete [words]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `words` | optional |  |
+
+## `wa mcp`
+
+serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa mcp`
+
+**Changes something in WhatsApp.**
+
+```sh
+wa mcp [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+| `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
+| `--port <port>` | the local port for --http (default 8765). |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
+| `--revoke` | forget every login given to a browser app; each must log in again. |
+
+### `wa mcp config`
+
+print the mcpServers entry for Claude Desktop, Cursor and others, with full paths; writes nothing
+
+```sh
+wa mcp config [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+
+### `wa mcp setup`
+
+add this profile's local MCP server to Codex or Claude Code
+
+**Changes something on this computer only.**
+
+```sh
+wa mcp setup <client> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `client` | required | codex or claude-code. |
+
+| Option | What it does |
+|---|---|
+| `--allow-writes` | acknowledge that this profile offers writing tools. |
+| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+
+### `wa mcp doctor`
+
+check this profile's local MCP handshake and tool list
+
+```sh
+wa mcp doctor [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+
+## `wa skill`
+
+the instructions an agent is given for this tool
+
+### `wa skill show`
+
+print SKILL.md — `wa skill install` puts it where Claude Code, Codex and Gemini CLI look for it
+
+```sh
+wa skill show [name]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `name` | optional | one of the skills shipped for a task: follow-ups, link-conversations. |
+
+### `wa skill install`
+
+write SKILL.md to \~/.claude/skills/whatsapp-cli/ (Claude Code) and \~/.agents/skills/whatsapp-cli/ (Codex, Gemini CLI)
+
+**Changes something on this computer only.**
+
+```sh
+wa skill install [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `all`. Default: `all`. |
+
+## Exit codes
+
+Branch on the code, not on the text: the text can change, the code does not.
+
+| Code | When |
+|---|---|
+| `0` | it worked |
+| `2` | `validation_error` |
+| `3` | `configuration_error` |
+| `4` | `authentication_error` |
+| `5` | `permission_error` |
+| `6` | `not_found` |
+| `7` | `confirmation_required` |
+| `8` | `rate_limited` |
+| `9` | `timeout` |
+| `10` | `network_error` |
+| `11` | `provider_error` |
+| `12` | `provider_unavailable` |
+| `13` | `invalid_response` |
+| `14` | `outcome_unknown` |
+| `130` | `cancelled` |
+| `1` | anything else |
+
+`0` and only `0` means the operation was done. `14` (`outcome_unknown`) means a message **may**
+have gone: repeat it only with the same `--operation-id`, which WhatsApp uses to drop a second copy.
