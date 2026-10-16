@@ -197,6 +197,8 @@ func link(ctx context.Context, client *whatsmeow.Client, dataDir, phone string, 
 		}
 	}
 
+	fmt.Printf("Listening until %s for more events. Ctrl+C stops early and saves the totals.\n",
+		time.Now().Add(listenFor).Format("15:04"))
 	select {
 	case <-ctx.Done():
 		fmt.Println("Stopped.")
