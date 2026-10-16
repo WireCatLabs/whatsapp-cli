@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Builds and runs the read-only probe. Usage: bin/wa-probe link <phone> [minutes] | bin/wa-probe send-self
+set -euo pipefail
+# session.db holds the account keys
+umask 077
+root="$(cd "$(dirname "$0")/.." && pwd)"
+out="${XDG_CACHE_HOME:-$HOME/.cache}/whatsapp-cli/wa-probe"
+mkdir -p "$(dirname "$out")"
+(cd "$root/engine" && CGO_ENABLED=0 go build -o "$out" ./cmd/wa-probe)
+exec "$out" "$@"
