@@ -1,0 +1,122 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["./config/wirecat/biome.base.json"],
+  "files": {
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/node_modules",
+      "!pnpm-lock.yaml",
+      "!.worktrees",
+      "!config/wirecat",
+      "!lint/baseline"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noImportCycles": "error"
+      },
+      "style": {
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": {
+            "maxLines": 1000
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/commands/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/engine/**", "../engine/*", "**/adapter/**", "../adapter/*"],
+                    "message": "commands speak the domain model through cli-core's port; the engine and the adapter stay below it"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/adapter/**", "!**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "**/commands/**",
+                      "../commands/*",
+                      "**/program.js",
+                      "../program.js",
+                      "**/messenger.js",
+                      "../messenger.js",
+                      "@wirecat/cli-core/store",
+                      "@wirecat/cli-core/store/*"
+                    ],
+                    "message": "the adapter maps the engine onto the shared messenger port; commands, the program, the messenger and the shared store are above it"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/engine/**", "!**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "**/adapter/**",
+                      "../adapter/*",
+                      "**/commands/**",
+                      "../commands/*",
+                      "**/program.js",
+                      "../program.js",
+                      "**/messenger.js",
+                      "../messenger.js",
+                      "@wirecat/cli-core",
+                      "@wirecat/cli-core/*"
+                    ],
+                    "message": "the engine speaks WhatsApp's terms only; no cli-core domain type and nothing above the adapter (docs/dev/ARCHITECTURE.md)"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.test.ts", "test/**", "**/generated/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off"
+          }
+        }
+      }
+    }
+  ]
+}

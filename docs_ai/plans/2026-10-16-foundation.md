@@ -67,7 +67,7 @@ probes, captures, legacy-store pieces, `--profile` flag.
 
 ## Work items
 
-### Phase 1 — skeleton that passes every check (this PR)
+### Phase 1 — skeleton that passes every check (done 2026-10-16, branch `feat/foundation`)
 
 1. Adopt standards from community `origin/main`; `package.json`, `pnpm install`.
 2. Copy configs and CI per the table; rename; `biome.json` boundaries for `adapter/`, `engine/`, `commands/`.
@@ -105,3 +105,5 @@ Engine binaries as `@wirecat/whatsapp-engine-<os>-<arch>` optional deps, release
 - **NEED-8** — writes while `serve` holds the connection: add a shared "write through serve" to cli-core (all
   messengers benefit; tg and max already need something like it) or copy max's relay into `wa`.
 - **NEED-9** — `docs_ai/` is public in this repo; max keeps it in private `cli-private`. Move it?
+- **NEED-10** — a user who gains a LID after their chat was stored in phone form splits into two chats. Re-key in
+  cli-core (a chat-merge operation) or accept the rare split?

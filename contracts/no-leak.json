@@ -1,0 +1,9 @@
+{
+  "paths": [
+    "contracts/help.snap",
+    "contracts/mcp-tools.json",
+    "contracts/no-leak.json",
+    "contracts/plan.json",
+    "docs/dev/TESTING.md"
+  ]
+}
