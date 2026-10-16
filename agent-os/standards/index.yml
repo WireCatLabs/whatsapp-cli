@@ -29,3 +29,6 @@ typescript:
     description: "Narrow types, don't cast them"
   optional-fields:
     description: "Optional fields are spread in, never set to undefined"
+whatsapp:
+  error-text-privacy:
+    description: "Error text never repeats what was typed"

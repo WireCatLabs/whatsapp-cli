@@ -104,6 +104,8 @@ Engine binaries as `@wirecat/whatsapp-engine-<os>-<arch>` optional deps, release
 
 - **NEED-8** — writes while `serve` holds the connection: add a shared "write through serve" to cli-core (all
   messengers benefit; tg and max already need something like it) or copy max's relay into `wa`.
+  RISK: a one-shot connection with no `serve` may receive queued messages, acknowledge them and drop them on
+  close (unverified; BACKLOG item 10). If so, every connection should be `serve`, and writes must go through it.
 - **NEED-9** — `docs_ai/` is public in this repo; max keeps it in private `cli-private`. Move it?
 - **NEED-10** — a user who gains a LID after their chat was stored in phone form splits into two chats. Re-key in
   cli-core (a chat-merge operation) or accept the rare split?

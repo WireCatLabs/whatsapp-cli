@@ -48,6 +48,20 @@ describe("whatsAppAdapter", () => {
     expect(engine.sent).toEqual([])
   })
 
+  it("never repeats the typed name or a chat id in a refusal, since errors reach run records", async () => {
+    const adapter = whatsAppAdapter(fakeEngine(seed))
+    for (const query of ["Synthetic Secret Name", seed.twins]) {
+      const refusal = adapter.resolve(query).then(
+        () => "",
+        (failure: Error) => failure.message,
+      )
+      const message = await refusal
+      expect(message).not.toBe("")
+      expect(message).not.toContain(query)
+      for (const chat of seed.chats) expect(message).not.toContain(chat.id)
+    }
+  })
+
   it("passes a reply on to the engine", async () => {
     const engine = fakeEngine(seed)
     const sent = await whatsAppAdapter(engine).send(seed.dialog, "yes", { sendId: "3EB0AB", replyTo: "3EB0AA" })
