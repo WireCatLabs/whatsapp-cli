@@ -7,10 +7,13 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**23 ✅ · 736 ⛔ · 0 ❌** — 222 commands, 537 options.
+**26 ✅ · 736 ⛔ · 0 ❌** — 224 commands, 538 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
+| `session start` |  | ✅ |  |
+| `session start` | `--qr-file` | ✅ |  |
+| `session end` |  | ✅ |  |
 | `account list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `account show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `account show` | `--show-phone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |

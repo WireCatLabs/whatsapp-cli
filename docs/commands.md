@@ -43,6 +43,38 @@ without one.
 | `--record` | keep this run — ids and timings, never message content. |
 | `--no-record` | do not keep it, whatever the configuration says. |
 
+## `wa session`
+
+link this profile to WhatsApp as a device, or unlink it
+
+### `wa session start`
+
+link by QR code (default) or a pairing code, then keep the pushed history
+
+**Changes something in WhatsApp.**
+
+```sh
+wa session start [method] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `method` | optional | how to link. One of: `qr`, `phone`. Default: `qr`. |
+
+| Option | What it does |
+|---|---|
+| `--qr-file <png>` | write the QR code to this PNG instead of drawing it, for an agent to pass on. |
+
+### `wa session end`
+
+unlink this device on WhatsApp's side and delete its keys here
+
+**Changes something in WhatsApp.**
+
+```sh
+wa session end
+```
+
 ## `wa account`
 
 the logged-in account

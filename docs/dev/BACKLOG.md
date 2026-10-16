@@ -3,10 +3,11 @@
 Open work, most important first. The plan in flight is
 [the foundation plan](https://github.com/WireCatLabs/cli-private/blob/main/plans/2026-10-16-whatsapp-foundation.md) (private).
 
-1. **The Go engine.** JSON-lines protocol per `src/engine/contract.ts`: hello, history pushes with LID-first chat ids,
-   live messages, send with the caller's id, the device lock, open by stored JID. `GoEngine` on the Node side.
-2. **`session start [qr|phone]` and `setup`.** Login by QR or pairing code; cli-core's messages already point users at
-   `wa <profile> setup`, which does not exist yet.
+1. **Live checks of the engine on the owner's number** (NEED-1387: reads, sends only to the own chat): `serve` end to
+   end, send to the own LID chat, the lock against a running `serve`, a fresh `session start` keeping the history
+   push, `self()` set right after pairing.
+2. **`setup`.** cli-core's messages point users at `wa <profile> setup`, which does not exist yet; tg's runs login, a
+   check of five chats and the skill.
 3. **Writes, `watch` and MCP while `serve` runs.** cli-core has no shared way to route them through the process that
    holds the connection; decide between adding it to cli-core and a local relay.
 4. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
@@ -22,3 +23,12 @@ Open work, most important first. The plan in flight is
     device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
     and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
     starts — before one-shot connections ship.
+11. **Replies in groups name no participant.** A reply sends only the quoted message id; WhatsApp clients also expect
+    the quoted sender in groups. The contract has no field for it yet.
+12. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
+    history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
+    decision 3) is not done, so such users stay in phone form.
+13. **cli-core could resolve names from the store for `history: "store"` messengers.** Today it always asks the
+    adapter, so the engine keeps its own small chat directory (ARCHITECTURE §4). Raise it in cli-core.
+14. **Edits keep the edit's time as the message time.** A live edit carries no original timestamp; check what
+    cli-core's store does with an edit's `timestamp` before it shows wrong times.

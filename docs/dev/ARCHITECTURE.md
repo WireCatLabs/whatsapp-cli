@@ -42,9 +42,21 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 
 - **The contract** is [`src/engine/contract.ts`](../../src/engine/contract.ts): every event and answer as a Valibot
   schema, in WhatsApp's own terms (JIDs, `fromMe`, sync kinds). `PROTOCOL` is checked at the engine's hello.
-- **Two engines implement it**: the Go engine over JSON lines on stdin and stdout (logs on stderr) — not built yet;
-  `engine/` holds only the read-only probe — and `src/testing/fake-engine.ts` in memory for tests. A third — Baileys, or whatsapp-rust — would implement the same
+- **Two engines implement it**: the Go engine (`engine/cmd/wa-engine`, driven by
+  [`go-engine.ts`](../../src/engine/go-engine.ts)) over JSON lines on stdin and stdout, and
+  `src/testing/fake-engine.ts` in memory for tests. A third — Baileys, or whatsapp-rust — would implement the same
   interface without the adapter noticing.
+- **The wire.** The engine's first line is `{"hello": …}` (protocol, the linked account) or `{"refused": …}`. Then
+  requests `{"id", "op", …}` get `{"id", "ok"}` or `{"id", "error": {code, message}}`; events are the contract's
+  `engineEvent`; a login shows `{"login": "qr"|"pair", "code"}`. The phone number for a pairing code travels on stdin,
+  never as an argument (`ps` shows arguments). When stdin closes the engine disconnects and exits, so it never
+  outlives the CLI; it ignores Ctrl+C and lets the CLI decide.
+- **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
+  JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a
+  file kept like `private.db`. Errors reach the CLI as one of the contract's codes with fixed wording.
+- **Names without the phone.** WhatsApp has no "list chats" request, but cli-core resolves a chat name through the
+  adapter. The engine answers from what it can see without asking the phone: chats pushed in this process, the address
+  book in `private.db`, and the joined groups (one request per process, then kept).
 - **Early events are kept.** An event nobody listens for yet is handed to the first listener of its kind
   ([`events.ts`](../../src/engine/events.ts)), so the history pushed right after connecting reaches `feed` even when
   `watch` subscribed first.
@@ -59,23 +71,33 @@ LID form** when WhatsApp has a LID for the user, and the phone JID only as a lin
 ## 6. One connection per linked device (planned)
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot
-write can each open one. The Go engine will take an exclusive lock beside `private.db`, and the loser will be
-refused with a message naming the holder. Routing writes through a running `serve` is open work
-([BACKLOG.md](BACKLOG.md)).
+write can each open one. So the engine takes an exclusive lock on `private.db.lock` **before it can connect**, and
+writes the holder into it (`serve (pid 4242)`); a second engine is refused with that name. The lock is `flock` on
+Unix and `LockFileEx` on Windows, and the operating system releases it when the process dies. Routing writes through
+a running `serve` is open work ([BACKLOG.md](BACKLOG.md)).
+
+## 6a. Linking
+
+`wa <profile> session start [qr|phone]` starts the engine with `--link`, the only run allowed on a profile with no
+device. The phone pushes its history once, seconds after linking, and never again. So the command keeps the same
+engine open and hands it to cli-core's own connection (`withMessenger`, which saves through `feed`), and keeps
+receiving until the phone has been quiet for 45 seconds, or Ctrl+C. Nothing here saves to the store itself.
 
 ## 7. What is on disk
 
 | Path | What | Mode |
 |---|---|---|
 | `~/.local/share/whatsapp-cli/profiles/<profile>/private.db` | the engine's device store: the linked device's keys | 0600, dir 0700 |
+| `…/profiles/<profile>/private.db.lock` | who holds the device's one connection | 0600 |
 | cli-core's store (`~/.local/share/WireCat/wirecat.db`) | chats, people, messages for every messenger | cli-core's |
 | `~/.config/whatsapp-cli/` | settings; never a secret | |
 
-One device per `private.db`: the Go engine will open the device by the JID stored for the profile and refuse a file
-with zero or several devices. Nothing is written here until linking ships.
+One device per `private.db`: the engine opens the one device in the file, refuses a file with several, and treats
+an empty one as not linked. The engine runs with umask 077, so SQLite's `-wal` and `-shm` beside it are 0600 too.
+Only the engine writes `private.db`; it holds keys and device state, never messages.
 
 ## 8. On the wire
 
 The probe (`engine/cmd/wa-probe`) pairs as `Chrome (Linux)` with the desktop platform, so the phone sends full
-history, and names the device after the host system. The Go engine keeps both: nothing WhatsApp sees names this
-tool.
+history, and names the device after the host system. The Go engine does the same: nothing WhatsApp sees names
+this tool. It sends delivery receipts, as every WhatsApp client does, and never read receipts or presence.

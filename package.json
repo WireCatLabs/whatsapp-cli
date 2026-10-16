@@ -52,7 +52,8 @@
     "ci:quick": "pnpm typecheck && pnpm build && pnpm lint:commands",
     "contracts:check": "cli-contract contracts/plan.json",
     "security:no-leak": "cli-testing security no-leak . contracts/no-leak.json",
-    "lint:commands": "cli-dev lint --cli dist/bin/wa.js"
+    "lint:commands": "cli-dev lint --cli dist/bin/wa.js",
+    "engine:build": "cd engine && go build -trimpath -ldflags=\"-s -w\" -o bin/wa-engine ./cmd/wa-engine"
   },
   "dependencies": {
     "@wirecat/cli-base": "0.40.0",

@@ -1,14 +1,115 @@
 import { existsSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
-import { asFirstWord, type BaseEnvironment, environmentOf, type Messenger } from "@wirecat/cli-core/cli"
+import {
+  asFirstWord,
+  type BaseContext,
+  type BaseEnvironment,
+  environmentOf,
+  type Messenger,
+} from "@wirecat/cli-core/cli"
+import type { Command } from "commander"
 import { whatsAppAdapter } from "./adapter/adapter.js"
 import { resolveSettings, WA } from "./app.js"
-import type { WhatsAppEngine } from "./engine/contract.js"
+import { EngineError, type LoginCode, type WhatsAppEngine } from "./engine/contract.js"
+import { startGoEngine } from "./engine/go-engine.js"
 import { privateStore } from "./paths.js"
+
+export interface EngineRequest {
+  storePath: string
+  /** The command holding the connection, named to anyone the engine's lock refuses. */
+  holder: string
+  listen: boolean
+  link: boolean
+}
 
 export interface Environment extends BaseEnvironment {
   /** Tests hand in an engine in memory. */
-  engine?: (options: { storePath: string; listen: boolean }) => WhatsAppEngine | Promise<WhatsAppEngine>
+  engine?: (request: EngineRequest) => WhatsAppEngine | Promise<WhatsAppEngine>
+  /** Tests run a stand-in for the Go engine binary, through the real client. */
+  engineCommand?: { file: string; args: string[] }
+  /** Tests shorten how long `session start` waits for the phone's history. */
+  historyWait?: { firstMs: number; quietMs: number }
+}
+
+const holderOf = (command: Command): string => {
+  const words: string[] = []
+  for (let at: Command | null = command; at?.parent; at = at.parent) words.unshift(at.name())
+  return words.join(" ") || "wa"
+}
+
+const loginHint = (profile: string) => `\`wa ${asFirstWord(profile)}session start\``
+
+/**
+ * Starts the engine for the command's profile, or throws saying how to log in. Only a login (`link`) may start on
+ * a profile that has no device yet.
+ */
+export const openEngine = async (
+  command: Command,
+  base: Pick<BaseContext, "settings" | "env" | "renderer">,
+  { listen = false, link = false }: { listen?: boolean; link?: boolean } = {},
+): Promise<WhatsAppEngine> => {
+  const { profile } = base.settings
+  const request: EngineRequest = { storePath: privateStore(profile, base.env), holder: holderOf(command), listen, link }
+  const { engine: given, engineCommand } = environmentOf<Environment>(command)
+  if (given) return given(request)
+  if (!link && !existsSync(request.storePath))
+    throw new CliError(
+      "authentication_error",
+      `profile "${profile}" is not linked to WhatsApp — run ${loginHint(profile)}`,
+    )
+  try {
+    return await startGoEngine({
+      ...request,
+      env: base.env,
+      warn: base.renderer.warn,
+      ...(engineCommand ? { command: engineCommand } : {}),
+    })
+  } catch (error) {
+    if (error instanceof EngineError && error.code === "authentication_error")
+      throw new CliError("authentication_error", `${error.message} — run ${loginHint(profile)}`)
+    if (error instanceof EngineError) throw new CliError(error.code, error.message)
+    throw error
+  }
+}
+
+/** An engine that just linked, kept open for the command's next connect: the first history push comes on it. */
+const handedOver = new WeakMap<Command, WhatsAppEngine>()
+
+export interface Linked {
+  account: { id: string; name: string | null }
+  /** Nothing was asked: the profile was linked before. */
+  alreadyLinked: boolean
+}
+
+/**
+ * Links the profile's device, showing each code through `onCode`. A newly linked engine stays open and is handed to
+ * the command's next `connect`; an already linked one is closed and nothing is asked.
+ */
+export const linkDevice = async (
+  command: Command,
+  base: Pick<BaseContext, "settings" | "env" | "renderer">,
+  {
+    method,
+    phone,
+    onCode,
+  }: { method: "qr" | "phone"; phone: () => Promise<string>; onCode: (code: LoginCode) => void },
+): Promise<Linked> => {
+  const engine = await openEngine(command, base, { link: true, listen: true })
+  let keep = false
+  try {
+    const alreadyLinked = engine.self() !== null
+    const account = alreadyLinked
+      ? await engine.me()
+      : await engine.link(method === "phone" ? { method, phone: await phone() } : { method }, onCode)
+    keep = !alreadyLinked
+    if (keep) handedOver.set(command, engine)
+    return { account: { id: account.jid, name: account.name }, alreadyLinked }
+  } catch (error) {
+    if (error instanceof EngineError) throw new CliError(error.code, error.message)
+    throw error
+  } finally {
+    if (!keep) await engine.close()
+  }
 }
 
 export const SKILL = new URL("../skills/whatsapp-cli/SKILL.md", import.meta.url)
@@ -38,16 +139,17 @@ export const WHATSAPP: Messenger = {
   channelComments: false,
   addsWithHistory: false,
   connect: async (command, base, options = {}) => {
-    const { profile } = base.settings
-    const storePath = privateStore(profile, base.env)
-    const given = environmentOf<Environment>(command).engine
-    if (given) return whatsAppAdapter(await given({ storePath, listen: options.listen === true }))
-    const login = `\`wa ${asFirstWord(profile)}session start\``
-    throw new CliError(
-      "authentication_error",
-      existsSync(storePath)
-        ? `profile "${profile}" is linked, but this build has no WhatsApp engine yet`
-        : `profile "${profile}" is not linked to WhatsApp — run ${login} once it ships`,
-    )
+    const linked = handedOver.get(command)
+    handedOver.delete(command)
+    if (linked) return whatsAppAdapter(linked)
+    const engine = await openEngine(command, base, { listen: options.listen === true })
+    if (engine.self() === null) {
+      await engine.close()
+      throw new CliError(
+        "authentication_error",
+        `profile "${base.settings.profile}" is not linked to WhatsApp — run ${loginHint(base.settings.profile)}`,
+      )
+    }
+    return whatsAppAdapter(engine)
   },
 }

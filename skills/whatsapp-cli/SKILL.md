@@ -31,6 +31,10 @@ marks a write to WhatsApp. `commands --json` connects to no account.
 Every account command names its profile first: `wa personal chats list`. No profile is assumed; without one the
 command stops and lists the choices.
 
+A profile that is not linked says so and names `wa <profile> session start`. Linking needs the owner's phone: offer
+`wa <profile> session start --qr-file <png>` and pass the image on for the owner to scan; it is removed after the
+login. Never ask for the phone number or a pairing code in chat.
+
 ## Machine execution
 
 Use `--json --no-input` for headless work. In machine mode stdout carries exactly one JSON value; diagnostics go to
