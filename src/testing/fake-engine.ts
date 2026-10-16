@@ -54,14 +54,16 @@ export interface FakeEngine extends WhatsAppEngine {
   push(event: EngineEvent): void
   sent: WaMessage[]
   closed: boolean
+  loggedOut: boolean
 }
 
 /**
  * The engine in memory, filled from cli-core's contract seed. It pushes the seed's history once, as the phone does
  * right after linking, and drops a repeated message id as WhatsApp does.
  */
-export const fakeEngine = (seed: Seed): FakeEngine => {
+export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } = {}): FakeEngine => {
   const hub = eventHub()
+  let self = linked ? (seed.account?.id ?? null) : null
   const chats = seed.chats.map(waChatOf)
   const messages = seed.messages.map(waMessageOf)
   const contactsOf = (jid: string): WaContact[] | null =>
@@ -70,21 +72,25 @@ export const fakeEngine = (seed: Seed): FakeEngine => {
 
   const push = (event: EngineEvent) => hub.emit(v.parse(engineEvent, event))
 
-  push({
-    event: "history",
-    history: {
-      kind: "bootstrap",
-      chats,
-      contacts: seed.people.map((person) => ({ jid: person.id, name: person.name })),
-      messages,
-    },
-  })
+  const pushHistory = () =>
+    push({
+      event: "history",
+      history: {
+        kind: "bootstrap",
+        chats,
+        contacts: seed.people.map((person) => ({ jid: person.id, name: person.name })),
+        messages,
+      },
+    })
+
+  if (linked) pushHistory()
 
   const engine: FakeEngine = {
     sent,
     closed: false,
+    loggedOut: false,
     push,
-    self: () => seed.account?.id ?? null,
+    self: () => self,
     ready: async () => {},
     me: async () => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")
@@ -113,7 +119,19 @@ export const fakeEngine = (seed: Seed): FakeEngine => {
       sent.push(message)
       return message
     },
-    logout: async () => {},
+    link: async (request, onCode) => {
+      if (!seed.account) throw new EngineError("authentication_error", "not linked")
+      if (self === null) {
+        onCode({ login: request.method === "qr" ? "qr" : "pair", code: "FAKECODE" })
+        self = seed.account.id
+        setImmediate(pushHistory)
+      }
+      return { jid: seed.account.id, name: seed.account.name }
+    },
+    logout: async () => {
+      engine.loggedOut = true
+      self = null
+    },
     listen: (kinds, onEvent) => hub.listen(kinds, onEvent),
     close: async () => {
       engine.closed = true

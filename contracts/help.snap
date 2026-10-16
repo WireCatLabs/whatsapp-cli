@@ -46,6 +46,8 @@ Options:
   -h, --help                   display help for command
 
 Commands:
+  session                      link this profile to WhatsApp as a device, or
+                               unlink it
   account                      the logged-in account
   chats                        the account's chats
   contacts                     people this account has a one-to-one chat with

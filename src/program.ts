@@ -35,6 +35,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { CONFIG, WA } from "./app.js"
+import { sessionCommand } from "./commands/session.js"
 import { type Environment, SKILL, WHATSAPP } from "./messenger.js"
 
 /** A revoked or missing login fails the same on every retry. */
@@ -54,6 +55,7 @@ const definition: ProgramDefinition = {
   },
   commands: () =>
     loggingArgv([
+      sessionCommand(),
       accountCommand(WHATSAPP),
       chatsCommand(WHATSAPP),
       contactsCommand(WHATSAPP),

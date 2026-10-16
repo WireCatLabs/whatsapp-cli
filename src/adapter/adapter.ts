@@ -44,6 +44,8 @@ const ENDED: Partial<Record<ConnectionState, () => CliError>> = {
   replaced: () =>
     new CliError("provider_unavailable", "another process took over this WhatsApp login; only one may hold it"),
   banned: () => new CliError("permission_error", "WhatsApp has banned or restricted this account; see the phone"),
+  outdated: () => new CliError("provider_unavailable", "WhatsApp no longer accepts this version of wa; update it"),
+  stopped: () => new CliError("provider_unavailable", "the WhatsApp engine stopped unexpectedly"),
 }
 
 /** Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why. */

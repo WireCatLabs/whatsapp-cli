@@ -19,8 +19,8 @@ Security audits of this repository follow the shared
 [security method](https://github.com/WireCatLabs/cli-testing/tree/main/docs/security) in cli-testing;
 vulnerabilities are reported as the [security policy](SECURITY.md) says.
 
-1. **This is the owner's real WhatsApp account.** Nothing sends, marks read or acknowledges unless the command
-   typed asked for it; live checks send only to the owner's own chat. Never message a number the owner has not
+1. **This is the owner's real WhatsApp account.** Nothing sends, marks read or sends presence unless the command
+   typed asked for it (delivery receipts are normal client behaviour and stay on); live checks send only to the owner's own chat. Never message a number the owner has not
    written to, never in bulk — WhatsApp bans accounts for both.
 2. **In machine mode, stdout carries data and nothing else.** Diagnostics go to stderr.
 3. **One-shot means the process exits.** Whatever starts the engine stops it on every exit path.

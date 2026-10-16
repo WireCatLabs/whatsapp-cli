@@ -48,7 +48,16 @@ export const waHistory = v.strictObject({
   messages: v.array(waMessage),
 })
 
-export const connectionState = v.picklist(["connected", "disconnected", "logged_out", "replaced", "banned"])
+/** `outdated`: WhatsApp refuses this engine's version. `stopped`: the engine process ended without being asked. */
+export const connectionState = v.picklist([
+  "connected",
+  "disconnected",
+  "logged_out",
+  "replaced",
+  "banned",
+  "outdated",
+  "stopped",
+])
 
 export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("history"), history: waHistory }),
@@ -61,6 +70,7 @@ export const engineEvent = v.variant("event", [
 export const engineErrorCode = v.picklist([
   "validation_error",
   "authentication_error",
+  "permission_error",
   "not_found",
   "rate_limited",
   "timeout",
@@ -72,11 +82,23 @@ export const engineErrorCode = v.picklist([
 
 export const engineError = v.strictObject({ code: engineErrorCode, message: v.string() })
 
+/** The engine's first line: its protocol and the linked account (`self()`), or `null` before a login. */
 export const hello = v.strictObject({
   protocol: v.number(),
   engine: v.string(),
   version: v.string(),
+  self: v.nullable(jid),
 })
+
+export const waAccount = v.strictObject({ jid, name: v.nullable(v.string()) })
+
+export const waChatCard = v.strictObject({ chat: waChat, members: v.nullable(v.array(waContact)) })
+
+/**
+ * A code to show while linking: `qr` is the text of a QR code to draw, `pair` the eight characters to type on the
+ * phone. Either one links the account for as long as it is valid, so it is shown and never stored or logged.
+ */
+export const loginCode = v.strictObject({ login: v.picklist(["qr", "pair"]), code: v.pipe(v.string(), v.nonEmpty()) })
 
 export type WaChat = v.InferOutput<typeof waChat>
 export type WaContact = v.InferOutput<typeof waContact>
@@ -86,15 +108,14 @@ export type EngineEvent = v.InferOutput<typeof engineEvent>
 export type ConnectionState = v.InferOutput<typeof connectionState>
 export type EngineErrorCode = v.InferOutput<typeof engineErrorCode>
 export type Hello = v.InferOutput<typeof hello>
+export type WaAccount = v.InferOutput<typeof waAccount>
+export type WaChatCard = v.InferOutput<typeof waChatCard>
+export type LoginCode = v.InferOutput<typeof loginCode>
 
-export interface WaAccount {
-  jid: string
-  name: string | null
-}
-
-export interface WaChatCard {
-  chat: WaChat
-  members: WaContact[] | null
+export interface WaLink {
+  method: "qr" | "phone"
+  /** International format; the phone method only. Sent to the engine on stdin, never as an argument. */
+  phone?: string
 }
 
 export interface WaSend {
@@ -137,6 +158,11 @@ export interface WhatsAppEngine {
   directory(): Promise<WaChat[]>
   chat(jid: string): Promise<WaChatCard>
   send(request: WaSend): Promise<WaMessage>
+  /**
+   * Links this device to the account, showing each code through `onCode` until the phone confirms. Answers the
+   * account at once when the device is already linked.
+   */
+  link(request: WaLink, onCode: (code: LoginCode) => void): Promise<WaAccount>
   logout(): Promise<void>
   /** Events of the given kinds until the returned function is called. */
   listen(kinds: readonly EngineEvent["event"][], onEvent: (event: EngineEvent) => void): () => void
