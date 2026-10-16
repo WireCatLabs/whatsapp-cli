@@ -235,8 +235,8 @@ only; no content was stored. **[V]**
 - **Pairing code works.** Linked 27 s after start; connected 3 s later. No ban, logout or warning event.
 - **All history came in 4 seconds**, in six pushes: `INITIAL_BOOTSTRAP` (every chat, ~1 message each), `RECENT`,
   then one `FULL` chunk at progress 100 %. About 1.9k messages over ~200 chats. Nothing more arrived afterwards.
-- **"Full" is far from full.** The phone sent ~1.6k messages in the `FULL` chunk, much less than the account holds.
-  Older history must come from on-demand requests to the phone. **[I]** — the phone decides the size; not yet tested
+- **"Full" is far from full.** The phone sent ~1.6k messages in the `FULL` chunk, probably much less than the account holds **[I]**.
+  Older history probably has to come from on-demand requests to the phone; the phone decides the size; not yet tested
   what `BuildHistorySyncRequest` returns.
 - **Most private chats are LIDs.** In the `FULL` chunk, 58 of 71 one-to-one chats had a LID id, not a phone
   number. LID → phone mapping is a day-one need, not an edge case.
