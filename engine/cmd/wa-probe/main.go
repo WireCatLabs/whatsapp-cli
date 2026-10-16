@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -137,7 +138,8 @@ func newClient(ctx context.Context, dataDir string) (*whatsmeow.Client, *os.File
 	// These props travel in the pairing handshake, so they only matter for a new link.
 	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_DESKTOP.Enum()
 	store.DeviceProps.RequireFullSync = proto.Bool(true)
-	store.SetOSInfo("WhatsApp CLI", [3]uint32{0, 1, 0})
+	// The phone lists the device under this name; it says the host system, never this tool (CLAUDE.md rule 7).
+	store.SetOSInfo(osName(), [3]uint32{0, 1, 0})
 
 	return whatsmeow.NewClient(device, logger.Sub("client")), logFile
 }
@@ -300,6 +302,17 @@ func sendSelf(ctx context.Context, client *whatsmeow.Client) {
 		fail("send: " + err.Error())
 	}
 	fmt.Printf("Sent to your own chat. Message ID %s, server time %s\n", resp.ID, resp.Timestamp.Format(time.RFC3339))
+}
+
+func osName() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return "Mac OS"
+	case "windows":
+		return "Windows"
+	default:
+		return "Linux"
+	}
 }
 
 func fail(msg string) {
