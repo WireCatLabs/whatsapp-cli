@@ -229,7 +229,9 @@ Sources: WhatsApp help center pages [P-snippet], plus the Messaging Guidelines [
   - Never send in bulk.
   - Never bulk-scrape contacts or groups.
   - Keep the client read-mostly, at human pace.
-  - Use a number you can afford to lose.
+  - ~~Use a number you can afford to lose.~~ **Correction 2026-10-16:** "lose" overstated it. A ban takes away
+    WhatsApp on that number, not the SIM or the number itself, and the help pages do not give odds. With a main
+    number: link read-only first, then send only to your own chat or a known contact.
   - Show a ban warning when the user first logs in.
 
 ## 8. Official MCP server, CLI and SDKs

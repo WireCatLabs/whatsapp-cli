@@ -1,6 +1,7 @@
 # WhatsApp protocol layer — decision
 
-**2026-10-16. Decision: whatsmeow (Go), as a sidecar engine that our TypeScript adapter drives.** Replaces the
+**2026-10-16. Decision: whatsmeow (Go), as a sidecar engine that our TypeScript adapter drives.** **Accepted by the owner
+2026-10-16.** Replaces the
 earlier "TypeScript on Baileys" recommendation in [research.md](research.md) (same day). Evidence:
 [research/](research/).
 
