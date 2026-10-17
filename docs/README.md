@@ -13,6 +13,7 @@ below answers one question. Open the one you need; they are not meant to be read
 | [sessions.md](sessions.md) | How does linking work: QR or pairing code, one connection per device, profiles, unlinking? |
 | [archive.md](archive.md) | What does the local store keep, how is it filled, and how do I export and back it up? |
 | [search.md](search.md) | How do I find a message by its words, sender, chat, date or label, save a search and count? |
+| [attachments.md](attachments.md) | Sending, saving and forwarding files; their text, and voice notes as text |
 | [query-language.md](query-language.md) | Every search field, operator, preset, limit and the JSON answer |
 | [groups.md](groups.md) | How do I keep up with a group — open questions, activity, a weekly report? |
 | [people.md](people.md) | One person: what the store holds about them, your own names and notes |

@@ -3,8 +3,9 @@
 Your personal WhatsApp in the terminal, searchable on your computer, and ready for Claude Code, Codex, Cursor or any
 agent — within limits you set.
 
-> **Early.** `wa` links, reads into its local store, sends text, edits, deletes for everyone and reacts. It is not
-> on npm yet, and files, groups admin and contacts come next: see the [roadmap](docs/roadmap.md).
+> **Early.** `wa` links, reads into its local store, sends text and files, edits, deletes for everyone, reacts and
+> runs groups. It is not on npm yet, and listing a group's members from WhatsApp comes next: see the
+> [roadmap](docs/roadmap.md).
 
 An example conversation (invented people, illustrative output):
 
@@ -100,6 +101,34 @@ wa personal mcp config              # the entry for Claude Desktop, Cursor and o
 
 More: [the MCP server](docs/mcp.md) · [from the browser](docs/remote.md)
 
+## Log in and profiles
+
+`wa` links to your account as a device, the way WhatsApp Web does. There is no password and no app to register: you
+link once, from the phone, and the device keys go to one file only your user can read.
+
+```sh
+wa personal session start               # a QR code: WhatsApp → Settings → Linked devices → Link a device
+wa personal session start phone         # or your number, then a pairing code you type on the phone
+wa personal session start --qr-file login.png  # the QR code as a picture, for an agent to show you
+wa personal account show                # who this profile is linked as
+wa account list                         # every profile here, and who each is linked as
+wa personal session end                 # unlink, and delete the device keys here
+```
+
+Several accounts are several profiles, and the profile is **the first word**, not an option:
+
+```sh
+wa personal chats list     # profile "personal"
+wa work chats list         # profile "work"
+export WA_PROFILE=work     # or for the whole shell session
+```
+
+`wa` never picks a profile for you, not even the only one: a command that uses an account and has no profile named
+stops and lists the profiles on this computer. Name one or set `WA_PROFILE`. Each profile is a linked device of its
+own, with its own one connection.
+
+More: [linking, devices and profiles](docs/sessions.md) · [profiles](docs/profiles.md)
+
 ## The local store and search
 
 Everything `wa` receives is kept in a local store on your computer, shared with tg and max. Search runs over it;
@@ -114,6 +143,38 @@ wa personal store backup ~/wa-backup.db   # a copy, safe while the store is in u
 ```
 
 More: [search](docs/search.md) · [the local store](docs/archive.md) · [query language](docs/query-language.md)
+
+## Files
+
+```sh
+wa personal messages send "Book club" "the agenda" --file agenda.pdf
+wa personal messages download "Book club" 3EB0A1B2C3D4E5F6A7B8 --output-dir ~/Downloads
+wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local   # a model on this machine
+wa personal search messages 'content:"reading list"'                      # the text inside files
+```
+
+One file per message, with the text as its caption. The store keeps what WhatsApp needs to fetch a file again, never
+the file, and never shows those keys; a view-once photo keeps none.
+
+More: [file attachments](docs/attachments.md)
+
+## Groups you run
+
+```sh
+wa personal review chat:Hiking --unanswered          # questions nobody answered
+wa personal review 'chat:Hiking date>7d'             # the week: decisions, promises, open questions
+wa personal stats chats show Hiking                  # the group's activity, from the local store
+wa personal chats create "Hiking 2027" 100000000000002@lid   # a new group, with people you know
+wa personal chats members add 120363000000000001@g.us 100000000000002@lid
+wa personal chats update 120363000000000001@g.us --join-approval on
+wa personal chats requests list 120363000000000001@g.us
+```
+
+Renaming a group, members and admins, the invite link, join requests and who may send or add people are commands
+too. The members see each change, so each passes the profile's permissions and hourly limit. `wa` adds only people in
+your address book or that you have written to: WhatsApp bans accounts that add strangers.
+
+More: [groups](docs/groups.md)
 
 ## Output for scripts and agents
 
@@ -143,6 +204,15 @@ wa personal sends list                                 # every attempt: sent, re
 More: [permissions](docs/permissions.md) · [profiles](docs/profiles.md) · [configuration](docs/configuration.md) ·
 [limits](docs/limits.md)
 
+## Limits
+
+Each profile has one request pace, shared by every command, `serve` and the MCP server at once, so a script stays far
+from what WhatsApp bans. A profile sends at most 30 messages an hour by default. One command at a time may connect a
+profile; another one is refused with exit code `12` and names the holder, unless `serve` runs and carries it on its
+connection. There is nothing to download in bulk: reads answer from the local store.
+
+More: [limits and waits](docs/limits.md)
+
 ## Security
 
 - The device keys are one file readable only by your user. Whoever copies it can read and send as you until you
@@ -164,6 +234,39 @@ wa personal runs list       # recorded runs
 
 More: [troubleshooting by symptom](docs/troubleshooting.md) · [diagnostics](docs/diagnostics.md)
 
+## Technical docs
+
+Every page is in [`docs/`](docs/README.md):
+
+| Page | Answers |
+|---|---|
+| [index](docs/index.md) | The docs site's start page: what `wa` is, the first minute, where to go next |
+| [installation](docs/installation.md) | How do I install it, and what does it need? |
+| [usage](docs/usage.md) | How do I link, read, send and change a message — in that order? |
+| [sessions](docs/sessions.md) | How does linking work: QR or pairing code, one connection per device, profiles, unlinking? |
+| [archive](docs/archive.md) | What does the local store keep, how is it filled, and how do I export and back it up? |
+| [search](docs/search.md) | How do I find a message by its words, sender, chat, date, file or label, save a search and count? |
+| [attachments](docs/attachments.md) | Sending, saving and forwarding files; their text, and voice notes as text |
+| [query-language](docs/query-language.md) | Every search field, operator, preset, limit and the JSON answer |
+| [groups](docs/groups.md) | How do I keep up with a group, and run one? |
+| [people](docs/people.md) | One person: what the store holds about them, your own names and notes |
+| [mcp](docs/mcp.md) | How do I connect Claude Desktop, Cursor or another client without a terminal? |
+| [remote](docs/remote.md) | ChatGPT or Claude in the browser, through a login and a tunnel |
+| [recipes](docs/recipes.md) | What can an agent do for me every day, and how do I run it on a schedule? |
+| [commands](docs/commands.md) | Every command, option and exit code — **generated** from the program |
+| [configuration](docs/configuration.md) | How do I configure common behaviour? |
+| [permissions](docs/permissions.md) | What a profile may read, what asks first, and what may go ahead |
+| [profiles](docs/profiles.md) | Several accounts on one computer, and how a command picks one |
+| [configuration-reference](docs/configuration-reference.md) | Every key, default, scope and variable |
+| [cli-contract](docs/cli-contract.md) | Invocation, output, errors, headless runs, bounds and previews |
+| [limits](docs/limits.md) | Limits, waits and the one connection per device |
+| [diagnostics](docs/diagnostics.md) | What did a command do, and what is never recorded? |
+| [troubleshooting](docs/troubleshooting.md) | Something does not work: what the screen says, and what to do |
+| [security](docs/security.md) | What does `wa` keep on my computer, and what can go wrong? |
+| [roadmap](docs/roadmap.md) | What is coming next? |
+
+What each version changed: [CHANGELOG.md](CHANGELOG.md).
+
 ## Development
 
 ```sh
@@ -177,8 +280,7 @@ bin/wa personal chats list              # everything under .wa/ in this checkout
 Everything that is not specific to WhatsApp — the commands, the store, the send guard, the MCP server — lives in
 [cli-core](https://github.com/WireCatLabs/cli-core), shared with tg and max.
 
-More: [ARCHITECTURE](docs/dev/ARCHITECTURE.md) · [TESTING](docs/dev/TESTING.md) · [all pages](docs/README.md) ·
-[changelog](CHANGELOG.md)
+More: [ARCHITECTURE](docs/dev/ARCHITECTURE.md) · [TESTING](docs/dev/TESTING.md)
 
 ## Contributing
 
