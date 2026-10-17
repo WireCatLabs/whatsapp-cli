@@ -37,6 +37,7 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
+import { bareCheck, type Words } from "./checks.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
@@ -81,9 +82,12 @@ const translated = async <T>(work: Promise<T>): Promise<T> => {
 
 const hit = (chat: WaChat | undefined, message: Message): MessageHit => ({ ...message, chatTitle: chat?.name ?? null })
 
-const ENDED: Partial<Record<ConnectionState, () => CliError>> = {
-  logged_out: () =>
-    new CliError("authentication_error", "WhatsApp logged this device out — log in again with `session start`"),
+const ENDED: Partial<Record<ConnectionState, (words: Words) => CliError>> = {
+  logged_out: (words) =>
+    new CliError(
+      "authentication_error",
+      `WhatsApp logged this device out — log in again with ${words("session.start")}`,
+    ),
   replaced: () =>
     new CliError("provider_unavailable", "another process took over this WhatsApp login; only one may hold it"),
   banned: () => new CliError("permission_error", "WhatsApp has banned or restricted this account; see the phone"),
@@ -96,12 +100,13 @@ const listening = (
   engine: WhatsAppEngine,
   kinds: readonly EngineEvent["event"][],
   signal: AbortSignal,
+  words: Words,
   onEvent: (event: EngineEvent) => void,
 ): { done: Promise<void>; stop: () => void } => {
   let stop = () => {}
   const done = new Promise<void>((resolve, reject) => {
     const unlisten = engine.listen(kinds, (event) => {
-      const ended = event.event === "connection" ? ENDED[event.state]?.() : undefined
+      const ended = event.event === "connection" ? ENDED[event.state]?.(words) : undefined
       if (ended) reject(ended)
       else onEvent(event)
     })
@@ -158,14 +163,18 @@ const keyOf = (chatId: string, message: Message): WaKey => ({
   sender: message.senderId,
 })
 
-export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages = NOTHING_STORED): WhatsAppAdapter => {
+export const whatsAppAdapter = (
+  engine: WhatsAppEngine,
+  stored: StoredMessages = NOTHING_STORED,
+  words: Words = bareCheck,
+): WhatsAppAdapter => {
   // A guessed key would make WhatsApp drop the change without a word, so a message the store lacks is refused.
   const held = async (chatId: string, messageId: string): Promise<Message> => {
     const message = await stored.message(chatId, messageId)
     if (!message)
       throw new CliError(
         "not_found",
-        "that message is not in the local store, and WhatsApp needs its sender to address it; `serve` keeps the store filled",
+        `that message is not in the local store, and WhatsApp needs its sender to address it; ${words("serve")} keeps the store filled`,
       )
     return message
   }
@@ -214,9 +223,12 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       if (named.length > 1)
         throw new CliError(
           "validation_error",
-          `${named.length} chats share that name — name one by its id; \`chats list\` shows them`,
+          `${named.length} chats share that name — name one by its id; ${words("chats.list")} shows them`,
         )
-      throw new CliError("not_found", "no chat by that name or id; `chats list` shows the chats this profile has")
+      throw new CliError(
+        "not_found",
+        `no chat by that name or id; ${words("chats.list")} shows the chats this profile has`,
+      )
     },
 
     chat: async (jid: string) => {
@@ -231,7 +243,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       if (more.length > 0) throw new CliError("validation_error", "WhatsApp sends one file per message here")
       if (upload?.kind === "voice" && text.trim() !== "")
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
-      // A reply to a message the store lacks still goes, with its id alone, as before.
+      // A reply to a message the store lacks still goes, with its id alone.
       const answered = options.replyTo === undefined ? undefined : await stored.message(chatId, options.replyTo)
       const request = {
         chat: chatId,
@@ -339,7 +351,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
         throw new CliError(
           "not_found",
           "nothing of this chat is in the local store to count back from — the phone sends messages older than one " +
-            "the store holds; `serve` keeps the store filled",
+            `the store holds; ${words("serve")} keeps the store filled`,
         )
       const older = await translated(
         engine.older({ ...keyOf(chatId, anchor), timestamp: anchor.timestamp }, Math.min(limit, OLDER_MAX)),
@@ -373,7 +385,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       }
       // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
       let queue = Promise.resolve()
-      const live = listening(engine, ["message", "edit", "delete", "vote", "connection"], signal, (event) => {
+      const live = listening(engine, ["message", "edit", "delete", "vote", "connection"], signal, words, (event) => {
         queue = queue.then(() => handed(event))
       })
       try {
@@ -387,7 +399,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     },
 
     feed: async (onBatch, signal) => {
-      const pushes = listening(engine, ["history", "connection"], signal, (event) => {
+      const pushes = listening(engine, ["history", "connection"], signal, words, (event) => {
         if (event.event !== "history") return
         const { chats, contacts, messages, votes } = event.history
         onBatch({
