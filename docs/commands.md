@@ -835,7 +835,6 @@ wa contacts context <person> [options]
 | `--limit <n>` | at most this many messages in each list; 10 if not given. |
 | `--since-time <time>` | nothing older than this ISO 8601 time, or 2h / 1d ago. |
 | `--chat <chat>` | a chat, by id or name; repeat it for more — then their newest messages in each, 20 unless --limit, short unless -v. |
-| `--sync-first` | with --chat, read their newest messages in each from the messenger first. |
 
 ### `wa contacts timeline`
 
@@ -2695,7 +2694,7 @@ message statistics from the local store
 
 #### `wa stats messages show`
 
-how many stored messages match, by chat, sender, day or hour — the local store only; optionally fetches new messages with --sync-first
+how many stored messages match, by chat, sender, day or hour — the local store only
 
 ```sh
 wa stats messages show [query] [options]
@@ -2707,10 +2706,6 @@ wa stats messages show [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
-| `--max-chats <n>` | refresh at most this many chats (default: 5). |
-| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
-| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
 | `--by <chat\|sender\|day\|hour>` | what to count by (default: chat). |
 | `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `--source <accounts>` | every account of this messenger held in the store; personal, bots or all — the same as in: in the query. |
@@ -2833,10 +2828,6 @@ wa stats messages top [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
-| `--max-chats <n>` | refresh at most this many chats (default: 5). |
-| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
-| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
 | `--measure <name>` | the ranking metric; not with score or weights. One of: `views`, `reactions`, `forwards`, `comments`, `replies`, `thread-size`. |
 | `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
 | `--weights <json>` | the complete component weights; replaces preset weights. |
@@ -2907,10 +2898,6 @@ wa stats contacts top [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
-| `--max-chats <n>` | refresh at most this many chats (default: 5). |
-| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
-| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
 | `--measure <name>` | the ranking metric; not with score or weights. One of: `messages`, `words`, `reactions`, `replies`, `answers`, `answer-time`, `threads`, `active-days`. |
 | `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
 | `--weights <json>` | the complete component weights; replaces preset weights. |
@@ -3390,7 +3377,7 @@ wa search all <query> [options]
 
 ### `wa search messages`
 
-search messenger messages in the local store — what was read, fetched or kept by serve; optionally fetches new messages with --sync-first; --discover searches the archive only
+search messenger messages in the local store — what was read, fetched or kept by serve; --discover searches the archive only
 
 ```sh
 wa search messages [query] [options]
@@ -3402,10 +3389,6 @@ wa search messages [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
-| `--max-chats <n>` | refresh at most this many chats (default: 5). |
-| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
-| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
 | `--thread` | the stored reply chain and replies instead of time neighbours; falls back when no graph exists. |
 | `--thread-hops <n>` | at most this many links from the hit (default: 8). |
 | `--thread-messages <n>` | at most this many messages in each thread context (default: 50). |
@@ -3460,11 +3443,8 @@ wa search conversations <query> [options]
 | `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
-| `--max-chats <n>` | at most this many chats; 5 with --sync-first, 20 with --catch-up if not given. |
+| `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
 | `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given. |
-| `--sync-first` | first fetch new messages within the chat, time and message bounds. |
-| `--sync-time <duration>` | stop fetching after this long (default: 30s). |
-| `--max-messages <n>` | fetch at most this many messages total (default: 500). |
 | `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `--since-time <time>` | only those still going at this ISO 8601 time, or 30m / 2h / 1d ago, or later. |
 | `--filter <query>` | strict Lucene filter: any message in a conversation must match; does not change the meaning query. |
