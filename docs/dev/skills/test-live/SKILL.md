@@ -10,6 +10,10 @@ The rules are shared with tg-cli and max-cli: cli-core's
 Read them first. **This is the owner's real WhatsApp account**: a mistake writes to a person, and WhatsApp bans
 accounts for messages to strangers and for bulk sends ([CLAUDE.md](../../../../CLAUDE.md), rule 1).
 
+The [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md) win over this
+skill: no workflow starts a live test (`WC-CI-13`), and no message, name or phone number reaches a log or a document
+(`WC-SECR-1`). Cite the rule ids a live run checks in the report.
+
 The scenarios are public, by role: [docs/dev/live-scenarios.md](../../live-scenarios.md). The owner's profile name,
 the own chat's id and the results are private: `docs_ai/live-cast.md` of the main checkout. Without it, say so and do
 not guess a profile or a chat.

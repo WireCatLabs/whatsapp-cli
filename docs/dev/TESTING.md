@@ -1,5 +1,9 @@
 # Testing
 
+The rules are the handbook's
+[Testing page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/testing.md) (`WC-TEST-<n>`),
+which wins over this page; this page is how `wa` runs them.
+
 ```sh
 pnpm lint && pnpm typecheck && pnpm test:coverage   # what CI runs, with the coverage floor
 pnpm engine:test                                    # gofmt, go vet and go test over engine/

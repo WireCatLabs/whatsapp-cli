@@ -40,6 +40,10 @@ settings and runs `bin/check-agents`; the owner runs it once, from a terminal.
 
 ## Rules for a session
 
+- **The handbook first.** The
+  [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md) win over
+  this page and over [`CLAUDE.md`](../../CLAUDE.md). Read the area's page before changing that area, and cite the
+  rule ids the change touches (`WC-<AREA>-<n>`) in the commit message and the PR body.
 - **A branch and a PR per change**, off `origin/main`: `git switch -c feat/<item> --no-track origin/main`.
 - **What cli-core already does, do not do again here.** A gap in cli-core is fixed in cli-core, in its own PR.
 - **Do not touch another session's worktree or branch**, even to help.
