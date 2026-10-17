@@ -754,11 +754,11 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
 | `mcp` |  | ✅ |  |
-| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
-| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
-| `mcp` | `--port` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
-| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
-| `mcp` | `--revoke` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
+| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--port` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--revoke` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
 | `mcp config` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `mcp config` | `--permission` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `mcp setup` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
