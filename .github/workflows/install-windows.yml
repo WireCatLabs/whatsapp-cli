@@ -28,6 +28,7 @@ jobs:
       # One engine package for each system the install jobs run on; macos-latest is arm64.
       - run: |
           pnpm engine:packages linux-x64 darwin-arm64 win32-x64
+          mkdir engines
           for dir in packages/engine-*; do npm pack "./$dir" --pack-destination engines; done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
