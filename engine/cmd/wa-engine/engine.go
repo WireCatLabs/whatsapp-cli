@@ -156,6 +156,12 @@ func (e *engine) dispatch(req request) (any, error) {
 		return nil, e.react(req)
 	case "read":
 		return nil, e.markRead(req)
+	case "sendMedia":
+		return e.sendMedia(req)
+	case "download":
+		return nil, e.download(req)
+	case "forward":
+		return e.forward(req)
 	case "logout":
 		return nil, e.client.Logout(e.ctx)
 	}

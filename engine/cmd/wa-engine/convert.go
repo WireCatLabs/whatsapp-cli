@@ -117,7 +117,7 @@ func textOf(m *waE2E.Message) (string, bool) {
 		return m.GetPollCreationMessage().GetName(), true
 	case m.PollCreationMessageV3 != nil:
 		return m.GetPollCreationMessageV3().GetName(), true
-	case m.AudioMessage != nil, m.StickerMessage != nil, m.LocationMessage != nil, m.LiveLocationMessage != nil,
+	case m.AudioMessage != nil, m.PtvMessage != nil, m.StickerMessage != nil, m.LocationMessage != nil, m.LiveLocationMessage != nil,
 		m.ContactMessage != nil, m.ContactsArrayMessage != nil:
 		return "", true
 	}
@@ -205,6 +205,7 @@ func (c *converter) message(evt *events.Message, k known) (change, bool) {
 	}
 	out.Text = text
 	out.ReplyTo = replyOf(content)
+	out.Attachments = attachmentsOf(content)
 	return change{"message", out}, true
 }
 
