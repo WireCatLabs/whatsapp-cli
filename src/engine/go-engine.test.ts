@@ -56,6 +56,25 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("asks for older history by the anchor's key, time and count, and reads the phone's answer", async () => {
+    const engine = await stub("ok")
+    const anchor = {
+      chat: "120363000000000001@g.us",
+      id: "3EB0AA",
+      fromMe: true,
+      sender: null,
+      timestamp: "2026-09-01T00:00:00.000Z",
+    }
+    expect(await engine.older(anchor, 50)).toEqual({
+      messages: [
+        expect.objectContaining({ id: "3EB0OLDER50M", chat: anchor.chat, timestamp: "2026-08-31T23:59:59.000Z" }),
+      ],
+      more: true,
+    })
+    await expect(engine.older({ ...anchor, chat: "offline@stub" }, 50)).rejects.toMatchObject({ code: "timeout" })
+    await engine.close()
+  })
+
   it("reads the group and people answers the Go engine writes", async () => {
     const engine = await stub("ok")
     expect(await engine.group("120363000000000001@g.us", { withLink: true })).toMatchObject({

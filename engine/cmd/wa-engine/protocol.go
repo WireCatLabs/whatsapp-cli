@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 4
+const protocol = 5
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -31,6 +31,10 @@ type request struct {
 	FromMe  bool    `json:"fromMe,omitempty"`
 	Sender  string  `json:"sender,omitempty"`
 	Emoji   *string `json:"emoji,omitempty"`
+
+	// older: when the anchor message was sent, and how many before it.
+	Timestamp string `json:"timestamp,omitempty"`
+	Count     int    `json:"count,omitempty"`
 
 	// Files: sendMedia, download, forward.
 	File       *waUpload     `json:"file,omitempty"`
@@ -83,6 +87,8 @@ type waHistory struct {
 	Chats    []waChat    `json:"chats"`
 	Contacts []waContact `json:"contacts"`
 	Messages []waMessage `json:"messages"`
+
+	counts map[string]int // messages per chat as the phone sent them, before any was skipped
 }
 
 type waAccount struct {

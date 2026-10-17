@@ -34,6 +34,9 @@ type engine struct {
 	groups []waChat          // fetched once, on the first directory request
 
 	addressing map[types.JID]types.AddressingMode // per group, asked once
+
+	olderOne  sync.Mutex // one request for older history at a time, so its answer is known by its chat
+	olderAsks olderWaiter
 }
 
 func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLog.Logger) *engine {
@@ -162,6 +165,8 @@ func (e *engine) dispatch(req request) (any, error) {
 		return nil, e.download(req)
 	case "forward":
 		return e.forward(req)
+	case "older":
+		return e.older(req)
 	case "logout":
 		return nil, e.client.Logout(e.ctx)
 	}
@@ -414,6 +419,11 @@ func (e *engine) handle(raw any) {
 	case *events.HistorySync:
 		history := e.conv.history(evt.Data, e.client.ParseWebMessage)
 		e.remember(history.Chats)
+		if history.Kind == "on_demand" {
+			if history = e.olderAsks.deliver(history); history.empty() {
+				return
+			}
+		}
 		e.out.event("history", history)
 	case *events.AppStateSyncComplete:
 		// The address book arrives in this patch; until then contacts have no names.

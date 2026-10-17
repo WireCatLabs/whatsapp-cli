@@ -230,7 +230,7 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 	if !ok {
 		kind = "other"
 	}
-	out := waHistory{Kind: kind, Chats: []waChat{}, Contacts: []waContact{}, Messages: []waMessage{}}
+	out := waHistory{Kind: kind, Chats: []waChat{}, Contacts: []waContact{}, Messages: []waMessage{}, counts: map[string]int{}}
 
 	k := known{}
 	for _, mapping := range data.GetPhoneNumberToLidMappings() {
@@ -276,6 +276,7 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 		muted := conv.GetMuteEndTime() > 0 && fromUnix(conv.GetMuteEndTime()).After(now)
 		chat.Muted = &muted
 		out.Chats = append(out.Chats, chat)
+		out.counts[chat.JID] += len(conv.GetMessages())
 
 		for _, item := range conv.GetMessages() {
 			evt, err := parse(raw, item.GetMessage())
