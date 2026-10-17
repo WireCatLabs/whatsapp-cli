@@ -11,7 +11,8 @@ import { run } from "../program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
-const QUICK = { firstMs: 200, quietMs: 50 }
+// The fake phone pushes its history in one batch, so the wait can end the moment it lands.
+const QUICK = { firstMs: 5_000, quietMs: 0 }
 
 const wa = async (argv: string[], engine?: (request: EngineRequest) => FakeEngine, more: Environment = {}) => {
   const streams = captureStreams()

@@ -5,14 +5,20 @@ import { stripVTControlCharacters } from "node:util"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { installSkill } from "@wirecat/cli-base/skill"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
 import { run } from "../program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
 
-const input = vi.hoisted(() => ({ answers: [] as string[], prompts: [] as string[], cancel: false, wait: false }))
+const input = vi.hoisted(() => ({
+  answers: [] as string[],
+  prompts: [] as string[],
+  cancel: false,
+  wait: false,
+  waiting: () => {},
+}))
 
 vi.mock("@wirecat/cli-core", async (original) => ({
   ...(await original<typeof import("@wirecat/cli-core")>()),
@@ -22,6 +28,7 @@ vi.mock("@wirecat/cli-core", async (original) => ({
     if (input.wait)
       return new Promise<string>((_resolve, reject) => {
         options.signal?.addEventListener("abort", () => reject(new CliError("cancelled", "cancelled")), { once: true })
+        input.waiting()
       })
     return input.answers.shift() ?? ""
   },
@@ -34,7 +41,8 @@ vi.mock("@wirecat/cli-base/skill", async (original) => ({
 }))
 
 const seed = contractSeed({ ids: whatsAppIds })
-const QUICK = { firstMs: 200, quietMs: 50 }
+// The fake phone pushes its history in one batch, so the wait can end the moment it lands.
+const QUICK = { firstMs: 5_000, quietMs: 0 }
 
 let env: NodeJS.ProcessEnv
 beforeEach(() => {
@@ -52,8 +60,10 @@ beforeEach(() => {
   input.prompts = []
   input.cancel = false
   input.wait = false
+  input.waiting = () => {}
   vi.mocked(installSkill).mockClear()
 })
+afterEach(() => vi.useRealTimers())
 
 const linkedDevice = (profile = "default") => {
   const path = privateStore(profile, env)
@@ -238,12 +248,17 @@ describe("wa setup", () => {
     const linkCheck = engine.me
     let asked = 0
     let rejectRequest: ((error: Error) => void) | undefined
+    let stalled = () => {}
+    const stalling = new Promise<void>((resolve) => {
+      stalled = resolve
+    })
     engine.me = () => {
       asked += 1
       // The first is the link step finding the device linked; the second is the account step.
       if (asked === 1) return linkCheck()
       return new Promise((_resolve, reject) => {
         rejectRequest = reject
+        stalled()
       })
     }
     let closedWhileAsking = false
@@ -251,7 +266,11 @@ describe("wa setup", () => {
       if (rejectRequest) closedWhileAsking = true
       rejectRequest?.(new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly"))
     }
-    const result = await execute(["setup", "--agent", "codex", "--timeout", "100ms", "--json"], {}, engine)
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const running = execute(["setup", "--agent", "codex", "--timeout", "100ms", "--json"], {}, engine)
+    await stalling
+    await vi.advanceTimersByTimeAsync(1_100)
+    const result = await running
     expect(result.code).not.toBe(0)
     expect(result.stdout).toBe("")
     expect(result.stderr).toMatch(/timeout|did not finish within/)
@@ -283,7 +302,14 @@ describe("wa setup", () => {
   it("cancels a pending agent choice on the whole-command deadline", async () => {
     linkedDevice()
     input.wait = true
-    const result = await execute(["setup", "--timeout", "100ms"], { tty: true, stdin: terminal() })
+    const asked = new Promise<void>((resolve) => {
+      input.waiting = resolve
+    })
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const running = execute(["setup", "--timeout", "100ms"], { tty: true, stdin: terminal() })
+    await asked
+    await vi.advanceTimersByTimeAsync(1_100)
+    const result = await running
     expect(result.code).not.toBe(0)
     expect(result.stderr).toContain("did not finish within 100ms")
     expect(installSkill).not.toHaveBeenCalled()
