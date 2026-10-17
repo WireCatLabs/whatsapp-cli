@@ -29,6 +29,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### What's new
 
+- **Poll votes are counted**: `serve` and `watch` keep each person's newest vote, from the phone's history push and
+  as votes arrive (`watch --events` prints them), so `polls show` counts the answers and says which you chose, and
+  the new `polls voters` lists who voted for what. A poll made with `polls create` is kept in the local store, so it
+  can be shown and voted on. `polls close` and `polls create --revote` are gone: a WhatsApp poll never closes and
+  every vote can change. Engine protocol 8; cli-core 0.317.0.
 - **Commands while `serve` runs**: a send, an edit, a reaction, `watch`, `wa <profile> mcp` and every other command
   that connects run inside a running `serve`, on its one connection, instead of being refused. Permissions and the
   send guard still apply; a write at `ask` needs `--yes`. Not on Windows yet.

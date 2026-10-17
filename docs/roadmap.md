@@ -5,7 +5,7 @@ feature: it may already be on the way. The order is approximate and can change. 
 [issue on GitHub](https://github.com/WireCatLabs/whatsapp-cli/issues).
 
 Linking, receiving into the local store, sending text with replies and Markdown, files (sent, received, downloaded,
-forwarded), edits, deleting for everyone, reactions, polls, marking read, running a group
+forwarded), edits, deleting for everyone, reactions, polls and their votes, marking read, running a group
 ([groups](groups.md#run-a-group)) and a person's profile, blocking and number lookup
 ([people](people.md#ask-whatsapp-about-a-person)), older history asked of your phone
 ([the local store](archive.md#older-history-from-your-phone)), and writes while `serve` runs
@@ -15,6 +15,5 @@ forwarded), edits, deleting for everyone, reactions, polls, marking read, runnin
 
 1. **The first release on npm**, with the engine for Linux, macOS and Windows.
 2. **Group members from WhatsApp**: listing who is in a group, who joined and left, and the group photo.
-3. **Poll results**: counting the votes as they arrive, and `polls voters`.
 
 What each released version changed is in the [changelog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).

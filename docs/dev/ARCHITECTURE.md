@@ -48,13 +48,12 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   name only: the card holds a phone number.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it
   is the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
-  `reactions` and `chats mark-read` look the message up in cli-core's store first (`StoredMessages`, opened by
-  `messenger.ts`, since the adapter may not reach the store) and send the engine the full key. A message the store
-  lacks is refused as `not_found`: a guessed key is not refused by WhatsApp, it is dropped without a word. A reply
-  is the exception: it goes either way, and only carries the quoted sender and text when the store has them. A live
-  edit carries only the new text, stamped with the edit's time, and cli-core's store saves an edit as the whole
-  message; so `watch` hands it on as the stored message with the new text and `editedAt`, the way tg's edit update
-  carries the full message.
+  `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store first (cli-core's
+  `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing is found) and
+  send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not refused by
+  WhatsApp, it is dropped without a word. A reply is the exception: it goes either way, and only carries the quoted
+  sender and text when the store has them. A live edit carries only the new text, stamped with the edit's time;
+  `watch` hands it on as it came, and cli-core's store keeps the message's own time, reply and reactions.
 
 ## 4. The engine
 
@@ -107,8 +106,14 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to
   have reached this device). Every poll message carries `poll`: the question, `multiple`, and each answer with an id,
   the start of the SHA-256 of its text that a vote names. The adapter keeps it in the message's `providerMetadata`,
-  so `polls show` and `polls vote` read the poll from the store. Votes are not counted: each arrives once, encrypted,
-  as a message of its own, and cli-core has no event or stored place for one.
+  so `polls show`, `polls vote` and `polls voters` read the poll from the store.
+- **Votes** arrive once each, as a message of their own, and nothing on WhatsApp's side counts them. The engine
+  decrypts a live one (`DecryptPollVote`, with the poll's secret whatsmeow keeps for every poll this device saw) and
+  takes the ones a history push carries already decrypted (`WebMessageInfo.pollUpdates`); both go out as a `vote`
+  event: the voter (LID first, the account's own vote under `self()`), the full SHA-256 of each chosen answer, and,
+  for a history vote, its poll. History votes are events of their own, after the `history` line, since cli-core's
+  history batch has no votes. `watch` maps the hashes onto answer ids and hands on cli-core's vote event, which the
+  store keeps per voter; `polls show` counts them with cli-core's `countedPoll`, and `polls voters` lists them.
 - **Markdown** (`src/adapter/format-markdown.ts`): `formatMarkdown` is tg's parser with max's headings; `send` and
   `edit` write cli-core's spans back as WhatsApp's own marks (`toWhatsApp`), so the engine only ever sends text.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names

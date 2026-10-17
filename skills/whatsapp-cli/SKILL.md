@@ -22,11 +22,10 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
 account, one chat's card, sending text (with `--reply-to`) and one file per message, `messages edit`,
 `messages delete --for-everyone`, `messages download`, `messages forward`, `messages transcribe --local`,
-`reactions add|remove`, `polls create|show|vote`, `chats mark-read`, group admin (`chats create|join|leave|update`, `chats link show|reset`,
+`reactions add|remove`, `polls create|show|vote|voters`, `chats mark-read`, group admin (`chats create|join|leave|update`, `chats link show|reset`,
 `chats members add|remove`, `chats admins add|remove`, `chats requests list|accept|decline`), `contacts
 profile|block|unblock|lookup|sync`, `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
-Not built yet: pinning, albums; poll results (`polls show` counts no votes, `polls voters` is absent, and WhatsApp
-polls never close); listing a group's members (`chats members list` shows only what is stored, and
+Not built yet: pinning, albums; listing a group's members (`chats members list` shows only what is stored, and
 `members fetch` is refused); `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the address
 book on the phone).
 
@@ -59,11 +58,14 @@ strangers; never work round it. `admins add` takes no `--can`: a WhatsApp admin 
   (`serve (pid 4242)`): tell the owner, do not stop it. `wa personal mcp` keeps a connection it opened until two
   minutes pass without a call, and `serve` cannot start meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
-  `messages edit`, `messages delete --for-everyone`, `reactions add|remove`, `polls show|vote` and `chats mark-read`
-  look the message up in the store. A poll made with `polls create` is not stored yet, so it cannot be shown or voted
-  on from `wa`. One the store lacks is exit `6`. `messages download`, `messages forward` and
+  `messages edit`, `messages delete --for-everyone`, `reactions add|remove`, `polls show|vote|voters` and `chats mark-read`
+  look the message up in the store. One the store lacks is exit `6`. `messages download`, `messages forward` and
   `messages transcribe --local` work the same way, from the file keys the store holds. A `--reply-to` a message the
   store lacks still sends, but the phone may show the quote as unavailable.
+- **Poll counts are what the store heard.** WhatsApp has no request for votes: `serve` and `watch` keep each
+  person's newest vote as it arrives, and `polls show` and `polls voters` count those. A vote cast while nothing
+  listened is missing. A WhatsApp poll never closes and every vote can change, so there is no `polls close` and no
+  `--revote`.
 - **One file per message.** `messages send --file|--photo|--voice` sends one; the text is its caption, a voice note
   goes alone.
 - **Ids are WhatsApp addresses.** A person is usually `…@lid` (WhatsApp's hidden id, for example
