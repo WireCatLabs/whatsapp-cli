@@ -3,8 +3,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed, mcpOverStdio } from "@wirecat/cli-core/testing"
-import { describe, expect, it } from "vitest"
-import type { WhatsAppEngine } from "./engine/contract.js"
+import { afterAll, describe, expect, it, vi } from "vitest"
+import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
@@ -133,6 +133,19 @@ describe("wa messages send", () => {
     expect(result.sent[0]?.id).toBe("3EB0000000000000000001")
   })
 
+  it("reports a send WhatsApp did not confirm as outcome_unknown, never as sent, and keeps its text out", async () => {
+    const marker = "synthetic text 7f3a9c"
+    const engine = fakeEngine(seed)
+    engine.send = async () => {
+      throw new EngineError("outcome_unknown", "WhatsApp did not confirm the message; it may have been sent")
+    }
+    const result = await wa(["unconfirmed", "messages", "send", seed.dialog, marker, "--json"], () => engine)
+    expect(result.code).not.toBe(0)
+    expect(result.stdout).toBe("")
+    expect(JSON.parse(result.stderr).error.code).toBe("outcome_unknown")
+    expect(result.stderr).not.toContain(marker)
+  })
+
   it("checks a send with --dry-run without starting the engine", async () => {
     const result = await wa(["dry", "--dry-run", "messages", "send", seed.dialog, "hi", "--json"], () => {
       throw new Error("--dry-run must never start the engine")
@@ -179,9 +192,10 @@ describe("reads from the store", () => {
     const controller = new AbortController()
     await wa([profile, "watch", "--jsonl", "--events"], pushedThenStopped(controller), controller.signal)
   }
-  const never = () => {
+  const never = vi.fn((): WhatsAppEngine => {
     throw new Error("a read must never start the engine")
-  }
+  })
+  afterAll(() => expect(never).not.toHaveBeenCalled())
 
   it("pages chats with --limit and --page, and lists them all with --all", async () => {
     await filled("paging")

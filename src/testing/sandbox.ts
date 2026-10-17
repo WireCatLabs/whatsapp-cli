@@ -10,6 +10,7 @@ import { ARGV_LOG } from "./argv-log.js"
  * the owner's linked WhatsApp device. `pnpm test` must not be able to write anything a person owns.
  */
 // macOS's own temporary directory is long enough to push a socket path past its 104 bytes.
+const saved = { ...process.env }
 const sandbox = mkdtempSync(join(process.platform === "darwin" ? "/tmp" : tmpdir(), "wa-test-"))
 
 process.env.WA_CONFIG_DIR = join(sandbox, "config")
@@ -38,4 +39,8 @@ process.env.WA_NO_UPDATE_CHECK = "1"
 delete process.env.AI_AGENT
 delete process.env.CLAUDECODE
 
-afterAll(() => rmSync(sandbox, { recursive: true, force: true }))
+afterAll(() => {
+  rmSync(sandbox, { recursive: true, force: true })
+  for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key]
+  Object.assign(process.env, saved)
+})
