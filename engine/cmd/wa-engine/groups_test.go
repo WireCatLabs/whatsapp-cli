@@ -89,8 +89,18 @@ func TestInviteCodeIsFoundInATypedLink(t *testing.T) {
 			t.Fatalf("%q: got %v", link, found)
 		}
 	}
-	if inviteCode.MatchString("https://example.com/AbC123") {
-		t.Fatal("matched a link that is not WhatsApp's")
+	for _, link := range []string{
+		"https://example.com/AbC123",
+		"https://example.com/chat.whatsapp.com/AbC123",
+		"https://evilchat.whatsapp.com/AbC123",
+		"https://chat.whatsapp.com.evil/AbC123",
+		"https://evil@chat.whatsapp.com/AbC123",
+		"https://chat.whatsapp.com/AbC123/extra",
+		"https://chat.whatsapp.com/AbC123 embedded text",
+	} {
+		if inviteCode.MatchString(link) {
+			t.Fatalf("accepted unrelated or malformed URL %q", link)
+		}
 	}
 }
 
