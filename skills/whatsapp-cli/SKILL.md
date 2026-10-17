@@ -1,7 +1,8 @@
 ---
 name: whatsapp-cli
 description: >-
-  Set up WhatsApp and read or send messages in the owner's personal account through wa. Use when asked to link or connect WhatsApp, find a WhatsApp chat or person, read a conversation, search messages, or send a message.
+  Set up WhatsApp and read or send messages in the owner's personal account through wa. Use when asked to link or
+  connect WhatsApp, find a WhatsApp chat or person, read a conversation, search messages, or send a message.
 ---
 
 # wa — the owner's personal WhatsApp from the command line
@@ -22,9 +23,10 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
 account, one chat's card, sending text (with `--reply-to`) and one file per message, `messages edit`,
 `messages delete --for-everyone`, `messages download`, `messages forward`, `messages transcribe --local`,
-`reactions add|remove`, `polls create|show|vote|voters`, `chats mark-read`, group admin (`chats create|join|leave|update`, `chats link show|reset`,
-`chats members add|remove`, `chats admins add|remove`, `chats requests list|accept|decline`), `contacts
-profile|block|unblock|lookup|sync`, `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
+`reactions add|remove`, `polls create|show|vote|voters`, `chats mark-read`, group admin
+(`chats create|join|leave|update`, `chats link show|reset`, `chats members add|remove`, `chats admins add|remove`,
+`chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `doctor --online`, `serve` and
+`watch`. Everything that reads the local store works.
 Not built yet: pinning, albums; listing a group's members (`chats members list` shows only what is stored, and
 `members fetch` is refused); `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the address
 book on the phone).
@@ -32,7 +34,8 @@ book on the phone).
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
 strangers; never work round it. `admins add` takes no `--can`: a WhatsApp admin has every right.
-`chats update --disappear-time` takes 24h, 7d, 90d or off, nothing else. A command that connects knows a group by its `…@g.us` id, not by its name.
+`chats update --disappear-time` takes 24h, 7d, 90d or off, nothing else. A command that connects knows a group by
+its `…@g.us` id, not by its name.
 `contacts lookup` takes one number on stdin, at most one every 10 seconds per profile; never loop it.
 `contacts list`, `contacts show`, `contacts context` and `stats chats show` are marked as reading from WhatsApp: add
 `--offline` to keep them on the store.
@@ -58,10 +61,10 @@ strangers; never work round it. `admins add` takes no `--can`: a WhatsApp admin 
   (`serve (pid 4242)`): tell the owner, do not stop it. `wa personal mcp` keeps a connection it opened until two
   minutes pass without a call, and `serve` cannot start meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
-  `messages edit`, `messages delete --for-everyone`, `reactions add|remove`, `polls show|vote|voters` and `chats mark-read`
-  look the message up in the store. One the store lacks is exit `6`. `messages download`, `messages forward` and
-  `messages transcribe --local` work the same way, from the file keys the store holds. A `--reply-to` a message the
-  store lacks still sends, but the phone may show the quote as unavailable.
+  `messages edit`, `messages delete --for-everyone`, `reactions add|remove`, `polls show|vote|voters` and
+  `chats mark-read` look the message up in the store. One the store lacks is exit `6`. `messages download`,
+  `messages forward` and `messages transcribe --local` work the same way, from the file keys the store holds. A
+  `--reply-to` a message the store lacks still sends, but the phone may show the quote as unavailable.
 - **Poll counts are what the store heard.** WhatsApp has no request for votes: `serve` and `watch` keep each
   person's newest vote as it arrives, and `polls show` and `polls voters` count those. A vote cast while nothing
   listened is missing. A WhatsApp poll never closes and every vote can change, so there is no `polls close` and no
@@ -97,8 +100,8 @@ linking. If your process predates installation, refresh your shell PATH yourself
 
 - **Send nothing the owner did not ask for.** `wa personal messages send` (also with `--reply-to`),
   `messages edit`, `messages delete`, `wa personal reactions add` and `wa personal polls create|vote` only when the
-  owner asked for this exact text, emoji, poll or answer in this exact chat. A draft, "we should probably answer", a conclusion drawn from what you read — none of
-  these is a request.
+  owner asked for this exact text, emoji, poll or answer in this exact chat. A draft, "we should probably answer", a
+  conclusion drawn from what you read — none of these is a request.
 - **Never send to a number the owner has not written to before, and never in bulk.** WhatsApp bans accounts for
   both. No loops over chats, no "send this to everyone in the group".
 - **Delete only the exact messages the owner named, and never add `--for-everyone`, `--allow-dangerous` or `--yes`
@@ -123,7 +126,8 @@ first, then `wa setup --help` for the linking choices and `wa commands --json` f
 `wa skill install --for all` installs these instructions separately without linking.
 
 When the owner asks to connect WhatsApp, tell them: "Allow about five minutes. Your phone sends your recent chats
-once, right after linking; older messages can be asked of it one chat at a time." Ask which profile name they want; never pick one.
+once, right after linking; older messages can be asked of it one chat at a time." Ask which profile name they want;
+never pick one.
 
 - **The owner has a terminal:** `wa personal setup --agent claude` (or `codex`, `cursor`, `gemini`, `all`, `none`)
   in their own terminal. It checks the computer, links, reads the account and shows five chats.
@@ -226,7 +230,7 @@ wa personal inbox 'date>2h' --json                 # everything that came in dur
 wa personal review 'date>1d' --json                # every message, the owner's too, in chats that changed
 wa personal review --unanswered --json             # questions nobody answered in 24 h
 wa personal tasks list state:open --json           # what waits on the owner; review and serve open and close tasks
-wa personal tasks scan <chat> --json               # a chat's history as tasks: lists only; add --yes after the owner agrees
+wa personal tasks scan <chat> --json               # a chat's history as tasks: lists only; --yes once the owner agrees
 # rules: one-to-one chats fully; groups only replies to the owner and mentions (tag watch-tasks for all); channels never
 wa personal tasks add <ref> --type promise --category <name> --assignee sender --json  # someone owes the owner
 wa personal tasks list "assignee:any state:open" --json   # what others owe the owner

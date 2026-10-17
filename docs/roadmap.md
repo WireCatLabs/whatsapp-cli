@@ -16,4 +16,5 @@ forwarded), edits, deleting for everyone, reactions, polls and their votes, mark
 1. **The first release on npm**, with the engine for Linux, macOS and Windows.
 2. **Group members from WhatsApp**: listing who is in a group, who joined and left, and the group photo.
 
-What each released version changed is in the [changelog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).
+What each released version changed is in the
+[changelog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).
