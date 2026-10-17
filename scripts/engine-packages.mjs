@@ -2,6 +2,7 @@
 // CLI finds its own with require.resolve and npm installs only the package whose os and cpu match.
 //
 //   node scripts/engine-packages.mjs build [<os>-<arch> ...]   # all six when none is named → packages/engine-*/
+//   node scripts/engine-packages.mjs readme <os>-<arch>        # print the README that package gets
 //   node scripts/engine-packages.mjs check                     # optionalDependencies pin package.json's version
 //   node scripts/engine-packages.mjs sync                      # rewrite those pins to it
 //   node scripts/engine-packages.mjs notices [--check]         # regenerate engine/THIRD_PARTY_NOTICES, or fail
@@ -132,9 +133,16 @@ const notices = () => {
 const ENGINE_LICENSE = "GPL-3.0-only"
 const REPOSITORY = "https://github.com/WireCatLabs/whatsapp-cli"
 
-const readme = (target) => {
-  const source = `${REPOSITORY}/tree/v${manifest.version}`
-  return [
+// GPL-3.0 section 6 wants the source reachable when the binary is conveyed. The release tag is pushed only after
+// npm has the version, so the README names the commit being built, which GitHub serves before anything is published.
+const sourceCommit = () => {
+  const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim()
+  if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error(`git rev-parse HEAD gave ${sha}, not a commit`)
+  return sha
+}
+
+const readme = (target, commit = sourceCommit()) =>
+  [
     `# ${packageName(target)}`,
     "",
     `The WhatsApp engine of [${manifest.name}](https://www.npmjs.com/package/${manifest.name}) for ${target}: the`,
@@ -149,14 +157,19 @@ const readme = (target) => {
     "",
     "## Source",
     "",
-    `The corresponding source of this binary is the tag v${manifest.version} of the public repository,`,
-    `<${source}>. The engine is in \`engine/\`; \`scripts/engine-packages.mjs\` builds it with`,
-    "`go build -trimpath` and `CGO_ENABLED=0` for each target.",
+    `The corresponding source of this binary is commit ${commit} of the public repository:`,
+    "",
+    `<${REPOSITORY}/tree/${commit}>`,
+    "",
+    `Once the release is out, the tag v${manifest.version} points at the same commit:`,
+    `<${REPOSITORY}/tree/v${manifest.version}>.`,
+    "",
+    "The engine is in `engine/`; `scripts/engine-packages.mjs` builds it with `go build -trimpath` and",
+    "`CGO_ENABLED=0` for each target.",
     "",
   ].join("\n")
-}
 
-const build = (target) => {
+const build = (target, commit) => {
   const [goos, goarch] = TARGETS[target] ?? []
   if (!goos) throw new Error(`unknown target ${target} — one of ${Object.keys(TARGETS).join(", ")}`)
   const [os, cpu] = target.split("-")
@@ -177,7 +190,7 @@ const build = (target) => {
   chmodSync(binary, 0o755)
   copyFileSync(join(engineDir, "LICENSE"), join(dir, "LICENSE"))
   copyFileSync(noticesPath, join(dir, "THIRD_PARTY_NOTICES"))
-  writeFileSync(join(dir, "README.md"), readme(target))
+  writeFileSync(join(dir, "README.md"), readme(target, commit))
   const engine = {
     name: packageName(target),
     version: manifest.version,
@@ -203,7 +216,10 @@ const pinned = () =>
 const [command, ...args] = process.argv.slice(2)
 if (command === "build") {
   assertNoticesCurrent()
-  for (const target of args.length ? args : Object.keys(TARGETS)) build(target)
+  const commit = sourceCommit()
+  for (const target of args.length ? args : Object.keys(TARGETS)) build(target, commit)
+} else if (command === "readme" && TARGETS[args[0]]) {
+  process.stdout.write(readme(args[0]))
 } else if (command === "check") {
   const stale = pinned().filter(([, version]) => version !== manifest.version)
   for (const [name, version] of stale) console.error(`${name} is ${version ?? "missing"}, not ${manifest.version}`)
@@ -227,6 +243,9 @@ if (command === "build") {
   writeFileSync(manifestPath, text)
   console.log(`engine packages pinned to ${manifest.version}`)
 } else {
-  console.error("usage: node scripts/engine-packages.mjs build [<os>-<arch> ...] | check | sync | notices [--check]")
+  console.error(
+    "usage: node scripts/engine-packages.mjs build [<os>-<arch> ...] | readme <os>-<arch> | check | sync" +
+      " | notices [--check]",
+  )
   process.exit(2)
 }

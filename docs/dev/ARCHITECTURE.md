@@ -78,8 +78,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   while the two stay separate programs: the CLI starts the binary as a child process and exchanges JSON lines with it
   on stdin and stdout, never links or loads it in-process, and its npm package never carries the binary or Go code.
   [`scripts/release/checks.test.ts`](../../scripts/release/checks.test.ts) checks both, and the release check refuses
-  a CLI package with engine files in it. Each engine package's README points at the release tag for its source
-  (`scripts/engine-packages.mjs`).
+  a CLI package with engine files in it. Each engine package's README points at the commit it was built from
+  (`git rev-parse HEAD` in [`scripts/engine-packages.mjs`](../../scripts/engine-packages.mjs), checked by
+  [`scripts/engine-packages.test.ts`](../../scripts/engine-packages.test.ts)), not at the tag: `release.yml` pushes
+  `v<version>` only after npm has the version, so a tag link would not resolve while the package is first offered.
 - **The contract** is [`src/engine/contract.ts`](../../src/engine/contract.ts): every event and answer as a Valibot
   schema, in WhatsApp's own terms (JIDs, `fromMe`, sync kinds). `PROTOCOL` is checked at the engine's hello.
 - **Two engines implement it**: the Go engine (`engine/cmd/wa-engine`, driven by
