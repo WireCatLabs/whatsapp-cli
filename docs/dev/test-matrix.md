@@ -212,6 +212,17 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages sync` | `--dry-run` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
 | `reactions add` |  | ✅ |  |
 | `reactions remove` |  | ✅ |  |
+| `polls show` |  | ✅ |  |
+| `polls vote` |  | ✅ |  |
+| `polls vote` | `--retract` | ✅ |  |
+| `polls close` |  | ✅ |  |
+| `polls create` |  | ✅ |  |
+| `polls create` | `--multiple` | ✅ |  |
+| `polls create` | `--anonymous` | ✅ |  |
+| `polls create` | `--revote` | ✅ |  |
+| `polls create` | `--silent` | ✅ |  |
+| `polls create` | `--send-as` | ✅ |  |
+| `polls create` | `--operation-id` | ✅ |  |
 | `models audio list` |  | ✅ |  |
 | `models audio download` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `models text list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |

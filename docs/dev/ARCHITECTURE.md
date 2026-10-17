@@ -93,6 +93,15 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per profile, timed by
   `private.db.lookup`) and `contacts` (the address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
   maps the two switches cli-core has (`onlyAdminsAdd`, `joinApproval`) and puts the rest in `providerMetadata`.
+- **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
+  `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
+  the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to
+  have reached this device). Every poll message carries `poll`: the question, `multiple`, and each answer with an id,
+  the start of the SHA-256 of its text that a vote names. The adapter keeps it in the message's `providerMetadata`,
+  so `polls show` and `polls vote` read the poll from the store. Votes are not counted: each arrives once, encrypted,
+  as a message of its own, and cli-core has no event or stored place for one.
+- **Markdown** (`src/adapter/format-markdown.ts`): `formatMarkdown` is tg's parser with max's headings; `send` and
+  `edit` write cli-core's spans back as WhatsApp's own marks (`toWhatsApp`), so the engine only ever sends text.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
   JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a
   file kept like `private.db`. Errors reach the CLI as one of the contract's codes with fixed wording.
