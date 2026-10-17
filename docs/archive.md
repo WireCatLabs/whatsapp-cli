@@ -64,7 +64,8 @@ walk.
 
 It keeps the text of every message it has seen. For a photo, voice note or file it keeps its name, size and type, and
 the keys WhatsApp needs to fetch it again (`messages download`), not the file itself; the keys never appear in an
-answer. Messages saved before `wa` handled files have none. The store is readable by your user only, and it is not encrypted
+answer. Messages saved before `wa` handled files have none, and neither has a view-once photo or video
+([file attachments](attachments.md)). The store is readable by your user only, and it is not encrypted
 ([security](security.md)).
 
 **It is one file for every account and every messenger CLI** built on the same library, such as

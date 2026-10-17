@@ -21,6 +21,7 @@ Three terms appear on every page:
 | Read your chats and other people's unread messages; nothing is marked read unless you ask | [Using wa](usage.md) |
 | Find what was said, by words, people, dates or labels | [Search](search.md) |
 | Keep a copy of your messages on this computer, and search or export it | [The local store](archive.md) |
+| Send, save and forward photos and files, and hear voice notes as text | [File attachments](attachments.md) |
 | Answer, edit, react and delete for everyone, yourself or through an agent, within your limits | [Using wa](usage.md), [Permissions](permissions.md) |
 | See which questions nobody answered in your groups | [Groups](groups.md) |
 | Use WhatsApp from an app with no terminal, or from a chat in the browser | [The MCP server](mcp.md), [From the browser](remote.md) |
@@ -28,7 +29,8 @@ Three terms appear on every page:
 Every command does one thing, gives the same shape of answer every time, and has a fixed exit code for each kind of
 failure. This is why scripts and agents can rely on it.
 
-`wa` is early: it is not on npm yet, and files, group administration and contacts come next ([roadmap](roadmap.md)).
+`wa` is early: it is not on npm yet, and listing a group's members from WhatsApp comes next
+([roadmap](roadmap.md)).
 
 ## Get started
 
@@ -54,6 +56,7 @@ a time may connect: [linking, devices and profiles](sessions.md).
 | [Using wa](usage.md) | How do I read, send and change a message? |
 | [Linking, devices and profiles](sessions.md) | How does linking work, where are the keys, how do profiles work? |
 | [The local store](archive.md) | What does the local store keep, and how do I keep it current, export and back it up? |
+| [File attachments](attachments.md) | How do I send, save, forward and read files, and hear a voice note as text? |
 | [Search](search.md) | How do I find a message by its words, sender, chat, date or label? |
 | [The MCP server](mcp.md) | How do I connect Claude Desktop, Cursor or another client without a terminal? |
 | [Recipes](recipes.md) | What can an agent do for me every day, and how do I run it on a schedule? |

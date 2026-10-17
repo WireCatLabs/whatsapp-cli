@@ -204,8 +204,18 @@ A link counts when it is in the text. To find a phone, an e-mail address, a link
 mentioned in the text, use `phone:`, `email:`, `url:`, `domain:` and `mentions:`; see
 [Mentions](query-language.md#mentions).
 
-The file fields (`has:file`, `filename:`, `mime:`, `size>`, `content:`) are part of the shared language, but `wa`
-keeps no photos, voice notes or files yet, so they find nothing.
+## Files
+
+```sh
+wa personal search messages 'has:file chat:"Book club"'
+wa personal search messages 'filename:agenda.pdf'
+wa personal search messages 'mime:"application/pdf"'
+wa personal search messages 'content:"reading list"'
+```
+
+The store keeps each file's name, size and type, so `has:file`, `filename:` and `mime:` work on every message stored
+since `wa` handled files. `content:` finds the text inside a file once that text is read
+([reading the text of files](attachments.md#read-the-text-of-files)).
 
 ## Passwords, codes and cards
 

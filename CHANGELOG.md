@@ -45,6 +45,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   reactions in the local store; before, it took the edit's time as the message's.
 - **Tests on Windows check file access rules** instead of Unix mode bits. Group administration tests verify
   stranger refusals and unsupported changes before writes.
+- **The search page said the file fields find nothing**; `has:file`, `filename:`, `mime:` and `content:` work on
+  every message stored since `wa` handled files. The README and the docs start page no longer list files and group
+  administration as coming next.
 - **Release and monthly source checks include the Go engine**, using its module toolchain. Local tests resolve the
   shared TypeScript config directly so they run in isolated worktrees.
 
@@ -111,3 +114,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   groups, people, MCP and the browser, permissions, limits, the CLI contract, diagnostics and recipes, each limited
   to what WhatsApp can do today. The agent skill (`wa skill show`) is rebuilt on tg's: setup without a terminal,
   the traps, the exit codes, and what one connection per device means for an agent.
+- **A page on file attachments** ([docs/attachments.md](docs/attachments.md)): sending one file per message, what the
+  local store keeps, downloading, forwarding, voice notes as text with a model on this machine, and reading the text
+  of files for `content:` search. The README gains tg's sections on linking and profiles, files, groups you run,
+  limits and the list of pages.
