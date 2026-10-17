@@ -57,6 +57,13 @@ export const UNTESTED: Untested[] = [
     reason:
       "a dry run ends before the preAction hook that logs argv; src/program.test.ts checks a dry-run send starts no engine",
   },
+  ...["--limit", "--cursor", "--transcribe", "--model"].map((option) => ({
+    command: "messages list",
+    option,
+    reason:
+      "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); " +
+      "src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine",
+  })),
   ...[
     "--verbose",
     "--quiet",

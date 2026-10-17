@@ -23,6 +23,9 @@ marks a write to WhatsApp. `commands --json` connects to no account.
   install` makes it a background service.
 - **One connection per device.** While `serve` runs, nothing else may connect for the same profile; WhatsApp would
   drop the first connection.
+- **A change to a message needs it in the store.** `messages edit`, `messages delete --for-everyone`, `reactions
+  add|remove` and `chats mark-read` look the message up there for its sender; one the store lacks is `not_found`.
+  Edits work on the owner's own messages within 20 minutes. Deletion is for everyone only; forwarding is not built.
 - **Chats are named by WhatsApp ids.** A person is usually `…@lid` (WhatsApp's hidden id), a group `…@g.us`. Pass a
   chat by its name or its id.
 
@@ -45,5 +48,5 @@ MCP uses `wa_tools_search`, then `wa_read` or `wa_write` with `{command, argumen
 ## Boundaries
 
 - Never send to a number the owner has not written to before, and never in bulk: WhatsApp bans accounts for both.
-- Reads never mark anything read.
+- Reads never mark anything read unless the owner asked: `chats mark-read`, or `--mark-read`. The sender sees it.
 - Message text appears only in the output of a command that asked for it — never in logs or errors.

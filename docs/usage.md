@@ -28,4 +28,18 @@ unlinks the device and deletes its keys here.
 Only one `wa` command may connect a profile at a time; WhatsApp would drop the first connection. While `serve` runs,
 a send for the same profile is refused and names `serve`.
 
+## Change a message
+
+```sh
+wa personal messages edit "Book club" 3EB0… "the new text"
+wa personal messages delete "Book club" 3EB0… --for-everyone
+wa personal reactions add "Book club" 3EB0… 👍
+wa personal chats mark-read "Book club"
+```
+
+WhatsApp names a message by who sent it as well as by its id, so these work on messages the local store holds; keep
+`serve` running. An edit works on your own message within 20 minutes of sending. A deletion here is for everyone;
+delete a message for yourself alone on the phone. Nothing is marked read unless you ask: `chats mark-read`, or
+`--mark-read` on `messages list`, `inbox` and `review`.
+
 Every command and option is on the [commands page](commands.md).

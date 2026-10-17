@@ -7,8 +7,9 @@ import {
   environmentOf,
   type Messenger,
 } from "@wirecat/cli-core/cli"
+import { type MessageStore, openStore } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
-import { whatsAppAdapter } from "./adapter/adapter.js"
+import { type StoredMessages, whatsAppAdapter } from "./adapter/adapter.js"
 import { resolveSettings, WA } from "./app.js"
 import { EngineError, type LoginCode, type WhatsAppEngine } from "./engine/contract.js"
 import { startGoEngine } from "./engine/go-engine.js"
@@ -73,6 +74,27 @@ export const openEngine = async (
 }
 
 /** An engine that just linked, kept open for the command's next connect: the first history push comes on it. */
+/** The account's messages in cli-core's store, opened on the first lookup: most commands never need one. */
+const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredMessages => {
+  let opened: Promise<MessageStore> | undefined
+  const store = () => (opened ??= openStore({ env, command: WA.command }))
+  const key = { provider: "whatsapp", account: account ?? "" }
+  return {
+    message: async (chatId, messageId) => (await store()).messages.message(key, messageId, { chatId }),
+    newestIncoming: async (chatId, before) => {
+      const page = await (await store()).messages.messages(key, chatId, {
+        limit: 1,
+        outgoing: false,
+        ...(before === undefined ? {} : { before }),
+      })
+      return page.items.at(-1)
+    },
+    close: async () => {
+      await (await opened?.catch(() => undefined))?.close()
+    },
+  }
+}
+
 const handedOver = new WeakMap<Command, WhatsAppEngine>()
 
 export interface Linked {
@@ -141,7 +163,7 @@ export const WHATSAPP: Messenger = {
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)
-    if (linked) return whatsAppAdapter(linked)
+    if (linked) return whatsAppAdapter(linked, storedMessages(base.env, linked.self()))
     const engine = await openEngine(command, base, { listen: options.listen === true })
     if (engine.self() === null) {
       await engine.close()
@@ -150,6 +172,6 @@ export const WHATSAPP: Messenger = {
         `profile "${base.settings.profile}" is not linked to WhatsApp — run ${loginHint(base.settings.profile)}`,
       )
     }
-    return whatsAppAdapter(engine)
+    return whatsAppAdapter(engine, storedMessages(base.env, engine.self()))
   },
 }

@@ -109,6 +109,8 @@
   "messages sync",
   "messages transcribe",
   "messages unpin",
+  "reactions add",
+  "reactions remove",
   "recipients add",
   "recipients clear",
   "recipients list",
