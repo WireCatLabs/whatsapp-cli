@@ -7,6 +7,6 @@
 
 **Why:** A redundant annotation is noise, and a hand-written `x is T` is not checked against its body — it can claim the wrong type and compile.
 
-**Open:** `src/` has 4 explicit predicates — keep them as named guards, or let them infer?
+**Handbook:** WC-STYLE-7 and WC-STYLE-8; the handbook wins. wa's `src/` has no explicit predicates (2026-10-17).
 
 See: `grep -rnE "\): [a-z]+ is " src --include='*.ts'`

@@ -1,14 +1,15 @@
 # Conventions
 
-`wa` follows [max-cli's conventions](https://github.com/WireCatLabs/max-cli/blob/main/docs/dev/CONVENTIONS.md)
-for code and documents. This page lists only where `wa` differs or adds.
+`wa` follows the [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md),
+which win over this page, and [max-cli's conventions](https://github.com/WireCatLabs/max-cli/blob/main/docs/dev/CONVENTIONS.md)
+where the standards are silent. This page lists only where `wa` adds.
 
 ## Code
 
 - **Comments are sparse and say why**, never what — the owner's global rule, stricter than anything a
   surrounding file shows.
 - **Biome** formats and lints (`pnpm lint`): 2 spaces, double quotes, no semicolons, 120 columns.
-- **The engine stays behind `src/adapter/`**, and its objects become domain models in `src/adapter/map.ts` alone
+- **The engine stays behind `src/adapter/`**, and its objects become domain models there alone
   ([ARCHITECTURE.md](ARCHITECTURE.md#2-the-layers)).
 - **Command names, options, output shapes and MCP tools** follow the
   [standard for tg, max and wa](https://github.com/WireCatLabs/cli-core/blob/main/docs/dev/STANDARD.md) in
