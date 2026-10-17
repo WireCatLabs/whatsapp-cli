@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
-import { contractSeed } from "@wirecat/cli-core/testing"
+import { contractSeed, mcpOverStdio } from "@wirecat/cli-core/testing"
 import { describe, expect, it } from "vitest"
 import type { WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
@@ -138,6 +138,39 @@ describe("wa messages send", () => {
       throw new Error("--dry-run must never start the engine")
     })
     expect(result.code).toBe(0)
+  })
+
+  it("refuses an agent's at_time, silent or anonymous as unknown, and sends nothing", async () => {
+    for (const key of ["messages.send", "polls.create"])
+      expect((await wa(["agent", "config", "set", `permissions.${key}`, "allow"])).code).toBe(0)
+    const engines: FakeEngine[] = []
+    const mcp = await mcpOverStdio((streams) =>
+      run(["agent", "mcp"], {
+        streams: captureStreams(),
+        tty: false,
+        ...streams,
+        engine: () => {
+          const engine = fakeEngine(seed)
+          engines.push(engine)
+          return engine
+        },
+      }),
+    )
+    const send = { chat: seed.dialog, text: "hi" }
+    const poll = { chat: seed.busy, text: "Pizza?", answers: ["yes", "no"] }
+    const refused = [
+      await mcp.call("wa_write", { command: "messages send", arguments: { ...send, at_time: "1h" } }),
+      await mcp.call("wa_write", { command: "messages send", arguments: { ...send, silent: true } }),
+      await mcp.call("wa_write", { command: "polls create", arguments: { ...poll, anonymous: true } }),
+    ]
+    const sentBefore = engines.flatMap((engine) => engine.sent)
+    const allowed = await mcp.call("wa_write", { command: "messages send", arguments: send })
+    await mcp.close()
+
+    for (const answer of refused)
+      expect(answer.body).toMatchObject({ error: { code: "validation_error", reason: "input.invalid" } })
+    expect(sentBefore).toEqual([])
+    expect(allowed.isError).toBe(false)
   })
 })
 
