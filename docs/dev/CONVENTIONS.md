@@ -59,9 +59,11 @@ from developer pages (`WC-DOC-1`), current facts only (`WC-DOC-2`, `WC-DOC-3`), 
 - **Seven packages, one version.** `package.json` pins the six engine packages in `optionalDependencies` to its own
   version. `pnpm version:check` (also in CI and `pnpm release:check`) fails when they differ; `pnpm version:sync` and
   `bin/release`'s version bump rewrite them.
-- **Engines first.** The release workflow's `build` job builds and packs the six engine packages
-  (`node scripts/engine-packages.mjs build`, Go from `engine/go.mod`); `publish` uploads them, skipping any npm already
-  has, then the CLI. A CLI published ahead of its engines would install without one: npm skips an optional dependency
+- **Engines first, as validated.** Full validation's `engine` job (`ci.yml`) cross-builds the six engine packages
+  (`node scripts/engine-packages.mjs build`, Go from `engine/go.mod`), runs the TypeScript client against the
+  linux-x64 one and, in a release, packs all six and records their SHA-256 (WC-REL-12). The release's `build` job
+  checks the tarballs against that record and builds nothing; `publish` uploads them, skipping any npm already has,
+  then the CLI. A CLI published ahead of its engines would install without one: npm skips an optional dependency
   it cannot find. `bin/release --local` does the same from this machine.
 - **Each engine package ships `THIRD_PARTY_NOTICES`** beside wa's `LICENSE`, copied from `engine/` by
   `node scripts/engine-packages.mjs build`.

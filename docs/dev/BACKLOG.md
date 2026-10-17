@@ -102,3 +102,5 @@ Open work, most important first. The plan in flight is
       `doctor --online`), not `banned`, which cli-core never holds on;
     - cli-core keeps no hold without an end, so the ban's hold ends a year on; whatsmeow's `TemporaryBan.Expire` could
       give the real end instead.
+    - cli-core holds only the writes it counts toward the send limit: a reaction or a read receipt still goes during a
+      hold (seen in a test on 2026-10-17), though WhatsApp probably counts them against a limited account too.

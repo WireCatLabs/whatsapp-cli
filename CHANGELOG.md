@@ -16,11 +16,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `device.logged-out` (`authentication_error`); `account.banned` (`permission_error`); `account.rate-limited`
   (`rate_limited`). After WhatsApp ends the connection for one of these, later requests in the same process answer
   with it instead of connecting again. Engine protocol 10.
-- **WhatsApp's rate limit and a ban hold the profile's writes** (WC-PERM-18). After WhatsApp asks the account to slow
-  down, writes are refused for 15 minutes and reads go on; after a ban, writes are refused until
-  `wa <profile> doctor --online` connects again. `doctor --online` reports a ban as `standing.state: "frozen"`
-  (it said `banned`, which held nothing). `wa <profile> flood clear` lifts either hold. Both lengths are a default
-  the owner may change.
+- **WhatsApp's rate limit and a ban hold the profile's sends** (WC-PERM-18). After WhatsApp asks the account to slow
+  down, sends, edits and the other writes counted toward the send limit are refused for 15 minutes and reads go on;
+  after a ban, until `wa <profile> doctor --online` connects again. Reactions and read receipts are not held.
+  `doctor --online` reports a ban as `standing.state: "frozen"` (it said `banned`, which held nothing).
+  `wa <profile> flood clear` lifts either hold. Both lengths are a default the owner may change.
 - **A device linked before answers without counts** (WC-OUT-13). `session start --json` leaves out `received`, and
   `setup --json` leaves out `history`, when the profile was already linked: nothing was pushed, so nothing was
   counted. They used to say 0, which read as "the phone pushed nothing".
