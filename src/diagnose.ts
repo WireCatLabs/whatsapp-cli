@@ -1,6 +1,6 @@
 import { accessSync, closeSync, constants, existsSync, openSync, readSync, statSync } from "node:fs"
 import { dirname } from "node:path"
-import { engineBinary } from "./engine/go-engine.js"
+import { engineBinary } from "./engine-binary.js"
 import { privateStore } from "./paths.js"
 import { installer, type UpdateEnvironment } from "./update.js"
 

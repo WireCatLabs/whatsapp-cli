@@ -35,7 +35,6 @@
         "!src/engine/**",
         "!src/testing/**",
         "!src/messenger.ts",
-        "!src/diagnose.ts",
         "!**/*.test.ts"
       ],
       "linter": {
@@ -54,7 +53,7 @@
                       "./adapter/*",
                       "../adapter/*"
                     ],
-                    "message": "above the adapter, code speaks the domain model through cli-core's port; only the composition root (src/messenger.ts, src/diagnose.ts) reaches the engine and the adapter"
+                    "message": "above the adapter, code speaks the domain model through cli-core's port; only the composition root, src/messenger.ts, reaches the engine and the adapter"
                   }
                 ]
               }
