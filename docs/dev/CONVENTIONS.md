@@ -43,11 +43,11 @@ for code and documents. This page lists only where `wa` differs or adds.
   `## <version> — DD.MM.YYYY`. When `bin/release` has to take the next free version, it renames the
   prepared version's heading — or, if npm already has that version, dates `## Unreleased` as the new
   one and leaves the published section alone.
-- Subheadings, each at most once: `What's new`, `Changed — may break scripts`, `Fixed`, `Security`,
-  `Removed`. Anything that changes a command's output, an exit code, an option or a config key goes
-  under `Changed — may break scripts`.
-- Each entry says what changed as a user sees it, why when that is not obvious, and what to watch
-  for — as max-cli's changelog section describes. No internal ids, no file paths.
+- The headings and what goes under each are the handbook's
+  [WC-DOC-15](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-15--changelog-entries-go-under-five-fixed-headings-each-at-most-once-per-section),
+  [WC-DOC-16](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-16--a-change-a-caller-may-notice-goes-under-changed--may-break-callers)
+  and [WC-DOC-17](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-17--each-entry-says-what-changed-for-the-caller-why-and-what-to-watch-for).
+  `pnpm docs:check` refuses any other heading.
 
 
 ## Releases

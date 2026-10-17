@@ -5,7 +5,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
-### Changed — may break scripts
+### Changed — may break callers
 
 - **No automatic replies** (cli-core 0.324.0). `wa` no longer has `replies`, and `serve` never answers by reply
   rules, even with `permissions.replies.send` at `allow`: WhatsApp bans accounts that answer like a bot, and `wa`
@@ -67,7 +67,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **Release and monthly source checks include the Go engine**, using its module toolchain. Local tests resolve the
   shared TypeScript config directly so they run in isolated worktrees.
 
-### What's new
+### Added
 
 - **Each engine package carries `THIRD_PARTY_NOTICES`**: the licence of every Go module the engine links and of Go
   itself, with where each module's source is. whatsmeow and `go.mau.fi/util` are under the Mozilla Public License
