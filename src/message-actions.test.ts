@@ -1,3 +1,4 @@
+import { once } from "node:events"
 import { PassThrough } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
@@ -168,9 +169,10 @@ describe("wa messages delete", () => {
       const lines = buffered.split("\n")
       buffered = lines.pop() ?? ""
       for (const line of lines) if (line) answers.push(JSON.parse(line))
+      output.emit("answer")
     })
     const answered = async (id: number) => {
-      while (!answers.some((answer) => answer.id === id)) await new Promise((resolve) => setTimeout(resolve, 5))
+      while (!answers.some((answer) => answer.id === id)) await once(output, "answer")
       return answers.find((answer) => answer.id === id)
     }
     const send = (message: object) => input.write(`${JSON.stringify({ jsonrpc: "2.0", ...message })}\n`)
