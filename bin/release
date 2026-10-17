@@ -63,7 +63,8 @@ git merge -q --ff-only origin/main
 . ./config/wirecat/release-lock.sh
 wirecat_release_lock
 # Two hours between releases, so a broken one is noticed before the next lands on top of it.
-times=$(npm view "@wirecat/whatsapp-cli" time --json --prefer-online 2>/dev/null || echo '{}')
+# On a 404 npm still prints an error document to stdout; before the first publish that is not a time list.
+times=$(npm view "@wirecat/whatsapp-cli" time --json --prefer-online 2>/dev/null) || times='{}'
 opens=$(node -e 'const t = JSON.parse(process.argv[1]); delete t.created; delete t.modified
   const opens = Math.max(0, ...Object.values(t).map(Date.parse)) + 2 * 3600e3
   if (Date.now() < opens) console.log(new Date(opens).toISOString().slice(11, 16) + " UTC")' "$times")
@@ -166,7 +167,7 @@ rerun_if_changed "$@"
 
 # Two sessions preparing the same number is normal; the second takes the next free one (2026-09-29).
 latest=$(npm view "$package" version --prefer-online 2>/dev/null || true)
-versions=$(npm view "$package" versions --json --prefer-online 2>/dev/null || true)
+versions=$(npm view "$package" versions --json --prefer-online 2>/dev/null) || versions=""
 next=$(node scripts/next-version.mjs "$version" "$latest" "$versions")
 if [ "$next" != "$version" ]; then
   taken=""
