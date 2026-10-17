@@ -92,7 +92,7 @@ Open work, most important first. The plan in flight is
       injected sleep (cli-base TESTING).
     - **The engine packages carry no third-party notices.** Each ships a binary linking whatsmeow (MPL-2.0) and
       BSD/MIT Go modules, with only wa's own LICENSE beside it; tg ships `THIRD_PARTY_NOTICES`.
-    - **No `replies` user page, though wa mounts `replies`.** tg's page documents auto-replies, and under wa they
-      work: `serve` applies the rules once `permissions.replies.send` is `allow`. That sends without a typed command,
-      against local rule 1 and the skill's "not for automatic replies". Decide: refuse `replies` under wa (exit 2), or
-      document it with the ban risk (cli-core STANDARD, Documents).
+    - **Refuse automatic replies.** wa mounts `replies`, and `serve` applies the rules once
+      `permissions.replies.send` is `allow`. That sends without a typed command, against local rule 1 and the skill's
+      "not for automatic replies", so wa will refuse `replies` and gets no replies page. Waits on a cli-core switch
+      that lets a messenger turn the feature off.

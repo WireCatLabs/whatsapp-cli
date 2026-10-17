@@ -125,7 +125,8 @@ To read scans in bulk with a model API instead, set `models.ocr.provider` and `m
 ## Files for a remote agent
 
 An agent on this computer opens the saved path. An agent on another computer gets a file's bytes with
-`attachments show`, a bounded piece at a time, as base64 in JSON; `--page` turns one PDF page into a picture. See
+`attachments show`, a bounded piece at a time, as base64 in JSON; `--page` turns one PDF page into a picture, with
+the optional `@napi-rs/canvas` package installed where `wa` can load it. See
 [from the browser](remote.md) for connecting such an agent.
 
 ## Next step
