@@ -1,4 +1,4 @@
-param([Parameter(Mandatory = $true)][string] $Tarball)
+param([Parameter(Mandatory = $true)][string] $Tarball, [Parameter(Mandatory = $true)][string] $EngineTarball)
 $ErrorActionPreference = 'Stop'
 $testRoot = Join-Path $env:RUNNER_TEMP 'wa ready install'
 $prefix = Join-Path $testRoot 'npm prefix'
@@ -10,6 +10,7 @@ $env:WA_CACHE_DIR = Join-Path $testRoot 'cache'
 $env:MESSAGING_STORE = Join-Path $testRoot 'messages.db'
 $env:WA_INSTALL_AGENT = 'all'
 $env:WA_NO_UPDATE_CHECK = '1'
+Remove-Item Env:WA_ENGINE -ErrorAction SilentlyContinue
 $node = (Get-Command node | Select-Object -First 1).Source
 $powershell = (Get-Command powershell.exe | Select-Object -First 1).Source
 $nodeDirectory = Split-Path $node -Parent
@@ -19,9 +20,15 @@ $key.SetValue('Path', $sentinel, [Microsoft.Win32.RegistryValueKind]::ExpandStri
 $key.Dispose()
 if (Get-Command wa -ErrorAction SilentlyContinue) { throw 'Expected wa to be absent before install.' }
 
-# The actual packed npm lifecycle hook must persist PATH and install skills without login.
-& npm.cmd install --global --prefix $prefix --allow-scripts=@wirecat/whatsapp-cli --foreground-scripts $Tarball
+# The actual packed npm lifecycle hook must persist PATH and install skills without login. The engine package goes
+# in the same install, because the engine of an unreleased version is not on npm yet.
+& npm.cmd install --global --prefix $prefix --allow-scripts=@wirecat/whatsapp-cli --foreground-scripts $Tarball $EngineTarball
 if ($LASTEXITCODE -ne 0) { throw 'Packed global npm install failed.' }
+$goEngine = [Uri]::new((Join-Path $prefix 'node_modules/@wirecat/whatsapp-cli/dist/engine/go-engine.js')).AbsoluteUri
+$engine = & $node --input-type=module -e "import('$goEngine').then((m) => console.log(m.engineBinary()))"
+if ($LASTEXITCODE -ne 0 -or $engine -notmatch 'whatsapp-engine-win32-') { throw 'The engine package did not resolve.' }
+$version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+if ((& $engine --version) -ne $version) { throw 'The installed engine did not run, or is another version.' }
 $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment')
 $userPath = [string] $key.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
 $kind = $key.GetValueKind('Path')
@@ -72,4 +79,4 @@ if ($LASTEXITCODE -ne 0) { throw 'PowerShell 5.1 installation failed.' }
 $native = ($native -join "`n") | ConvertFrom-Json
 if ($native.tool -ne 'wa' -or $native.written.Count -ne 1) { throw 'PowerShell 5.1 installer result is incomplete.' }
 if ((Get-Item $claudeSkill).LastWriteTimeUtc -ne $claudeTime) { throw 'Codex-only installation rewrote the Claude skill.' }
-Write-Output 'PASS: persistent/current PATH, restricted shell, skills, repeat, disabled scripts, full PowerShell 5.1 installation'
+Write-Output 'PASS: persistent/current PATH, engine resolved and run, restricted shell, skills, repeat, disabled scripts, full PowerShell 5.1 installation'

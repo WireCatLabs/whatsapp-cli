@@ -57,6 +57,17 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 - **Names without the phone.** WhatsApp has no "list chats" request, but cli-core resolves a chat name through the
   adapter. The engine answers from what it can see without asking the phone: chats pushed in this process, the address
   book in `private.db`, and the joined groups (one request per process, then kept).
+- **One npm package per platform.** The engine ships as `@wirecat/whatsapp-engine-<platform>-<arch>`, named by
+  Node's `process.platform` and `process.arch` (`linux-x64`, `darwin-arm64`, `win32-x64`, and the arm64/x64 rest), each
+  holding one static binary built without cgo by
+  [`scripts/engine-packages.mjs`](../../scripts/engine-packages.mjs). `@wirecat/whatsapp-cli` lists all six as
+  `optionalDependencies` pinned to its own version, and npm installs only the one whose `os` and `cpu` match.
+  `engineBinary()` runs `WA_ENGINE` if set, else that package's `bin/wa-engine` found with `require.resolve`, else the
+  checkout's `engine/bin/wa-engine`. No install script is involved: pnpm and npm block dependencies' scripts by
+  default, so a download in `postinstall` would leave many installs without an engine. The pattern is esbuild's and
+  biome's, and `@napi-rs/keyring` (through cli-base) already installs that way. A checkout never installs the engine
+  packages (`ignoredOptionalDependencies` in `pnpm-workspace.yaml`): a version's packages reach npm only when it is
+  released, and pnpm cannot lock a package npm does not have.
 - **Early events are kept.** An event nobody listens for yet is handed to the first listener of its kind
   ([`events.ts`](../../src/engine/events.ts)), so the history pushed right after connecting reaches `feed` even when
   `watch` subscribed first.

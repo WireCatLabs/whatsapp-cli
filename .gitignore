@@ -51,3 +51,6 @@ wa-report-*.json
 
 # The engine binary built by `pnpm engine:build`.
 /engine/bin/
+
+# What `pnpm engine:packages` builds: one npm package per platform, published by the release.
+/packages/

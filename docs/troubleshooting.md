@@ -14,8 +14,11 @@ it to finish. Writes through a running `serve` are planned.
 
 ## "the WhatsApp engine is not installed"
 
-`wa` runs WhatsApp's protocol in a separate program. In a source checkout, build it with `pnpm engine:build` (needs
-Go), or set `WA_ENGINE` to its path.
+`wa` runs WhatsApp's protocol in a separate program, the engine. npm installs it with `wa` as a small package for
+your system, `@wirecat/whatsapp-engine-<system>-<processor>`; the message names the one it looked for. It is missing
+when the install skipped optional packages (`--omit=optional`, or `optional=false` in `.npmrc`): reinstall without
+that. Engine packages exist for Linux, macOS and Windows on x64 and arm64. In a source checkout, build it with
+`pnpm engine:build` (needs Go). Either way, `WA_ENGINE` set to a path runs that engine instead.
 
 ## "WhatsApp logged this device out"
 

@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import type { EngineEvent, LoginCode } from "./contract.js"
-import { engineBinary, startGoEngine } from "./go-engine.js"
+import { engineBinary, enginePackage, startGoEngine } from "./go-engine.js"
 
 const STUB = fileURLToPath(new URL("../testing/engine-stub.mjs", import.meta.url))
 
@@ -86,7 +86,13 @@ describe("startGoEngine", () => {
   it("says how to get the engine when the binary is missing", async () => {
     await expect(
       startGoEngine({ storePath: "/x", holder: "serve", command: { file: "/no/such/wa-engine", args: [] } }),
-    ).rejects.toMatchObject({ message: expect.stringContaining("pnpm engine:build") })
+    ).rejects.toMatchObject({ message: expect.stringContaining(`${enginePackage()} is missing`) })
+  })
+
+  it("runs WA_ENGINE over an installed engine package, and a checkout's own build without either", () => {
+    expect(engineBinary({ WA_ENGINE: "/opt/wa-engine" })).toBe("/opt/wa-engine")
+    expect(engineBinary({})).toBe(fileURLToPath(new URL("../../engine/bin/wa-engine", import.meta.url)))
+    expect(enginePackage("win32", "arm64")).toBe("@wirecat/whatsapp-engine-win32-arm64")
   })
 })
 

@@ -13,7 +13,11 @@ Open work, most important first. The plan in flight is
 4. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 5. **Feature groups**: media, edit and delete, reactions, read state, polls, groups and admin, contacts, on-demand
    older history from the phone.
-6. **Distribution**: the engine as per-platform npm packages, the release workflow, install tests on three systems.
+6. **Distribution — first publish.** The engine packages, the release steps and the install tests on three systems are
+   built (`scripts/engine-packages.mjs`, `release.yml`, `install-windows.yml`) but have not run in CI or published.
+   npm's trusted publishing is set per package, and I think a package must exist on npm before it can trust a
+   workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
+   (`bin/release --local`) before `release.yml` can publish them.
 7. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
 8. **Agent settings like tg's** (`.claude/settings.json`: sandbox on, writes kept inside the project, `bin/wa` excluded so the engine reaches WhatsApp). Left out of the foundation because it changes how agents run here.
 9. **Replace the test-matrix waivers with tests.** `scripts/test-matrix-untested.ts` waives every shared command as
