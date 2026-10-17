@@ -27,6 +27,7 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
+import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
 
 export type WhatsAppAdapter = MessengerCore &
@@ -35,7 +36,8 @@ export type WhatsAppAdapter = MessengerCore &
   Pick<MessageEditing, "edit" | "delete" | "forward"> &
   Pick<MessageMedia, "download"> &
   MessageReactions &
-  Pick<ReadState, "markRead">
+  Pick<ReadState, "markRead"> &
+  GroupAdapter
 
 /**
  * The messages cli-core's store holds, by the account's own key. WhatsApp addresses a message by its sender and by
@@ -46,12 +48,15 @@ export interface StoredMessages {
   message(chatId: string, messageId: string): Promise<Message | undefined>
   /** The newest message from someone else in the chat, older than `before` when it is given. */
   newestIncoming(chatId: string, before?: string): Promise<Message | undefined>
+  /** Whether the account has sent this person a message in their one-to-one chat. */
+  wroteTo(personId: string): Promise<boolean>
   close(): Promise<void>
 }
 
 const NOTHING_STORED: StoredMessages = {
   message: async () => undefined,
   newestIncoming: async () => undefined,
+  wroteTo: async () => false,
   close: async () => {},
 }
 
@@ -185,7 +190,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
   const titled = async (): Promise<Map<string, WaChat>> =>
     new Map((await translated(engine.directory())).map((chat) => [chat.jid, chat]))
 
-  const adapter: WhatsAppAdapter = {
+  const core: Omit<WhatsAppAdapter, keyof GroupAdapter> = {
     self: () => engine.self(),
 
     newSendId: () => `3EB0${randomBytes(9).toString("hex").toUpperCase()}`,
@@ -268,7 +273,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     // From the keys in the store: WhatsApp has no request for an old message. A file that is not one (a place, a
     // contact card) or that the store has no keys for is named in `skipped`.
     download: async (chat, messageId) => {
-      const { id: chatId } = await adapter.resolve(chat)
+      const { id: chatId } = await core.resolve(chat)
       const message = await held(chatId, messageId)
       const files: RemoteFile[] = []
       const skipped: string[] = []
@@ -364,5 +369,9 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       }
     },
   }
-  return adapter
+
+  return {
+    ...core,
+    ...groupAdapter({ engine, resolve: core.resolve, translated, wroteTo: (person) => stored.wroteTo(person) }),
+  }
 }

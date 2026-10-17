@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import type { GroupEngine } from "./groups.js"
 
 /**
  * What the engine and the adapter say to each other, in WhatsApp's own terms. The Go engine speaks it as JSON
@@ -202,7 +203,7 @@ export class EngineError extends Error {
  * An event nobody listens for yet is kept and handed to the first listener of its kind, so a history push that
  * comes right after connecting is not lost to a `feed` that started a moment after `watch`.
  */
-export interface WhatsAppEngine {
+export interface WhatsAppEngine extends GroupEngine {
   /**
    * The linked account, from the engine's own store: no request. `null` before a login. Always the user JID in LID
    * form with no device part (`…@lid`, not `…:12@s.whatsapp.net`): the store keys the account by it, so a change of
