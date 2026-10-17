@@ -55,6 +55,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **Refusals name the whole command to run next**: `wa <profile> chats list`, `wa <profile> serve` and
+  `wa <profile> session start`, where they said only `chats list`, `serve` or `session start`.
 - **No `messages sync` advice `wa` cannot follow** (cli-core 0.322.0): where a command points at the store's gaps it
   names `messages sync <chat>` for one chat, never `--all`.
 - **`wa upgrade`'s "held back" hint names the package and keeps pnpm's release-age exemption** (cli-core 0.320.0).

@@ -92,3 +92,12 @@ Open work, most important first. The plan in flight is
       and WhatsApp refusing this version are all `provider_unavailable` (exit 12) with the default reason
       (`src/adapter/adapter.ts`), so an agent can tell them apart only by the message. Register reasons in
       `WA.errors.reasons` with `defineReasons` and raise them there.
+    - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
+      `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so
+      both name their entry points the same way.
+    - **`engine/cmd/wa-engine/engine.go` holds six jobs in 496 lines** (WC-LAY-8): request dispatch, linking, the chat
+      directory, sends, event handling and error sorting. Split linking, the directory and events into their own files
+      when the next change touches one of them. Nothing caps a Go file's length, as Biome caps a TypeScript file.
+    - **Shared code kept here** (WC-ARCH-4, WC-ARCH-10): `src/commands/answer.ts` is tg's file word for word, the
+      test-matrix argv log in `src/program.ts` is max's, and `setup` reads `process.platform` because cli-core's
+      `BaseEnvironment` has no platform field. Each belongs in cli-core.
