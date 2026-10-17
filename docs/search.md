@@ -104,9 +104,11 @@ An empty result is not proof that the message never existed. The examples on thi
 
 ## What the store can answer
 
-Search sees only what the store holds: the history the phone pushed when the device was linked, and what `serve`
-received while it ran. WhatsApp has no way to ask for older messages, so `wa` cannot fill a gap by fetching. Keep the
-store current with `wa personal server install` ([keeping it current](archive.md#keeping-it-current-serve)).
+Search sees only what the store holds: the history the phone pushed when the device was linked, what `serve`
+received while it ran, and the older messages `messages sync` asked of the phone
+([older history](archive.md#older-history-from-your-phone)). A gap between the history push and the day `serve`
+started cannot be filled. Keep the store current with `wa personal server install`
+([keeping it current](archive.md#keeping-it-current-serve)).
 
 Every search says what it searched. With `--json`, `coverage` carries the number of `messages` and `chats` searched.
 Put the query in single quotes, so the shell leaves its quotes and brackets alone. The names below are examples;
@@ -348,8 +350,9 @@ With `--json` the answer says which chats were searched, even when nothing match
 `wa personal store migrate`, the word index is still being built; searches without words (`date:today`,
 `kind:group`) already work.
 
-A message from before the device was linked, which the phone did not push, is not in the store and cannot be
-fetched. Look for it on the phone.
+A message from before the device was linked, which the phone did not push, is not in the store. `messages sync`
+asks the phone for a chat's older messages ([older history](archive.md#older-history-from-your-phone)); otherwise
+look for it on the phone.
 
 ## Next
 

@@ -43,9 +43,11 @@ stays off even then: it names WhatsApp ids, and a phone-number id is a phone num
 ```sh
 wa personal --record chats list
 wa personal runs list              # recorded runs, newest first
-wa personal runs show <run-id>     # one run: its outcome, and one line per operation
-wa personal runs path <run-id>     # the folder that holds it
+wa personal runs show 20261001T080000Z-process-000001     # one run: its outcome, and one line per operation
+wa personal runs path 20261001T080000Z-process-000001     # the folder that holds it
 ```
+
+The run id above is made up; `runs list` shows the real ones.
 
 A run record is a folder under `runs/<day>/` in the state folder. Its name is the time and the command. It holds two
 files:
@@ -118,7 +120,7 @@ WhatsApp's from disk, without starting anything:
 
 ```sh
 wa personal doctor report create              # about the newest failed run
-wa personal doctor report create --run <run-id>
+wa personal doctor report create --run 20261001T080000Z-process-000001   # a made-up run id
 ```
 
 It writes a JSON file — what `wa personal doctor` shows plus the run — and says where to send it: a new issue at

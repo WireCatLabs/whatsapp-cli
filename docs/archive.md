@@ -229,7 +229,6 @@ read: one packet from this profile's local store. It never connects or marks rea
 
 ```sh
 wa personal messages evidence "Project Alpha" --limit 20 --json
-wa personal messages evidence "Project Alpha" --cursor <cursor> --json
 ```
 
 Items are newest first, with source locators and content fingerprints. `--limit` accepts 1–100 and defaults to the
@@ -237,8 +236,9 @@ profile limit. Whole messages fill at most 64 KiB of JSON items; the packet head
 each return one complete packet.
 
 Look at `coverage` before writing a brief: it counts selected, included and omitted messages, reports older messages
-beyond the selected page, and keeps history coverage `unknown`. Follow the `page.next` step, which gives `--cursor`,
-to continue without skipping messages omitted by the byte budget. No `page.next` does not prove the store is
+beyond the selected page, and keeps history coverage `unknown`. Follow the `page.next` step, which repeats the
+command with `--cursor` and the cursor from this packet, to continue without skipping messages omitted by the byte
+budget. No `page.next` does not prove the store is
 complete. If the newest selected message alone exceeds the budget, the packet is empty with `truncated_by: "bytes"`
 and no cursor. An unknown stored cursor returns `not_found`.
 

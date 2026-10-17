@@ -7,7 +7,7 @@ you can run the agent on a schedule, with limits it cannot get around.
 
 Terms on this page:
 
-- **Agent** — an AI assistant that runs commands on your computer for you.
+- **Agent** — an AI program that runs commands on your computer for you.
 - **Skill** — a file that tells the agent how to use `wa`. `wa skill install` puts it where the agent looks for it.
 - **MCP client** — an AI app without a terminal, such as Claude Desktop. It reaches `wa` through the MCP server
   `wa personal mcp` instead of running commands.
@@ -73,7 +73,8 @@ wa personal recipients add 100000000000001@lid   # and only to the chats on this
 ```
 
 `readonly` on one resource does not cover the others: `messages` alone still lets the agent react or mark a chat
-read. `recipients add` looks the chat up on WhatsApp, so it connects; while `serve` runs, it goes through `serve`.
+read. `recipients add` looks the chat up on WhatsApp, so it connects, and it does not go through `serve`: while
+`serve` runs, it is refused with exit code `12`.
 `permissions` limits your own commands too, until you change it back:
 `wa personal config unset permissions.messages`. To limit only the agent, give it a profile of its own. Every attempt
 to send, refused ones included, is in `wa personal sends list`. See [permissions](permissions.md).
@@ -140,8 +141,9 @@ Writes to WhatsApp: **no**. Allow: `Bash(wa personal messages list:*)`.
 > step, follow it. Write a report: what was decided, who took on what and by when, which questions are still open.
 > Give each point its date and author.
 
-The store holds what the phone pushed when `wa` linked and what `serve` received since. An older stretch is not there,
-and WhatsApp has no way to fetch it.
+The store holds what the phone pushed when `wa` linked and what `serve` received since. An older stretch is not there
+until `wa personal messages sync 120363000000000001@g.us` asks the phone for it
+([older history](archive.md#older-history-from-your-phone)).
 
 ## Who owes what
 

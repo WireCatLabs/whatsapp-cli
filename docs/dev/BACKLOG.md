@@ -32,10 +32,6 @@ Open work, most important first. The plan in flight is
      been seen to show them, so they are not used.
    - **Live checks** of `polls vote` from `wa` (one-to-one, group, phone-addressed group): `polls create` in the own
      chat and `--md` sends work (2026-10-17); a vote cast by `wa` has not been run against WhatsApp.
-   - **Group members are never listed.** cli-core refuses `chats members fetch` and `audit` for a messenger whose
-     history is `"store"` (`fromStore` in its `services/chats`), and `chats members list` reads only the stored roster,
-     so the adapter's `members` is reached by nothing but `chats moderate`. Fix in cli-core: refuse those two only
-     with `--offline`.
    - **`chats events`.** WhatsApp's joins and leaves come as live notifications, not as history the engine can
      read back, so `chatEvents` is not built.
    - **Group names in a one-shot command.** The engine learns the joined groups only once connected, after cli-core
