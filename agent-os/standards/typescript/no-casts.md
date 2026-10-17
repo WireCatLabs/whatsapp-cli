@@ -7,6 +7,6 @@
 
 **Why:** A cast tells the compiler to stop checking; a renamed field or a changed library type then fails at runtime instead of at build.
 
-**Handbook:** WC-STYLE-5 and WC-STYLE-6; the handbook wins. New code only for now: the 6 casts already in wa's `src/` (2026-10-17) stay until a lint rule lands.
+**Handbook:** WC-STYLE-5 and WC-STYLE-6; the handbook wins. New code only for now: the casts already in wa's `src/` stay until a lint rule lands.
 
 See: `grep -rnE " as [A-Z]| as unknown" src --include='*.ts'`

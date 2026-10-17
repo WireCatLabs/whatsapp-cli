@@ -2,7 +2,7 @@
 
 `wa` follows the [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md),
 which win over this page, and [max-cli's conventions](https://github.com/WireCatLabs/max-cli/blob/main/docs/dev/CONVENTIONS.md)
-where the standards are silent. This page lists only where `wa` adds.
+where the standards are silent. This page lists only where `wa` differs from max-cli or adds.
 
 ## Code
 
