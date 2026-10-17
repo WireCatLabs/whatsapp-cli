@@ -21,7 +21,8 @@ says whether its process still runs.
 your system, `@wirecat/whatsapp-engine-<system>-<processor>`; the message names the one it looked for. It is missing
 when the install skipped optional packages (`--omit=optional`, or `optional=false` in `.npmrc`): reinstall without
 that. Engine packages exist for Linux, macOS and Windows on x64 and arm64. In a source checkout, build it with
-`pnpm engine:build` (needs Go). Either way, `WA_ENGINE` set to a path runs that engine instead. `wa doctor` says whether it finds the engine, and where it looked.
+`pnpm engine:build` (needs Go). Either way, `WA_ENGINE` set to a path runs that engine instead. `wa doctor` says
+whether it finds the engine, and where it looked.
 
 ## "WhatsApp logged this device out"
 

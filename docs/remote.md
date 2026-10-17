@@ -145,10 +145,10 @@ system's Tailscale command from above for the second Funnel command. Funnel supp
 ## Alternative: Cloudflare Tunnel
 
 If you already use Cloudflare, point its tunnel at the same local MCP server. A fixed hostname needs a Cloudflare
-account and a domain on Cloudflare. Follow the [named tunnel setup](https://developers.cloudflare.com/tunnel/get-started/):
-install `cloudflared` for your system, create the tunnel in the dashboard, start its connector and add a public
-hostname such as `mcp.example.com`. Set its local service to `http://127.0.0.1:8765`, and run MCP on that same
-computer.
+account and a domain on Cloudflare. Follow the [named tunnel
+setup](https://developers.cloudflare.com/tunnel/get-started/): install `cloudflared` for your system, create the tunnel
+in the dashboard, start its connector and add a public hostname such as `mcp.example.com`. Set its local service to
+`http://127.0.0.1:8765`, and run MCP on that same computer.
 
 Start the server in a second terminal:
 
@@ -156,10 +156,10 @@ Start the server in a second terminal:
 wa personal mcp --http --port 8765 --public-url https://mcp.example.com
 ```
 
-Add `https://mcp.example.com/mcp` to your AI app with OAuth and DCR, as described in [connect the app](#connect-the-app).
-`--public-url` is the public origin used for login, not the local address and not the `/mcp` path. The tunnel does
-not change profile permissions. Check the JSON at `https://mcp.example.com/.well-known/oauth-protected-resource/mcp`,
-then login and the tool list.
+Add `https://mcp.example.com/mcp` to your AI app with OAuth and DCR, as described in [connect the
+app](#connect-the-app). `--public-url` is the public origin used for login, not the local address and not the `/mcp`
+path. The tunnel does not change profile permissions. Check the JSON at
+`https://mcp.example.com/.well-known/oauth-protected-resource/mcp`, then login and the tool list.
 
 **A temporary Quick Tunnel does not work.** `cloudflared tunnel --url http://127.0.0.1:8765` gives a random
 `trycloudflare.com` address with no account or domain, but
