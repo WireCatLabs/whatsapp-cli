@@ -151,12 +151,13 @@ background — only when the owner asked for it.
   "meta": {...} }`. A single thing is `{ "item": {...}, "meta": {...} }`. A chat's messages page with `--cursor`
   from `page.next`.
 - **`--jsonl`**: one object per line, for `jq`. Whether there is more is said on stderr only.
-- **Branch on the exit code, then on `error.code` and `error.reason` in the stderr object — never on the text**: `0` success, `2` bad input or something WhatsApp cannot do here, `4`
-  not linked (or WhatsApp logged the device out), `5` the profile may not do this (its `permissions`; the error names
-  the key), or WhatsApp banned or restricted the account (do not retry; tell the owner), `6` not found — a chat, or
-  a message the store lacks, `7` the chat is not on the list of allowed recipients, or the change asks first and
-  nobody answered (stop and ask the owner), `8` a limit (`sends_per_hour`), `12` another command holds the device,
-  the engine stopped, or WhatsApp refuses this version, `14` **unknown whether the message went** (see the traps).
+- **Branch on the exit code, then on `error.code` and `error.reason` in the stderr object — never on the text**:
+  `0` success, `2` bad input or something WhatsApp cannot do here, `4` not linked (or WhatsApp logged the device
+  out), `5` the profile may not do this (its `permissions`; the error names the key), or WhatsApp banned or
+  restricted the account (do not retry; tell the owner), `6` not found — a chat, or a message the store lacks, `7`
+  the chat is not on the list of allowed recipients, or the change asks first and nobody answered (stop and ask the
+  owner), `8` a limit (`sends_per_hour`), `12` another command holds the device, the engine stopped, or WhatsApp
+  refuses this version, `14` **unknown whether the message went** (see the traps).
 - `-v` and `-vv` add detail for a person. The version is `wa -V`.
 
 ## Evidence for a chat brief
