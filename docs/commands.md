@@ -2320,7 +2320,7 @@ wa tags list [query]
 
 ## `wa mentions`
 
-phones, e-mail, links, documents and people's names found in stored messages
+phones, e-mail, links, documents, people's names and addresses found in stored messages
 
 ### `wa mentions list`
 
@@ -2357,6 +2357,19 @@ wa mentions domains [query] [options]
 | `--limit <n>` | how many to show. |
 | `--page <n>` | which page, starting at 1. |
 
+### `wa mentions places`
+
+confirmed addresses, in every account, most mentioned first; `mentions confirm <id>` adds one
+
+```sh
+wa mentions places [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
+
 ### `wa mentions show`
 
 one mention, the text around it, and how many other places hold its value
@@ -2371,7 +2384,7 @@ wa mentions show <id>
 
 ### `wa mentions confirm`
 
-say what a mention is: a phone's owner everywhere it is written, the stored document, who a name means
+say what a mention is: a phone's owner everywhere it is written, the stored document, who a name means, an address as a place
 
 **Changes something on this computer only.**
 
@@ -2382,7 +2395,7 @@ wa mentions confirm <id> [person] [options]
 | Argument | | What it is |
 |---|---|---|
 | `id` | required | the mention's id, from mentions list. |
-| `person` | optional | person:<uid> or organization:<id> that owns the phone or the address; person:<uid> a name means; a document needs none. |
+| `person` | optional | person:<uid> or organization:<id> that owns the phone or the e-mail address; person:<uid> a name means; a document or a street address needs none. |
 
 | Option | What it does |
 |---|---|
@@ -2420,7 +2433,7 @@ wa mentions rebuild [kind]
 
 | Argument | | What it is |
 |---|---|---|
-| `kind` | optional | only this kind: person-name after people were added or renamed. One of: `phone`, `email`, `url`, `document`, `person-name`. |
+| `kind` | optional | only this kind: person-name after people were added or renamed. One of: `phone`, `email`, `url`, `document`, `person-name`, `place`. |
 
 ## `wa stats`
 
@@ -3005,6 +3018,24 @@ the categories a task takes, with what each means and the words a rule picks it 
 wa tasks categories
 ```
 
+### `wa tasks apply`
+
+the task rules over a chat's newest stored messages: a question nobody answered and a mention of you open a task, and your answer closes one — for a chat the first sync left alone (config task_first_pass_per_chat). Lists what would open and changes nothing unless --yes; with --yes the duplicate check runs as on a sync. Reads only the local store
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks apply <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--last <n>` | read the newest n stored messages of each chat (default 50, at most 1000). |
+
 ### `wa tasks claim`
 
 take an open task so no other agent works it at once; the claim lapses by itself
@@ -3150,7 +3181,7 @@ wa search notes <query> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `query` | required | strict Lucene query: words, "phrases", AND/OR/NOT, tag:, type:internal (written in memo) or type:file (from a notes folder) and date ranges. |
+| `query` | required | strict Lucene query: words, "phrases", AND/OR/NOT, tag:, source:internal (written in memo) or source:file (from a notes folder) and date ranges. |
 
 | Option | What it does |
 |---|---|
@@ -3658,7 +3689,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 | `value` | required | a number, true or false, or for allow a list like send,reaction; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -3679,7 +3710,7 @@ wa config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 
 | Option | What it does |
 |---|---|
