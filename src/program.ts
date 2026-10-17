@@ -37,6 +37,7 @@ import {
 import type { Command } from "commander"
 import { CONFIG, WA } from "./app.js"
 import { sessionCommand } from "./commands/session.js"
+import { setupCommand } from "./commands/setup.js"
 import { upgradeCommand } from "./commands/update.js"
 import { type Environment, SKILL, WHATSAPP } from "./messenger.js"
 import { updateNotice } from "./update.js"
@@ -50,15 +51,28 @@ const definition: ProgramDefinition = {
   configure: (program) => {
     program.addHelpText(
       "after",
-      "\nEvery account command names its profile first: `wa personal chats list`.\n" +
+      "\nGetting started after installation:\n" +
+        "  wa personal setup               Guided first run as profile personal; about 5 minutes\n" +
+        "  wa personal setup --agent codex Link and install your agent's skill\n" +
+        "  wa setup --help                 Linking choices, examples and Windows instructions\n" +
+        "Every account command names its profile first: `wa personal chats list`.\n" +
         "\nFor agents:\n" +
         "  wa skill show                   Read the bundled instructions before using WhatsApp\n" +
         "  wa commands --json              Discover commands, arguments and flags\n",
     )
+    program.commands
+      .find((command) => command.name() === "skill")
+      ?.addHelpText(
+        "after",
+        "\nBefore the first link, an agent can read `wa skill show`; no device is needed.\n" +
+          "Run `wa personal setup --agent codex` for guided linking and skill installation.\n" +
+          "To install instructions separately: `wa skill install --for all`.\n",
+      )
   },
   commands: () =>
     loggingArgv([
       sessionCommand(),
+      setupCommand(),
       accountCommand(WHATSAPP),
       chatsCommand(WHATSAPP),
       contactsCommand(WHATSAPP),
