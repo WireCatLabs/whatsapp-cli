@@ -336,7 +336,7 @@ describe("wa doctor --online", () => {
     expect((await send(() => fakeEngine(seed))).code).toBe(0)
   })
 
-  it("holds writes for 15 minutes after WhatsApp's rate limit, and reads go on", async () => {
+  it("holds writes for 15 minutes after WhatsApp's rate limit; reads go on, and flood clear lifts it", async () => {
     const profile = "slowed"
     const limited = await wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], () => {
       const engine = fakeEngine(seed)
@@ -356,6 +356,12 @@ describe("wa doctor --online", () => {
     )
     expect(errorOf(meanwhile.stderr).details.standing).toMatchObject({ state: "limited" })
     expect((await wa([profile, "account", "show", "--json"], () => fakeEngine(seed))).code).toBe(0)
+
+    expect((await wa([profile, "flood", "clear", "--json"])).code).toBe(0)
+    const lifted = await wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], () =>
+      fakeEngine(seed),
+    )
+    expect(lifted.code).toBe(0)
   })
 })
 

@@ -3519,6 +3519,20 @@ empty the history; saved searches stay
 wa searches clear
 ```
 
+## `wa flood`
+
+the waits WhatsApp asked this profile to keep, and a hold on its writes
+
+### `wa flood clear`
+
+forget them, lift the hold and the profile's pace, once WhatsApp no longer limits the account; changes nothing there
+
+**Changes something on this computer only.**
+
+```sh
+wa flood clear
+```
+
 ## `wa recipients`
 
 the chats this profile may send to, when the list is on
