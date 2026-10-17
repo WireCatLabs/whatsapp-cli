@@ -72,8 +72,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - **`WA_ENGINE_LOG` no longer writes phone numbers** (WC-SECR-1): every user id (phone, device and hidden-id forms)
   and any other long run of digits is masked before a line reaches the file.
-- **The engine packages published are the ones validation built and tested** (WC-REL-12): the release checks each
-  against the SHA-256 that validation recorded, and builds nothing again.
+- **A release from GitHub Actions publishes the engine packages validation built and tested** (WC-REL-12): it checks
+  each against the SHA-256 that validation recorded, and builds nothing again. This first release was published from
+  the maintainer's machine, which builds them itself.
 - **`WA_READ_ONLY` also stops linking and unlinking the device**: `session start` and `setup` refuse to link a new
   device, and `session end` refuses to log out, with `permission_error`.
 - **An interrupted or timed-out login closes the engine and removes its QR image**, instead of leaving both behind.
