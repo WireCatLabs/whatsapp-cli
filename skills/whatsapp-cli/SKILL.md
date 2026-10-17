@@ -23,6 +23,8 @@ do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". T
 account, one chat's card, sending text (with `--reply-to`), `messages edit`, `messages delete --for-everyone`,
 `reactions add|remove`, `chats mark-read`, `serve` and `watch`. Everything that reads the local store works.
 Not built yet: files, photos and voice; forwarding, pinning, downloading; group members and admins; contact lookup.
+`contacts list`, `contacts show`, `contacts context` and `stats chats show` ask the messenger first: add
+`--offline` so they answer from the store, beside a running `serve`.
 
 ## How WhatsApp differs from Telegram and MAX
 
@@ -33,7 +35,9 @@ Not built yet: files, photos and voice; forwarding, pinning, downloading; group 
 - **One connection per linked device.** WhatsApp drops the older of two connections. `serve`, `watch` and every
   command that connects take the device's lock first; a second one is refused with exit `12` and names the
   holder (`serve (pid 4242)`). **While `serve` runs, a send, edit, deletion, reaction or mark-read for that profile
-  is refused** — MCP writes too. Do not stop the owner's `serve` to get round it; tell the owner.
+  is refused** — MCP writes too. Do not stop the owner's `serve` to get round it; tell the owner. The other way
+  round, `wa personal mcp` keeps a connection it opened until two minutes pass without a call, and `serve` cannot
+  start meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
   `messages edit`, `messages delete --for-everyone`, `reactions add|remove` and `chats mark-read` look the message up
   in the store. One the store lacks is exit `6`.
@@ -197,8 +201,8 @@ wa personal tasks close 12 --as dismissed --reason no-reply-needed --json  # onl
 wa personal chats list --json                      # find a chat, take its id
 wa personal chats list 'kind:group unread_count>0' --json   # filtered, from the store
 wa personal chats show 120363000000000001@g.us --json        # one chat and who is in it; connects
-wa personal contacts show 100000000000001@lid --json         # one person, from the store
-wa personal contacts context 100000000000001@lid --limit 10 --json  # what the store holds about them
+wa personal contacts show 100000000000001@lid --offline --json   # one person, from the store
+wa personal contacts context 100000000000001@lid --limit 10 --offline --json  # what the store holds about them
 wa personal messages list 120363000000000001@g.us --limit 20 --json  # the latest messages, oldest first
 wa personal messages context 120363000000000001@g.us 3EB0A1B2C3D4E5F6A7B8 --before-n 3 --after-n 3 --json
 wa personal search all "invoice march" --json      # messages and notes kept on this machine
@@ -234,6 +238,6 @@ These work on what `wa` has stored and never connect:
 
 ## Names in requests
 
-The owner may name a chat or person naturally. Find the chat with `chats list`, the person with `contacts show` or
-`contacts list`; use the confirmed id. If several match, show them and ask the owner to choose. Never guess an id or
-turn an unresolved name into a claim of zero activity.
+The owner may name a chat or person naturally. Find the chat with `chats list`, the person with
+`contacts show --offline` or `contacts list --offline`; use the confirmed id. If several match, show them and ask the
+owner to choose. Never guess an id or turn an unresolved name into a claim of zero activity.
