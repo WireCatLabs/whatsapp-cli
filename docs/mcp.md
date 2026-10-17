@@ -142,9 +142,9 @@ wa agent config set permissions.messages.send allow
 Here `agent` is the name of a profile. Writes keep the recipient list, the hourly limit and the send journal
 (`wa agent sends list`). Marking read is a separate write, under `chats.mark-read`: the other side sees it. An agent
 never deletes for everyone, whatever the level, and `wa` can delete only for everyone: `messages delete` through MCP
-is refused with `permission_error` before `wa` connects. Deleting stays the owner's `wa messages delete
---for-everyone`. `--permission key=level` narrows a level for this server process only; one that would loosen the
-profile stops the server at startup.
+is refused with `permission_error` before `wa` connects. Deleting stays the owner's
+`wa <profile> messages delete --for-everyone`. `--permission key=level` narrows a level for this server process only;
+one that would loosen the profile stops the server at startup.
 
 ## Tools
 

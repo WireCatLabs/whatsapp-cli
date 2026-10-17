@@ -73,8 +73,8 @@ Add `--permission messages.send=readonly` to the server's start command to stop 
 settings stay the same. `--permission` only narrows: one that would loosen the profile — `readonly` to `allow`, a
 `deny` to anything — stops the server at startup with `validation_error` naming the key. To let an agent do more,
 set the level in the profile itself. Over MCP, `ask` does not require a server form: the app controls its own
-approvals and may allow a call without asking again. Use `deny` or `readonly` to refuse changes. [The MCP server](mcp.md) and
-[the browser setup](remote.md) explain the full connection.
+approvals and may allow a call without asking again. Use `deny` or `readonly` to refuse changes.
+[The MCP server](mcp.md) and [the browser setup](remote.md) explain the full connection.
 
 ## Limits and detailed rules
 

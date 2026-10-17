@@ -74,8 +74,8 @@ when asked. The origin is the address without `/mcp` or any other path. Keep an 
 in it.
 
 The server listens on `127.0.0.1:8765` and prints a one-time access code. It never needs administrator rights; only
-the tunnel may need them. What the app may do is the profile's own
-`permissions`; set them before you start ([permissions for this server process](#permissions-for-this-server-process)).
+the tunnel may need them. What the app may do is the profile's own `permissions`; set them before you start
+([permissions for this server process](#permissions-for-this-server-process)).
 
 ### Windows (PowerShell)
 
@@ -199,10 +199,10 @@ through without a new question.
 The profile's `permissions` decide what the app may do. Repeat `--permission key=level` to narrow them for this
 server process only: `--permission messages.send=readonly` stops sending. It never loosens: an override that would
 give more than the profile — `readonly` to `allow`, a `deny` to anything — stops the server at startup with
-`validation_error` naming the key. To let the app send from a read-only profile, set
-`wa personal config set permissions.messages.send allow` first. The saved configuration, the recipient list and the
-hourly limit do not change. Permission keys are on the
-[permissions](permissions.md) page.
+`validation_error` naming the key. An override leaves the saved configuration, the recipient list and the hourly
+limit as they are. To let the app send from a read-only profile, change the profile first:
+`wa personal config set permissions.messages.send allow`. Permission keys are on the [permissions](permissions.md)
+page.
 
 ## Stop or revoke access
 
