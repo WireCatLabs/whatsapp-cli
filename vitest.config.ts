@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
+  tsconfig: "./node_modules/@wirecat/cli-base/config/tsconfig.base.json",
   test: {
     include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
     globals: false,

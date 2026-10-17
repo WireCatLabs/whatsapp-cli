@@ -5,6 +5,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Fixed
+
+- Release and monthly source checks include the Go engine using its module toolchain. Local
+  tests resolve the shared TypeScript config directly so they run in isolated worktrees.
+
 ### What's new
 
 - **The foundation**: the shared cli-core commands over a WhatsApp adapter that reads from the local store, an
