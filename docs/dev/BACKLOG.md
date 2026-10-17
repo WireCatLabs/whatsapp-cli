@@ -26,13 +26,14 @@ Open work, most important first. The plan in flight is
      votes as `vote` events after it, and only a running `watch` keeps them (`serve` and `session start` run one). Fix
      in cli-core: votes in `HistoryBatch`, saved by `feed`. A vote whose poll the store does not hold yet (a live vote
      racing its poll's save) is dropped.
-   - **Live checks of votes**: a vote from the phone, from someone else in a group and in a one-to-one chat, and the
-     history votes after a fresh link; whether the owner's phone vote decrypts with whatsmeow's LID/phone-JID retry.
+   - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and
+     counts once as `chosen` (2026-10-17). Still open: a vote from someone else in a group and in a one-to-one chat,
+     and the history votes after a fresh link.
    - **Newer poll fields** (`endTime`, `hideParticipantName`, `pollType`, `correctAnswer` on `PollCreationMessage`)
      would map to `--close-time`, `--anonymous` and `--quiz`; whatsmeow does not build them and no WhatsApp client has
      been seen to show them, so they are not used.
-   - **Live checks** of `polls create` and `polls vote` (one-to-one, group, phone-addressed group) and of `--md` on the
-     phone: the vote's key and encryption follow whatsmeow's code and have not been run against WhatsApp.
+   - **Live checks** of `polls vote` from `wa` (one-to-one, group, phone-addressed group): `polls create` in the own
+     chat and `--md` sends work (2026-10-17); a vote cast by `wa` has not been run against WhatsApp.
    - **Group members are never listed.** cli-core refuses `chats members fetch` and `audit` for a messenger whose
      history is `"store"` (`fromStore` in its `services/chats`), and `chats members list` reads only the stored roster,
      so the adapter's `members` is reached by nothing but `chats moderate`. Fix in cli-core: refuse those two only
