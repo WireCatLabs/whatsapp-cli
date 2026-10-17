@@ -42,6 +42,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `WA_PROFILE`. A config file that still has `default_profile` stops a command that names no profile, with the profile
   to type and `wa config unset default_profile`; `wa config set default_profile` is refused. A profile called `default`
   is an ordinary name: `wa default mcp config` names its server `wa-default`, not `wa`.
+- **`polls close` and `polls create --revote` are gone** (cli-core 0.317.0): a WhatsApp poll never closes and every
+  vote can change. A script that closed a poll or asked for revoting drops that call.
+- **`chats admins add` takes no `--can`**: a WhatsApp admin has every right, so it gives them all. A script that
+  passed `--can` drops it.
 
 ### Security
 
@@ -91,11 +95,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **Poll votes are counted**: `serve` and `watch` keep each person's newest vote, from the phone's history push and
   as votes arrive (`watch --events` prints them), so `polls show` counts the answers and says which you chose, and
   the new `polls voters` lists who voted for what. A poll made with `polls create` is kept in the local store, so it
-  can be shown and voted on. `polls close` and `polls create --revote` are gone: a WhatsApp poll never closes and
-  every vote can change. Engine protocol 8; cli-core 0.317.0.
+  can be shown and voted on. Engine protocol 8; cli-core 0.317.0.
 - **Commands while `serve` runs**: a send, an edit, a reaction, `watch`, `wa <profile> mcp` and every other command
   that connects run inside a running `serve`, on its one connection, instead of being refused. Permissions and the
-  send guard still apply; a write at `ask` needs `--yes`. Not on Windows yet.
+  send guard still apply; a write at `ask` needs `--yes`. On Windows they do not go through `serve`.
 - **The foundation**: the shared cli-core commands over a WhatsApp adapter that reads from the local store, an
   engine contract, and the same linters, checks and CI as tg-cli and max-cli.
 - **Older history from the phone**: `wa <profile> messages sync <chat>` asks the phone for the 50 messages of a chat
@@ -104,7 +107,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **More group settings**: `chats update --only-admins-send`, `--only-admins-edit-info` and `--disappear-time`
   (24h, 7d or 90d, the times WhatsApp offers; `off` keeps messages). A group's answer shows them in `settings`
   instead of `provider_metadata`. Engine protocol 7.
-- **`chats admins add` takes no `--can`**: a WhatsApp admin has every right, so it gives them all.
 - **The WhatsApp engine**: `wa` connects through a Go program built on whatsmeow, started for each command that
   connects and stopped when it ends. One command at a time may connect a profile; a second is told which one holds it.
 - **Installs with its engine**: `npm install --global @wirecat/whatsapp-cli` also installs the engine for your system,
@@ -131,8 +133,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **Formatting and polls**: `messages send --md` and `messages edit --md` write Markdown as WhatsApp's own marks
   (bold, italic, strike, code, quotes; a link becomes its label and address; underline and spoilers become plain
   text). `polls create` (one answer or `--multiple`), `polls show` and `polls vote` (`--retract` too) work on polls
-  in the local store; votes are not counted yet, and `--anonymous` and `polls close` are refused, since WhatsApp has
-  neither. Engine protocol 6.
+  in the local store. Engine protocol 6.
 - **`wa <profile> setup`** is the guided first run, as in tg: it checks this computer, links the device or reuses it,
   reads the account and five chats from the local store, and installs the agent skill (`--agent`). Agents use
   `--qr-file`.
