@@ -88,3 +88,7 @@ Open work, most important first. The plan in flight is
       needs, is the owner's decision.
     - **Two `setup` tests wait for real** (`--timeout 100ms` in `src/commands/setup.test.ts`); a wait goes through an
       injected sleep (cli-base TESTING).
+    - **Three session states share one error** (WC-OUT-15): another process holding the device, the engine stopping
+      and WhatsApp refusing this version are all `provider_unavailable` (exit 12) with the default reason
+      (`src/adapter/adapter.ts`), so an agent can tell them apart only by the message. Register reasons in
+      `WA.errors.reasons` with `defineReasons` and raise them there.
