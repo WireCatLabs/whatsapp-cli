@@ -40,7 +40,7 @@ describe("wa upgrade", () => {
       latest: "99.0.0",
       newer: true,
       installer: "pnpm",
-      command: "pnpm add -g @wirecat/whatsapp-cli@latest",
+      command: "pnpm add -g @wirecat/whatsapp-cli@latest --config.minimumReleaseAgeExclude=@wirecat/*",
       updated: false,
       restarted: [],
     })
@@ -49,7 +49,9 @@ describe("wa upgrade", () => {
   it("runs the package manager that installed wa, and says it did", async () => {
     const { code, ran, result } = await update([])
     expect(code).toBe(0)
-    expect(ran).toEqual([["pnpm", "add", "-g", "@wirecat/whatsapp-cli@latest"]])
+    expect(ran).toEqual([
+      ["pnpm", "add", "-g", "@wirecat/whatsapp-cli@latest", "--config.minimumReleaseAgeExclude=@wirecat/*"],
+    ])
     expect(result).toMatchObject({ updated: true })
   })
 
