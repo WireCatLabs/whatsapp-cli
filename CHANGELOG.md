@@ -15,6 +15,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- A reply to a message the local store holds names the quoted message's sender and carries its text, so phones show
+  the quote instead of "unavailable"; a reply to one the store lacks still goes, with the message's id alone.
+- An edit that `serve` or `watch` hears keeps the message's own time, reply and reactions in the local store; before,
+  it took the edit's time as the message's.
+
 - Windows download checks verify file access rules instead of Unix mode bits. Group administration tests verify stranger refusals and unsupported changes before writes.
 
 - Release and monthly source checks include the Go engine using its module toolchain. Local

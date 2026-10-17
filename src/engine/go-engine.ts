@@ -14,6 +14,7 @@ import {
   PROTOCOL,
   type WaAccount,
   type WaKey,
+  type WaQuote,
   type WhatsAppEngine,
   waAccount,
   waChat,
@@ -210,8 +211,8 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     me: () => request("me", {}, waAccount),
     directory: () => request("directory", {}, v.array(waChat)),
     chat: (jid) => request("chat", { jid }, waChatCard),
-    send: ({ chat, text, id, replyTo }) =>
-      request("send", { chat, text, sendId: id, ...(replyTo === undefined ? {} : { replyTo }) }, waMessage),
+    send: ({ chat, text, id, replyTo, quoted }) =>
+      request("send", { chat, text, sendId: id, ...replyFields(replyTo, quoted) }, waMessage),
     edit: (key, text) => request("edit", { ...keyFields(key), text }, waMessage),
     revoke: async (key) => {
       await request("revoke", keyFields(key), nothing)
@@ -222,8 +223,8 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     markRead: async (key) => {
       await request("read", keyFields(key), nothing)
     },
-    sendMedia: ({ chat, text, id, replyTo, file }) =>
-      request("sendMedia", { chat, text, sendId: id, file, ...(replyTo === undefined ? {} : { replyTo }) }, waMessage),
+    sendMedia: ({ chat, text, id, replyTo, quoted, file }) =>
+      request("sendMedia", { chat, text, sendId: id, file, ...replyFields(replyTo, quoted) }, waMessage),
     download: async (attachment, path) => {
       await request("download", { attachment, path }, nothing)
     },
@@ -254,6 +255,19 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     ...goGroups(request),
   }
 }
+
+const replyFields = (replyTo: string | undefined, quoted: WaQuote | undefined) => ({
+  ...(replyTo === undefined ? {} : { replyTo }),
+  ...(quoted === undefined
+    ? {}
+    : {
+        quote: {
+          fromMe: quoted.fromMe,
+          text: quoted.text,
+          ...(quoted.sender === null ? {} : { sender: quoted.sender }),
+        },
+      }),
+})
 
 const keyFields = ({ chat, id, fromMe, sender }: WaKey) => ({
   chat,

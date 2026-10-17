@@ -81,8 +81,6 @@ Open work, most important first. The plan in flight is
    device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
    and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
    starts — before one-shot connections ship.
-10. **Replies in groups name no participant.** A reply sends only the quoted message id; WhatsApp clients also expect
-    the quoted sender in groups. The contract has no field for it yet.
 11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
     history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
     decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup
@@ -91,5 +89,3 @@ Open work, most important first. The plan in flight is
     form then splits in two (item 3). Build it with item 3, or only before a chat is first emitted.
 12. **cli-core could resolve names from the store for `history: "store"` messengers.** Today it always asks the
     adapter, so the engine keeps its own small chat directory (ARCHITECTURE §4). Raise it in cli-core.
-13. **Edits keep the edit's time as the message time.** A live edit carries no original timestamp; check what
-    cli-core's store does with an edit's `timestamp` before it shows wrong times.

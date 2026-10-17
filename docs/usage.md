@@ -58,6 +58,10 @@ WhatsApp names a message by who sent it as well as by its id, so these work on m
 delete a message for yourself alone on the phone. Nothing is marked read unless you ask: `chats mark-read`, or
 `--mark-read` on `messages list`, `inbox` and `review`.
 
+A reply (`messages send --reply-to 3EB0…`) to a message the local store holds shows the quoted text and its sender
+on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's apps may then
+show the quote as unavailable.
+
 ## Format a message
 
 ```sh

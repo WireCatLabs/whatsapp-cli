@@ -383,10 +383,10 @@ func (e *engine) send(req request) (*waMessage, error) {
 		return nil, err
 	}
 	content := &waE2E.Message{Conversation: proto.String(req.Text)}
-	if req.ReplyTo != "" {
+	if reply := e.replyContext(req); reply != nil {
 		content = &waE2E.Message{ExtendedTextMessage: &waE2E.ExtendedTextMessage{
 			Text:        proto.String(req.Text),
-			ContextInfo: &waE2E.ContextInfo{StanzaID: proto.String(req.ReplyTo)},
+			ContextInfo: reply,
 		}}
 	}
 	sent, err := e.client.SendMessage(e.ctx, to, content, whatsmeow.SendRequestExtra{ID: req.SendID})

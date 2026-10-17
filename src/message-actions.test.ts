@@ -21,7 +21,16 @@ const fresh: Message = {
   forwardedFrom: null,
   reactions: null,
 }
-const seed = { ...base, messages: [...base.messages, fresh] }
+const answered = base.messages.find((message) => message.chatId === base.dialog && !message.outgoing) as Message
+const answer: Message = {
+  ...fresh,
+  id: "3EB0000000000000000F02",
+  chatId: base.dialog,
+  timestamp: "2026-09-01T09:31:00.000Z",
+  text: "synthetic answer",
+  replyToId: answered.id,
+}
+const seed = { ...base, messages: [...base.messages, fresh, answer] }
 const inBusy = seed.messages.filter((message) => message.chatId === seed.busy)
 const theirs = inBusy.filter((message) => !message.outgoing).at(-1) as Message
 const oldOwn = inBusy.find((message) => message.outgoing && message.id !== fresh.id) as Message
@@ -162,5 +171,71 @@ describe("marking read", () => {
     const marked = await acting(["messages", "list", seed.busy, "--mark-read"])
     expect(marked.code).toBe(0)
     expect(marked.actions).toEqual([newestTheirs])
+  })
+})
+
+describe("replies and live edits", () => {
+  it("names the quoted message's sender and text when it answers a stored message", async () => {
+    let engine: FakeEngine | undefined
+    const result = await wa(
+      ["actions", "messages", "send", seed.busy, "synthetic reply", "--reply-to", theirs.id],
+      () => {
+        engine = fakeEngine(seed)
+        return engine
+      },
+    )
+    expect(result.code).toBe(0)
+    expect(engine?.sends).toMatchObject([
+      { replyTo: theirs.id, quoted: { fromMe: false, sender: theirs.senderId, text: theirs.text } },
+    ])
+  })
+
+  it("keeps an edited message's time and reply when the edit arrives live", async () => {
+    const controller = new AbortController()
+    const editing = () => {
+      const engine = fakeEngine(seed)
+      const listen = engine.listen
+      engine.listen = (kinds, onEvent) => {
+        const stop = listen(kinds, onEvent)
+        if (kinds.includes("edit"))
+          setImmediate(() => {
+            engine.push({
+              event: "edit",
+              message: {
+                id: answer.id,
+                chat: answer.chatId,
+                sender: answer.senderId,
+                senderName: null,
+                fromMe: true,
+                timestamp: "2026-09-01T09:45:00.000Z",
+                editedAt: "2026-09-01T09:45:00.000Z",
+                text: "synthetic answer, fixed",
+                replyTo: null,
+              },
+            })
+            setImmediate(() => controller.abort())
+          })
+        return stop
+      }
+      return engine
+    }
+    expect((await wa(["actions", "watch", "--jsonl"], editing, controller.signal)).code).toBe(0)
+
+    const listed = await wa(["actions", "messages", "list", seed.dialog, "--json"], () => {
+      throw new Error("a read must never start the engine")
+    })
+    const stored = JSON.parse(listed.stdout).items.find((message: Message) => message.id === answer.id)
+    expect(stored).toMatchObject({
+      timestamp: answer.timestamp,
+      edited_at: "2026-09-01T09:45:00.000Z",
+      text: "synthetic answer, fixed",
+      reply_to_id: answered.id,
+    })
+  })
+
+  it("answers messages edit with the message's own time", async () => {
+    const result = await acting(["messages", "edit", seed.busy, fresh.id, "fixed again"])
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item.message).toMatchObject({ timestamp: fresh.timestamp, text: "fixed again" })
   })
 })

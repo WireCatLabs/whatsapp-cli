@@ -191,13 +191,6 @@ func nonZero(n uint32) *uint32 {
 	return proto.Uint32(n)
 }
 
-func replyContext(replyTo string) *waE2E.ContextInfo {
-	if replyTo == "" {
-		return nil
-	}
-	return &waE2E.ContextInfo{StanzaID: proto.String(replyTo)}
-}
-
 func (e *engine) recipient(raw, sendID string) (types.JID, error) {
 	to, err := types.ParseJID(raw)
 	if err != nil || to.User == "" {
@@ -244,7 +237,7 @@ func (e *engine) sendMedia(req request) (*waMessage, error) {
 	described.Size = uploaded.FileLength
 	described.Ref = &waMediaRef{Media: media, DirectPath: uploaded.DirectPath, MediaKey: uploaded.MediaKey,
 		FileSHA256: uploaded.FileSHA256, FileEncSHA256: uploaded.FileEncSHA256}
-	content, err := contentOf(described, req.Text, replyContext(req.ReplyTo))
+	content, err := contentOf(described, req.Text, e.replyContext(req))
 	if err != nil {
 		return nil, err
 	}

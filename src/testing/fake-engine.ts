@@ -15,6 +15,7 @@ import {
   type WaForward,
   type WaKey,
   type WaMessage,
+  type WaSend,
   type WhatsAppEngine,
   waPoll,
 } from "../engine/contract.js"
@@ -76,6 +77,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups {
   /** Pushes an event as the engine would, checked against the contract first. */
   push(event: EngineEvent): void
   sent: WaMessage[]
+  /** Each send and file send, as the adapter asked for it. */
+  sends: WaSend[]
   /** Each file sent, as the engine read it from disk. */
   uploads: { kind: string; name: string; size: number }[]
   /** Each file written for a download, by the attachment it was asked for. */
@@ -111,6 +114,7 @@ export const fakeEngine = (
   const contactsOf = (jid: string): WaContact[] | null =>
     seed.members[jid]?.map((member) => ({ jid: member.id, name: member.name })) ?? null
   const sent: WaMessage[] = []
+  const sends: WaSend[] = []
 
   const push = (event: EngineEvent) => hub.emit(v.parse(engineEvent, event))
 
@@ -153,6 +157,7 @@ export const fakeEngine = (
   const engine: FakeEngine = {
     ...fakeGroups(seed, chats),
     sent,
+    sends,
     actions,
     uploads,
     downloads,
@@ -173,7 +178,9 @@ export const fakeEngine = (
       if (!chat) throw new EngineError("not_found", `no chat ${jid}`)
       return { chat, members: contactsOf(jid) }
     },
-    send: async ({ chat, text, id, replyTo }) => {
+    send: async (request) => {
+      const { chat, text, id, replyTo } = request
+      sends.push(request)
       const again = sent.find((message) => message.id === id && message.chat === chat)
       if (again) return again
       const message: WaMessage = {
@@ -214,7 +221,9 @@ export const fakeEngine = (
     markRead: async (key) => {
       actions.push({ op: "read", key })
     },
-    sendMedia: async ({ chat, text, id, replyTo, file }) => {
+    sendMedia: async (request) => {
+      const { chat, text, id, replyTo, file } = request
+      sends.push(request)
       const again = sent.find((message) => message.id === id && message.chat === chat)
       if (again) return again
       const size = statSync(file.path).size

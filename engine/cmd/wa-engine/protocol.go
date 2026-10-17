@@ -26,6 +26,7 @@ type request struct {
 	Text    string `json:"text,omitempty"`
 	SendID  string `json:"sendId,omitempty"`
 	ReplyTo string `json:"replyTo,omitempty"`
+	Quote   *quote `json:"quote,omitempty"`
 	// A message the account already has: edit, revoke, react, read.
 	Message string  `json:"message,omitempty"`
 	FromMe  bool    `json:"fromMe,omitempty"`

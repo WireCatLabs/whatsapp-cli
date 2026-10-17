@@ -177,6 +177,14 @@ export interface WaSend {
   /** The message id WhatsApp will carry; a resend with the same id is the same message. */
   id: string
   replyTo?: string
+  /** The replied-to message as the store holds it; without it, phones show the quote as unavailable. */
+  quoted?: WaQuote
+}
+
+export interface WaQuote {
+  fromMe: boolean
+  sender: string | null
+  text: string
 }
 
 /** One file from this machine, sent with `text` as its caption. `kind` is decided as tg decides it. */
