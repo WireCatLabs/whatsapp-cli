@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/types/events"
 )
 
 func TestOnlyWhatsAppsOwnRateLimitCarriesTheAccountReason(t *testing.T) {
@@ -15,6 +17,39 @@ func TestOnlyWhatsAppsOwnRateLimitCarriesTheAccountReason(t *testing.T) {
 	local := &failure{"rate_limited", "one number lookup every 10 seconds; wait and try again"}
 	if got := classify(local); got.Code != "rate_limited" || got.Reason != "" {
 		t.Errorf("the engine's own lookup pace became %+v", got)
+	}
+}
+
+func TestTheEngineKeepsWhyWhatsAppEndedTheConnection(t *testing.T) {
+	cases := []struct {
+		event  any
+		state  string
+		reason string
+	}{
+		{&events.TemporaryBan{}, "banned", "account.banned"},
+		{&events.ConnectFailure{Reason: events.ConnectFailureTempBanned}, "banned", "account.banned"},
+		{&events.ClientOutdated{}, "outdated", "client.outdated"},
+		{&events.ConnectFailure{Reason: events.ConnectFailureClientOutdated}, "outdated", "client.outdated"},
+		{&events.StreamReplaced{}, "replaced", "device.replaced"},
+		{&events.LoggedOut{}, "logged_out", "device.logged-out"},
+	}
+	for _, c := range cases {
+		var out bytes.Buffer
+		e := &engine{out: newWire(&out)}
+		e.handle(c.event)
+		if got := e.endedBy(); got == nil || got.Reason != c.reason {
+			t.Errorf("%T kept %+v, want %s", c.event, got, c.reason)
+		}
+		if want := `{"event":"connection","state":"` + c.state + `"}`; strings.TrimSpace(out.String()) != want {
+			t.Errorf("%T went out as %s, want %s", c.event, out.String(), want)
+		}
+	}
+
+	var out bytes.Buffer
+	e := &engine{out: newWire(&out)}
+	e.handle(&events.Disconnected{})
+	if got := e.endedBy(); got != nil {
+		t.Errorf("a dropped connection kept %+v; the engine reconnects after one", got)
 	}
 }
 
