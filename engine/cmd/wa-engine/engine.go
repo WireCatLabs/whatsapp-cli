@@ -32,11 +32,14 @@ type engine struct {
 	mu     sync.Mutex
 	chats  map[string]waChat // seen in this process, for resolving a name
 	groups []waChat          // fetched once, on the first directory request
+
+	addressing map[types.JID]types.AddressingMode // per group, asked once
 }
 
 func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLog.Logger) *engine {
 	ctx, stop := context.WithCancel(ctx)
-	e := &engine{ctx: ctx, stop: stop, client: whatsmeow.NewClient(device, logger), out: out, chats: map[string]waChat{}}
+	e := &engine{ctx: ctx, stop: stop, client: whatsmeow.NewClient(device, logger), out: out, chats: map[string]waChat{},
+		addressing: map[types.JID]types.AddressingMode{}}
 	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf}
 	e.refreshSelf()
 	e.client.AddEventHandler(e.handle)
@@ -145,6 +148,14 @@ func (e *engine) dispatch(req request) (any, error) {
 		return e.chat(req.JID)
 	case "send":
 		return e.send(req)
+	case "edit":
+		return e.edit(req)
+	case "revoke":
+		return nil, e.revoke(req)
+	case "react":
+		return nil, e.react(req)
+	case "read":
+		return nil, e.markRead(req)
 	case "logout":
 		return nil, e.client.Logout(e.ctx)
 	}
