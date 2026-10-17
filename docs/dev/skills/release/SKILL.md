@@ -71,8 +71,10 @@ a document) and rule 7 (nothing on the wire says "whatsapp-cli") are read in the
 A messenger CLI is released only with a report the owner signed for that commit (`WC-REL-10`). Write
 `docs_ai/releases/whatsapp-cli/<version>.md` in the main checkout's `docs_ai/` (cli-private): headed `# <version>`, what
 changed for a user, the results of steps 1 to 5, and `Commit: <sha>`, the full SHA of `main` after the release pull
-request merged. Leave out the `Signed off:` line: the owner adds it, with the date. **Never write it yourself.** Commit
-and push `docs_ai/`, then tell the owner the path. `bin/release` refuses to publish unless the report has the line
+request merged. When the release pull request is not merged yet, write `Commit: TO-FILL (tree must be <tree sha>)` with
+the tree of the up-to-date branch. Leave out the `Signed off:` line: the owner adds it, with the date. **Never write it
+yourself.** Commit and push `docs_ai/`, then tell the owner the path. The owner signs with `bin/sign-release`, which
+pulls `main`, checks its tree against the report, writes the commit and the dated sign-off, and pushes `docs_ai/`. `bin/release` refuses to publish unless the report has the line
 `Commit: <HEAD>` and a dated `Signed off: YYYY-MM-DD`; when it only folds the changelog or takes the next free number,
 it carries the report to the new commit itself.
 
