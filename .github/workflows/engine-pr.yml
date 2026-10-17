@@ -1,0 +1,35 @@
+name: Engine
+
+# The shared standards job sets up no Go, so the engine's checks get their own path-scoped job (cli-base WC-CI-5).
+on:
+  pull_request:
+    paths:
+      - engine/**
+      - scripts/engine-packages.mjs
+      - .github/workflows/engine-pr.yml
+
+concurrency:
+  group: engine-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: engine/go.mod
+          cache-dependency-path: engine/go.sum
+      - run: |
+          unformatted=$(gofmt -l .)
+          [ -z "$unformatted" ] || { echo "::error::not gofmt-formatted: $unformatted"; exit 1; }
+          go vet ./... && go test ./...
+        working-directory: engine
+      - run: node scripts/engine-packages.mjs notices --check
