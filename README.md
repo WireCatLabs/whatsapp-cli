@@ -180,6 +180,12 @@ Everything that is not specific to WhatsApp — the commands, the store, the sen
 More: [ARCHITECTURE](docs/dev/ARCHITECTURE.md) · [TESTING](docs/dev/TESTING.md) · [all pages](docs/README.md) ·
 [changelog](CHANGELOG.md)
 
+## Contributing
+
+Pull requests, bug reports and ideas are welcome in [issues](https://github.com/WireCatLabs/whatsapp-cli/issues).
+
+Custom automation with WhatsApp, other messengers and AI agents: [info@neirox.ai](mailto:info@neirox.ai).
+
 ## License
 
 [Apache-2.0](LICENSE).

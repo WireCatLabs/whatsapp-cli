@@ -21,9 +21,10 @@ src/engine/           the engine port and its contract (JSON lines)
 engine/               the Go engine: whatsmeow in a child process   Go
 ```
 
-Dependencies point down only. `biome.json` enforces it: `src/commands/` reaches neither the adapter nor the
-engine; `src/adapter/` never reaches commands, the program, the messenger or the shared store; `src/engine/` never
-imports cli-core at all.
+Dependencies point down only. `biome.json` enforces it: nothing in `src/` above the adapter reaches the adapter or
+the engine, except the composition root that starts them (`src/messenger.ts`, and `src/diagnose.ts` for `doctor`);
+`src/adapter/` never reaches commands, the program, the messenger or the shared store; `src/engine/` never imports
+cli-core at all.
 
 ## 3. History comes from the store
 

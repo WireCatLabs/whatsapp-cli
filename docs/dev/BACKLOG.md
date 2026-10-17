@@ -7,6 +7,12 @@ Open work, most important first. The plan in flight is
    2026-10-17: `serve` receiving a message from the phone and saving it; send, `--md` send, edit, reaction add and
    remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
    `session start` keeping the history push, `self()` set right after pairing.
+2. **An agent over MCP can delete for everyone.** cli-core 0.317.0's MCP `messages delete` takes `for_everyone`, and
+   at the default `ask` level MCP acts without a form, so an agent can revoke a WhatsApp message for everyone (read
+   from the installed code, not run) — the standard says no level lifts that (cli-core STANDARD, Permissions, rule 4).
+   cli-core 0.321.0 drops the argument and refuses with `permission_error` for a messenger that sets
+   `Messenger.deleteForMe: false`. Fix: raise cli-core to 0.321.0 or later, set `deleteForMe: false` in
+   `src/messenger.ts`, and test the refusal over MCP.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
@@ -82,3 +88,16 @@ Open work, most important first. The plan in flight is
     form then splits in two (item 3). Build it with item 3, or only before a chat is first emitted.
 12. **cli-core could resolve names from the store for `history: "store"` messengers.** Today it always asks the
     adapter, so the engine keeps its own small chat directory (ARCHITECTURE §4). Raise it in cli-core.
+13. **Standards gaps left by the 2026-10-17 audit** (the handbook's areas, where a fix needs design):
+    - **No Go check on a pull request.** `go vet`, `go test` and `gofmt` run only in full validation (`ci.yml`), so
+      a broken engine first shows on `main`. A Go step in `standards.yml` needs Go set up from `engine/go.mod` and
+      stays inside the two-minute `ci:quick` ceiling.
+    - **`engine/cmd/wa-engine/groups.go` is over 500 lines** (MODULARITY: split or explain). Biome's cap covers only
+      TypeScript.
+    - **Two `setup` tests wait for real** (`--timeout 100ms` in `src/commands/setup.test.ts`); a wait goes through an
+      injected sleep (cli-base TESTING).
+    - **The engine packages carry no third-party notices.** Each ships a binary linking whatsmeow (MPL-2.0) and
+      BSD/MIT Go modules, with only wa's own LICENSE beside it; tg ships `THIRD_PARTY_NOTICES`.
+    - **User pages tg has and wa lacks** for commands wa mounts: `attachments`, `replies`; and the README misses
+      tg's "Log in and profiles", "Groups you run", "Limits" and "Technical docs" sections (cli-core STANDARD,
+      Documents).

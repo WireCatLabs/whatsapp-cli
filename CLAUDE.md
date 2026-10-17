@@ -19,6 +19,17 @@ Security audits of this repository follow the shared
 [security method](https://github.com/WireCatLabs/cli-testing/tree/main/docs/security) in cli-testing;
 vulnerabilities are reported as the [security policy](SECURITY.md) says.
 
+## Standards
+
+Every WireCat CLI follows the [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md)
+(also in `node_modules/@wirecat/cli-base/docs/standards/`). Read the page for the area you change before changing
+it. The handbook wins over this file and over every document in this repository; a rule here may be stricter, never
+looser.
+
+## Local rules
+
+What holds for `wa` alone, on top of the handbook:
+
 1. **This is the owner's real WhatsApp account.** Nothing sends, marks read or sends presence unless the command
    typed asked for it (delivery receipts are normal client behaviour and stay on); live checks send only to the owner's own chat. Never message a number the owner has not
    written to, never in bulk — WhatsApp bans accounts for both.
@@ -26,12 +37,14 @@ vulnerabilities are reported as the [security policy](SECURITY.md) says.
 3. **One-shot means the process exits.** Whatever starts the engine stops it on every exit path.
 4. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
    starts the engine.
-5. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces it.
+5. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain; only the composition
+   root (`src/messenger.ts`, `src/diagnose.ts`) starts the engine. `biome.json` enforces it.
 6. **The device keys (`private.db`), messages and phone numbers never reach a log, a fixture or a document.**
 7. **On the wire we look like a browser, not like ourselves.** No "whatsapp-cli" in any field WhatsApp sees.
+8. **Go code in `engine/` follows `gofmt` and `go vet`.** `pnpm engine:test` and full validation check both.
 
 Conventional commits, a branch and a PR per change. The pre-commit hook checks staged lint and secrets. Comments
-sparse, only *why*. Go code in `engine/` follows `gofmt` and `go vet`.
+sparse, only *why*.
 
 ## Development check budget
 
