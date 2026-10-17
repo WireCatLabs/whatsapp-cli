@@ -140,9 +140,13 @@ describe("wa messages send", () => {
       throw new EngineError("outcome_unknown", "WhatsApp did not confirm the message; it may have been sent")
     }
     const result = await wa(["unconfirmed", "messages", "send", seed.dialog, marker, "--json"], () => engine)
-    expect(result.code).not.toBe(0)
+    expect(result.code).toBe(14)
     expect(result.stdout).toBe("")
-    expect(JSON.parse(result.stderr).error.code).toBe("outcome_unknown")
+    expect(JSON.parse(result.stderr).error).toMatchObject({
+      code: "outcome_unknown",
+      details: { operation_id: expect.any(String) },
+      retry: { safe: false },
+    })
     expect(result.stderr).not.toContain(marker)
   })
 
