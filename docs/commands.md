@@ -14,8 +14,8 @@ wa [profile] [options] <resource> <verb> [arguments]
 ```
 
 **The first word is the profile** when it is not a command: `wa work chats list` lists the chats of
-profile `work`. `WA_PROFILE` does the same for a whole shell session, and `defaultProfile` in the
-config file for good. **No profile is assumed**, not even the only one: without any of them, a command
+profile `work`. `WA_PROFILE` does the same for a whole shell session; no setting in the config file
+picks one. **No profile is assumed**, not even the only one: without either, a command
 that uses an account stops with exit 2 and lists the profiles on this computer. Commands that use no
 account (`--help`, `--version`, `commands`, `skill show`, `account list`, `config show`) run
 without one.

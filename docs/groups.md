@@ -103,7 +103,9 @@ points at its message and never copies it. Where a rule opens one:
   your tasks.
 - **A channel or the chat with yourself:** nothing.
 
-Your answer closes the task. To record every question in a group, whoever it is for, tag the group:
+Your answer closes the task. To record every question in a group, whoever it is for, tag the group. In a tagged
+group a direct reply from any member other than the one who asked also closes the question; a later message that
+does not reply to it closes nothing:
 
 ```sh
 wa personal tags add --chat 120363000000000001@g.us watch-tasks

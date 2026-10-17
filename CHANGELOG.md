@@ -21,6 +21,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   after a ban, until `wa <profile> doctor --online` connects again. Reactions and read receipts are not held.
   `doctor --online` reports a ban as `standing.state: "frozen"` (it said `banned`, which held nothing).
   `wa <profile> flood clear` lifts either hold. Both lengths are a default the owner may change.
+- **`commands --json` marks more commands `mcp: false`** (cli-core 0.326.0, WC-MCP-2): `store`, `server`, `config`,
+  `mcp`, `models`, `images models`, `skill`, `runs`, `doctor report`, `upgrade`, `complete`, `commands schema`,
+  `account sessions end`, and the commands that change a later run's authority (`recipients`, `chats rules`). The
+  MCP tool list `wa mcp` serves is unchanged.
+- **In a group tagged `watch-tasks`, any member's direct reply closes a question** (cli-core 0.325.0), with the
+  resolution "answered in the group". Before, only your answer closed it; a later message that does not reply to the
+  question still closes nothing.
 - **A device linked before answers without counts** (WC-OUT-13). `session start --json` leaves out `received`, and
   `setup --json` leaves out `history`, when the profile was already linked: nothing was pushed, so nothing was
   counted. They used to say 0, which read as "the phone pushed nothing".
@@ -84,6 +91,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`session end` no longer runs through a running `serve`**: it logged out `serve`'s own connection and then
   deleted the device keys under it. It now refuses with `provider_unavailable`, reason `device.in-use` (exit 12),
   and says to stop `serve` first (`wa <profile> server stop`, or Ctrl+C).
+- **The command reference no longer says `defaultProfile` in the config file picks a profile** (WC-ACCT-1): no
+  setting does; the first word or `WA_PROFILE` names it.
 - **Refusals name the whole command to run next**: `wa <profile> chats list`, `wa <profile> serve` and
   `wa <profile> session start`, where they said only `chats list`, `serve` or `session start`.
 - **No `messages sync` advice `wa` cannot follow** (cli-core 0.322.0): where a command points at the store's gaps it
