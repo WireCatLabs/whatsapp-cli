@@ -61,7 +61,7 @@ delete a message for yourself alone on the phone. Nothing is marked read unless 
 
 `wa upgrade` installs the newest version with the package manager that installed `wa`, and restarts each running
 server. `wa upgrade --check` only says what it would run. Once a day `wa` says on stderr when a newer version exists;
-`WA_NO_UPDATE_CHECK=1` or `update_check: false` in the settings turns that off. `upgrade` does not yet update the
-WhatsApp engine program.
+`WA_NO_UPDATE_CHECK=1` or `update_check: false` in the settings turns that off. The engine comes as a package of
+`wa`, so it updates with it.
 
 Every command and option is on the [commands page](commands.md).
