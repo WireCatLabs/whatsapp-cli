@@ -88,6 +88,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`session`, `session start`, `session end` and `setup` carry `mcp: false`** in `commands --json` (WC-CMD-21):
   linking waits for a person and unlinking removes the owner's device, so neither will be offered to an agent once
   MCP tools are built from commands. `setup` and `upgrade` list examples there too (WC-CMD-24).
+- **The engine packages are GPL-3.0-only**: `@wirecat/whatsapp-engine-*` and the `engine/` folder they are built
+  from, because the engine links `go.mau.fi/libsignal` (GNU General Public License 3.0). Each package carries the
+  GPL text as `LICENSE` and a README that points at the release tag holding its source. `@wirecat/whatsapp-cli`
+  stays Apache-2.0: it runs the engine as a separate program over stdin and stdout, and its package never carries
+  the engine.
 - **Each engine package carries `THIRD_PARTY_NOTICES`**: the licence of every Go module the engine links and of Go
   itself, with where each module's source is. whatsmeow and `go.mau.fi/util` are under the Mozilla Public License
   2.0 and `go.mau.fi/libsignal` under the GNU General Public License 3.0, all unmodified.

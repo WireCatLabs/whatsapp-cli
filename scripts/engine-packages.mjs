@@ -117,7 +117,7 @@ const notices = () => {
   const header = [
     "Third-party material in the wa engine",
     "",
-    "bin/wa-engine is built from whatsapp-cli's engine/ (Apache-2.0, see LICENSE) and statically links the Go",
+    "bin/wa-engine is built from whatsapp-cli's engine/ (GPL-3.0-only, see LICENSE) and statically links the Go",
     "modules below and the Go standard library, all unmodified. Each module's licence files follow as they ship",
     "in that module at the version listed, with where its source is. Under a copyleft licence:",
     "",
@@ -127,6 +127,33 @@ const notices = () => {
   ].join("\n")
   writeFileSync(noticesPath, [header, ...sections].join(SEPARATOR))
   console.log(`${noticesPath} — ${sections.length} components`)
+}
+
+const ENGINE_LICENSE = "GPL-3.0-only"
+const REPOSITORY = "https://github.com/WireCatLabs/whatsapp-cli"
+
+const readme = (target) => {
+  const source = `${REPOSITORY}/tree/v${manifest.version}`
+  return [
+    `# ${packageName(target)}`,
+    "",
+    `The WhatsApp engine of [${manifest.name}](https://www.npmjs.com/package/${manifest.name}) for ${target}: the`,
+    "Go program `bin/wa-engine`, which the CLI starts as a child process and talks to over stdin and stdout.",
+    "Install the CLI, not this package; npm adds the engine for your system on its own.",
+    "",
+    "## Licence",
+    "",
+    `${ENGINE_LICENSE} (see LICENSE). The engine links go.mau.fi/libsignal, which is under the GNU General Public`,
+    "License 3.0. The CLI itself is a separate program under Apache-2.0. THIRD_PARTY_NOTICES lists every Go module",
+    "the binary links, its licence and where its source is.",
+    "",
+    "## Source",
+    "",
+    `The corresponding source of this binary is the tag v${manifest.version} of the public repository,`,
+    `<${source}>. The engine is in \`engine/\`; \`scripts/engine-packages.mjs\` builds it with`,
+    "`go build -trimpath` and `CGO_ENABLED=0` for each target.",
+    "",
+  ].join("\n")
 }
 
 const build = (target) => {
@@ -148,19 +175,22 @@ const build = (target) => {
     },
   )
   chmodSync(binary, 0o755)
-  copyFileSync(join(root, "LICENSE"), join(dir, "LICENSE"))
+  copyFileSync(join(engineDir, "LICENSE"), join(dir, "LICENSE"))
   copyFileSync(noticesPath, join(dir, "THIRD_PARTY_NOTICES"))
+  writeFileSync(join(dir, "README.md"), readme(target))
   const engine = {
     name: packageName(target),
     version: manifest.version,
     description: `The WhatsApp engine of ${manifest.name} for ${target}`,
-    license: manifest.license,
+    // The engine links go.mau.fi/libsignal (GPL-3.0) through whatsmeow; the CLI stays Apache-2.0 because it only
+    // talks to this binary over stdin and stdout.
+    license: ENGINE_LICENSE,
     author: manifest.author,
     // npm provenance refuses a package whose repository is not the one that built it.
     repository: manifest.repository,
     os: [os],
     cpu: [cpu],
-    files: ["bin", "LICENSE", "THIRD_PARTY_NOTICES"],
+    files: ["bin", "LICENSE", "README.md", "THIRD_PARTY_NOTICES"],
     publishConfig: { access: "public" },
   }
   writeFileSync(join(dir, "package.json"), `${JSON.stringify(engine, null, 2)}\n`)

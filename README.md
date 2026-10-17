@@ -276,4 +276,8 @@ Custom automation with WhatsApp, other messengers and AI agents: [info@neirox.ai
 
 ## License
 
-[Apache-2.0](LICENSE).
+The CLI is [Apache-2.0](LICENSE). The engine is not: the Go program in [`engine/`](engine/) and the
+`@wirecat/whatsapp-engine-*` packages that carry it are [GPL-3.0-only](engine/LICENSE), because the engine links
+go.mau.fi/libsignal, which is under the GNU General Public License 3.0, through whatsmeow. The two are separate
+programs: `wa` starts the engine as a child process and talks to it only over stdin and stdout. Each engine package
+says where its source is and lists every Go module it links in `THIRD_PARTY_NOTICES`.

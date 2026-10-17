@@ -1,6 +1,6 @@
 Third-party material in the wa engine
 
-bin/wa-engine is built from whatsapp-cli's engine/ (Apache-2.0, see LICENSE) and statically links the Go
+bin/wa-engine is built from whatsapp-cli's engine/ (GPL-3.0-only, see LICENSE) and statically links the Go
 modules below and the Go standard library, all unmodified. Each module's licence files follow as they ship
 in that module at the version listed, with where its source is. Under a copyleft licence:
 
