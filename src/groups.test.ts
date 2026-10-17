@@ -2,7 +2,6 @@ import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
-import { ADMIN_RIGHTS } from "./adapter/groups.js"
 import type { WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
@@ -91,14 +90,16 @@ describe("wa chats members", () => {
 })
 
 describe("wa chats admins", () => {
-  it("promotes a member only with every right a WhatsApp admin has", async () => {
-    const partial = await acting("chats", "admins", "add", seed.busy, seed.person, "--can", "members")
-    expect(partial.code).toBe(2)
-    expect(partial.done).toEqual([])
+  it("promotes a member with every right, since a WhatsApp admin has them all", async () => {
+    const result = await acting("chats", "admins", "add", seed.busy, seed.person)
+    expect(result.code).toBe(0)
+    expect(result.done).toEqual([{ op: "promote", jid: seed.busy, people: [seed.person] }])
+  })
 
-    const whole = await acting("chats", "admins", "add", seed.busy, seed.person, "--can", ADMIN_RIGHTS.join(","))
-    expect(whole.code).toBe(0)
-    expect(whole.done).toEqual([{ op: "promote", jid: seed.busy, people: [seed.person] }])
+  it("offers no --can to pick rights", async () => {
+    const result = await acting("chats", "admins", "add", seed.busy, seed.person, "--can", "members")
+    expect(result.code).toBe(2)
+    expect(result.done).toEqual([])
   })
 
   it("demotes an admin", async () => {
@@ -151,6 +152,42 @@ describe("wa chats create, join, leave, update, link", () => {
       { op: "updateGroup", jid: seed.busy, change: { addMode: "admin_add", approval: true } },
     ])
     expect(result.body.chat.settings).toMatchObject({ only_admins_add: true, join_approval: true })
+  })
+
+  it("turns on admin-only sending and info, and disappearing messages, in WhatsApp's terms", async () => {
+    const result = await acting(
+      "chats",
+      "update",
+      seed.busy,
+      "--only-admins-send",
+      "on",
+      "--only-admins-edit-info",
+      "on",
+      "--disappear-time",
+      "7d",
+    )
+    expect(result.code).toBe(0)
+    expect(result.done).toEqual([
+      { op: "updateGroup", jid: seed.busy, change: { announce: true, locked: true, ephemeral: 604_800 } },
+    ])
+    expect(result.body.chat.settings).toMatchObject({
+      only_admins_send: true,
+      only_admins_edit_info: true,
+      disappearing_seconds: 604_800,
+    })
+  })
+
+  it("turns disappearing messages off", async () => {
+    const result = await acting("chats", "update", seed.busy, "--disappear-time", "off")
+    expect(result.code).toBe(0)
+    expect(result.done).toEqual([{ op: "updateGroup", jid: seed.busy, change: { ephemeral: 0 } }])
+  })
+
+  it("refuses a disappearing time WhatsApp does not offer, and changes nothing", async () => {
+    const result = await acting("chats", "update", seed.busy, "--disappear-time", "1h")
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr).error.message).toContain("24h, 7d or 90d")
+    expect(result.done).toEqual([])
   })
 
   it("shows the invite link and replaces it", async () => {

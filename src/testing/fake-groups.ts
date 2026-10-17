@@ -51,9 +51,9 @@ export const fakeGroups = (seed: Seed, chats: WaChat[]): FakeGroups => {
       link: withLink ? LINK : null,
       addMode: change.addMode ?? "all_member_add",
       approval: change.approval ?? false,
-      announce: false,
-      locked: false,
-      ephemeral: 0,
+      announce: change.announce ?? false,
+      locked: change.locked ?? false,
+      ephemeral: change.ephemeral ?? 0,
       members,
     })
   }

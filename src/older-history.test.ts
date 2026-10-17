@@ -97,13 +97,21 @@ describe("older history from the phone", () => {
     })
   })
 
-  // cli-core refuses `messages sync` for a messenger whose history is pushed (archive.ts, `pushed`). When it lets an
-  // adapter with `history` through, this test should change to expect the phone's messages in the store.
-  it("is not reachable from `messages sync` until cli-core allows it", async () => {
+  // Last: the page it stores moves the chat's oldest message, which the tests above count back from.
+  it("asks the phone through `messages sync <chat>` and stores the page", async () => {
     const engine = fakeEngine(seed, { phone: onPhone })
-    const result = await wa(["older", "messages", "sync", seed.busy, "--json"], () => engine)
-    expect(result.code).not.toBe(0)
-    expect(JSON.parse(result.stderr).error.message).toContain("serve")
+    const argv = ["older", "messages", "sync", seed.busy, "--limit", "50", "--pause", "1ms", "--no-catch-up", "--json"]
+    const result = await wa(argv, () => engine)
+    expect(result.code).toBe(0)
+    expect(engine.olderAsked).toHaveLength(1)
+    expect(await stored.message(seed.busy, onPhone[0]?.id ?? "")).toMatchObject({ id: onPhone[0]?.id })
+  })
+
+  it("still refuses `messages sync --all`: there is no chat list to walk", async () => {
+    const engine = fakeEngine(seed, { phone: onPhone })
+    const result = await wa(["older", "messages", "sync", "--all", "--json"], () => engine)
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr).error.message).toContain("name one chat")
     expect(engine.olderAsked).toEqual([])
   })
 })

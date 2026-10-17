@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**94 ✅ · 677 ⛔ · 0 ❌** — 242 commands, 529 options.
+**100 ✅ · 673 ⛔ · 0 ❌** — 242 commands, 531 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -68,6 +68,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats update` | `--description` | ✅ |  |
 | `chats update` | `--only-admins-add` | ✅ |  |
 | `chats update` | `--join-approval` | ✅ |  |
+| `chats update` | `--only-admins-send` | ✅ |  |
+| `chats update` | `--only-admins-edit-info` | ✅ |  |
+| `chats update` | `--disappear-time` | ✅ |  |
 | `chats link show` |  | ✅ |  |
 | `chats link reset` |  | ✅ |  |
 | `chats requests list` |  | ✅ |  |
@@ -76,7 +79,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats requests accept` |  | ✅ |  |
 | `chats requests decline` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `chats admins add` |  | ✅ |  |
-| `chats admins add` | `--can` | ✅ |  |
 | `chats admins remove` |  | ✅ |  |
 | `chats folders list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `chats folders show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -196,19 +198,19 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages comments` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages links` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages sync` |  | ✅ |  |
-| `messages sync` | `--all` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--limit` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--page-size` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--pause` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--since-time` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--last` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--catch-up` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--no-catch-up` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--catch-up-chunks` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--catch-up-messages` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--catch-up-time` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--background` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
-| `messages sync` | `--dry-run` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--all` | ✅ |  |
+| `messages sync` | `--limit` | ✅ |  |
+| `messages sync` | `--page-size` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--pause` | ✅ |  |
+| `messages sync` | `--since-time` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--last` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--catch-up` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--no-catch-up` | ✅ |  |
+| `messages sync` | `--catch-up-chunks` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--catch-up-messages` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--catch-up-time` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--background` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--dry-run` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
 | `reactions add` |  | ✅ |  |
 | `reactions remove` |  | ✅ |  |
 | `polls show` |  | ✅ |  |

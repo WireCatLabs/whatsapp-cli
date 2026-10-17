@@ -94,14 +94,10 @@ export const UNTESTED: Untested[] = [
       "and cli-core's src/speech tests drive the local model",
   })),
   ...[
-    "--all",
-    "--limit",
     "--page-size",
-    "--pause",
     "--since-time",
     "--last",
     "--catch-up",
-    "--no-catch-up",
     "--catch-up-chunks",
     "--catch-up-messages",
     "--catch-up-time",
@@ -111,8 +107,8 @@ export const UNTESTED: Untested[] = [
     command: "messages sync",
     option,
     reason:
-      "cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read " +
-      "(src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly",
+      "cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through " +
+      "run() and its older-history paging are tested in src/older-history.test.ts",
   })),
   ...["--silent", "--send-as"].map((option) => ({
     command: "messages forward",

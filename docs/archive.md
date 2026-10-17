@@ -4,7 +4,7 @@
 want that saved history to be current: to search it, to let your agent answer without connecting, or to export a
 chat to a file.
 
-After reading it you know what `wa` saves and where, why it cannot download older history from WhatsApp, how to
+After reading it you know what `wa` saves and where, how to ask your phone for older history, how to
 keep the store current while you are away, how to export and back it up, and how to check it is healthy.
 
 Terms used on this page:
@@ -18,18 +18,20 @@ Terms used on this page:
 
 ## Where the history comes from
 
-WhatsApp has no request for "chats" or "older messages". Two things fill the store, and nothing else:
+WhatsApp has no request for "chats". Three things fill the store, and nothing else:
 
 - **The history push** right after linking. `wa <profile> session start` and `setup` keep the connection open and
   save it, until the phone has been quiet for 45 seconds.
 - **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send. An edit
   keeps the message's own time, reply and reactions; only an edit of a message the store lacks is saved with the
   edit's time.
+- **`messages sync <chat>`**: older messages of one chat, asked of your phone
+  ([below](#older-history-from-your-phone)).
 
 So a chat holds what the phone pushed and what arrived while `serve` ran. A message that arrived while nothing was
 connected may still come when `serve` starts again.
 
-### Why it cannot download older history
+### Older history from your phone
 
 WhatsApp keeps no copy of your chats on its servers: the only full copy is on your phone. So there is no download, only
 a request to the phone: "send me the 50 messages of this chat before this one". `wa` counts back from the oldest
@@ -37,8 +39,9 @@ message of the chat the store already holds, so a chat the store has nothing of 
 answers only while it is on and connected, and may take seconds or not answer at all; then the request fails with
 `timeout` and nothing is lost.
 
-`wa` can make this request, but `messages sync` does not use it yet: today it refuses, saying the history is pushed.
-It is next on the [roadmap](roadmap.md). Until then, what the phone never pushed stays out of the store.
+`wa personal messages sync <chat>` makes this request, page after page, at least 2 seconds apart, until it reaches
+`--limit` or the chat's start. It asks about one chat at a time: `--all` is refused, as WhatsApp has no chat list to
+walk.
 
 ## What you can do
 

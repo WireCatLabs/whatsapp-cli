@@ -88,7 +88,7 @@ wa setup [options]
 | Option | What it does |
 |---|---|
 | `--agent <agent>` | install the skill for this agent; asks at a terminal, otherwise none. One of: `none`, `codex`, `cursor`, `claude`, `gemini`, `all`. |
-| `--method <method>` | how to link when the profile has no device. One of: `qr`, `phone`. Default: `qr`. |
+| `--method <method>` | how to log in when there is no session. One of: `qr`, `phone`. Default: `qr`. |
 | `--qr-file <png>` | write a temporary QR image for an agent to pass on; works without a terminal. |
 
 ## `wa account`
@@ -494,6 +494,9 @@ wa chats update <chat> [options]
 | `--description <text>` | the new description. |
 | `--only-admins-add <on\|off>` | only admins may add members. |
 | `--join-approval <on\|off>` | people ask to join, and an admin lets them in. |
+| `--only-admins-send <on\|off>` | only admins may send messages. |
+| `--only-admins-edit-info <on\|off>` | only admins may change the name, photo and description. |
+| `--disappear-time <duration\|off>` | new messages disappear this long after sending: 24h, 7d, 90d; off keeps them. |
 
 ### `wa chats link`
 
@@ -583,22 +586,18 @@ give or take back a member's admin rights
 
 #### `wa chats admins add`
 
-make a member an admin with these rights
+make a member an admin, with every right: members, admins, info, pin, link, post, delete
 
 **Changes something in WhatsApp.**
 
 ```sh
-wa chats admins add <chat> <person> [options]
+wa chats admins add <chat> <person>
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `person` | required | an id, or part of a name. |
-
-| Option | What it does |
-|---|---|
-| `--can <rights>` | what they may do, comma-separated: members, admins, info, pin, link, post, delete. |
 
 #### `wa chats admins remove`
 

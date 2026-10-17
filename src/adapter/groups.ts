@@ -33,10 +33,7 @@ export type GroupAdapter = Required<
   >
 >
 
-/**
- * What a WhatsApp admin may do. WhatsApp has one kind of admin, with all of these at once, so `admins add` takes
- * all of them or none.
- */
+/** What a WhatsApp admin may do. WhatsApp has one kind of admin, with all of these at once. */
 export const ADMIN_RIGHTS = [
   "members",
   "admins",
@@ -47,15 +44,21 @@ export const ADMIN_RIGHTS = [
   "delete",
 ] as const satisfies AdminRight[]
 
-/** The switches of cli-core's `chats update` that WhatsApp has the same way; announce, locked and ephemeral it has not. */
-export const GROUP_SETTINGS = ["onlyAdminsAdd", "joinApproval"] as const
+/** The switches of cli-core's `chats update` that WhatsApp has. */
+export const GROUP_SETTINGS = [
+  "onlyAdminsAdd",
+  "joinApproval",
+  "onlyAdminsSend",
+  "onlyAdminsEditInfo",
+  "disappearingSeconds",
+] as const
+
+/** The timers WhatsApp's apps offer, in seconds; its server refuses any other in a group. */
+const DISAPPEARING_SECONDS = [0, 86_400, 604_800, 7_776_000]
 
 const isPerson = (id: string) => id.endsWith("@lid") || id.endsWith("@s.whatsapp.net")
 
-/**
- * A group as `chats update` and `chats create` answer it. WhatsApp's switches that cli-core has no name for go in
- * `providerMetadata`, so they are shown rather than dropped.
- */
+/** A group as `chats update` and `chats create` answer it. */
 export const toGroupCard = (group: WaGroup): GroupCard => {
   const chat = toChat(group.chat)
   return {
@@ -69,9 +72,6 @@ export const toGroupCard = (group: WaGroup): GroupCard => {
       onlyOwnerEditsInfo: null,
       membersSeeLink: null,
       joinApproval: group.approval,
-    },
-    providerMetadata: {
-      ...chat.providerMetadata,
       onlyAdminsSend: group.announce,
       onlyAdminsEditInfo: group.locked,
       disappearingSeconds: group.ephemeral,
@@ -184,13 +184,18 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo }: GroupDeps
       const missing = Object.keys(settings).filter((key) => !(GROUP_SETTINGS as readonly string[]).includes(key))
       if (missing.length > 0)
         throw new CliError("validation_error", `WhatsApp has no group setting ${missing.join(", ")}`)
-      const { onlyAdminsAdd, joinApproval } = settings
+      const { onlyAdminsAdd, joinApproval, onlyAdminsSend, onlyAdminsEditInfo, disappearingSeconds } = settings
+      if (typeof disappearingSeconds === "number" && !DISAPPEARING_SECONDS.includes(disappearingSeconds))
+        throw new CliError("validation_error", "WhatsApp makes messages disappear after 24h, 7d or 90d; off keeps them")
       const group = await translated(
         engine.updateGroup(await groupId(chatId), {
           ...(title === undefined ? {} : { title }),
           ...(description === undefined ? {} : { description }),
           ...(typeof onlyAdminsAdd === "boolean" ? { addMode: onlyAdminsAdd ? "admin_add" : "all_member_add" } : {}),
           ...(typeof joinApproval === "boolean" ? { approval: joinApproval } : {}),
+          ...(typeof onlyAdminsSend === "boolean" ? { announce: onlyAdminsSend } : {}),
+          ...(typeof onlyAdminsEditInfo === "boolean" ? { locked: onlyAdminsEditInfo } : {}),
+          ...(typeof disappearingSeconds === "number" ? { ephemeral: disappearingSeconds } : {}),
         }),
       )
       return toGroupCard(group)
@@ -209,13 +214,7 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo }: GroupDeps
       await translated(engine.participants(await groupId(chatId), "remove", people))
     },
 
-    addAdmin: async (chatId, person, rights) => {
-      const missing = ADMIN_RIGHTS.filter((right) => !rights.includes(right))
-      if (missing.length > 0)
-        throw new CliError(
-          "validation_error",
-          `a WhatsApp admin gets every right at once — give --can ${ADMIN_RIGHTS.join(",")}`,
-        )
+    addAdmin: async (chatId, person) => {
       await translated(engine.participants(await groupId(chatId), "promote", [person]))
     },
 

@@ -39,8 +39,7 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   one of the chat on the first page, then the newest stored at or before the time the last page reached. Its
   answer is saved by cli-core like any server read. A phone that does not answer is `timeout`, never an empty page,
   since an empty page tells cli-core the chat's start is held. `fetching.maxPageSize` is 50, what WhatsApp's own
-  clients ask. cli-core still refuses `messages sync` for a `history: "store"` messenger, so nothing reaches it yet
-  ([BACKLOG.md](BACKLOG.md)).
+  clients ask. `historyOnDemand` lets `messages sync <chat>` reach it; `--all` stays refused.
 - **A file is fetched by the keys in the store.** whatsmeow needs a file's path on WhatsApp's servers and its keys
   to fetch and decrypt it. The engine sends them with each message as the attachment's `ref`, and cli-core keeps them
   as the opaque `providerRef`, never shown in an answer. `messages download` and `messages transcribe --local` look the
@@ -96,11 +95,13 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 - **Group and people requests** (`engine/cmd/wa-engine/groups.go`, `people.go`; the contract in
   [`src/engine/groups.ts`](../../src/engine/groups.ts)): `group` (with `withLink` for the invite link, which only
   admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,
-  `updateGroup` (name, description, `addMode`, `approval`), `resetLink`, `participants` (`add`, `remove`, `promote`,
+  `updateGroup` (name, description, `addMode`, `approval`, `announce`, `locked`, `ephemeral` — only WhatsApp's
+  timers, 0, 24h, 7d or 90d), `resetLink`, `participants` (`add`, `remove`, `promote`,
   `demote`; a phone-addressed group gets phone JIDs), `requests`, `answerRequest`, `profile` (`GetUserInfo` and the
   photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per profile, timed by
   `private.db.lookup`) and `contacts` (the address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
-  maps the two switches cli-core has (`onlyAdminsAdd`, `joinApproval`) and puts the rest in `providerMetadata`.
+  maps them onto cli-core's `onlyAdminsSend`, `onlyAdminsEditInfo` and `disappearingSeconds`, beside `onlyAdminsAdd`
+  and `joinApproval`.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

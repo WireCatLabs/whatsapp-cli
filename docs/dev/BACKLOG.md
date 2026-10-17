@@ -8,18 +8,13 @@ Open work, most important first. The plan in flight is
    remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
    `session start` keeping the history push, `self()` set right after pairing.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
-4. **Older history from the phone needs cli-core to let `messages sync` through.** The adapter's `history` and the
-   engine's `older` are built and tested; cli-core's `archiveService.fetch` calls `pushed()` and refuses every
-   `reads: "store"` messenger, before any connection exists. Fix in cli-core: a `Messenger` trait saying a pushed
-   history can still be read back one chat at a time (deciding from the connection would start the engine and take
-   the device's lock just to refuse); `--all` and `--dry-run` keep refusing (`fetchAll` needs `chats`, which wa has
-   not). Ask cli-core what reads `fetched:<chat>` (`completeness.ts` uses only its time): wa's first page is the
-   one before the oldest stored message, not the newest. While `serve` runs, a one-shot sync is refused by the lock
-   until wa declares `connection: "exclusive"` (cli-core 0.313.0's serve relay). Then flip the test in
-   `src/older-history.test.ts` and the docs that say it refuses. Live checks before calling it done (NEED-1387,
-   own chat only): whether the phone finds a chat named by its LID when it knows it by phone number; whether a
-   50-message answer comes in one `ON_DEMAND` chunk; whether the notification's `PeerDataRequestSessionID` equals the
-   request's message id, which would match an answer more surely than its chat.
+4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
+   (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
+   Ask cli-core what reads `fetched:<chat>` (`completeness.ts` uses only its time): wa's first page is the one before
+   the oldest stored message, not the newest. Live checks before calling it done (NEED-1387, own chat only): whether
+   the phone finds a chat named by its LID when it knows it by phone number; whether a 50-message answer comes in one
+   `ON_DEMAND` chunk; whether the notification's `PeerDataRequestSessionID` equals the request's message id, which
+   would match an answer more surely than its chat.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
    profiles, blocking, number lookup, Markdown and polls are built; what they left open:
    - **Poll votes are not counted.** whatsmeow decrypts a vote (`DecryptPollVote`, with the secret it keeps), but
@@ -40,13 +35,8 @@ Open work, most important first. The plan in flight is
      history is `"store"` (`fromStore` in its `services/chats`), and `chats members list` reads only the stored roster,
      so the adapter's `members` is reached by nothing but `chats moderate`. Fix in cli-core: refuse those two only
      with `--offline`.
-   - **Group switches cli-core has no name for**: announcement mode (only admins send), "only admins edit info"
-     (WhatsApp's `locked`; cli-core's `onlyOwnerEditsInfo` means the owner alone) and disappearing messages. The
-     engine reads them into `providerMetadata`; changing them needs keys in cli-core's `GroupSettings`.
    - **`chats events`.** WhatsApp's joins and leaves come as live notifications, not as history the engine can
      read back, so `chatEvents` is not built.
-   - **Admin rights.** A WhatsApp admin has every right; cli-core's `--can` cannot be empty, so `admins add` takes
-     the whole list. A messenger flag for "admins have no separate rights" would let it take none.
    - **Group names in a one-shot command.** The engine learns the joined groups only once connected, after cli-core
      resolved the chat, so a connecting command finds a group by its `…@g.us` id, not its name.
    - **The group photo** (`--photo`, whatsmeow's `SetGroupPhoto`) and **communities** are not built.
@@ -73,7 +63,6 @@ Open work, most important first. The plan in flight is
    npm's trusted publishing is set per package, and I think a package must exist on npm before it can trust a
    workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
    (`bin/release --local`) before `release.yml` can publish them.
-7. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
 8. **Replace the test-matrix waivers with tests.** `scripts/test-matrix-untested.ts` waives every shared command as
    tested in cli-core (736 options on 2026-10-16; 23 have wa tests). Each group that gets an engine path gets tests
    through `run()`, and its waiver goes.

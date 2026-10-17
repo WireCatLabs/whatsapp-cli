@@ -46,12 +46,9 @@ describe("group write authority", () => {
     expect(engine.groupActions).toEqual([{ op: "add", jid: seed.busy, people: ["100000000000099@lid"] }])
   })
 
-  it("refuses partial admin rights, history exposure and unsupported settings without writing", async () => {
+  it("refuses history exposure and unsupported settings without writing", async () => {
     const engine = fakeEngine(seed)
     const adapter = whatsAppAdapter(engine)
-    await expect(adapter.addAdmin(seed.busy, seed.person, ["members"])).rejects.toMatchObject({
-      code: "validation_error",
-    })
     await expect(adapter.addMembers(seed.busy, [seed.person], { history: true })).rejects.toMatchObject({
       code: "validation_error",
     })

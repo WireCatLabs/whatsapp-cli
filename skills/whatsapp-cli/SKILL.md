@@ -32,8 +32,8 @@ book on the phone).
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
-strangers; never work round it. `admins add` needs every right in `--can` (`members,admins,info,pin,link,post,delete`):
-a WhatsApp admin has all of them. A command that connects knows a group by its `…@g.us` id, not by its name.
+strangers; never work round it. `admins add` takes no `--can`: a WhatsApp admin has every right.
+`chats update --disappear-time` takes 24h, 7d, 90d or off, nothing else. A command that connects knows a group by its `…@g.us` id, not by its name.
 `contacts lookup` takes one number on stdin, at most one every 10 seconds per profile; never loop it.
 `contacts list`, `contacts show`, `contacts context` and `stats chats show` are marked as reading from WhatsApp: add
 `--offline` to keep them on the store.
@@ -43,10 +43,10 @@ a WhatsApp admin has all of them. A command that connects knows a group by its `
 - **History comes from the phone, not from a server.** WhatsApp has no "give me older messages" request. The phone
   pushes history once, seconds after the device links, and `wa <profile> serve` keeps receiving after that. Every
   read — `chats list`, `messages list`, `inbox`, `search` — answers from the local store and never connects. A
-  search answer may suggest `messages sync` to fill a gap: on WhatsApp it still refuses; the gap stays.
+  search answer may suggest `messages sync` to fill a gap: it asks the phone, for one chat only.
 - **Older history** can only be asked of the owner's phone, 50 messages at a time, counting back from the oldest
-  stored message of one chat. The phone must be online; no answer is exit `timeout`, not an empty chat. `wa` can make
-  the request, but `messages sync` does not use it yet — do not promise it to the owner.
+  stored message of one chat: `wa <profile> messages sync <chat>`. The phone must be online; no answer is exit
+  `timeout`, not an empty chat. `--all` is refused: there is no chat list to walk.
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp`.
@@ -118,7 +118,7 @@ first, then `wa setup --help` for the linking choices and `wa commands --json` f
 `wa skill install --for all` installs these instructions separately without linking.
 
 When the owner asks to connect WhatsApp, tell them: "Allow about five minutes. Your phone sends your recent chats
-once, right after linking; older history is not available." Ask which profile name they want; never pick one.
+once, right after linking; older messages can be asked of it one chat at a time." Ask which profile name they want; never pick one.
 
 - **The owner has a terminal:** `wa personal setup --agent claude` (or `codex`, `cursor`, `gemini`, `all`, `none`)
   in their own terminal. It checks the computer, links, reads the account and shows five chats.

@@ -168,8 +168,9 @@ default, and it cannot be undone. Deleting for yourself alone is not built: do t
 wa personal chats create "Hiking" 100000000000002@lid
 wa personal chats members add 120363000000000001@g.us 100000000000002@lid
 wa personal chats members remove 120363000000000001@g.us 100000000000003@lid
-wa personal chats admins add 120363000000000001@g.us 100000000000002@lid --can members,admins,info,pin,link,post,delete
+wa personal chats admins add 120363000000000001@g.us 100000000000002@lid
 wa personal chats update 120363000000000001@g.us --title "Hiking club" --only-admins-add on --join-approval on
+wa personal chats update 120363000000000001@g.us --only-admins-send on --disappear-time 7d
 wa personal chats link show 120363000000000001@g.us
 wa personal chats link reset 120363000000000001@g.us
 wa personal chats requests list 120363000000000001@g.us
@@ -182,12 +183,12 @@ wa personal chats leave 120363000000000001@g.us
   limit, like a send, and connects (through `serve` while it runs).
 - **Only people you know are added.** `chats create` and `members add` take someone in your address book or that you
   have written to, and refuse anyone else: WhatsApp bans accounts that add strangers.
-- **An admin has every right.** WhatsApp has one kind of admin, so `admins add` takes the whole list in `--can`.
+- **An admin has every right.** WhatsApp has one kind of admin, so `admins add` takes no `--can` and gives them all.
 - **One invite link.** A group has one link; `link reset` replaces it, and the old one stops working. Only admins see
   it.
-- **Settings.** `update` changes the name, the description, `--only-admins-add` and `--join-approval`. Announcement
-  mode, "only admins edit info" and disappearing messages show in the group's `provider_metadata` and are changed in
-  the app for now.
+- **Settings.** `update` changes the name, the description, `--only-admins-add`, `--join-approval`,
+  `--only-admins-send`, `--only-admins-edit-info` and `--disappear-time`. Messages disappear after 24h, 7d or 90d,
+  the times WhatsApp offers; any other is refused, and `off` keeps them.
 - **Name a group by its id** here: a command that connects knows group names only after it connects.
 - `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
 
