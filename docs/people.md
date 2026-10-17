@@ -54,7 +54,8 @@ wa personal contacts context 100000000000001@lid --chat 120363000000000001@g.us 
 - Each message is only its time and text, so an agent can read many of them at once. `-v` adds the message id, the
   sender and what it replies to; `-vv` gives the whole message.
 - `more: true` means there are older messages than the limit; `complete: false` means the store does not hold the
-  chat from its start. WhatsApp has no way to fetch the older part, so it stays a minimum.
+  chat from its start, so the answer is a minimum. `messages sync` asks the phone for the older part
+  ([older history](archive.md#older-history-from-your-phone)).
 
 ## One person in two messengers: `contacts link`
 
@@ -77,9 +78,9 @@ wa personal contacts alias set 100000000000001@lid Ana    # your own name for a 
 wa personal contacts alias rm 100000000000001@lid
 wa personal contacts notes add 100000000000001@lid --file note.txt  # or the text from stdin
 wa personal contacts notes list 100000000000001@lid
-wa personal contacts notes edit 100000000000001@lid <id> --revision 1 --file note.txt
-wa personal contacts notes remove 100000000000001@lid <id>
 ```
+
+`contacts notes edit` and `contacts notes remove` take the person, then the note's id, which `notes list` shows.
 
 Aliases and notes stay in the local store and never reach WhatsApp or the person's phone. An alias applies only in
 the account you use now; a note about a person shows in every profile on this computer that sees them. A command

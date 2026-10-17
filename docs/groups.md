@@ -22,7 +22,7 @@ Some words on this page:
 | Sum up a week: decisions, promises, open questions | `wa personal review 'date>7d'` |
 | Keep a list of what waits on you | `wa personal tasks list` |
 | See the week's activity | `wa personal stats chats show --offline` |
-| See one group and who is in it | `wa personal chats show` |
+| See one group and who is in it | `wa personal chats show`, `chats members list` |
 | Delete a message for everyone, as the group's admin | `wa personal messages delete --for-everyone` |
 | Make a group, join one by its link, or leave | `wa personal chats create`, `chats join`, `chats leave` |
 | Add or remove people, make someone an admin | `wa personal chats members add`, `chats admins add` |
@@ -117,10 +117,12 @@ wa personal tasks scan 120363000000000001@g.us
 wa personal tasks scan 120363000000000001@g.us --last 300 --yes
 ```
 
-When someone promises you something, keep it as their task, and list what others owe you:
+When someone promises you something, keep it as their task, and list what others owe you. The message locator, the
+task key `PR-4` and the other ids in this section are made up; take real ones from a search, a list or `tasks list`:
 
 ```sh
-wa personal tasks add <msg:locator> --type promise --category other --assignee sender
+wa personal tasks add msg:whatsapp/100000000000009%40lid/120363000000000001%40g.us/3EB0A1B2C3D4E5F6A7B8 \
+  --type promise --category other --assignee sender
 wa personal tasks list "assignee:any state:open"
 ```
 
@@ -137,7 +139,8 @@ wa personal tasks list 'chat:"120363000000000001@g.us" (kind:question OR kind:me
 Add what the rules cannot see, such as a promise you made, by the message's locator from a search or a list:
 
 ```sh
-wa personal tasks add <msg:locator> --type promise --category other
+wa personal tasks add msg:whatsapp/100000000000009%40lid/120363000000000001%40g.us/3EB0A1B2C3D4E5F6A7B8 \
+  --type promise --category other
 ```
 
 `tasks categories` lists the categories a task can take. If the task may be the same job as an open one, `tasks add`
@@ -146,7 +149,7 @@ refuses with exit code `2` and lists the candidates; repeat with `--into <task>`
 Close a task that needs no answer:
 
 ```sh
-wa personal tasks close <task> --as dismissed --reason no-reply-needed
+wa personal tasks close PR-4 --as dismissed --reason no-reply-needed
 ```
 
 An AI agent that closes a task states how sure it is with `--certainty`, from 0 to 1. Below the store's threshold
@@ -168,10 +171,12 @@ is not there, so a number is a minimum, never a proof of silence.
 
 ```sh
 wa personal chats show 120363000000000001@g.us
+wa personal chats members list 120363000000000001@g.us
 ```
 
-The group's kind, unread count, last message time and its members. This one asks WhatsApp, so it connects; while
-`serve` runs, it goes through `serve` ([one connection per device](sessions.md#one-connection-per-device)).
+`chats show` gives the group's kind, unread count, last message time and its members as the local store holds them;
+it never connects. `chats members list` asks WhatsApp who is in the group now; while `serve` runs, it goes through
+`serve` ([one connection per device](sessions.md#one-connection-per-device)).
 
 ## Deleting for everyone
 
@@ -213,8 +218,10 @@ wa personal chats leave 120363000000000001@g.us
 - **Name a group by its id** here: a command that connects knows group names only after it connects.
 - `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
 
-Not built yet: listing a group's members from WhatsApp (`chats members list` shows only what is stored), who joined
-and left (`chats events`), and the group photo.
+With `--offline`, `chats members list` shows the members stored before instead of asking WhatsApp.
+`chats members fetch` keeps the member list in the local store. `chats members history` shows what the fetches
+recorded: everyone present at the first fetch, then who joined or left at each later one. WhatsApp's own record of who
+joined and left (`chats events`) is refused, and `wa` cannot set a group's photo.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's
 [permissions](permissions.md) allow.

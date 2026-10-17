@@ -4,8 +4,7 @@ Your personal WhatsApp in the terminal, searchable on your computer, and ready f
 agent — within limits you set.
 
 > **Early.** `wa` links, reads into its local store, sends text and files, edits, deletes for everyone, reacts and
-> runs groups. It is not on npm yet, and listing a group's members from WhatsApp comes next: see the
-> [roadmap](docs/roadmap.md).
+> runs groups. It is not on npm yet: see the [roadmap](docs/roadmap.md).
 
 An example conversation (invented people, illustrative output):
 

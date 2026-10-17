@@ -29,8 +29,7 @@ Three terms appear on every page:
 Every command does one thing, gives the same shape of answer every time, and has a fixed exit code for each kind of
 failure. This is why scripts and agents can rely on it.
 
-`wa` is early: it is not on npm yet, and listing a group's members from WhatsApp comes next
-([roadmap](roadmap.md)).
+`wa` is early: it is not on npm yet ([roadmap](roadmap.md)).
 
 ## Get started
 
@@ -41,9 +40,10 @@ wa personal server install             # keep receiving in the background
 wa personal inbox                      # other people's unread messages; nothing is marked read
 ```
 
-Allow about five minutes for setup: your phone sends your recent chats once, right after linking. WhatsApp has no way
-to ask for older messages later. To choose the agent that gets the skill, add `--agent` with `codex`, `cursor`,
-`claude`, `gemini` or `all`. `wa setup --help` shows the linking choices.
+Allow about five minutes for setup: your phone sends your recent chats once, right after linking. Older messages of a
+chat can be asked of the phone later, 50 at a time ([older history](archive.md#older-history-from-your-phone)). To
+choose the agent that gets the skill, add `--agent` with `codex`, `cursor`, `claude`, `gemini` or `all`.
+`wa setup --help` shows the linking choices.
 
 `wa` needs Node 22.16 or newer ([installation](installation.md)). How linking works, and why only one `wa` command at
 a time may connect: [linking, devices and profiles](sessions.md).

@@ -66,8 +66,10 @@ WhatsApp keeps a file on its servers only for a limited time, so an old file may
 
 ## Download
 
+The message id `3EB0A1B2C3D4E5F6A7B8` on this page is made up; take a real one from `messages list -v`.
+
 ```sh
-wa personal messages download "Book club" 3EB0… --output-dir ~/Downloads --json
+wa personal messages download "Book club" 3EB0A1B2C3D4E5F6A7B8 --output-dir ~/Downloads --json
 wa personal messages download "Book club" --all --output-dir ./book-club
 ```
 
@@ -79,7 +81,7 @@ connection ([one connection per device](sessions.md#one-connection-per-device)).
 ## Forward
 
 ```sh
-wa personal messages forward "Book club" 3EB0… --to "Ann Lee"
+wa personal messages forward "Book club" 3EB0A1B2C3D4E5F6A7B8 --to "Ann Lee"
 ```
 
 A forward sends the stored text and file again, marked forwarded. It needs the message in the store, with keys for
@@ -90,7 +92,7 @@ its file; otherwise it is refused and nothing is sent, and you forward it on the
 ```sh
 wa personal models audio list                    # the speech models, and which are downloaded
 wa personal models audio download parakeet-v3    # once, about 670 MB
-wa personal messages transcribe "Book club" 3EB0… --local
+wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local
 ```
 
 WhatsApp has no speech recognition of its own, so `transcribe` always uses a model on this machine; `--local` says
@@ -103,7 +105,7 @@ command stops with exit `6` and names the model to download.
 or a scan is not read this way.
 
 ```sh
-wa personal messages download "Book club" 3EB0… --output-dir ./files --extract
+wa personal messages download "Book club" 3EB0A1B2C3D4E5F6A7B8 --output-dir ./files --extract
 wa personal attachments extract --chat "Book club" --download --output-dir ./files
 wa personal attachments list 'is:needs_text' --json
 wa personal search messages 'content:"reading list"'
@@ -116,7 +118,7 @@ whether its text is held, never the text itself.
 A scan or a photo is read by your agent, with its own vision tools. The agent then keeps the text so search finds it:
 
 ```sh
-wa personal attachments text set "Book club" 3EB0… --text-file scan.txt
+wa personal attachments text set "Book club" 3EB0A1B2C3D4E5F6A7B8 --text-file scan.txt
 ```
 
 To read scans in bulk with a model API instead, set `models.ocr.provider` and `models.ocr.model`, then run

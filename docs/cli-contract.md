@@ -78,7 +78,7 @@ output too.
 | `9` | `timeout` | the command ran out of time |
 | `10` | `network_error` | WhatsApp could not be reached |
 | `11` | `provider_error` | WhatsApp refused the request |
-| `12` | `provider_unavailable` | the engine stopped, or WhatsApp no longer accepts this version of `wa` |
+| `12` | `provider_unavailable` | another `wa` command holds the device's one connection, the engine stopped, or WhatsApp no longer accepts this version of `wa` |
 | `13` | `invalid_response` | WhatsApp answered something `wa` does not understand |
 | `14` | `outcome_unknown` | a write may or may not have happened ([below](#previews-and-safe-retries)) |
 | `130` | `cancelled` | Ctrl-C |

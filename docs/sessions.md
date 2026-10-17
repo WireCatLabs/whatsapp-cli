@@ -9,8 +9,9 @@ First, the words this page uses:
 - **Linked device**: `wa` on this computer, as WhatsApp sees it. You link it from the phone, the way you link
   WhatsApp Web, and the phone lists it under Settings → Linked devices. Its keys live in one file on this computer.
   Whoever has that file can read and send as you, so treat it like your password.
-- **History push**: the copy of your recent chats the phone sends once, seconds after linking. WhatsApp has no way to
-  ask for older messages later, so `wa` keeps what arrives.
+- **History push**: the copy of your recent chats the phone sends once, seconds after linking. `wa` keeps what
+  arrives; older messages of one chat can be asked of the phone later
+  ([older history](archive.md#older-history-from-your-phone)).
 - **Profile**: a name for one linked device on this computer, with its own keys and settings. Every command that
   uses an account names it, so you pick one name at setup (`wa personal setup`) and use it from then on
   ([profiles](#profiles)).
@@ -89,7 +90,8 @@ says so.
 - **`wa` was upgraded and `serve` not restarted:** the command runs inside the older `serve`, with its code. When the
   two speak different relay versions, the command is refused and says to restart `serve`. `wa upgrade` restarts
   running servers itself; otherwise use `wa <profile> server restart`.
-- **Windows:** not built yet. While `serve` runs, a command that connects is refused as above, with exit code 12.
+- **Windows:** commands do not go through `serve`. While `serve` runs, a command that connects is refused as above,
+  with exit code 12.
 
 With no `serve` running, each command connects on its own. While one of them holds the device, or `wa personal mcp`,
 which keeps its connection for two minutes after a call, `serve` cannot start. Reads never connect, so they work

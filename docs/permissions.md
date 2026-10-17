@@ -25,7 +25,7 @@ Start with reading, and allow changes only when you need them.
 
 With no `permissions` set, everything is allowed, except deleting and a few other changes, which ask. A refusal
 exits with code `5` and names the permission key. It does not mean the link to WhatsApp is broken. Do not ask an
-assistant to remove a restriction just to finish a task.
+agent to remove a restriction just to finish a task.
 
 ## Allow one action
 
@@ -78,7 +78,7 @@ approvals and may allow a call without asking again. Use `deny` or `readonly` to
 
 ## Limits and detailed rules
 
-An assistant that can edit configuration files or run unrestricted terminal commands may be able to change these
+An agent that can edit configuration files or run unrestricted terminal commands may be able to change these
 settings. Pin it to one profile with `WA_PROFILE_LOCK` ([profiles in linking](sessions.md#profiles)), and read
 [security](security.md) before giving that access. Every setting is in the
 [configuration reference](configuration-reference.md).

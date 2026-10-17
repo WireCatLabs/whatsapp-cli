@@ -120,10 +120,10 @@ The MCP server follows the same rule as every other `wa` command:
 - **Reads from the local store never connect**: `chats list`, `messages list`, `search messages`, `inbox` and
   `review` work while `serve` runs.
 - **A tool that needs WhatsApp connects, and takes the device's lock**: every write — a send, an edit, a reaction,
-  marking read — and the few reads that ask WhatsApp, such as `account show` and `chats show`.
+  marking read — and the few reads that ask WhatsApp, such as `account show` and `chats members list`.
 - **While `serve` runs, the server runs inside it**, and those tools use `serve`'s connection. The profile's
-  permissions and the send guard apply as before. This is not built on Windows yet: there they are refused while
-  `serve` runs, and the error names it. The HTTP server never goes through `serve` ([remote](remote.md)).
+  permissions and the send guard apply as before. On Windows they do not go through `serve`: there they are refused
+  while `serve` runs, and the error names it. The HTTP server never goes through `serve` ([remote](remote.md)).
 - **While the MCP server holds a connection, `serve` cannot start** for that profile. The server lets the connection
   go after 2 minutes without a call ([below](#how-it-holds-the-connection)).
 

@@ -46,10 +46,12 @@ level `ask` it needs `--yes` ([one connection per device](sessions.md#one-connec
 
 ## Change a message
 
+The message id `3EB0A1B2C3D4E5F6A7B8` on this page is made up; take a real one from `messages list -v`.
+
 ```sh
-wa personal messages edit "Book club" 3EB0… "the new text"
-wa personal messages delete "Book club" 3EB0… --for-everyone
-wa personal reactions add "Book club" 3EB0… 👍
+wa personal messages edit "Book club" 3EB0A1B2C3D4E5F6A7B8 "the new text"
+wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8 --for-everyone
+wa personal reactions add "Book club" 3EB0A1B2C3D4E5F6A7B8 👍
 wa personal chats mark-read "Book club"
 ```
 
@@ -58,16 +60,16 @@ WhatsApp names a message by who sent it as well as by its id, so these work on m
 delete a message for yourself alone on the phone. Nothing is marked read unless you ask: `chats mark-read`, or
 `--mark-read` on `messages list`, `inbox` and `review`.
 
-A reply (`messages send --reply-to 3EB0…`) to a message the local store holds shows the quoted text and its sender
-on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's apps may then
-show the quote as unavailable.
+A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local store holds shows the quoted text
+and its sender on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's
+apps may then show the quote as unavailable.
 
 ## Format a message
 
 ```sh
 wa personal messages send "Book club" "**Friday** at _8_, see [the notes](https://example.com/n)" --md
 printf '**Agenda**\n- the _new_ book\n> a quote\n' | wa personal messages send "Book club" --md
-wa personal messages edit "Book club" 3EB0… "**moved** to Friday" --md
+wa personal messages edit "Book club" 3EB0A1B2C3D4E5F6A7B8 "**moved** to Friday" --md
 ```
 
 `--md` reads Markdown and sends it in WhatsApp's own marks: `**bold**` or `*bold*` becomes `*bold*`, `_italic_`
@@ -82,17 +84,18 @@ WhatsApp's own marks work anyway.
 ```sh
 wa personal polls create "Book club" "Which day?" Monday Tuesday            # one answer each
 wa personal polls create "Book club" "Which books?" Dune Emma Ulysses --multiple
-wa personal polls show "Book club" 3EB0…        # the question, its answer ids and the counts
-wa personal polls vote "Book club" 3EB0… <answer id>
-wa personal polls vote "Book club" 3EB0… --retract
-wa personal polls voters "Book club" 3EB0…      # who voted for what, newest first
+wa personal polls show "Book club" 3EB0A1B2C3D4E5F6A7B8        # the question, its answer ids and the counts
+wa personal polls vote "Book club" 3EB0A1B2C3D4E5F6A7B8 a1b2c3d4
+wa personal polls vote "Book club" 3EB0A1B2C3D4E5F6A7B8 --retract
+wa personal polls voters "Book club" 3EB0A1B2C3D4E5F6A7B8      # who voted for what, newest first
 ```
 
 Everyone in the chat sees who voted for what, and a vote can always be changed, so there is no `--anonymous` and
 no `--revote`. A WhatsApp poll has 2 to 12 answers, each with its own text; it is never a quiz and never
-closes, so there is no `polls close`. Vote by the ids `polls show` prints. `polls show`, `polls vote` and
-`polls voters` work on a poll the local store holds, a poll made with `wa polls create` among them. WhatsApp gives a
-device a poll's key only when the poll reaches it, so a poll from before the link may refuse a vote.
+closes, so there is no `polls close`. Vote by the ids `polls show` prints; `a1b2c3d4` above is made up.
+`polls show`, `polls vote` and `polls voters` work on a poll the local store holds, a poll made with `wa polls create`
+among them. WhatsApp gives a device a poll's key only when the poll reaches it, so a poll from before the link may
+refuse a vote.
 
 WhatsApp has no request for the votes: each one arrives once, as its own message. `wa serve` and `wa watch` keep each
 person's newest vote in the local store (`watch --events` prints each new one), and the votes the phone sends with
@@ -105,9 +108,9 @@ missed until that person votes again.
 wa personal messages send "Book club" "the agenda" --file agenda.pdf
 wa personal messages send "Book club" "us, last week" --photo photo.jpg
 wa personal messages send "Book club" --voice note.ogg
-wa personal messages download "Book club" 3EB0… --output-dir ~/Downloads
-wa personal messages transcribe "Book club" 3EB0… --local
-wa personal messages forward "Book club" 3EB0… --to "Ann Lee"
+wa personal messages download "Book club" 3EB0A1B2C3D4E5F6A7B8 --output-dir ~/Downloads
+wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local
+wa personal messages forward "Book club" 3EB0A1B2C3D4E5F6A7B8 --to "Ann Lee"
 ```
 
 A message carries one file; the text becomes its caption, except on a voice note, which goes alone. A `.mp4`, `.m4v`
@@ -119,8 +122,8 @@ can be fetched again and how to search the text inside files: [file attachments]
 
 ## Older messages
 
-WhatsApp keeps no history on its servers, so older messages can only come from your phone, 50 at a time, while it is
-online: `wa <profile> messages sync <chat>` asks for them, one chat at a time
+WhatsApp keeps no history on its servers, so older messages can only come from your phone, 50 at a time, while
+WhatsApp is open on it: `wa personal messages sync "Book club"` asks for them, one chat at a time
 ([how](archive.md#older-history-from-your-phone)).
 
 ## Keep wa up to date

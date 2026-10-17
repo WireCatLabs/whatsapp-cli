@@ -21,15 +21,15 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 
 **The tree is shared with tg and max, and WhatsApp does not have all of it yet.** A command the WhatsApp side cannot
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
-account, one chat's card, sending text (with `--reply-to`) and one file per message, `messages edit`,
-`messages delete --for-everyone`, `messages download`, `messages forward`, `messages transcribe --local`,
-`reactions add|remove`, `polls create|show|vote|voters`, `chats mark-read`, group admin
-(`chats create|join|leave|update`, `chats link show|reset`, `chats members add|remove`, `chats admins add|remove`,
-`chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `doctor --online`, `serve` and
-`watch`. Everything that reads the local store works.
-Not built yet: pinning, albums; listing a group's members (`chats members list` shows only what is stored, and
-`members fetch` is refused); `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the address
-book on the phone).
+account, older history of one chat (`messages sync`), sending text (with `--reply-to`) and one file per message,
+`messages edit`, `messages delete --for-everyone`, `messages download`, `messages forward`,
+`messages transcribe --local`, `reactions add|remove`, `polls create|show|vote|voters`, `chats mark-read`, group admin
+(`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
+`chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`,
+`doctor --online`, `serve` and `watch`. Everything that reads the local store works.
+Not built yet: pinning, albums; `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the
+address book on the phone). `chats show` answers from the store; `chats members list` asks WhatsApp, and with
+`--offline` shows the stored members.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
@@ -242,7 +242,8 @@ wa personal tasks list "assignee:any state:open" --json   # what others owe the 
 wa personal tasks close 12 --as dismissed --reason no-reply-needed --json  # only after the owner says so
 wa personal chats list --json                      # find a chat, take its id
 wa personal chats list 'kind:group unread_count>0' --json   # filtered, from the store
-wa personal chats show 120363000000000001@g.us --json        # one chat and who is in it; connects
+wa personal chats show 120363000000000001@g.us --json        # one chat and who is in it, from the store
+wa personal chats members list 120363000000000001@g.us --json  # who is in the group now; connects
 wa personal contacts show 100000000000001@lid --offline --json   # one person, from the store
 wa personal contacts context 100000000000001@lid --limit 10 --offline --json  # what the store holds about them
 wa personal messages list 120363000000000001@g.us --limit 20 --json  # the latest messages, oldest first
