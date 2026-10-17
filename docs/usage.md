@@ -64,4 +64,11 @@ server. `wa upgrade --check` only says what it would run. Once a day `wa` says o
 `WA_NO_UPDATE_CHECK=1` or `update_check: false` in the settings turns that off. The engine comes as a package of
 `wa`, so it updates with it.
 
+## Where to go next
+
+- [Linking, devices and profiles](sessions.md) — QR or pairing code, and why one command at a time may connect.
+- [Search](search.md) and [the local store](archive.md) — find what was said, export it, back it up.
+- [The MCP server](mcp.md) — the same commands for an app with no terminal.
+- [Recipes](recipes.md) — what an agent can do for you every day.
+
 Every command and option is on the [commands page](commands.md).
