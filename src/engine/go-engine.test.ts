@@ -1,8 +1,9 @@
-import { existsSync, mkdtempSync, readFileSync, statSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { assertPrivate } from "../testing/private-files.js"
 import type { EngineEvent, LoginCode, WaAttachment } from "./contract.js"
 import { engineBinary, enginePackage, startGoEngine } from "./go-engine.js"
 
@@ -51,7 +52,7 @@ describe("startGoEngine", () => {
     const path = join(mkdtempSync(join(tmpdir(), "wa-stub-")), "file")
     await engine.download(attachment, path)
     expect(readFileSync(path, "utf8")).toBe("synthetic photo bytes")
-    expect(statSync(path).mode & 0o777).toBe(0o600)
+    assertPrivate(path, 0o600)
     await engine.close()
   })
 
@@ -162,5 +163,33 @@ describe.skipIf(!existsSync(engineBinary()))("the built Go engine", () => {
       message: expect.stringContaining("serve (pid"),
     })
     await first.close()
+  })
+})
+
+describe("group wire contracts", () => {
+  it("validates group, request and profile answers from the real JSON-lines client", async () => {
+    const engine = await stub("ok")
+    try {
+      const group = await engine.group("120363000000000001@g.us", { withLink: true })
+      expect(group.members[0]).toMatchObject({ role: "owner" })
+      expect(await engine.joinRequests(group.chat.jid)).toHaveLength(2)
+      expect(await engine.profile("100000000000002@lid")).toMatchObject({ contact: true, photo: null })
+      expect(await engine.participants(group.chat.jid, "remove", ["100000000000002@lid"])).toEqual({ notAdded: [] })
+      await expect(engine.block("100000000000002@lid", true)).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.answerJoinRequest(group.chat.jid, "100000000000002@lid", false)).rejects.toMatchObject({
+        code: "validation_error",
+      })
+      await expect(engine.leave(group.chat.jid)).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.lookup("+12345678900")).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.contacts()).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.createGroup("synthetic", [])).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.join("synthetic")).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.updateGroup(group.chat.jid, { approval: true })).rejects.toMatchObject({
+        code: "validation_error",
+      })
+      await expect(engine.resetInviteLink(group.chat.jid)).rejects.toMatchObject({ code: "validation_error" })
+    } finally {
+      await engine.close()
+    }
   })
 })

@@ -65,7 +65,7 @@ type waJoinRequest struct {
 // WhatsApp refuses a longer subject with 406 (whatsmeow's ReqCreateGroup).
 const groupNameLimit = 25
 
-var inviteCode = regexp.MustCompile(`(?i)chat\.whatsapp\.com/([A-Za-z0-9]+)`)
+var inviteCode = regexp.MustCompile(`(?i)^\s*(?:https?://)?chat\.whatsapp\.com/([A-Za-z0-9]+)(?:[?#][^\s]*)?\s*$`)
 
 func (e *engine) dispatchGroups(req request) (any, bool, error) {
 	if value, handled, err := e.groupOp(req); handled {

@@ -1,4 +1,4 @@
-import { mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
+import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
@@ -8,6 +8,7 @@ import { beforeAll, describe, expect, it } from "vitest"
 import type { WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { assertPrivate } from "./testing/private-files.js"
 
 const base = contractSeed({ ids: whatsAppIds })
 const ref = (media: string, n: number) => ({
@@ -226,18 +227,20 @@ describe("transcribing a voice note", () => {
 
 describe("a download leaves nothing readable by others", () => {
   it("writes the engine's copy 0600 in a folder only this user can open", async () => {
-    let seen: { folder: number; file: number } | undefined
+    let checked = false
     const engine = fakeEngine(seed)
     const download = engine.download
     engine.download = async (attachment, path) => {
       await download(attachment, path)
-      seen = { folder: statSync(join(path, "..")).mode & 0o777, file: statSync(path).mode & 0o777 }
+      assertPrivate(join(path, ".."), 0o700)
+      assertPrivate(path, 0o600)
+      checked = true
     }
     const result = await wa(
       ["media", "messages", "download", base.busy, voice.id, "--output-dir", folder(), "--json"],
       () => engine,
     )
     expect(result.code).toBe(0)
-    expect(seen).toEqual({ folder: 0o700, file: 0o600 })
+    expect(checked).toBe(true)
   })
 })
