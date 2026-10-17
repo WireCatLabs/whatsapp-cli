@@ -80,7 +80,8 @@ it runs inside `serve`, on `serve`'s connection. It reaches `serve` through a so
 (`<state>/serve/<profile>.sock`, mode `0600`, so only your own user can open it). This covers sends, edits,
 deletions, reactions, marking read, downloads, group and people commands, `watch`, `doctor --online` and the MCP
 server `wa <profile> mcp`. The send guard and the profile's permissions still apply. A command run this way never
-asks: a write at permission level `ask` needs `--yes`, or it is refused and says so.
+asks: a write at permission level `ask` needs `--yes` (`--allow-dangerous` for a deletion), or it is refused and
+says so.
 
 - **Not through `serve`:** linking (`session start`, `setup`) and `mcp --http`. `--offline` and `--dry-run` runs do
   not connect at all.
