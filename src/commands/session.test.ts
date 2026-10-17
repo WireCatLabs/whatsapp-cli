@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs"
-import { dirname } from "node:path"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname, join } from "node:path"
 import { PassThrough } from "node:stream"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
@@ -220,6 +220,31 @@ describe("wa session end", () => {
     expect(result.code).toBe(5)
     expect(engine.loggedOut).toBe(false)
     expect(existsSync(store)).toBe(true)
+  })
+
+  it("refuses while serve holds the device, and leaves serve's connection and the keys alone", async () => {
+    const store = linkedProfile("serving")
+    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", "serving.lock")
+    const controller = new AbortController()
+    const served = fakeEngine(seed)
+    const serving = wa(["serving", "serve", "--json"], () => served, { signal: controller.signal })
+    await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+
+    const result = await wa(["serving", "session", "end", "--json"], () => {
+      throw new Error("session end must not open an engine of its own while serve holds the device")
+    })
+    expect(result.code).toBe(12)
+    expect(JSON.parse(result.stderr).error).toMatchObject({
+      code: "provider_unavailable",
+      reason: "device.in-use",
+      message: expect.stringContaining("wa serving server stop"),
+    })
+    expect(served.loggedOut).toBe(false)
+    expect(served.closed).toBe(false)
+    expect(existsSync(store)).toBe(true)
+
+    controller.abort()
+    expect((await serving).code).toBe(0)
   })
 
   it("says nothing was ended for a profile that was never linked", async () => {

@@ -90,6 +90,8 @@ Commands:
   searches                     saved searches and the history of search messages
                                and stats messages show, kept in the local store;
                                --saved runs one
+  flood                        the waits WhatsApp asked this profile to keep,
+                               and a hold on its writes
   recipients                   the chats this profile may send to, when the list
                                is on
   sends                        every attempt to send from this profile — never

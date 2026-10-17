@@ -2,7 +2,7 @@ import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
-import type { WhatsAppEngine } from "./engine/contract.js"
+import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { REQUESTER } from "./testing/fake-groups.js"
@@ -43,6 +43,8 @@ const actingWith = async (stdin: string | undefined, argv: string[]) => {
 const acting = (...argv: string[]) => actingWith(undefined, argv)
 
 // A command that reads the store may first warn that no `wa serve` keeps it up to date.
+// A hold cli-core takes is announced on stderr beside the error line.
+const errorOf = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf('{"error"'))).error
 const errorCode = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf("{"))).error.code
 
 beforeAll(async () => {
@@ -290,13 +292,78 @@ describe("wa doctor --online", () => {
     expect(JSON.stringify(result.body)).toContain('"state":"active"')
   })
 
-  it("reports a banned account when WhatsApp refuses the connection for it", async () => {
-    const result = await wa([PROFILE, "doctor", "--online", "--json"], () => {
+  it("holds every write after a ban until a doctor --online connects again", async () => {
+    const profile = "banned"
+    const ban = () =>
+      new EngineError("permission_error", "WhatsApp has banned or restricted this account", "account.banned")
+    const send = (engine: () => FakeEngine) =>
+      wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], engine)
+
+    const refused = await send(() => {
       const engine = fakeEngine(seed)
-      engine.ready = async () => engine.push({ event: "connection", state: "banned" })
+      engine.send = async () => {
+        throw ban()
+      }
       return engine
     })
-    expect(result.stdout).toContain('"state":"banned"')
+    expect(errorOf(refused.stderr)).toMatchObject({
+      code: "permission_error",
+      reason: "account.banned",
+      details: { standing: { state: "frozen" } },
+    })
+
+    let held: FakeEngine | undefined
+    const meanwhile = await send(() => {
+      held = fakeEngine(seed)
+      return held
+    })
+    expect(errorOf(meanwhile.stderr).message).toContain("holds its writes")
+    expect(held?.sent ?? []).toEqual([])
+
+    const stillBanned = await wa([profile, "doctor", "--online", "--json"], () => {
+      const engine = fakeEngine(seed)
+      engine.ready = async () => {
+        throw ban()
+      }
+      return engine
+    })
+    const report = JSON.parse(stillBanned.stdout).item
+    expect(report.online.standing.state).toBe("frozen")
+    expect(report.flood.send_block).toMatchObject({ state: "frozen" })
+
+    const back = await wa([profile, "doctor", "--online", "--json"], () => fakeEngine(seed))
+    expect(JSON.parse(back.stdout).item.flood.send_block).toBeNull()
+    expect((await send(() => fakeEngine(seed))).code).toBe(0)
+  })
+
+  it("holds writes for 15 minutes after WhatsApp's rate limit; reads go on, and flood clear lifts it", async () => {
+    const profile = "slowed"
+    const limited = await wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], () => {
+      const engine = fakeEngine(seed)
+      engine.send = async () => {
+        throw new EngineError("rate_limited", "WhatsApp asks to slow down", "account.rate-limited")
+      }
+      return engine
+    })
+    expect(errorOf(limited.stderr)).toMatchObject({
+      code: "rate_limited",
+      reason: "account.rate-limited",
+      details: { standing: { state: "limited" } },
+    })
+
+    const meanwhile = await wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], () =>
+      fakeEngine(seed),
+    )
+    expect(errorOf(meanwhile.stderr).details.standing).toMatchObject({ state: "limited" })
+    expect((await wa([profile, "account", "show", "--json"], () => fakeEngine(seed))).code).toBe(0)
+    const checked = await wa([profile, "doctor", "--online", "--json"], () => fakeEngine(seed))
+    expect(JSON.parse(checked.stdout).item.flood.send_block).toMatchObject({ state: "limited" })
+
+    expect((await wa([profile, "flood", "clear", "--json"])).code).toBe(0)
+    const lifted = await wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], () =>
+      fakeEngine(seed),
+    )
+    expect(lifted.code).toBe(0)
   })
 })
 

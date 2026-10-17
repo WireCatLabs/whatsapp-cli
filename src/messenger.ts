@@ -12,6 +12,7 @@ import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { whatsAppAdapter } from "./adapter/adapter.js"
 import type { Check, Words } from "./adapter/checks.js"
+import { fromEngine } from "./adapter/errors.js"
 import { ADMIN_RIGHTS, GROUP_SETTINGS } from "./adapter/groups.js"
 import { resolveSettings, WA } from "./app.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
@@ -100,7 +101,7 @@ const startEngine = async (
   } catch (error) {
     if (error instanceof EngineError && error.code === "authentication_error")
       throw new CliError("authentication_error", `${error.message} — run ${loginHint(profile)}`)
-    if (error instanceof EngineError) throw new CliError(error.code, error.message)
+    if (error instanceof EngineError) throw fromEngine(error)
     throw error
   }
 }
@@ -150,7 +151,7 @@ export const linkDevice = async (
     if (keep) handedOver.set(command, engine)
     return { account: { id: account.jid, name: account.name }, alreadyLinked }
   } catch (error) {
-    if (error instanceof EngineError) throw new CliError(error.code, error.message)
+    if (error instanceof EngineError) throw fromEngine(error)
     throw error
   } finally {
     if (!keep) await engine.close()

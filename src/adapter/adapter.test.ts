@@ -89,17 +89,19 @@ describe("whatsAppAdapter", () => {
   })
 
   it.each([
-    ["logged_out", "authentication_error"],
-    ["replaced", "provider_unavailable"],
-    ["banned", "permission_error"],
-  ] as const)("ends watch when WhatsApp says %s, with %s", async (state, code) => {
+    ["logged_out", "authentication_error", "device.logged-out"],
+    ["replaced", "provider_unavailable", "device.replaced"],
+    ["banned", "permission_error", "account.banned"],
+    ["outdated", "provider_unavailable", "client.outdated"],
+    ["stopped", "provider_unavailable", "engine.stopped"],
+  ] as const)("ends watch when WhatsApp says %s, with %s and %s", async (state, code, reason) => {
     const engine = fakeEngine(seed)
     const watched = whatsAppAdapter(engine).watch(
       () => {},
       new AbortController().signal,
       () => engine.push({ event: "connection", state }),
     )
-    await expect(watched).rejects.toMatchObject({ code })
+    await expect(watched).rejects.toMatchObject({ code, details: { reason } })
   })
 
   it("keeps watching through a dropped connection; the engine reconnects", async () => {

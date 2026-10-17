@@ -3,8 +3,9 @@ name: Release
 # Started by bin/release. npm trusts this file by name (trusted publishing), so there is no npm
 # token anywhere in this repository and renaming the file breaks publishing until npm is told.
 #
-# Full validation builds, checks and packs once; `build` verifies the immutable tarball and builds the engine, one npm
-# package per platform (scripts/engine-packages.mjs), which `publish` uploads before the CLI that names them.
+# Full validation builds, checks and packs once: the CLI tarball, and the engine as one npm package per platform
+# (scripts/engine-packages.mjs). `build` verifies every tarball against the digests validation named, and `publish`
+# uploads the engines before the CLI that names them.
 # The job able to publish runs no code from our dependencies; `publish` holds the OIDC permission and only
 # runs `npm publish` on that file; `tag` is the only one that may write to the repository.
 on:
@@ -109,17 +110,26 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          go-version-file: engine/go.mod
-          cache: false
-      - name: engine packages
+          name: validated-engine-packages
+          path: engine-packages
+      # Against the digest validation named, not against a file inside the artifact, which would vouch for itself.
+      - name: Verify validated engine packages integrity
+        working-directory: engine-packages
+        env:
+          EXPECTED_SHA256: ${{ needs.validation.outputs.engine-packages-sha256 }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          node scripts/engine-packages.mjs check
-          node scripts/engine-packages.mjs build
-          mkdir engine-packages
-          for dir in packages/engine-*; do npm pack "./$dir" --pack-destination engine-packages; done
-          [ "$(ls engine-packages/*.tgz | wc -l)" -eq 6 ] || { echo "::error::expected six engine packages"; exit 1; }
+          [ -n "$EXPECTED_SHA256" ] || { echo "Missing engine validation digest"; exit 1; }
+          printf '%s  %s\n' "$EXPECTED_SHA256" SHA256SUMS | sha256sum --check -
+          sha256sum --check --strict SHA256SUMS
+          [ "$(ls -- *.tgz | wc -l)" -eq 6 ] && [ "$(wc -l < SHA256SUMS)" -eq 6 ] ||
+            { echo "::error::expected six engine packages"; exit 1; }
+          for tarball in *.tgz; do
+            got=$(tar -xzOf "$tarball" package/package.json | node -p 'JSON.parse(require("fs").readFileSync(0)).version')
+            [ "$got" = "$VERSION" ] || { echo "::error::$tarball is $got, not $VERSION"; exit 1; }
+          done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: engine-packages

@@ -84,10 +84,6 @@ Open work, most important first. The plan in flight is
       needs, is the owner's decision.
     - **Two `setup` tests wait for real** (`--timeout 100ms` in `src/commands/setup.test.ts`); a wait goes through an
       injected sleep (cli-base TESTING).
-    - **Three session states share one error** (WC-OUT-15): another process holding the device, the engine stopping
-      and WhatsApp refusing this version are all `provider_unavailable` (exit 12) with the default reason
-      (`src/adapter/adapter.ts`), so an agent can tell them apart only by the message. Register reasons in
-      `WA.errors.reasons` with `defineReasons` and raise them there.
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so
       both name their entry points the same way.
@@ -97,3 +93,14 @@ Open work, most important first. The plan in flight is
     - **Shared code kept here** (WC-ARCH-4, WC-ARCH-10): `src/commands/answer.ts` is tg's file word for word, the
       test-matrix argv log in `src/program.ts` is max's, and `setup` reads `process.platform` because cli-core's
       `BaseEnvironment` has no platform field. Each belongs in cli-core.
+14. **How long WhatsApp's rate limit and a ban hold writes is the owner's to set** (WC-PERM-18). WhatsApp's 429 says
+    neither how long to wait nor whether reads count, and a ban says nothing about the account's standing. The lead's
+    default, under the owner's autonomy mandate: after a 429, counted writes are held 15 minutes and reads go on; after
+    a ban, writes are held until `doctor --online` connects again (`src/adapter/errors.ts`). Open:
+    - the 15 minutes, and whether reads should pause too;
+    - a ban is reported as cli-core's `frozen` (the only standing that both holds writes and is lifted by
+      `doctor --online`), not `banned`, which cli-core never holds on;
+    - cli-core keeps no hold without an end, so the ban's hold ends a year on; whatsmeow's `TemporaryBan.Expire` could
+      give the real end instead.
+    - cli-core holds only the writes it counts toward the send limit: a reaction or a read receipt still goes during a
+      hold (seen in a test on 2026-10-17), though WhatsApp probably counts them against a limited account too.

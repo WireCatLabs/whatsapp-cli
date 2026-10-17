@@ -50,7 +50,24 @@ describe("connecting to WhatsApp", () => {
     expect(JSON.parse(result.stderr).error).toMatchObject({
       code: "provider_unavailable",
       message: expect.stringContaining("messages send"),
+      reason: "device.in-use",
     })
+  })
+
+  it("answers a send the engine died during as outcome_unknown, never as a stopped engine to retry", async () => {
+    linked("crashed")
+    const result = await wa(
+      ["crashed", "messages", "send", "100000000000002@lid", "crash before the answer", "--json"],
+      stub("ok"),
+    )
+    expect(result.code).toBe(14)
+    expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error).toMatchObject({
+      code: "outcome_unknown",
+      reason: "engine.stopped-mid-write",
+      details: { operation_id: expect.any(String) },
+      retry: { safe: false },
+    })
+    expect(result.stderr).not.toContain("crash before the answer")
   })
 
   it("says how to log in when the engine finds no device in the store", async () => {
@@ -264,5 +281,24 @@ describe("serve and the commands it runs for others", () => {
     controller.abort()
     expect((await serving).code).toBe(0)
     expect(opened[0]?.closed).toBe(true)
+  })
+
+  it("stops with the reason when WhatsApp hands the login to another connection", async () => {
+    const profile = "replaced"
+    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
+    let engine: FakeEngine | undefined
+    const serving = wa([profile, "serve", "--json"], {
+      engine: () => {
+        engine = fakeEngine(seed)
+        return engine
+      },
+    })
+    await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+    engine?.push({ event: "connection", state: "replaced" })
+
+    const result = await serving
+    expect(result.code, result.stdout).toBe(12)
+    expect(result.stderr).toContain("device.replaced")
+    expect(engine?.closed).toBe(true)
   })
 })

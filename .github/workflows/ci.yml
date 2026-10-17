@@ -12,6 +12,9 @@ on:
     outputs:
       package-sha256:
         value: ${{ jobs.ci.outputs.package-sha256 }}
+      engine-packages-sha256:
+        description: "SHA-256 of the SHA256SUMS listing the six engine tarballs, when pack is true"
+        value: ${{ jobs.engine.outputs.packages-sha256 }}
   workflow_dispatch:
 
 permissions:
@@ -41,13 +44,17 @@ jobs:
 
   engine:
     runs-on: ubuntu-latest
+    outputs:
+      packages-sha256: ${{ steps.engine-packages.outputs.sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # A release publishes this job's build, so a packing run restores no cache another run could have written.
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: engine/go.mod
+          cache: ${{ !inputs.pack }}
           cache-dependency-path: engine/go.sum
       - run: |
           unformatted=$(gofmt -l .)
@@ -63,7 +70,8 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          cache: pnpm
+          cache: ${{ !inputs.pack && 'pnpm' || '' }}
+          package-manager-cache: ${{ !inputs.pack }}
       - run: pnpm install --frozen-lockfile --ignore-scripts
       # The sandbox drops WA_ENGINE, so the shipped linux-x64 build goes where a checkout's own build would.
       - run: mkdir -p engine/bin && cp packages/engine-linux-x64/bin/wa-engine engine/bin/
@@ -71,6 +79,25 @@ jobs:
         env:
           WA_ENGINE_TESTS: required
         run: pnpm exec vitest run src/engine/go-engine.test.ts
+      # A release packs the engine here, from the build the tests above ran, and names the tarballs' digests:
+      # release.yml publishes exactly these files and builds nothing again (WC-REL-12).
+      - name: pack engine packages
+        id: engine-packages
+        if: inputs.pack
+        run: |
+          node scripts/engine-packages.mjs check
+          mkdir engine-packages
+          for dir in packages/engine-*; do npm pack "./$dir" --pack-destination engine-packages; done
+          [ "$(ls engine-packages/*.tgz | wc -l)" -eq 6 ] || { echo "::error::expected six engine packages"; exit 1; }
+          (cd engine-packages && sha256sum -- *.tgz > SHA256SUMS)
+          echo "sha256=$(sha256sum engine-packages/SHA256SUMS | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: inputs.pack
+        with:
+          name: validated-engine-packages
+          path: engine-packages/
+          if-no-files-found: error
+          retention-days: 7
 
   version:
     if: github.event_name == 'pull_request'

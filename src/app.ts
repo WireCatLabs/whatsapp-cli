@@ -1,5 +1,6 @@
 import type { AppIdentity } from "@wirecat/cli-core/cli"
 import { type Configuration, settingsFor } from "@wirecat/cli-core/cli"
+import { REASONS } from "./reasons.js"
 import { VERSION } from "./version.js"
 
 export const WA: AppIdentity = {
@@ -10,6 +11,7 @@ export const WA: AppIdentity = {
   version: VERSION,
   issues: "https://github.com/WireCatLabs/whatsapp-cli/issues/new",
   locale: "en-GB",
+  errors: { reasons: REASONS },
 }
 
 export const CONFIG: Configuration = settingsFor(WA)
