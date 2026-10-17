@@ -115,8 +115,8 @@ recognition of its own, so `transcribe` uses a model on this machine (`wa models
 ## Older messages
 
 WhatsApp keeps no history on its servers, so older messages can only come from your phone, 50 at a time, while it is
-online. `wa` can ask for them, but `messages sync` does not use that yet
-([why](archive.md#why-it-cannot-download-older-history)).
+online: `wa <profile> messages sync <chat>` asks for them, one chat at a time
+([how](archive.md#older-history-from-your-phone)).
 
 ## Keep wa up to date
 

@@ -5,6 +5,7 @@
   "attachments extract",
   "attachments list",
   "attachments text set",
+  "chats admins add",
   "chats events",
   "chats members audit",
   "chats members fetch",

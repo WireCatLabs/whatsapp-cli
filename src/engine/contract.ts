@@ -11,7 +11,7 @@ import type { GroupEngine } from "./groups.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 6
+export const PROTOCOL = 7
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())

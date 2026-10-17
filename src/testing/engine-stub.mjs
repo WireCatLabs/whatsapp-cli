@@ -18,7 +18,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 6, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 7, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 

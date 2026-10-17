@@ -140,3 +140,26 @@ func TestGroupFailureNamesARefusalToANonAdmin(t *testing.T) {
 		t.Fatalf("not being in the group: got %v", got)
 	}
 }
+
+func TestDisappearingTimerTakesOnlyWhatWhatsAppOffers(t *testing.T) {
+	for _, seconds := range []uint32{0, 86400, 604800, 7776000} {
+		if timer, ok := disappearingTimer(seconds); !ok || timer != time.Duration(seconds)*time.Second {
+			t.Fatalf("%d: got %v %v", seconds, timer, ok)
+		}
+	}
+	for _, seconds := range []uint32{1, 3600, 2592000} {
+		if _, ok := disappearingTimer(seconds); ok {
+			t.Fatalf("accepted %d", seconds)
+		}
+	}
+}
+
+func TestUpdateGroupKeepsATimerOfZero(t *testing.T) {
+	var req request
+	if err := json.Unmarshal([]byte(`{"op":"updateGroup","ephemeral":0}`), &req); err != nil {
+		t.Fatal(err)
+	}
+	if req.Ephemeral == nil || *req.Ephemeral != 0 {
+		t.Fatalf("got %v, want a timer of 0", req.Ephemeral)
+	}
+}

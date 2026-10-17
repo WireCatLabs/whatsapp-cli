@@ -57,6 +57,10 @@ export interface WaGroupChange {
   description?: string
   addMode?: "admin_add" | "all_member_add"
   approval?: boolean
+  announce?: boolean
+  locked?: boolean
+  /** Seconds, one of WhatsApp's own timers; 0 turns it off. */
+  ephemeral?: number
 }
 
 export type WaParticipantAction = "add" | "remove" | "promote" | "demote"

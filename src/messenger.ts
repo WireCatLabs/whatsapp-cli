@@ -172,6 +172,7 @@ export const WHATSAPP: Messenger = {
   name: "WhatsApp",
   resolveSettings,
   history: "store",
+  historyOnDemand: true,
   // WhatsApp drops the older of two connections, so while serve holds the device every command runs through it.
   connection: "exclusive",
   // Ids are WhatsApp's own strings, so held stretches are keyed by time. A page is one request to the phone for older
@@ -187,7 +188,8 @@ export const WHATSAPP: Messenger = {
     diagnoseWhatsApp(base.settings.profile, base.env, environmentOf<Environment>(command).update),
   // What WhatsApp does not have, so the shared commands do not offer it: forum topics, folders, more than one
   // invite link per group (`chats link reset` replaces the one there is), answering every join request at once,
-  // channel comments, history shown to people added later, and admins with some rights but not others.
+  // channel comments, history shown to people added later, and admins with some rights but not others: every admin
+  // gets them all, so `admins add` takes no `--can`.
   topics: false,
   folderOrder: false,
   folderJoin: false,
@@ -201,6 +203,7 @@ export const WHATSAPP: Messenger = {
   mediaOptions: ["fileName"],
   groupSettings: GROUP_SETTINGS,
   adminRights: ADMIN_RIGHTS,
+  pickAdminRights: false,
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)

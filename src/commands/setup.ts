@@ -109,9 +109,7 @@ export const setupCommand = () =>
       ),
     )
     .addOption(
-      new Option("--method <method>", "how to link when the profile has no device")
-        .choices(["qr", "phone"])
-        .default("qr"),
+      new Option("--method <method>", "how to log in when there is no session").choices(["qr", "phone"]).default("qr"),
     )
     .option("--qr-file <png>", "write a temporary QR image for an agent to pass on; works without a terminal")
     .action(async function (this: Command) {

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"regexp"
+	"time"
 	"unicode/utf8"
 
 	"go.mau.fi/whatsmeow"
@@ -21,6 +22,9 @@ type groupFields struct {
 	Blocked     bool     `json:"blocked,omitempty"`
 	AddMode     string   `json:"addMode,omitempty"`
 	Approval    *bool    `json:"approval,omitempty"`
+	Announce    *bool    `json:"announce,omitempty"`
+	Locked      *bool    `json:"locked,omitempty"`
+	Ephemeral   *uint32  `json:"ephemeral,omitempty"`
 }
 
 type waMember struct {
@@ -333,6 +337,13 @@ func (e *engine) updateGroup(req request) (*waGroup, error) {
 	if mode != "" && mode != types.GroupMemberAddModeAdmin && mode != types.GroupMemberAddModeAllMember {
 		return nil, &failure{"validation_error", "addMode is admin_add or all_member_add"}
 	}
+	var timer time.Duration
+	if req.Ephemeral != nil {
+		var ok bool
+		if timer, ok = disappearingTimer(*req.Ephemeral); !ok {
+			return nil, &failure{"validation_error", "WhatsApp makes messages disappear after 24h, 7d or 90d, or never"}
+		}
+	}
 	if err := e.connect(); err != nil {
 		return nil, err
 	}
@@ -356,7 +367,33 @@ func (e *engine) updateGroup(req request) (*waGroup, error) {
 			return nil, err
 		}
 	}
+	if req.Announce != nil {
+		if err := e.client.SetGroupAnnounce(e.ctx, jid, *req.Announce); err != nil {
+			return nil, err
+		}
+	}
+	if req.Locked != nil {
+		if err := e.client.SetGroupLocked(e.ctx, jid, *req.Locked); err != nil {
+			return nil, err
+		}
+	}
+	if req.Ephemeral != nil {
+		if err := e.client.SetDisappearingTimer(e.ctx, jid, timer, time.Time{}); err != nil {
+			return nil, err
+		}
+	}
 	return e.readGroup(jid, true)
+}
+
+// disappearingTimer accepts only the timers WhatsApp's apps offer: its server rejects any other in a group.
+func disappearingTimer(seconds uint32) (time.Duration, bool) {
+	timer := time.Duration(seconds) * time.Second
+	switch timer {
+	case whatsmeow.DisappearingTimerOff, whatsmeow.DisappearingTimer24Hours,
+		whatsmeow.DisappearingTimer7Days, whatsmeow.DisappearingTimer90Days:
+		return timer, true
+	}
+	return 0, false
 }
 
 func (e *engine) resetLink(raw string) (*waGroup, error) {
