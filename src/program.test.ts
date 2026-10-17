@@ -247,6 +247,20 @@ describe("commands WhatsApp has no counterpart for", () => {
       expect(paths).not.toContain(missing)
   })
 
+  it("keeps linking, unlinking and setup off MCP servers", async () => {
+    const result = await wa(["commands", "--json"])
+    interface Listed {
+      path: string[]
+      mcp?: false
+      commands: Listed[]
+    }
+    const flat = (commands: Listed[]): Listed[] => commands.flatMap((command) => [command, ...flat(command.commands)])
+    const offMcp = flat(JSON.parse(result.stdout).commands)
+      .filter((command) => command.mcp === false)
+      .map((command) => command.path.join(" "))
+    expect(offMcp).toEqual(["session", "session start", "session end", "setup"])
+  })
+
   it.each([
     ["chats", "moderate", seed.busy],
     ["messages", "comments", seed.busy, message],

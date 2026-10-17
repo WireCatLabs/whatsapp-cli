@@ -7,6 +7,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **A device linked before answers without counts** (WC-OUT-13). `session start --json` leaves out `received`, and
+  `setup --json` leaves out `history`, when the profile was already linked: nothing was pushed, so nothing was
+  counted. They used to say 0, which read as "the phone pushed nothing".
+- **Refusals that need a terminal say so in `reason`** (WC-OUT-15). `session start` and `setup` without a terminal,
+  and `session start phone` without one, answer `reason: "input.required"`; `--qr-file` with the phone method names
+  `param: "--qr-file"`.
 - **No automatic replies** (cli-core 0.324.0). `wa` no longer has `replies`, and `serve` never answers by reply
   rules, even with `permissions.replies.send` at `allow`: WhatsApp bans accounts that answer like a bot, and `wa`
   sends nothing the owner did not ask for. A rules file left in the config folder is ignored.
@@ -69,6 +75,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`session`, `session start`, `session end` and `setup` carry `mcp: false`** in `commands --json` (WC-CMD-21):
+  linking waits for a person and unlinking removes the owner's device, so neither will be offered to an agent once
+  MCP tools are built from commands. `setup` and `upgrade` list examples there too (WC-CMD-24).
 - **Each engine package carries `THIRD_PARTY_NOTICES`**: the licence of every Go module the engine links and of Go
   itself, with where each module's source is. whatsmeow and `go.mau.fi/util` are under the Mozilla Public License
   2.0 and `go.mau.fi/libsignal` under the GNU General Public License 3.0, all unmodified.

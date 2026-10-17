@@ -48,18 +48,22 @@ describe("wa session start", () => {
     expect(JSON.parse(listed.stdout).items.length).toBe(seed.chats.length)
   })
 
-  it("asks nothing and receives nothing when the profile is already linked", async () => {
+  it("asks nothing and counts nothing when the profile is already linked", async () => {
     const result = await wa(["linked", "session", "start", "--qr-file", `${process.env.TMPDIR}/x.png`, "--json"], () =>
       fakeEngine(seed),
     )
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.stdout).item).toMatchObject({ already_linked: true, received: { messages: 0 } })
+    const answer = JSON.parse(result.stdout).item
+    expect(answer).toMatchObject({ already_linked: true })
+    expect(answer).not.toHaveProperty("received")
   })
 
   it("refuses to run without a terminal unless the QR goes to a file", async () => {
     const result = await wa(["headless", "session", "start", "--json"], () => fakeEngine(seed, { linked: false }))
     expect(result.code).toBe(2)
-    expect(JSON.parse(result.stderr).error.message).toContain("--qr-file")
+    const { error } = JSON.parse(result.stderr)
+    expect(error.reason).toBe("input.required")
+    expect(error.message).toContain("--qr-file")
   })
 
   it("refuses a store left without a device by an unfinished link, when nobody can scan", async () => {
@@ -76,6 +80,7 @@ describe("wa session start", () => {
   it("refuses --qr-file with the phone method", async () => {
     const result = await wa(["both", "session", "start", "phone", "--qr-file", "x.png", "--json"])
     expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr).error.param).toBe("--qr-file")
   })
 })
 

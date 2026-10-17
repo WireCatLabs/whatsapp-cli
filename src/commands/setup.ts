@@ -81,7 +81,12 @@ const agentFor = async (
 }
 
 export const setupCommand = () =>
-  annotate(new Command("setup"), { effects: REMOTE_WRITE, lifetime: "interactive" })
+  annotate(new Command("setup"), {
+    effects: REMOTE_WRITE,
+    lifetime: "interactive",
+    mcp: false,
+    examples: ["wa personal setup", "wa personal setup --agent codex", "wa personal setup --qr-file login.png --json"],
+  })
     .description("set up WhatsApp and connect your agent")
     .configureHelp({ showGlobalOptions: true })
     .addHelpText(
@@ -119,7 +124,7 @@ export const setupCommand = () =>
       if (context.settings.offline)
         throw new CliError("validation_error", "wa setup verifies WhatsApp — remove --offline")
       if (options.qrFile && options.method !== "qr")
-        throw new CliError("validation_error", "--qr-file is for a QR login")
+        throw new CliError("validation_error", "--qr-file is for a QR login", { param: "--qr-file" })
       for (const permission of ["account.show", "chats.list"] as const) {
         if (levelFor(context.settings.permissions, permission).level === "deny")
           throw new CliError(
@@ -133,6 +138,7 @@ export const setupCommand = () =>
         throw new CliError(
           "validation_error",
           "wa setup needs a terminal to link a device — run it locally, or pass --qr-file for an agent",
+          { reason: "input.required" },
         )
       const prefix = `wa ${asFirstWord(context.profile)}`
       const command =
@@ -178,10 +184,11 @@ export const setupCommand = () =>
           track,
         })
         const reused = session.alreadyLinked
+        const history = session.received
         screen.detail(
-          reused
-            ? "✓ existing device, no new link"
-            : `✓ linked; ${chatCount(session.received.chats)} and ${session.received.messages} messages kept from the phone`,
+          history
+            ? `✓ linked; ${chatCount(history.chats)} and ${history.messages} messages kept from the phone`
+            : "✓ existing device, no new link",
         )
 
         screen.step(3, "Account")
@@ -219,7 +226,7 @@ export const setupCommand = () =>
           paths,
           device: { path: devicePath, reused },
           account: { id: account.id, name: account.name },
-          history: session.received,
+          ...(history ? { history } : {}),
           chats: { checked: chats.items.length, has_more: chats.hasMore },
           agent: { name: agent, written },
           next,

@@ -60,14 +60,14 @@ const receiveHistory = async (adapter: MessengerAdapter, wait: typeof HISTORY_WA
   return received
 }
 
-const linkedText = (profile: string, account: { name: string | null }, alreadyLinked: boolean, got: Received) => {
+const linkedText = (profile: string, account: { name: string | null }, got: Received | undefined) => {
   const word = asFirstWord(profile)
   return [
-    alreadyLinked
-      ? `Already linked as ${account.name ?? "you"} — profile ${profile}; nothing was asked. ` +
-        `\`wa ${word}session end\` first to link again.`
-      : `Linked as ${account.name ?? "you"} — profile ${profile}.`,
-    ...(alreadyLinked ? [] : [`History: ${got.chats} chats, ${got.messages} messages kept from the phone.`]),
+    got
+      ? `Linked as ${account.name ?? "you"} — profile ${profile}.`
+      : `Already linked as ${account.name ?? "you"} — profile ${profile}; nothing was asked. ` +
+        `\`wa ${word}session end\` first to link again.`,
+    ...(got ? [`History: ${got.chats} chats, ${got.messages} messages kept from the phone.`] : []),
     `Next:    wa ${word}chats list · wa ${word}server install to keep receiving`,
   ].join("\n")
 }
@@ -88,7 +88,8 @@ export interface Session {
   profile: string
   account: { id: string; name: string | null }
   alreadyLinked: boolean
-  received: Received
+  /** Left out for a device linked before: nothing was pushed, so nothing was counted. */
+  received?: Received
 }
 
 /** Links the profile's device unless it is linked already, then keeps the history the phone pushes once. */
@@ -99,9 +100,16 @@ export const startSession = async (
 ): Promise<Session> => {
   const input = context.stdin
   const terminal = input.isTTY === true && !inputPolicy(input).noInput
-  if (qrFile !== undefined && method !== "qr") throw new CliError("validation_error", "--qr-file is for a QR login")
+  if (qrFile !== undefined && method !== "qr")
+    throw new CliError("validation_error", "--qr-file is for a QR login", { param: "--qr-file" })
   const unanswerable = () =>
-    new CliError("validation_error", `${typed} shows a code to scan or type — run it in a terminal, or pass --qr-file`)
+    new CliError(
+      "validation_error",
+      `${typed} shows a code to scan or type — run it in a terminal, or pass --qr-file`,
+      {
+        reason: "input.required",
+      },
+    )
   // A device that is linked already asks nothing, so only a profile without one is refused before the engine starts.
   if (!terminal && qrFile === undefined && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
   const qrPath = qrFile === undefined ? undefined : resolve(qrFile)
@@ -116,7 +124,10 @@ export const startSession = async (
         if (!terminal && qrFile === undefined) throw unanswerable()
       },
       phone: async () => {
-        if (!terminal) throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`)
+        if (!terminal)
+          throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`, {
+            reason: "input.required",
+          })
         return readSecret(`${" ".repeat(pad)}phone number, international format: `, {
           input,
           echo: true,
@@ -145,13 +156,13 @@ export const startSession = async (
     if (qrPath) rmSync(qrPath, { force: true })
     signal?.throwIfAborted()
 
-    let received: Received = { chats: 0, messages: 0, people: 0 }
+    const session: Session = { profile: context.profile, account: linked.account, alreadyLinked: linked.alreadyLinked }
     if (!linked.alreadyLinked) {
       context.renderer.note(
         "receiving history from the phone; keep WhatsApp open on it. Ctrl+C stops — `serve` picks up the rest.",
       )
       const stop = AbortSignal.any([signal, environment.signal].filter((one) => one !== undefined))
-      received = await context.withMessenger(
+      session.received = await context.withMessenger(
         (adapter) => {
           track?.(adapter)
           return receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, stop)
@@ -159,7 +170,7 @@ export const startSession = async (
         { listen: true },
       )
     }
-    return { profile: context.profile, account: linked.account, alreadyLinked: linked.alreadyLinked, received }
+    return session
   } finally {
     // The image links the account for as long as it is valid; it does not outlive the login.
     if (qrPath) rmSync(qrPath, { force: true })
@@ -185,7 +196,10 @@ const end = async (command: Command) => {
 }
 
 export const sessionCommand = () => {
-  const session = new Command("session").description("link this profile to WhatsApp as a device, or unlink it")
+  // Linking waits for a person, and unlinking removes the owner's device: neither is an agent's call.
+  const session = annotate(new Command("session"), { mcp: false }).description(
+    "link this profile to WhatsApp as a device, or unlink it",
+  )
 
   annotate(session.command("start"), {
     effects: REMOTE_WRITE,
@@ -214,13 +228,13 @@ export const sessionCommand = () => {
         ...(qrFile === undefined ? {} : { qrFile }),
       })
       if (context.format === "pretty")
-        context.streams.data(linkedText(context.profile, session.account, session.alreadyLinked, session.received))
+        context.streams.data(linkedText(context.profile, session.account, session.received))
       else
         printItem(context, {
           profile: session.profile,
           account: session.account,
           already_linked: session.alreadyLinked,
-          received: session.received,
+          ...(session.received ? { received: session.received } : {}),
         })
     })
 
