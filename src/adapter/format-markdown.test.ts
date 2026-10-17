@@ -1,8 +1,9 @@
+import { parseMarkdownSpans } from "@wirecat/cli-core"
 import { describe, expect, it } from "vitest"
-import { formatMarkdown, toWhatsApp } from "./format-markdown.js"
+import { toWhatsApp } from "./format-markdown.js"
 
 const whatsApp = (markdown: string) => {
-  const { text, spans } = formatMarkdown(markdown)
+  const { text, spans } = parseMarkdownSpans(markdown)
   return toWhatsApp(text, spans)
 }
 

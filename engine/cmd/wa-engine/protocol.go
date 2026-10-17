@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 8
+const protocol = 9
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -90,9 +90,9 @@ type waHistory struct {
 	Chats    []waChat    `json:"chats"`
 	Contacts []waContact `json:"contacts"`
 	Messages []waMessage `json:"messages"`
+	Votes    []waVote    `json:"votes"`
 
 	oldest map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
-	votes  []waVote          // sent as vote events after the batch: cli-core's history batch has no votes
 }
 
 type waAccount struct {

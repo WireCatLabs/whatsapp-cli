@@ -229,7 +229,7 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 	if !ok {
 		kind = "other"
 	}
-	out := waHistory{Kind: kind, Chats: []waChat{}, Contacts: []waContact{}, Messages: []waMessage{}, oldest: map[string]rawKey{}}
+	out := waHistory{Kind: kind, Chats: []waChat{}, Contacts: []waContact{}, Messages: []waMessage{}, Votes: []waVote{}, oldest: map[string]rawKey{}}
 
 	k := known{}
 	for _, mapping := range data.GetPhoneNumberToLidMappings() {
@@ -289,7 +289,7 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 			changed.message.Chat = chat.JID
 			out.Messages = append(out.Messages, changed.message)
 			if changed.message.Poll != nil {
-				out.votes = append(out.votes, c.historyVotes(changed.message, item.GetMessage(), k)...)
+				out.Votes = append(out.Votes, c.historyVotes(changed.message, item.GetMessage(), k)...)
 			}
 		}
 	}

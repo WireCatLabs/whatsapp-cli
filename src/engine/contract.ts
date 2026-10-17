@@ -11,7 +11,7 @@ import type { GroupEngine } from "./groups.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 8
+export const PROTOCOL = 9
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -60,7 +60,8 @@ export const waAttachment = v.strictObject({
 
 /**
  * A poll as its message carries it. An answer's `id` is the start of the SHA-256 of its text, which is what a vote
- * names on the wire. Votes arrive later, one `vote` event per voter; cli-core's store counts them.
+ * names on the wire. Votes arrive later, live as `vote` events or in a history push's `votes`; cli-core's store
+ * counts them.
  */
 export const waPoll = v.strictObject({
   question: v.string(),
@@ -84,8 +85,9 @@ export const waMessage = v.strictObject({
 
 /**
  * One person's newest choice in a poll: `selected` is the full SHA-256 of each chosen answer's text, and none takes
- * the vote back. `voter` is in LID form like a sender, and the account's own vote is under `self()`. A vote from the
- * history push carries its `poll`, since the store may not hold that poll yet.
+ * the vote back. `voter` is in LID form like a sender, and the account's own vote is under `self()`. A vote in a
+ * history push carries its `poll`, since the push may not hold that poll; a live `vote` event has none. `votedAt` is
+ * when the voter cast it, by WhatsApp's clock: the store keeps a voter's newest vote by it.
  */
 export const waVote = v.strictObject({
   chat: jid,
@@ -97,12 +99,16 @@ export const waVote = v.strictObject({
   poll: v.optional(waPoll),
 })
 
-/** One push from the phone. `kind` follows whatsmeow's sync types; the adapter treats them all alike. */
+/**
+ * One push from the phone. `kind` follows whatsmeow's sync types; the adapter treats them all alike. `votes` are the
+ * votes in the pushed polls, which the store saves with the push, not as `vote` events.
+ */
 export const waHistory = v.strictObject({
   kind: v.picklist(["bootstrap", "recent", "full", "on_demand", "push_name", "other"]),
   chats: v.array(waChat),
   contacts: v.array(waContact),
   messages: v.array(waMessage),
+  votes: v.array(waVote),
 })
 
 /**

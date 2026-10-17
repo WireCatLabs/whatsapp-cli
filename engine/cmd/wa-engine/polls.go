@@ -34,8 +34,8 @@ type waPoll struct {
 }
 
 // waVote is one person's newest choice in a poll: the full SHA-256 of each chosen answer's text, as WhatsApp sends
-// it; none takes the vote back. A vote from the history push comes with its poll, which the same message carries:
-// the adapter cannot count on the store holding that poll yet.
+// it; none takes the vote back. A vote from the history push rides in that push's `votes` with its poll, which the
+// same message carries: the poll itself may go to an `older` request instead of the push.
 type waVote struct {
 	Chat      string   `json:"chat"`
 	Message   string   `json:"message"`

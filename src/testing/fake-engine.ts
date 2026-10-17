@@ -126,6 +126,7 @@ export const fakeEngine = (
         chats,
         contacts: seed.people.map((person) => ({ jid: person.id, name: person.name })),
         messages,
+        votes: [],
       },
     })
 

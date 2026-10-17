@@ -100,6 +100,18 @@ func TestOnDemandAnswerGoesToTheRequestAndTheRestToHistory(t *testing.T) {
 	}
 }
 
+func TestVotesInTheAnsweredChatStayInTheHistoryEvent(t *testing.T) {
+	h := testConverter().history(onDemand(conversation(annLID, "3EB0O1")), parsedAsText)
+	h.Votes = []waVote{{Chat: annLID.String(), Message: "3EB0O1", Voter: annLID.String(), Selected: []string{}}}
+	var w olderWaiter
+	ask := w.wait(annLID.String())
+	rest := w.deliver(h)
+	<-ask.answer
+	if len(rest.Messages) != 0 || len(rest.Votes) != 1 || rest.empty() {
+		t.Errorf("got %+v, want the vote kept for the history event", rest)
+	}
+}
+
 func TestOnDemandForAnotherChatLeavesTheRequestWaiting(t *testing.T) {
 	h := testConverter().history(onDemand(conversation(group, "3EB0G1")), parsedAsText)
 	var w olderWaiter

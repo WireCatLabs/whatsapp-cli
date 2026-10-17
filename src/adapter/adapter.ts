@@ -4,7 +4,14 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { resolve as absolute, extname, join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
-import type { Chat, MarkdownFormatting, Message, MessageEvent, MessageHit } from "@wirecat/cli-core"
+import {
+  type Chat,
+  type MarkdownFormatting,
+  type Message,
+  type MessageEvent,
+  type MessageHit,
+  parseMarkdownSpans,
+} from "@wirecat/cli-core"
 import type {
   LiveUpdates,
   MessageEditing,
@@ -30,10 +37,10 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
-import { formatMarkdown, toWhatsApp } from "./format-markdown.js"
+import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
-import { type PollAdapter, pollAdapter, toVoteEvent } from "./polls.js"
+import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
@@ -187,7 +194,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     new Map((await translated(engine.directory())).map((chat) => [chat.jid, chat]))
 
   const core: Omit<WhatsAppAdapter, keyof GroupAdapter | keyof PollAdapter> = {
-    formatMarkdown: async (text) => formatMarkdown(text),
+    formatMarkdown: async (text) => parseMarkdownSpans(text),
 
     self: () => engine.self(),
 
@@ -392,8 +399,13 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     feed: async (onBatch, signal) => {
       const pushes = listening(engine, ["history", "connection"], signal, (event) => {
         if (event.event !== "history") return
-        const { chats, contacts, messages } = event.history
-        onBatch({ chats: chats.map(toChat), people: contacts.map(toMember), messages: messages.map(toMessage) })
+        const { chats, contacts, messages, votes } = event.history
+        onBatch({
+          chats: chats.map(toChat),
+          people: contacts.map(toMember),
+          messages: messages.map(toMessage),
+          votes: votes.flatMap((vote) => toHistoryVote(vote) ?? []),
+        })
       })
       try {
         await pushes.done

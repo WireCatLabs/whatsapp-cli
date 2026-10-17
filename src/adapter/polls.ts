@@ -1,6 +1,6 @@
 import { CliError } from "@wirecat/cli-base"
-import { countedPoll, type Message, type Poll, type PollVoteEvent } from "@wirecat/cli-core"
-import type { MessagePolls, StoredMessages } from "@wirecat/cli-core/cli"
+import { countedPoll, type Message, type Poll, type PollVote, type PollVoteEvent } from "@wirecat/cli-core"
+import type { HistoryVote, MessagePolls, StoredMessages } from "@wirecat/cli-core/cli"
 import * as v from "valibot"
 import { type WaKey, type WaPoll, type WaVote, type WhatsAppEngine, waPoll } from "../engine/contract.js"
 import { toMessage } from "./map.js"
@@ -36,27 +36,31 @@ const toPoll = (chatId: string, message: Message, poll: WaPoll): Poll => ({
 
 /**
  * A vote as cli-core keeps it. WhatsApp names each chosen answer by the full hash of its text, an answer id is the
- * start of it. A vote whose answers this poll does not have is dropped rather than kept as a vote taken back; so is a
- * vote for a poll neither the event nor the store holds.
+ * start of it. A vote whose answers this poll does not have is dropped rather than kept as a vote taken back.
  */
+const toPollVote = (vote: WaVote, poll: WaPoll): PollVote | undefined => {
+  const answers = poll.answers
+    .filter((answer) => vote.selected.some((hash) => hash.startsWith(answer.id)))
+    .map((answer) => answer.id)
+  if (answers.length === 0 && vote.selected.length > 0) return undefined
+  return { person: { id: vote.voter, name: vote.voterName, username: null }, answers, votedAt: vote.votedAt }
+}
+
+/** A live vote, for a poll the store holds; one for a poll it does not hold is dropped. */
 export const toVoteEvent = async (
   vote: WaVote,
   chatTitle: string | null,
   stored: StoredMessages,
 ): Promise<PollVoteEvent | undefined> => {
-  const poll = vote.poll ?? pollIn(await stored.message(vote.chat, vote.message).catch(() => undefined))
-  if (!poll) return undefined
-  const answers = poll.answers
-    .filter((answer) => vote.selected.some((hash) => hash.startsWith(answer.id)))
-    .map((answer) => answer.id)
-  if (answers.length === 0 && vote.selected.length > 0) return undefined
-  return {
-    event: "vote",
-    chatId: vote.chat,
-    chatTitle,
-    messageId: vote.message,
-    vote: { person: { id: vote.voter, name: vote.voterName, username: null }, answers, votedAt: vote.votedAt },
-  }
+  const poll = pollIn(await stored.message(vote.chat, vote.message).catch(() => undefined))
+  const counted = poll && toPollVote(vote, poll)
+  return counted && { event: "vote", chatId: vote.chat, chatTitle, messageId: vote.message, vote: counted }
+}
+
+/** A vote from a history push, counted by the poll it carries. */
+export const toHistoryVote = (vote: WaVote): HistoryVote | undefined => {
+  const counted = vote.poll && toPollVote(vote, vote.poll)
+  return counted && { chatId: vote.chat, messageId: vote.message, vote: counted }
 }
 
 /**

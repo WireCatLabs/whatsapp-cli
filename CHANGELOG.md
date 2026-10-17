@@ -35,6 +35,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **Poll votes from the phone's history push are kept without a `watch`** (cli-core 0.322.0). The store saves them
+  with the push that carries them, dated when each person voted, so an older one never replaces a newer live vote;
+  `watch --events` no longer prints them as new votes. Engine protocol 9.
+- **No `messages sync` advice `wa` cannot follow** (cli-core 0.322.0): where a command points at the store's gaps it
+  names `messages sync <chat>` for one chat, never `--all`.
 - **`wa upgrade`'s "held back" hint names the package and keeps pnpm's release-age exemption** (cli-core 0.320.0).
 - **An agent's `chats members list` and `chats send-as` follow their own permission keys**, `chats.members.list` and
   `chats.send-as`, so a deny on those keys reaches the MCP agent too (cli-core 0.321.0).
