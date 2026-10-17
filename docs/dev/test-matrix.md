@@ -7,13 +7,17 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**26 ✅ · 741 ⛔ · 0 ❌** — 226 commands, 541 options.
+**35 ✅ · 738 ⛔ · 0 ❌** — 228 commands, 545 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
 | `session start` |  | ✅ |  |
 | `session start` | `--qr-file` | ✅ |  |
 | `session end` |  | ✅ |  |
+| `setup` |  | ✅ |  |
+| `setup` | `--agent` | ✅ |  |
+| `setup` | `--method` | ✅ |  |
+| `setup` | `--qr-file` | ✅ |  |
 | `account list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `account show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `account show` | `--show-phone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -725,8 +729,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `runs search` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `runs search` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `runs path` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `config show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `config show` | `--bot` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `config show` |  | ✅ |  |
+| `config show` | `--bot` | ⛔ | a shared cli-core option; src/update.test.ts runs `config show` only to see the update notice after a command |
 | `config set` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `config set` | `--defaults` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `config set` | `--personal` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -735,8 +739,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `config unset` | `--defaults` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `config unset` | `--personal` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `config unset` | `--bot` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `doctor` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `doctor` | `--online` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `doctor` |  | ✅ |  |
+| `doctor` | `--online` | ⛔ | connects to WhatsApp, which needs a linked device; cli-core's doctor tests drive it over the fake adapter, and src/messenger.test.ts covers wa's own offline block |
 | `doctor report` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `doctor report create` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `doctor report create` | `--run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -744,6 +748,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `commands` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `commands schema` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `complete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `upgrade` |  | ✅ |  |
+| `upgrade` | `--check` | ✅ |  |
 | `mcp` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `mcp` | `--permission` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `mcp` | `--http` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -767,7 +773,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--quiet` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--trace` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--debug` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--timeout` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
+| *global* | `--timeout` | ✅ |  |
 | *global* | `--offline` | ✅ |  |
 | *global* | `--no-input` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--max-input-bytes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |

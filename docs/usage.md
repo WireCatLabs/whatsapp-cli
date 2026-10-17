@@ -14,7 +14,22 @@ wa personal search messages "dinner"
   connects to WhatsApp.
 - **`--json`** prints one JSON value on stdout for scripts and agents; diagnostics go to stderr.
 
+## Set up a profile
+
+```sh
+wa personal setup                  # link, check five chats, offer the agent skill; about 5 minutes
+wa personal setup --agent codex    # the same, and install the skill for Codex
+wa personal setup --method phone   # a pairing code instead of the QR code
+```
+
+`setup` runs five steps: this computer's folders, the link (an existing device is reused and nothing is asked),
+the account, five chats from the local store, and the agent skill. A device linked before is checked without linking
+again. An agent without a terminal passes `--qr-file <png>` and hands the image on to be scanned; the image is
+removed when linking ends.
+
 ## Link a profile
+
+`setup` uses the same linking as `session start`, which does only the link:
 
 ```sh
 wa personal session start          # a QR code to scan in WhatsApp > Settings > Linked devices
@@ -27,5 +42,12 @@ unlinks the device and deletes its keys here.
 
 Only one `wa` command may connect a profile at a time; WhatsApp would drop the first connection. While `serve` runs,
 a send for the same profile is refused and names `serve`.
+
+## Keep wa up to date
+
+`wa upgrade` installs the newest version with the package manager that installed `wa`, and restarts each running
+server. `wa upgrade --check` only says what it would run. Once a day `wa` says on stderr when a newer version exists;
+`WA_NO_UPDATE_CHECK=1` or `update_check: false` in the settings turns that off. `upgrade` does not yet update the
+WhatsApp engine program.
 
 Every command and option is on the [commands page](commands.md).

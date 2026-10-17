@@ -75,6 +75,22 @@ unlink this device on WhatsApp's side and delete its keys here
 wa session end
 ```
 
+## `wa setup`
+
+set up WhatsApp and connect your agent
+
+**Changes something in WhatsApp.**
+
+```sh
+wa setup [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--agent <agent>` | install the skill for this agent; asks at a terminal, otherwise none. One of: `none`, `codex`, `cursor`, `claude`, `gemini`, `all`. |
+| `--method <method>` | how to link when the profile has no device. One of: `qr`, `phone`. Default: `qr`. |
+| `--qr-file <png>` | write a temporary QR image for an agent to pass on; works without a terminal. |
+
 ## `wa account`
 
 the logged-in account
@@ -3776,6 +3792,20 @@ wa complete [words]
 | Argument | | What it is |
 |---|---|---|
 | `words` | optional |  |
+
+## `wa upgrade`
+
+upgrade wa with the package manager that installed it; --check only looks
+
+**Changes something on this computer only.**
+
+```sh
+wa upgrade [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--check` | say whether a newer version exists, and install nothing. |
 
 ## `wa mcp`
 

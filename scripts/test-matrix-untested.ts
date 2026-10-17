@@ -52,6 +52,19 @@ export const UNTESTED: Untested[] = [
       "shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter",
   })),
   {
+    command: "doctor",
+    option: "--online",
+    reason:
+      "connects to WhatsApp, which needs a linked device; cli-core's doctor tests drive it over the fake adapter, " +
+      "and src/messenger.test.ts covers wa's own offline block",
+  },
+  {
+    command: "config show",
+    option: "--bot",
+    reason:
+      "a shared cli-core option; src/update.test.ts runs `config show` only to see the update notice after a command",
+  },
+  {
     command: "",
     option: "--dry-run",
     reason:

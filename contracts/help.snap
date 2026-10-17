@@ -48,6 +48,7 @@ Options:
 Commands:
   session                      link this profile to WhatsApp as a device, or
                                unlink it
+  setup [options]              set up WhatsApp and connect your agent
   account                      the logged-in account
   chats                        the account's chats
   contacts                     people this account has a one-to-one chat with
@@ -100,11 +101,17 @@ Commands:
                                inspect one command path per call
   complete [words...]          shell completion: `wa complete zsh` prints the
                                script to source
+  upgrade [options]            upgrade wa with the package manager that
+                               installed it; --check only looks
   mcp [options]                serve this profile to an agent over MCP, on stdin
                                and stdout — `claude mcp add wa -- wa mcp`
   skill                        the instructions an agent is given for this tool
   help [command]               display help for command
 
+Getting started after installation:
+  wa personal setup               Guided first run as profile personal; about 5 minutes
+  wa personal setup --agent codex Link and install your agent's skill
+  wa setup --help                 Linking choices, examples and Windows instructions
 Every account command names its profile first: `wa personal chats list`.
 
 For agents:

@@ -17,4 +17,4 @@ pnpm build
 node dist/bin/wa.js --version
 ```
 
-Linking to WhatsApp is not available yet; see the [roadmap](roadmap.md).
+Then link a profile and install the agent skill with `wa personal setup` (see [usage](usage.md)).

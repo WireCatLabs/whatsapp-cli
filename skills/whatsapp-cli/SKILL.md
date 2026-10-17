@@ -31,9 +31,11 @@ marks a write to WhatsApp. `commands --json` connects to no account.
 Every account command names its profile first: `wa personal chats list`. No profile is assumed; without one the
 command stops and lists the choices.
 
-A profile that is not linked says so and names `wa <profile> session start`. Linking needs the owner's phone: offer
-`wa <profile> session start --qr-file <png>` and pass the image on for the owner to scan; it is removed after the
-login. Never ask for the phone number or a pairing code in chat.
+A profile that is not linked says so. Linking needs the owner's phone: run
+`wa <profile> setup --qr-file <png> --agent <agent> --json` and pass the image on for the owner to scan; it is removed
+after the login. A device linked before is reused and nothing is asked. `wa <profile> session start --qr-file <png>`
+links without the other setup steps. Never ask for the phone number or a pairing code in chat: a pairing-code link
+(`--method phone`) is for the owner to run in their own terminal.
 
 ## Machine execution
 
