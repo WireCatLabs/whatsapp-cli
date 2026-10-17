@@ -1,6 +1,6 @@
 import { chmodSync, existsSync, rmSync, writeFileSync } from "node:fs"
 import { resolve } from "node:path"
-import { CliError, indent } from "@wirecat/cli-base"
+import { CliError, indent, singleLine } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { qrPng, readSecret, terminalQr } from "@wirecat/cli-core"
 import {
@@ -40,7 +40,6 @@ const receiveHistory = async (adapter: MessengerAdapter, wait: typeof HISTORY_WA
   const end = () => stop.abort()
   let timer = setTimeout(end, wait.firstMs)
   signal?.addEventListener("abort", end, { once: true })
-  process.once("SIGINT", end)
   try {
     await Promise.all([
       adapter.feed?.((batch) => {
@@ -54,18 +53,25 @@ const receiveHistory = async (adapter: MessengerAdapter, wait: typeof HISTORY_WA
     ])
   } finally {
     clearTimeout(timer)
-    process.off("SIGINT", end)
     signal?.removeEventListener("abort", end)
   }
   return received
 }
 
+// Linking and unlinking change the account without passing cli-core's send guard, so the lock is checked here.
+const refuseUnderReadOnly = (context: MessengerContext) => {
+  const lock = context.settings.readOnlyLock
+  if (lock)
+    throw new CliError("permission_error", `this process is read-only (${lock}) — it cannot link or unlink the device`)
+}
+
 const linkedText = (profile: string, account: { name: string | null }, got: Received | undefined) => {
   const word = asFirstWord(profile)
+  const name = account.name === null ? "you" : singleLine(account.name)
   return [
     got
-      ? `Linked as ${account.name ?? "you"} — profile ${profile}.`
-      : `Already linked as ${account.name ?? "you"} — profile ${profile}; nothing was asked. ` +
+      ? `Linked as ${name} — profile ${profile}.`
+      : `Already linked as ${name} — profile ${profile}; nothing was asked. ` +
         `\`wa ${word}session end\` first to link again.`,
     ...(got ? [`History: ${got.chats} chats, ${got.messages} messages kept from the phone.`] : []),
     `Next:    wa ${word}chats list · wa ${word}server install to keep receiving`,
@@ -114,6 +120,8 @@ export const startSession = async (
   if (!terminal && qrFile === undefined && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
   const qrPath = qrFile === undefined ? undefined : resolve(qrFile)
   const environment = environmentOf<Environment>(command)
+  // A cut command never reaches its own finally in time; the image links the account while it is valid.
+  if (qrPath) environment.trackCloseable?.({ close: async () => rmSync(qrPath, { force: true }) })
 
   try {
     const linked = await linkDevice(command, context, {
@@ -121,6 +129,7 @@ export const startSession = async (
       ...(track ? { track } : {}),
       beforeLink: () => {
         signal?.throwIfAborted()
+        refuseUnderReadOnly(context)
         if (!terminal && qrFile === undefined) throw unanswerable()
       },
       phone: async () => {
@@ -179,6 +188,7 @@ export const startSession = async (
 
 const end = async (command: Command) => {
   const context = messengerContext(command, WHATSAPP)
+  refuseUnderReadOnly(context)
   const store = privateStore(context.profile, context.env)
   if (!existsSync(store)) {
     printItem(context, { profile: context.profile, ended: false })

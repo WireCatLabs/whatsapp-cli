@@ -71,9 +71,21 @@ export const openEngine = async (
 ): Promise<WhatsAppEngine> => {
   const { profile } = base.settings
   const request: EngineRequest = { storePath: privateStore(profile, base.env), holder: holderOf(command), listen, link }
-  const { engine: given, engineCommand } = environmentOf<Environment>(command)
-  if (given) return given(request)
-  if (!link && !existsSync(request.storePath))
+  const { engine: given, engineCommand, trackCloseable } = environmentOf<Environment>(command)
+  // The engine ignores Ctrl+C and lives until its stdin closes, so the runner must be able to close it on a signal or
+  // a deadline: a login waiting for a scan would otherwise keep the process alive.
+  const engine = given ? await given(request) : await startEngine(request, base, engineCommand)
+  trackCloseable?.(engine)
+  return engine
+}
+
+const startEngine = async (
+  request: EngineRequest,
+  base: Pick<BaseContext, "settings" | "env" | "renderer">,
+  engineCommand: Environment["engineCommand"],
+): Promise<WhatsAppEngine> => {
+  const { profile } = base.settings
+  if (!request.link && !existsSync(request.storePath))
     throw new CliError(
       "authentication_error",
       `profile "${profile}" is not linked to WhatsApp — run ${loginHint(profile)}`,
