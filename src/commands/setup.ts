@@ -75,9 +75,10 @@ const agentFor = async (
     )
       .trim()
       .toLowerCase() || "none"
-  if (!AGENTS.includes(answer as Agent))
+  const agent = AGENTS.find((known) => known === answer)
+  if (agent === undefined)
     throw new CliError("validation_error", `unknown agent — choose ${AGENTS.join(", ")} with --agent`)
-  return answer as Agent
+  return agent
 }
 
 export const setupCommand = () =>
@@ -201,7 +202,9 @@ export const setupCommand = () =>
 
         screen.step(4, "A few chats")
         // WhatsApp has no chat list to ask for: the store holds what the phone pushed and what serve received.
-        const chats = await context.withStore((store, key) => store.chats.chats(key, { limit: 5, offset: 0 }))
+        const chats = await context.withStore((store, key) =>
+          store.forAccount(key).chats.chats({ limit: 5, offset: 0 }),
+        )
         screen.detail(`✓ ${chatCount(chats.items.length)} read from the local store`)
         if (chats.items.length === 0) screen.detail(`nothing kept yet — \`${command}server install\` starts receiving`)
 
