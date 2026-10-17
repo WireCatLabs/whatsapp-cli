@@ -156,8 +156,10 @@ background — only when the owner asked for it.
   out), `5` the profile may not do this (its `permissions`; the error names the key), or WhatsApp banned or
   restricted the account (do not retry; tell the owner), `6` not found — a chat, or a message the store lacks, `7`
   the chat is not on the list of allowed recipients, or the change asks first and nobody answered (stop and ask the
-  owner), `8` a limit (`sends_per_hour`), `12` another command holds the device, the engine stopped, or WhatsApp
-  refuses this version, `14` **unknown whether the message went** (see the traps).
+  owner), `8` a limit (`sends_per_hour`, or WhatsApp's own: `account.rate-limited` holds writes 15 minutes), `12` another
+  command holds the device (`device.in-use`: stop it or use `serve`), took it over (`device.replaced`), the engine
+  stopped (`engine.stopped`), or WhatsApp refuses this version (`client.outdated`: tell the owner to update), `14`
+  **unknown whether the message went** (see the traps), also when the engine stopped during it.
 - `-v` and `-vv` add detail for a person. The version is `wa -V`.
 
 ## Evidence for a chat brief

@@ -160,6 +160,15 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   biome's, and `@napi-rs/keyring` (through cli-base) already installs that way. A checkout never installs the engine
   packages (`ignoredOptionalDependencies` in `pnpm-workspace.yaml`): a version's packages reach npm only when it is
   released, and pnpm cannot lock a package npm does not have.
+- **Why the connection ended is kept, and a cut write is never "stopped".** When WhatsApp ends the connection (logged
+  out, replaced by another connection, banned, outdated), the engine keeps why and answers every later request with
+  it, with its reason, instead of connecting again: after "replaced" a reconnect would take the login back. The
+  client rejects a write still waiting when the engine process ends with `outcome_unknown`, a read with
+  `provider_unavailable` (`WRITES` in [`go-engine.ts`](../../src/engine/go-engine.ts)).
+- **Holds on writes are cli-core's.** `fromEngine` ([`src/adapter/errors.ts`](../../src/adapter/errors.ts)) gives
+  WhatsApp's 429 a `standing: limited` ending 15 minutes on, and a ban a `standing: frozen` a year on; cli-core's
+  `flooded` turns either into a hold on counted writes, reads go on, and `doctor --online` (the adapter's `health`,
+  which connects) lifts the frozen one. Not `retry_after_ms` alone: cli-core's pace would then hold reads too.
 - **Early events are kept.** An event nobody listens for yet is handed to the first listener of its kind
   ([`events.ts`](../../src/engine/events.ts)), so the history pushed right after connecting reaches `feed` even when
   `watch` subscribed first.
@@ -204,7 +213,8 @@ finds the address there and runs inside `serve`, on `serve`'s connection, instea
 The send guard and the permissions run in `serve` with the client's environment. Linking, `mcp --http` and
 `--offline` or `--dry-run` runs stay in their own process. cli-core's `relay-route` picks what goes through `serve`;
 its `serve-relay` is `serve`'s side. On Windows the relay is off for now, so there the lock refuses as in §6. Nothing
-in `src/adapter/` or `engine/` knows about the relay.
+in `src/adapter/` or `engine/` knows about the relay. `session end` is the one command that refuses when relayed
+(`device.in-use`): its logout would end `serve`'s own connection and delete the keys under it.
 
 ## 7. What is on disk
 

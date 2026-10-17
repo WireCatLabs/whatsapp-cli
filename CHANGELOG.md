@@ -7,6 +7,20 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **The engine dying during a write answers `outcome_unknown`** (WC-LIFE-9): exit 14, `retry.safe: false`, the
+  `operation_id` kept, reason `engine.stopped-mid-write`. It answered `provider_unavailable` (exit 12), which
+  invited a retry and a double send. A read cut the same way still answers `provider_unavailable`.
+- **Device and account states carry a `reason`** (WC-OUT-15), so an agent branches on it instead of the message:
+  `device.in-use` (another `wa` process holds the login: stop it, or run the command through `serve`),
+  `engine.stopped`, `client.outdated` (update `wa`) and `device.replaced`, all `provider_unavailable`;
+  `device.logged-out` (`authentication_error`); `account.banned` (`permission_error`); `account.rate-limited`
+  (`rate_limited`). After WhatsApp ends the connection for one of these, later requests in the same process answer
+  with it instead of connecting again. Engine protocol 10.
+- **WhatsApp's rate limit and a ban hold the profile's writes** (WC-PERM-18). After WhatsApp asks the account to slow
+  down, writes are refused for 15 minutes and reads go on; after a ban, writes are refused until
+  `wa <profile> doctor --online` connects again. `doctor --online` reports a ban as `standing.state: "frozen"`
+  (it said `banned`, which held nothing). `wa <profile> flood clear` lifts either hold. Both lengths are a default
+  the owner may change.
 - **A device linked before answers without counts** (WC-OUT-13). `session start --json` leaves out `received`, and
   `setup --json` leaves out `history`, when the profile was already linked: nothing was pushed, so nothing was
   counted. They used to say 0, which read as "the phone pushed nothing".
@@ -49,6 +63,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **`WA_ENGINE_LOG` no longer writes phone numbers** (WC-SECR-1): every user id (phone, device and hidden-id forms)
+  and any other long run of digits is masked before a line reaches the file.
+- **The engine packages published are the ones validation built and tested** (WC-REL-12): the release checks each
+  against the SHA-256 that validation recorded, and builds nothing again.
 - **`WA_READ_ONLY` also stops linking and unlinking the device**: `session start` and `setup` refuse to link a new
   device, and `session end` refuses to log out, with `permission_error`.
 - **An interrupted or timed-out login closes the engine and removes its QR image**, instead of leaving both behind.
@@ -63,6 +81,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`session end` no longer runs through a running `serve`**: it logged out `serve`'s own connection and then
+  deleted the device keys under it. It now refuses with `provider_unavailable`, reason `device.in-use` (exit 12),
+  and says to stop `serve` first (`wa <profile> server stop`, or Ctrl+C).
 - **Refusals name the whole command to run next**: `wa <profile> chats list`, `wa <profile> serve` and
   `wa <profile> session start`, where they said only `chats list`, `serve` or `session start`.
 - **No `messages sync` advice `wa` cannot follow** (cli-core 0.322.0): where a command points at the store's gaps it
@@ -85,6 +106,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> flood clear`** (cli-core's, as in tg and max): forgets the waits WhatsApp asked for and lifts the
+  hold on writes. The refusal during a hold already named it; `wa` did not have it.
 - **`session`, `session start`, `session end` and `setup` carry `mcp: false`** in `commands --json` (WC-CMD-21):
   linking waits for a person and unlinking removes the owner's device, so neither will be offered to an agent once
   MCP tools are built from commands. `setup` and `upgrade` list examples there too (WC-CMD-24).

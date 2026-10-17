@@ -70,20 +70,21 @@ output too.
 | `1` | `internal_error` | a fault in `wa`; report it |
 | `2` | `validation_error` | bad input: an unknown command or option, no profile named, a chat name that fits several chats, or something WhatsApp cannot do yet |
 | `3` | `configuration_error` | the settings are wrong |
-| `4` | `authentication_error` | the profile is not linked, or WhatsApp logged the device out; link with `session start` |
-| `5` | `permission_error` | the profile's `permissions` refuse it, `WA_PROFILE_LOCK` names another profile, or WhatsApp banned or restricted the account |
+| `4` | `authentication_error` | the profile is not linked, or WhatsApp logged the device out (`device.logged-out`); link with `session start` |
+| `5` | `permission_error` | the profile's `permissions` refuse it, `WA_PROFILE_LOCK` names another profile, or WhatsApp banned or restricted the account (`account.banned`): writes are then held until `doctor --online` connects |
 | `6` | `not_found` | no such chat or message; a change to a message the local store does not hold |
 | `7` | `confirmation_required` | an `ask` level got no answer, or the chat is not on the recipient list |
-| `8` | `rate_limited` | the hourly send limit or the profile's pace ([limits](limits.md)) |
+| `8` | `rate_limited` | the hourly send limit, the profile's pace ([limits](limits.md)), or WhatsApp asked the account to slow down (`account.rate-limited`): writes are then held for 15 minutes |
 | `9` | `timeout` | the command ran out of time |
 | `10` | `network_error` | WhatsApp could not be reached |
 | `11` | `provider_error` | WhatsApp refused the request |
-| `12` | `provider_unavailable` | another `wa` command holds the device's one connection, the engine stopped, or WhatsApp no longer accepts this version of `wa` |
+| `12` | `provider_unavailable` | another `wa` command holds the device's one connection (`device.in-use`) or took it over (`device.replaced`), the engine stopped (`engine.stopped`), or WhatsApp no longer accepts this version of `wa` (`client.outdated`) |
 | `13` | `invalid_response` | WhatsApp answered something `wa` does not understand |
-| `14` | `outcome_unknown` | a write may or may not have happened ([below](#previews-and-safe-retries)) |
+| `14` | `outcome_unknown` | a write may or may not have happened, also when the engine stopped during it (`engine.stopped-mid-write`) ([below](#previews-and-safe-retries)) |
 | `130` | `cancelled` | Ctrl-C |
 
-`wa commands --json` gives the same table under `exit_codes`. Branch on the code, never on the message text.
+`wa commands --json` gives the same table under `exit_codes`. Branch on the code and the `reason` in brackets, never
+on the message text.
 
 ## Running without questions, and limits
 

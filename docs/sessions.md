@@ -64,7 +64,8 @@ wa personal session end      # unlink the device on WhatsApp's side, and delete 
 ```
 
 `wa personal session end` removes the device **on WhatsApp's side too**: it disappears from the phone's list of linked
-devices. It leaves the local store as it is.
+devices. It leaves the local store as it is. While `serve` runs for the profile, it refuses (exit code `12`): stop
+`serve` first with `wa personal server stop`, or Ctrl+C where it runs.
 
 ## One connection per device
 
