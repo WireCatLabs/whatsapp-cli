@@ -1,6 +1,9 @@
 # Architecture
 
-How `wa` is put together, and which seams you may not cross.
+How `wa` is put together, and which seams you may not cross. The rules are the handbook's
+[Architecture](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/architecture.md) and
+[Lifecycle](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/lifecycle.md) pages (`WC-ARCH-<n>`,
+`WC-LIFE-<n>`), which win over this page; this page is how `wa` keeps them.
 
 ## 1. Most of `wa` is not in this repository
 
