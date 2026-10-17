@@ -28,6 +28,12 @@ description = "A phone number — the identifier a WhatsApp account is registere
 regex = '''(?i)(?:phone|msisdn|number)["'\s:=]{1,10}\+?[1-9]\d{9,14}'''
 tags = ["pii"]
 
+[[rules]]
+id = "whatsapp-lid"
+description = "A WhatsApp hidden id (LID) — names a real person as surely as a phone number"
+regex = '''\b[1-9]\d{7,19}(?::\d+)?@lid\b'''
+tags = ["pii", "whatsapp"]
+
 [allowlist]
 description = "Synthetic values used by tests and documentation"
 regexTarget = "match"
@@ -35,5 +41,6 @@ regexes = [
   # Fixtures and examples must use obviously fake values; these are the ones we sanction.
   '''\+?71234567890''',
   '''71234567890(?::\d+)?@s\.whatsapp\.net''',
+  '''10000000000\d{4}(?::\d+)?@lid''',
 ]
 paths = ['''pnpm-lock\.yaml''']
