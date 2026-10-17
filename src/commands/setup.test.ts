@@ -235,22 +235,50 @@ describe("wa setup", () => {
   it("ends a stalled account check on timeout, closes the engine and installs nothing", async () => {
     linkedDevice()
     const engine = fakeEngine(seed)
+    const linkCheck = engine.me
+    let asked = 0
     let rejectRequest: ((error: Error) => void) | undefined
-    engine.me = () =>
-      new Promise((_resolve, reject) => {
+    engine.me = () => {
+      asked += 1
+      // The first is the link step finding the device linked; the second is the account step.
+      if (asked === 1) return linkCheck()
+      return new Promise((_resolve, reject) => {
         rejectRequest = reject
       })
+    }
+    let closedWhileAsking = false
     engine.close = async () => {
-      engine.closed = true
+      if (rejectRequest) closedWhileAsking = true
       rejectRequest?.(new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly"))
     }
     const result = await execute(["setup", "--agent", "codex", "--timeout", "100ms", "--json"], {}, engine)
     expect(result.code).not.toBe(0)
     expect(result.stdout).toBe("")
     expect(result.stderr).toMatch(/timeout|did not finish within/)
-    expect(engine.closed).toBe(true)
+    expect(asked).toBe(2)
+    expect(closedWhileAsking).toBe(true)
     expect(installSkill).not.toHaveBeenCalled()
   })
+
+  it("cancels cleanly at the agent choice and keeps the device", async () => {
+    const path = linkedDevice()
+    input.cancel = true
+    const result = await execute(["setup"], { tty: true, stdin: terminal() })
+    expect(result.code).not.toBe(0)
+    expect(result.stdout).toBe("")
+    expect(existsSync(path)).toBe(true)
+    expect(installSkill).not.toHaveBeenCalled()
+  })
+
+  it.each(["--json", "--jsonl", "--no-input"])(
+    "refuses a first link with %s even on a terminal, before starting the engine",
+    async (flag) => {
+      const result = await execute(["setup", "--agent", "none", flag], { tty: true, stdin: terminal() })
+      expect(result.code).toBe(2)
+      expect(input.prompts).toEqual([])
+      expect(result.requests).toEqual([])
+    },
+  )
 
   it("cancels a pending agent choice on the whole-command deadline", async () => {
     linkedDevice()
