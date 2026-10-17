@@ -1,6 +1,7 @@
 // wa-engine speaks WhatsApp through whatsmeow for wa. It reads requests as JSON lines on stdin and writes answers
 // and events as JSON lines on stdout; the contract is src/engine/contract.ts. It writes no message, name or number
-// anywhere else: stderr gets fixed wording only, and whatsmeow's own log is off unless WA_ENGINE_LOG names a file.
+// anywhere else: stderr gets fixed wording only, and whatsmeow's own log is off unless WA_ENGINE_LOG names a file,
+// where phone numbers and user ids are masked.
 package main
 
 import (
@@ -75,5 +76,6 @@ func whatsmeowLog() (waLog.Logger, func()) {
 		fmt.Fprintln(os.Stderr, "wa-engine: cannot open WA_ENGINE_LOG; logging off")
 		return waLog.Noop, func() {}
 	}
-	return waLog.Zerolog(zerolog.New(file).With().Timestamp().Logger().Level(zerolog.WarnLevel)), func() { file.Close() }
+	logger := zerolog.New(redacting{file}).With().Timestamp().Logger().Level(zerolog.WarnLevel)
+	return waLog.Zerolog(logger), func() { file.Close() }
 }
