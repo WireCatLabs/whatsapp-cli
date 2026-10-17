@@ -73,8 +73,8 @@ wa personal recipients add 100000000000001@lid   # and only to the chats on this
 ```
 
 `readonly` on one resource does not cover the others: `messages` alone still lets the agent react or mark a chat
-read. `recipients add` looks the chat up on WhatsApp, so it connects, and it does not go through `serve`: while
-`serve` runs, it is refused with exit code `12`.
+read. `recipients add` looks the chat up on WhatsApp, so it connects; while `serve` runs, it runs inside `serve`, on
+its connection.
 `permissions` limits your own commands too, until you change it back:
 `wa personal config unset permissions.messages`. To limit only the agent, give it a profile of its own. Every attempt
 to send, refused ones included, is in `wa personal sends list`. See [permissions](permissions.md).
