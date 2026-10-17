@@ -25,7 +25,7 @@ and home, a keyring that throws, and no network beyond this machine (WC-TEST-1, 
 subject is the network calls `onTestFinished(allowNetwork())`; none does today. The engine tests spawn a local child,
 not the network.
 
-`src/testing/sandbox.ts` runs next with `wa`'s own part: short config, state and cache paths and the shared message
+`src/testing/sandbox.ts` runs next with `wa`'s own part: config, state and cache paths and the shared message
 store inside that folder, and `WA_ENGINE`, `WA_PROFILE_LOCK` and the model variables cleared. **A new `WA_` variable
 that can point at something real goes there.**
 
