@@ -206,6 +206,15 @@ describe("wa setup", () => {
     expect(result.requests).toEqual([])
   })
 
+  it("refuses under WA_READ_ONLY before starting the engine, also with a linked device", async () => {
+    linkedDevice()
+    const result = await execute(["setup", "--agent", "claude", "--json"], { env: { ...env, WA_READ_ONLY: "1" } })
+    expect(result.code).toBe(5)
+    expect(JSON.parse(result.stderr).error.message).toContain("cannot log in or out")
+    expect(result.requests).toEqual([])
+    expect(installSkill).not.toHaveBeenCalled()
+  })
+
   it("refuses a store an unfinished link left without a device, when nobody can scan", async () => {
     linkedDevice()
     const result = await execute(["setup", "--agent", "none", "--json"], {}, unlinked())

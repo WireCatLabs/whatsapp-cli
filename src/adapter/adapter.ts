@@ -5,6 +5,7 @@ import { tmpdir } from "node:os"
 import { resolve as absolute, extname, join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import {
+  bareCheck,
   type Chat,
   type MarkdownFormatting,
   type Message,
@@ -37,7 +38,7 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
-import { bareCheck, type Words } from "./checks.js"
+import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"

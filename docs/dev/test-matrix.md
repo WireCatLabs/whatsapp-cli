@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**131 ✅ · 592 ⛔ · 0 ❌** — 227 commands, 496 options.
+**132 ✅ · 591 ⛔ · 0 ❌** — 227 commands, 496 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -730,7 +730,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--max-output-bytes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--brief` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--full` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--dry-run` | ⛔ | a dry run ends before the preAction hook that logs argv; src/program.test.ts checks a dry-run send starts no engine |
+| *global* | `--dry-run` | ✅ |  |
 | *global* | `--yes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--record` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--no-record` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |

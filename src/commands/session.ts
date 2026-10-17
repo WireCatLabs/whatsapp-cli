@@ -9,17 +9,19 @@ import {
   commandWords,
   environmentOf,
   inputPolicy,
+  logsInOrOut,
   type MessengerAdapter,
   type MessengerContext,
   messengerContext,
+  printItem,
   REMOTE_WRITE,
   refuseCommandName,
   rootOf,
+  secretInputOf,
 } from "@wirecat/cli-core/cli"
 import { Argument, Command } from "commander"
 import { type Environment, linkDevice, WHATSAPP } from "../messenger.js"
 import { privateStore } from "../paths.js"
-import { printItem } from "./answer.js"
 
 /** The phone pushes its history right after linking, once; how long to keep receiving it. */
 export const HISTORY_WAIT = { firstMs: 120_000, quietMs: 45_000 }
@@ -31,8 +33,8 @@ export interface Received {
 }
 
 /**
- * Saves what the phone pushes until it goes quiet, Ctrl+C, or the caller's signal. Live messages that arrive
- * meanwhile are saved too, through the same connection.
+ * Saves what the phone pushes until it goes quiet or `signal` aborts. Live messages that arrive meanwhile are saved
+ * too, through the same connection.
  */
 const receiveHistory = async (adapter: MessengerAdapter, wait: typeof HISTORY_WAIT, signal?: AbortSignal) => {
   const received: Received = { chats: 0, messages: 0, people: 0 }
@@ -56,13 +58,6 @@ const receiveHistory = async (adapter: MessengerAdapter, wait: typeof HISTORY_WA
     signal?.removeEventListener("abort", end)
   }
   return received
-}
-
-// Linking and unlinking change the account without passing cli-core's send guard, so the lock is checked here.
-const refuseUnderReadOnly = (context: MessengerContext) => {
-  const lock = context.settings.readOnlyLock
-  if (lock)
-    throw new CliError("permission_error", `this process is read-only (${lock}) — it cannot link or unlink the device`)
 }
 
 const linkedText = (profile: string, account: { name: string | null }, got: Received | undefined) => {
@@ -129,7 +124,6 @@ export const startSession = async (
       ...(track ? { track } : {}),
       beforeLink: () => {
         signal?.throwIfAborted()
-        refuseUnderReadOnly(context)
         if (!terminal && qrFile === undefined) throw unanswerable()
       },
       phone: async () => {
@@ -138,7 +132,7 @@ export const startSession = async (
             reason: "input.required",
           })
         return readSecret(`${" ".repeat(pad)}phone number, international format: `, {
-          input,
+          ...secretInputOf(command),
           echo: true,
           ...(signal === undefined ? {} : { signal }),
         })
@@ -170,11 +164,13 @@ export const startSession = async (
       context.renderer.note(
         "receiving history from the phone; keep WhatsApp open on it. Ctrl+C stops — `serve` picks up the rest.",
       )
-      const stop = AbortSignal.any([signal, environment.signal].filter((one) => one !== undefined))
+      // Ctrl+C, a cancel or --timeout now ends the wait alone: what was kept is counted and the link stands.
+      const stop = environment.untilStopped?.()
+      const ended = AbortSignal.any([signal, stop].filter((one) => one !== undefined))
       session.received = await context.withMessenger(
         (adapter) => {
           track?.(adapter)
-          return receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, stop)
+          return receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, ended)
         },
         { listen: true },
       )
@@ -188,15 +184,6 @@ export const startSession = async (
 
 const end = async (command: Command) => {
   const context = messengerContext(command, WHATSAPP)
-  refuseUnderReadOnly(context)
-  // Run by serve for us, the logout would end serve's own connection and the keys would go from under it.
-  if (environmentOf(command).relayed)
-    throw new CliError(
-      "provider_unavailable",
-      `serve holds this WhatsApp login — stop it first (\`wa ${asFirstWord(context.profile)}server stop\`, or Ctrl+C ` +
-        "where it runs), then end the session",
-      { reason: "device.in-use", sent: false },
-    )
   const store = privateStore(context.profile, context.env)
   if (!existsSync(store)) {
     printItem(context, { profile: context.profile, ended: false })
@@ -205,6 +192,13 @@ const end = async (command: Command) => {
   try {
     await context.withMessenger((adapter) => adapter.logout())
   } catch (error) {
+    if (error instanceof CliError && error.details.reason === "device.in-use")
+      throw new CliError(
+        "provider_unavailable",
+        `${error.message} — stop it first (\`wa ${asFirstWord(context.profile)}server stop\` for serve, or Ctrl+C ` +
+          "where it runs), then end the session",
+        { ...error.details, sent: false },
+      )
     // The phone may have removed the device already; the keys here are then worth nothing, and still go.
     if (!(error instanceof CliError && error.code === "authentication_error")) throw error
     context.renderer.note("WhatsApp no longer knew this device; removing the keys here")
@@ -219,7 +213,7 @@ export const sessionCommand = () => {
     "link this profile to WhatsApp as a device, or unlink it",
   )
 
-  annotate(session.command("start"), {
+  annotate(logsInOrOut(session.command("start")), {
     effects: REMOTE_WRITE,
     lifetime: "interactive",
     examples: ["wa personal session start", "wa personal session start phone"],
@@ -256,7 +250,7 @@ export const sessionCommand = () => {
         })
     })
 
-  annotate(session.command("end"), { effects: REMOTE_WRITE, examples: ["wa personal session end"] })
+  annotate(logsInOrOut(session.command("end")), { effects: REMOTE_WRITE, examples: ["wa personal session end"] })
     .description("unlink this device on WhatsApp's side and delete its keys here")
     .action(async function (this: Command) {
       await end(this)
