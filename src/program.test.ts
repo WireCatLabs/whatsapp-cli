@@ -1,3 +1,6 @@
+import { mkdtempSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it } from "vitest"
@@ -164,5 +167,42 @@ describe("reads from the store", () => {
     await filled("offline")
     const result = await wa(["offline", "--offline", "chats", "list", "--json"], never)
     expect(result.code).toBe(0)
+  })
+})
+
+describe("commands WhatsApp has no counterpart for", () => {
+  const message = seed.messages.find((one) => one.chatId === seed.busy)?.id ?? ""
+  const card = join(mkdtempSync(join(tmpdir(), "wa-vcard-")), "people.vcf")
+  writeFileSync(card, "BEGIN:VCARD\nVERSION:3.0\nFN:Synthetic Person\nTEL:+10000000000\nEND:VCARD\n")
+  it.each([
+    ["account", "update", "--first-name", "Synthetic"],
+    ["account", "sessions", "list"],
+    ["account", "sessions", "end", "--others"],
+    ["chats", "events", seed.busy],
+    ["chats", "inspect", "https://chat.whatsapp.com/FAKE0000000000000000AA"],
+    ["chats", "send-as", seed.busy],
+    ["chats", "folders", "list"],
+    ["chats", "folders", "show", "Work"],
+    ["chats", "folders", "create", "Work"],
+    ["chats", "folders", "update", "Work", "--title", "Play"],
+    ["chats", "folders", "delete", "Work"],
+    ["chats", "moderate", seed.busy],
+    ["contacts", "remove", seed.person],
+    ["contacts", "rename", seed.person, "Synthetic"],
+    ["contacts", "import", card],
+    ["messages", "pin", seed.busy, message],
+    ["messages", "unpin", seed.busy, message],
+    ["messages", "scheduled", seed.busy],
+    ["messages", "comments", seed.busy, message],
+  ])("refuses `%s %s` as invalid, writes nothing and closes what it started", async (...argv) => {
+    let engine: FakeEngine | undefined
+    const result = await wa(["unsupported", ...argv, "--json"], () => {
+      engine = fakeEngine(seed)
+      return engine
+    })
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.code).toBe("validation_error")
+    expect([...(engine?.sends ?? []), ...(engine?.actions ?? []), ...(engine?.groupActions ?? [])]).toEqual([])
+    expect(engine?.closed ?? true).toBe(true)
   })
 })

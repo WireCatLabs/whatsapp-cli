@@ -88,6 +88,17 @@ describe("wa chats members", () => {
     expect(result.code).toBe(0)
     expect(result.done).toEqual([{ op: "remove", jid: seed.busy, people: [stranger] }])
   })
+
+  it("lists a group's members from WhatsApp, a page at a time or all of them", async () => {
+    const everyone = (seed.members[seed.busy] ?? []).map((member) => member.id)
+    const ids = (body: { items: { id: string }[] }) => body.items.map((member) => member.id)
+
+    const second = await acting("chats", "members", "list", seed.busy, "--limit", "1", "--page", "2")
+    expect(second.code).toBe(0)
+    expect(ids(second.body)).toEqual(everyone.slice(1, 2))
+    const all = await acting("chats", "members", "list", seed.busy, "--all")
+    expect(ids(all.body)).toEqual(everyone)
+  })
 })
 
 describe("wa chats admins", () => {
@@ -210,6 +221,23 @@ describe("wa chats requests", () => {
     expect(accepted.code).toBe(0)
     expect(accepted.done).toEqual([{ op: "answerRequest", jid: seed.busy, people: [REQUESTER], accept: true }])
   })
+
+  it("turns a request down", async () => {
+    const declined = await acting("chats", "requests", "decline", seed.busy, REQUESTER)
+    expect(declined.code).toBe(0)
+    expect(declined.done).toEqual([{ op: "answerRequest", jid: seed.busy, people: [REQUESTER], accept: false }])
+  })
+})
+
+describe("wa account show", () => {
+  it("names the linked account, and has no phone number to show even with --show-phone", async () => {
+    for (const flags of [[], ["--show-phone"]]) {
+      const result = await acting("account", "show", ...flags)
+      expect(result.code).toBe(0)
+      expect(result.body).toMatchObject({ id: seed.account?.id, name: seed.account?.name })
+      expect(result.body.phone ?? null).toBeNull()
+    }
+  })
 })
 
 describe("wa contacts", () => {
@@ -234,6 +262,18 @@ describe("wa contacts", () => {
     const result = await acting("contacts", "add", seed.person)
     expect(result.code).toBe(2)
     expect(result.done).toEqual([])
+  })
+
+  it("keeps the address book the phone shares", async () => {
+    const newcomer = { jid: "100000000000088@lid", name: "Synthetic Newcomer" }
+    const result = await wa([PROFILE, "contacts", "sync", "--json"], () => {
+      const engine = fakeEngine(seed)
+      const book = engine.contacts
+      engine.contacts = async () => [...(await book()), newcomer]
+      return engine
+    })
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item).toMatchObject({ added: 1 })
   })
 
   it("finds the person behind one number", async () => {

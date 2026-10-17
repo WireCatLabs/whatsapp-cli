@@ -127,6 +127,14 @@ describe("older history from the phone", () => {
     expect(await stored.message(seed.busy, onPhone[0]?.id ?? "")).toMatchObject({ id: onPhone[0]?.id })
   })
 
+  it("asks the phone for --page-size messages at a time", async () => {
+    const engine = fakeEngine(seed, { phone: onPhone })
+    const argv = ["older", "messages", "sync", seed.busy, "--page-size", "5", "--limit", "10", "--pause", "1ms"]
+    const result = await wa([...argv, "--no-catch-up", "--json"], () => engine)
+    expect(result.code).toBe(0)
+    expect(engine.olderAsked.map((asked) => asked.count)).toEqual([5, 5])
+  })
+
   it("still refuses `messages sync --all`: there is no chat list to walk", async () => {
     const engine = fakeEngine(seed, { phone: onPhone })
     const result = await wa(["older", "messages", "sync", "--all", "--json"], () => engine)

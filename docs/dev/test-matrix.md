@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**102 ✅ · 674 ⛔ · 0 ❌** — 242 commands, 534 options.
+**138 ✅ · 638 ⛔ · 0 ❌** — 242 commands, 534 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -18,47 +18,47 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `setup` | `--agent` | ✅ |  |
 | `setup` | `--method` | ✅ |  |
 | `setup` | `--qr-file` | ✅ |  |
-| `account list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account show` | `--show-phone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account update` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account update` | `--first-name` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account update` | `--last-name` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account update` | `--description` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account update` | `--photo` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account sessions list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account sessions end` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `account sessions end` | `--others` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `account list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/account-list.test.ts |
+| `account show` |  | ✅ |  |
+| `account show` | `--show-phone` | ✅ |  |
+| `account update` |  | ✅ |  |
+| `account update` | `--first-name` | ✅ |  |
+| `account update` | `--last-name` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `account update` | `--description` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `account update` | `--photo` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `account sessions list` |  | ✅ |  |
+| `account sessions end` |  | ✅ |  |
+| `account sessions end` | `--others` | ✅ |  |
 | `chats list` |  | ✅ |  |
 | `chats list` | `--limit` | ✅ |  |
 | `chats list` | `--page` | ✅ |  |
 | `chats list` | `--all` | ✅ |  |
-| `chats events` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats inspect` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats send-as` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats documents list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats documents list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats documents list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members list` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members audit` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members audit` | `--max-pages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members audit` | `--deep` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members history` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members fetch` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members fetch` | `--track` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats members fetch` | `--max-pages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `chats events` |  | ✅ |  |
+| `chats inspect` |  | ✅ |  |
+| `chats show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/chats-answers.test.ts and messenger.test.ts |
+| `chats send-as` |  | ✅ |  |
+| `chats documents list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/chats-documents.test.ts |
+| `chats documents list` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/chats-documents.test.ts |
+| `chats documents list` | `--page` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/chats-documents.test.ts |
+| `chats members list` |  | ✅ |  |
+| `chats members list` | `--limit` | ✅ |  |
+| `chats members list` | `--page` | ✅ |  |
+| `chats members list` | `--all` | ✅ |  |
+| `chats members audit` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
+| `chats members audit` | `--max-pages` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
+| `chats members audit` | `--deep` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
+| `chats members history` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
+| `chats members fetch` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
+| `chats members fetch` | `--track` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
+| `chats members fetch` | `--max-pages` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
 | `chats members add` |  | ✅ |  |
 | `chats members remove` |  | ✅ |  |
 | `chats mark-read` |  | ✅ |  |
 | `chats mark-read` | `--until-id` | ✅ |  |
-| `chats tracking list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats tracking show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats tracking add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats tracking remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `chats tracking list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
+| `chats tracking show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
+| `chats tracking add` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
+| `chats tracking remove` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
 | `chats create` |  | ✅ |  |
 | `chats create` | `--channel` | ✅ |  |
 | `chats join` |  | ✅ |  |
@@ -77,70 +77,70 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats requests list` | `--limit` | ✅ |  |
 | `chats requests list` | `--page` | ✅ |  |
 | `chats requests accept` |  | ✅ |  |
-| `chats requests decline` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `chats requests decline` |  | ✅ |  |
 | `chats admins add` |  | ✅ |  |
 | `chats admins remove` |  | ✅ |  |
-| `chats folders list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders create` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders create` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders update` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders update` | `--title` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders update` | `--add` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders update` | `--remove` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats folders delete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats rules show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats rules set` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats rules unset` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats moderate` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats moderate` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats moderate` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats moderate` | `--allow-dangerous` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats moderate` | `--max-actions` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts list` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts list` | `--order` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts show` | `--with-notes` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `chats folders list` |  | ✅ |  |
+| `chats folders show` |  | ✅ |  |
+| `chats folders create` |  | ✅ |  |
+| `chats folders create` | `--chat` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `chats folders update` |  | ✅ |  |
+| `chats folders update` | `--title` | ✅ |  |
+| `chats folders update` | `--add` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `chats folders update` | `--remove` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `chats folders delete` |  | ✅ |  |
+| `chats rules show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/admin-commands.test.ts |
+| `chats rules set` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/admin-commands.test.ts |
+| `chats rules unset` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/admin-commands.test.ts |
+| `chats moderate` |  | ✅ |  |
+| `chats moderate` | `--since-time` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `chats moderate` | `--dry-run` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `chats moderate` | `--allow-dangerous` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `chats moderate` | `--max-actions` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `contacts list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
+| `contacts list` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
+| `contacts list` | `--page` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
+| `contacts list` | `--all` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
+| `contacts list` | `--order` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
+| `contacts show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
+| `contacts show` | `--with-notes` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts profile` |  | ✅ |  |
 | `contacts profile` | `--show-phone` | ⛔ | wa's profile never carries a phone number (the engine leaves it out), so there is nothing to unmask; cli-core tests the masking |
-| `contacts context` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts context` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts context` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts context` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts timeline` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts timeline` | `--scope` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts timeline` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts timeline` | `--until-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts timeline` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts timeline` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts check` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts check` | `--no-registries` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts link` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts unlink` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `contacts context` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts context` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts context` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts context` | `--chat` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts timeline` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
+| `contacts timeline` | `--scope` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
+| `contacts timeline` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
+| `contacts timeline` | `--until-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
+| `contacts timeline` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
+| `contacts timeline` | `--cursor` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
+| `contacts check` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts check` | `--no-registries` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts unlink` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts lookup` |  | ✅ |  |
-| `contacts sync` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts alias set` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts alias rm` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes add` | `--file` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes edit` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes edit` | `--file` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes edit` | `--revision` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts notes remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `contacts sync` |  | ✅ |  |
+| `contacts alias set` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts alias rm` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes add` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes add` | `--file` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes edit` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes edit` | `--file` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes edit` | `--revision` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
+| `contacts notes remove` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |
 | `contacts add` |  | ✅ |  |
-| `contacts remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `contacts remove` |  | ✅ |  |
 | `contacts block` |  | ✅ |  |
 | `contacts unblock` |  | ✅ |  |
-| `contacts rename` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `contacts import` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages evidence` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages evidence` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages evidence` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `contacts rename` |  | ✅ |  |
+| `contacts import` |  | ✅ |  |
+| `messages evidence` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/store-mode.test.ts and src/services/evidence.test.ts |
+| `messages evidence` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/store-mode.test.ts and src/services/evidence.test.ts |
+| `messages evidence` | `--cursor` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/store-mode.test.ts and src/services/evidence.test.ts |
 | `messages list` |  | ✅ |  |
 | `messages list` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine |
 | `messages list` | `--cursor` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine |
@@ -161,19 +161,19 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages send` | `--allow-any-file` | ⛔ | cli-core's file check, tested in cli-core (src/sends/upload.test.ts); wa receives the file it allowed |
 | `messages send` | `--at-time` | ✅ |  |
 | `messages send` | `--filename` | ✅ |  |
-| `messages show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` | `--thread` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` | `--thread-hops` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` | `--thread-messages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` | `--thread-bytes` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` | `--thread-within` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` | `--before-n` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages context` | `--after-n` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `messages show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` | `--thread` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` | `--thread-hops` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` | `--thread-messages` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` | `--thread-bytes` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` | `--thread-within` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` | `--before-n` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
+| `messages context` | `--after-n` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
 | `messages download` |  | ✅ |  |
 | `messages download` | `--output-dir` | ✅ |  |
-| `messages download` | `--all` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
-| `messages download` | `--pause` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
+| `messages download` | `--all` | ✅ |  |
+| `messages download` | `--pause` | ✅ |  |
 | `messages download` | `--extract` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
 | `messages transcribe` |  | ✅ |  |
 | `messages transcribe` | `--local` | ⛔ | needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, and cli-core's src/speech tests drive the local model |
@@ -185,22 +185,22 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages delete` | `--allow-dangerous` | ✅ |  |
 | `messages forward` |  | ✅ |  |
 | `messages forward` | `--to` | ✅ |  |
-| `messages forward` | `--silent` | ⛔ | refused by the adapter before the engine, as `messages send` refuses them (src/program.test.ts) |
-| `messages forward` | `--send-as` | ⛔ | refused by the adapter before the engine, as `messages send` refuses them (src/program.test.ts) |
-| `messages forward` | `--operation-id` | ⛔ | a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/guard.test.ts) |
-| `messages pin` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages pin` | `--notify` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages unpin` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages scheduled` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages link` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages comments` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages comments` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages comments` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages links` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `messages forward` | `--silent` | ✅ |  |
+| `messages forward` | `--send-as` | ✅ |  |
+| `messages forward` | `--operation-id` | ✅ |  |
+| `messages pin` |  | ✅ |  |
+| `messages pin` | `--notify` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `messages unpin` |  | ✅ |  |
+| `messages scheduled` |  | ✅ |  |
+| `messages link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/messages-link.test.ts |
+| `messages comments` |  | ✅ |  |
+| `messages comments` | `--limit` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `messages comments` | `--cursor` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `messages links` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
 | `messages sync` |  | ✅ |  |
 | `messages sync` | `--all` | ✅ |  |
 | `messages sync` | `--limit` | ✅ |  |
-| `messages sync` | `--page-size` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--page-size` | ✅ |  |
 | `messages sync` | `--pause` | ✅ |  |
 | `messages sync` | `--since-time` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
 | `messages sync` | `--last` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
@@ -744,10 +744,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `config unset` | `--bot` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `doctor` |  | ✅ |  |
 | `doctor` | `--online` | ✅ |  |
-| `doctor report` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `doctor report create` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `doctor report create` | `--run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `doctor report create` | `--output` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `doctor report` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
+| `doctor report create` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
+| `doctor report create` | `--run` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
+| `doctor report create` | `--output` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
 | `commands` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `commands schema` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `complete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
