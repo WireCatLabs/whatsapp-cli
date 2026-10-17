@@ -18,8 +18,11 @@ Open work, most important first. The plan in flight is
    - **Live checks** (with item 1): a reaction and a revoke in a one-to-one chat stored under a LID, and in a group
      addressed by phone numbers; whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.
-5. **Distribution**: the engine as per-platform npm packages, the release workflow, install tests on three systems.
-   Until then `wa upgrade` updates the npm package only, not the engine binary.
+5. **Distribution — first publish.** The engine packages, the release steps and the install tests on three systems are
+   built (`scripts/engine-packages.mjs`, `release.yml`, `install-windows.yml`) but have not run in CI or published.
+   npm's trusted publishing is set per package, and I think a package must exist on npm before it can trust a
+   workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
+   (`bin/release --local`) before `release.yml` can publish them.
 6. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
 7. **Agent settings like tg's** (`.claude/settings.json`: sandbox on, writes kept inside the project, `bin/wa` excluded so the engine reaches WhatsApp). Left out of the foundation because it changes how agents run here.
 8. **Replace the test-matrix waivers with tests.** `scripts/test-matrix-untested.ts` waives every shared command as

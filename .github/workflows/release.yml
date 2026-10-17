@@ -3,7 +3,8 @@ name: Release
 # Started by bin/release. npm trusts this file by name (trusted publishing), so there is no npm
 # token anywhere in this repository and renaming the file breaks publishing until npm is told.
 #
-# Full validation builds, checks and packs once; `build` verifies the immutable tarball.
+# Full validation builds, checks and packs once; `build` verifies the immutable tarball and builds the engine, one npm
+# package per platform (scripts/engine-packages.mjs), which `publish` uploads before the CLI that names them.
 # The job able to publish runs no code from our dependencies; `publish` holds the OIDC permission and only
 # runs `npm publish` on that file; `tag` is the only one that may write to the repository.
 on:
@@ -105,6 +106,23 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: engine/go.mod
+          cache: false
+      - name: engine packages
+        run: |
+          node scripts/engine-packages.mjs check
+          node scripts/engine-packages.mjs build
+          for dir in packages/engine-*; do npm pack "./$dir" --pack-destination engine-packages; done
+          [ "$(ls engine-packages/*.tgz | wc -l)" -eq 6 ] || { echo "::error::expected six engine packages"; exit 1; }
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: engine-packages
+          path: engine-packages/*.tgz
+          if-no-files-found: error
+          retention-days: 7
+
   package-dry-run:
     needs: build
     if: inputs.dry_run
@@ -119,8 +137,14 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: package
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: engine-packages
+          path: engine-packages
       # Permit checking an already published version; this job has no publishing permissions.
-      - run: npm publish ./*.tgz --access public --dry-run --force
+      - run: |
+          for tarball in engine-packages/*.tgz; do npm publish "$tarball" --access public --dry-run --force; done
+          npm publish ./*.tgz --access public --dry-run --force
 
   publish:
     needs: build
@@ -140,6 +164,23 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: package
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: engine-packages
+          path: engine-packages
+
+      # The engines first: npm skips an optional dependency it cannot find, so a CLI published ahead of them would
+      # install without one. A retried run skips each engine npm already has.
+      - name: publish engine packages
+        run: |
+          for tarball in engine-packages/*.tgz; do
+            name=$(tar -xzOf "$tarball" package/package.json | node -p 'JSON.parse(require("fs").readFileSync(0)).name')
+            if npm view "$name@$VERSION" version --prefer-online >/dev/null 2>&1; then
+              echo "$name@$VERSION is already on npm"
+              continue
+            fi
+            npm publish "$tarball" --access public
+          done
 
       # npm, not pnpm: npm's trusted publishing is the documented path. A tarball runs no
       # lifecycle scripts, and nothing is installed here.

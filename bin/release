@@ -90,7 +90,8 @@ if [ "$next" != "$version" ]; then
     const today = new Date().toLocaleDateString("en-GB").replaceAll("/", ".")
     if (taken) swap("CHANGELOG.md", "\n## Unreleased\n", `\n## ${n} — ${today}\n`)
     else swap("CHANGELOG.md", `\n## ${o} — `, `\n## ${n} — `)' "$version" "$next" "$taken"
-  body="bin/release: $why. Only the number changes: package.json, src/version.ts, the CHANGELOG heading."
+  node scripts/engine-packages.mjs sync
+  body="bin/release: $why. Only the number changes: package.json (and its engine packages), src/version.ts, the CHANGELOG heading."
   land "release/$next" "chore(release): $next" "$body"
   version=$next
 fi
@@ -139,6 +140,17 @@ export NPM_TOKEN
 config=$(mktemp)
 trap 'rm -f "$config"' EXIT
 printf '//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n' > "$config"
+
+echo "== publishing the engine packages of $version =="
+node scripts/engine-packages.mjs build
+for dir in packages/engine-*; do
+  name=$(node -p 'require(process.argv[1]).name' "./$dir/package.json")
+  if npm view "$name@$version" version --prefer-online >/dev/null 2>&1; then
+    echo "$name@$version is already on npm"
+    continue
+  fi
+  npm publish "./$dir" --access public --userconfig "$config"
+done
 
 echo "== publishing $version =="
 npm publish --access public --userconfig "$config"

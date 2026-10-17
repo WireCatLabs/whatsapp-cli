@@ -6,3 +6,8 @@ allowBuilds:
   lefthook: true
 minimumReleaseAgeExclude:
   - '@wirecat/*'
+
+ignoredOptionalDependencies:
+  # The engine packages of a version reach npm only when it is released, and pnpm cannot lock a package npm does
+  # not have yet; a checkout runs the engine `pnpm engine:build` writes instead.
+  - "@wirecat/whatsapp-engine-*"

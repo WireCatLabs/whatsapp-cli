@@ -2400,6 +2400,9 @@ packages:
   zrender@6.1.0:
     resolution: {integrity: sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==}
 
+ignoredOptionalDependencies:
+  - '@wirecat/whatsapp-engine-*'
+
 snapshots:
 
   '@anthropic-ai/sdk@0.131.0(zod@4.6.7)':
