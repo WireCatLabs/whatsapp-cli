@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+# The owner's last step of the agent setup (docs/dev/agents.md): the sandbox may read the SSH public
+# key and known_hosts — never the private key — so commits can be signed and pushes go over SSH
+# through the agent socket. The sandbox reads everything by default, so ~/.ssh and the other secret
+# stores have to be denied outright; allowRead only re-opens paths inside a denyRead. Agents cannot make this change
+# themselves: the settings are guarded.
+# Then it runs bin/check-agents. Run it from a terminal, not from inside a Claude session.
+#
+#   bin/finish-agent-setup
+set -eu
+
+cd "$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
+settings=.claude/settings.json
+next=$(mktemp)
+jq '.sandbox.filesystem.denyRead = ["~/.ssh", "~/.gnupg", "~/.aws", "~/.npmrc", "~/.pypirc"]
+  | .sandbox.filesystem.allowRead = ["~/.ssh/id_ed25519.pub", "~/.ssh/known_hosts"]' "$settings" > "$next"
+mv "$next" "$settings"
+echo "sandbox may not read: $(jq -c '.sandbox.filesystem.denyRead' "$settings")"
+echo "except: $(jq -c '.sandbox.filesystem.allowRead' "$settings")"
+exec bin/check-agents

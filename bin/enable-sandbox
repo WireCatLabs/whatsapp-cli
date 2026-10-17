@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+# Lets Claude Code's Bash sandbox start on Ubuntu 24.04+ (docs/dev/agents.md).
+# Needs root — run it yourself:
+#
+#   sudo bin/enable-sandbox          # the profile from the Claude Code docs, and the distro's off
+#   sudo bin/enable-sandbox --undo   # back to Ubuntu's own
+#
+# The docs (https://code.claude.com/docs/en/sandboxing, "Ubuntu 24.04 and later") give a profile
+# named `bwrap` for /usr/bin/bwrap. Ubuntu's apparmor package already ships one of the same name,
+# /etc/apparmor.d/bwrap-userns-restrict, which strips capabilities from everything bwrap starts —
+# the reason the sandbox fails here. Two profiles with one name cannot both load, so the distro's
+# is switched off with a link in /etc/apparmor.d/disable/, the standard way, leaving its file as
+# the package installed it. The cost: any program may then use bwrap to get a user namespace.
+set -eu
+
+[ "$(id -u)" -eq 0 ] || { echo "run with sudo: sudo bin/enable-sandbox" >&2; exit 1; }
+ours=/etc/apparmor.d/bwrap
+distro=/etc/apparmor.d/bwrap-userns-restrict
+off=/etc/apparmor.d/disable/bwrap-userns-restrict
+
+if [ "${1:-}" = "--undo" ]; then
+  [ -f "$ours" ] && apparmor_parser -R "$ours" 2>/dev/null || true
+  rm -f "$ours" "$off"
+  apparmor_parser -r "$distro"
+  echo "back to Ubuntu's bwrap profile"
+  aa-status 2>/dev/null | grep -E "bwrap" || true
+  exit 0
+fi
+
+cat > "$ours" <<'EOF'
+abi <abi/4.0>,
+include <tunables/global>
+
+profile bwrap /usr/bin/bwrap flags=(unconfined) {
+  userns,
+  include if exists <local/bwrap>
+}
+EOF
+mkdir -p /etc/apparmor.d/disable
+ln -sf "$distro" "$off"
+apparmor_parser -R "$distro" 2>/dev/null || true
+apparmor_parser -r "$ours"
+echo "bwrap may now create user namespaces for its children — tell Claude it is done"
+aa-status 2>/dev/null | grep -E "bwrap" || true
