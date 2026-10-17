@@ -28,3 +28,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   servers; a daily line on stderr says when a newer version exists.
 - **`wa doctor`** reports whether the engine program is found, whether the device keys exist with private file
   modes, and who last held the device's lock and whether that process still runs.
+- **Documentation like tg's**: pages on linking and profiles, the local store, search and its query language,
+  groups, people, MCP and the browser, permissions, limits, the CLI contract, diagnostics and recipes, each limited
+  to what WhatsApp can do today. The agent skill (`wa skill show`) is rebuilt on tg's: setup without a terminal,
+  the traps, the exit codes, and what one connection per device means for an agent.
