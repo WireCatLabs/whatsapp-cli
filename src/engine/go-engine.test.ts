@@ -132,7 +132,11 @@ describe("startGoEngine", () => {
 
   it("runs WA_ENGINE over an installed engine package, and a checkout's own build without either", () => {
     expect(engineBinary({ WA_ENGINE: "/opt/wa-engine" })).toBe("/opt/wa-engine")
-    expect(engineBinary({})).toBe(fileURLToPath(new URL("../../engine/bin/wa-engine", import.meta.url)))
+    expect(engineBinary({})).toBe(
+      fileURLToPath(
+        new URL(`../../engine/bin/wa-engine${process.platform === "win32" ? ".exe" : ""}`, import.meta.url),
+      ),
+    )
     expect(enginePackage("win32", "arm64")).toBe("@wirecat/whatsapp-engine-win32-arm64")
   })
 })
