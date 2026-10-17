@@ -88,7 +88,7 @@ type waHistory struct {
 	Contacts []waContact `json:"contacts"`
 	Messages []waMessage `json:"messages"`
 
-	counts map[string]int // messages per chat as the phone sent them, before any was skipped
+	oldest map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
 }
 
 type waAccount struct {

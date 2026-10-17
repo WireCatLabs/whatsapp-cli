@@ -80,8 +80,9 @@ export const waHistory = v.strictObject({
 })
 
 /**
- * The phone's answer to `older`: the chat's messages sent before the anchor, as many as were asked or fewer. `more`
- * says the phone sent any of the chat's messages, even ones the contract does not carry; only `false` is the start.
+ * The phone's answer to `older`: the chat's messages sent before the anchor, as many as were asked or fewer. No
+ * messages and `more: false` is the chat's start. The engine never answers no messages with `more: true`: a batch of
+ * only messages the contract skips is asked past, since cli-core reads any empty page as the start.
  */
 export const waOlder = v.strictObject({ messages: v.array(waMessage), more: v.boolean() })
 

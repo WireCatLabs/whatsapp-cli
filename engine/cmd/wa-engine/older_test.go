@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"testing"
 
 	"go.mau.fi/whatsmeow"
@@ -119,5 +120,26 @@ func TestAnEmptyOnDemandAnswerIsTheChatsStart(t *testing.T) {
 	w.deliver(testConverter().history(onDemand(), parsedAsText))
 	if batch := <-ask.answer; batch.More || len(batch.Messages) != 0 {
 		t.Errorf("got %+v", batch)
+	}
+}
+
+func TestABatchOfOnlySkippedMessagesIsAskedPastFromItsOldest(t *testing.T) {
+	data := onDemand(conversation(annLID, "3EB0R1", "3EB0R2"))
+	for n, item := range data.Conversations[0].Messages {
+		item.Message.MessageTimestamp = proto.Uint64(uint64(sentAt.Unix()) - uint64(n)*60)
+		item.Message.Key.FromMe = proto.Bool(n == 1)
+	}
+	skipped := func(types.JID, *waWeb.WebMessageInfo) (*events.Message, error) { return nil, errors.New("skipped") }
+	var w olderWaiter
+	ask := w.wait(annLID.String())
+	w.deliver(testConverter().history(data, skipped))
+
+	batch := <-ask.answer
+	if len(batch.Messages) != 0 || !batch.More {
+		t.Fatalf("got %+v", batch)
+	}
+	next := reanchor(types.MessageInfo{ID: "3EB0A1"}, batch.oldest)
+	if next.ID != "3EB0R2" || !next.IsFromMe || next.Timestamp.Unix() != sentAt.Unix()-60 {
+		t.Errorf("got %+v", next)
 	}
 }
