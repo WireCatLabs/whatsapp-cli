@@ -37,6 +37,11 @@ type engine struct {
 
 	olderOne  sync.Mutex // one request for older history at a time, so its answer is known by its chat
 	olderAsks olderWaiter
+
+	// Why WhatsApp ended the connection, until it connects again. Later requests answer with it instead of
+	// connecting: after "replaced" that would take the login back from the other process, and after a ban it would
+	// knock on WhatsApp's door again.
+	ended *refusal
 }
 
 func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLog.Logger) *engine {
@@ -126,7 +131,7 @@ func (e *engine) run(in io.Reader) {
 func (e *engine) answer(req request) {
 	defer func() {
 		if recover() != nil {
-			e.out.fail(req.ID, &failure{"provider_error", "the engine failed on this request"})
+			e.out.fail(req.ID, &refusal{failure: failure{"provider_error", "the engine failed on this request"}})
 		}
 	}()
 	value, err := e.dispatch(req)
@@ -183,15 +188,39 @@ func (e *engine) connect() error {
 	if !e.linked() {
 		return whatsmeow.ErrNotLoggedIn
 	}
+	if ended := e.endedBy(); ended != nil {
+		return ended
+	}
 	if !e.client.IsConnected() {
 		if err := e.client.Connect(); err != nil && !errors.Is(err, whatsmeow.ErrAlreadyConnected) {
 			return err
 		}
 	}
-	if !e.client.WaitForConnection(connectWait) {
-		return &failure{"network_error", "could not connect to WhatsApp in time"}
+	// In slices, so a refusal WhatsApp sends while connecting answers at once rather than after the whole wait.
+	deadline := time.Now().Add(connectWait)
+	for !e.client.WaitForConnection(250 * time.Millisecond) {
+		if ended := e.endedBy(); ended != nil {
+			return ended
+		}
+		if time.Now().After(deadline) {
+			return &failure{"network_error", "could not connect to WhatsApp in time"}
+		}
 	}
 	return nil
+}
+
+func (e *engine) endedBy() *refusal {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.ended
+}
+
+// end tells the CLI the connection's state, and keeps why WhatsApp ended it for the requests that follow.
+func (e *engine) end(state string, why *refusal) {
+	e.mu.Lock()
+	e.ended = why
+	e.mu.Unlock()
+	e.out.connection(state)
 }
 
 func (e *engine) link(method, phone string) (*waAccount, error) {
@@ -437,31 +466,55 @@ func (e *engine) handle(raw any) {
 		}
 	case *events.Connected:
 		e.refreshSelf()
-		e.out.connection("connected")
+		e.end("connected", nil)
 	case *events.Disconnected, *events.KeepAliveTimeout:
 		e.out.connection("disconnected")
 	case *events.LoggedOut:
-		e.out.connection("logged_out")
+		e.end("logged_out", loggedOut)
 	case *events.StreamReplaced:
-		e.out.connection("replaced")
+		e.end("replaced", replaced)
 	case *events.TemporaryBan:
-		e.out.connection("banned")
+		e.end("banned", banned)
 	case *events.ClientOutdated:
-		e.out.connection("outdated")
+		e.end("outdated", outdated)
 	case *events.ConnectFailure:
 		switch {
 		case evt.Reason == events.ConnectFailureTempBanned:
-			e.out.connection("banned")
+			e.end("banned", banned)
+		case evt.Reason == events.ConnectFailureClientOutdated:
+			e.end("outdated", outdated)
 		case evt.Reason.IsLoggedOut():
-			e.out.connection("logged_out")
+			e.end("logged_out", loggedOut)
 		default:
 			e.out.connection("disconnected")
 		}
 	}
 }
 
+var (
+	loggedOut = because("device.logged-out", "authentication_error", "WhatsApp logged this device out")
+	replaced  = because("device.replaced", "provider_unavailable",
+		"another connection took over this WhatsApp login; WhatsApp allows one per linked device")
+	banned   = because("account.banned", "permission_error", "WhatsApp has banned or restricted this account; see the phone")
+	outdated = because("client.outdated", "provider_unavailable", "WhatsApp no longer accepts this version of wa; update it")
+)
+
 // classify puts any error into the contract's closed list, in fixed wording: whatsmeow's own text can carry a JID.
-func classify(err error) *failure {
+func classify(err error) *refusal {
+	var reasoned *refusal
+	if errors.As(err, &reasoned) {
+		return reasoned
+	}
+	refused := classifyFailure(err)
+	var iq *whatsmeow.IQError
+	// WhatsApp's own 429, not the engine's lookup pace (people.go): only WhatsApp's holds the account's writes.
+	if errors.As(err, &iq) && iq.Code == 429 {
+		return &refusal{*refused, "account.rate-limited"}
+	}
+	return &refusal{failure: *refused}
+}
+
+func classifyFailure(err error) *failure {
 	var known *failure
 	var iq *whatsmeow.IQError
 	var disconnected *whatsmeow.DisconnectedError

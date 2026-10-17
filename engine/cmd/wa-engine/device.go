@@ -19,10 +19,10 @@ import (
 
 // holdLock takes the one lock per linked device before anything can connect: a second connection would not fail,
 // WhatsApp would silently drop the first. The loser is told who holds it.
-func holdLock(storePath, holder string) (*os.File, *failure) {
+func holdLock(storePath, holder string) (*os.File, *refusal) {
 	file, err := os.OpenFile(storePath+".lock", os.O_CREATE|os.O_RDWR, 0o600)
 	if err != nil {
-		return nil, &failure{"provider_error", "cannot open the lock beside the device store"}
+		return nil, &refusal{failure: failure{"provider_error", "cannot open the lock beside the device store"}}
 	}
 	if !tryLock(file) {
 		owner, _ := os.ReadFile(storePath + ".lock")
@@ -31,8 +31,8 @@ func holdLock(storePath, holder string) (*os.File, *failure) {
 		if who == "" {
 			who = "another wa process"
 		}
-		return nil, &failure{"provider_unavailable",
-			"this WhatsApp login is in use by " + who + "; WhatsApp allows one connection per linked device"}
+		return nil, because("device.in-use", "provider_unavailable",
+			"this WhatsApp login is in use by "+who+"; WhatsApp allows one connection per linked device")
 	}
 	_ = file.Truncate(0)
 	_, _ = file.WriteAt([]byte(fmt.Sprintf("%s (pid %d)\n", holder, os.Getpid())), 0)

@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 9
+const protocol = 10
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -53,6 +53,17 @@ type failure struct {
 }
 
 func (f *failure) Error() string { return f.Message }
+
+// refusal is a failure as the wire carries it: for the few an agent recovers from differently than its code says, a
+// reason from the list in src/engine/contract.ts.
+type refusal struct {
+	failure
+	Reason string `json:"reason,omitempty"`
+}
+
+func because(reason, code, message string) *refusal {
+	return &refusal{failure{code, message}, reason}
+}
 
 type waChat struct {
 	JID           string  `json:"jid"`
@@ -120,9 +131,9 @@ func (w *wire) send(value any) {
 }
 
 func (w *wire) hello(h hello)            { w.send(map[string]any{"hello": h}) }
-func (w *wire) refuse(f *failure)        { w.send(map[string]any{"refused": f}) }
+func (w *wire) refuse(f error)           { w.send(map[string]any{"refused": f}) }
 func (w *wire) ok(id int, value any)     { w.send(map[string]any{"id": id, "ok": value}) }
-func (w *wire) fail(id int, f *failure)  { w.send(map[string]any{"id": id, "error": f}) }
+func (w *wire) fail(id int, f *refusal)  { w.send(map[string]any{"id": id, "error": f}) }
 func (w *wire) event(name string, f any) { w.send(map[string]any{"event": name, fieldOf(name): f}) }
 func (w *wire) connection(state string) {
 	w.send(map[string]any{"event": "connection", "state": state})

@@ -38,9 +38,9 @@ func main() {
 	logger, closeLog := whatsmeowLog()
 	defer closeLog()
 
-	lock, refused := holdLock(*storePath, *holder)
-	if refused != nil {
-		out.refuse(refused)
+	lock, busy := holdLock(*storePath, *holder)
+	if busy != nil {
+		out.refuse(busy)
 		os.Exit(1)
 	}
 	defer lock.Close()

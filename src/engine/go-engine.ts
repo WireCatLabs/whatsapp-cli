@@ -40,7 +40,37 @@ export interface GoEngineOptions {
 const HELLO_WAIT_MS = 15_000
 const CLOSE_WAIT_MS = 5_000
 
-const STOPPED = () => new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly")
+const STOPPED = () =>
+  new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly", "engine.stopped")
+
+/** Requests that change something on WhatsApp: cut by the engine's end, they may have gone out. */
+const WRITES = new Set([
+  "send",
+  "sendMedia",
+  "forward",
+  "edit",
+  "revoke",
+  "react",
+  "read",
+  "createPoll",
+  "vote",
+  "createGroup",
+  "join",
+  "leave",
+  "updateGroup",
+  "resetLink",
+  "participants",
+  "answerRequest",
+  "block",
+  "logout",
+])
+
+const CUT = () =>
+  new EngineError(
+    "outcome_unknown",
+    "the WhatsApp engine stopped before WhatsApp confirmed the change; it may have gone through — check first",
+    "engine.stopped-mid-write",
+  )
 
 const missing = () =>
   new EngineError(
@@ -50,6 +80,7 @@ const missing = () =>
   )
 
 interface Pending {
+  op: string
   resolve: (value: unknown) => void
   reject: (error: Error) => void
 }
@@ -80,23 +111,24 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
   let greet: { resolve: () => void; reject: (error: Error) => void } | undefined
   // A binary that never started fires "error" and no "exit".
   const exit = new Promise<void>((resolve) => {
-    child.once("exit", () => resolve())
+    child.once("close", () => resolve())
     child.once("error", () => resolve())
   })
 
-  const failAll = (error: Error) => {
-    greet?.reject(error)
-    for (const waiting of pending.values()) waiting.reject(error)
+  const failAll = (error: () => Error) => {
+    greet?.reject(error())
+    for (const waiting of pending.values()) waiting.reject(WRITES.has(waiting.op) ? CUT() : error())
     pending.clear()
   }
 
   child.once("error", (error: NodeJS.ErrnoException) => {
     exited = true
-    failAll(error.code === "ENOENT" || error.code === "EACCES" ? missing() : STOPPED())
+    failAll(error.code === "ENOENT" || error.code === "EACCES" ? missing : STOPPED)
   })
-  child.once("exit", () => {
+  // "close", not "exit": an answer the engine wrote just before it ended is still in the pipe at "exit".
+  child.once("close", () => {
     exited = true
-    failAll(STOPPED())
+    failAll(STOPPED)
     if (!closing) hub.emit({ event: "connection", state: "stopped" })
   })
   child.stdin?.on("error", () => {})
@@ -124,7 +156,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       greet?.resolve()
     } else if ("refused" in value) {
       const refused = v.parse(engineError, value.refused)
-      greet?.reject(new EngineError(refused.code, refused.message))
+      greet?.reject(new EngineError(refused.code, refused.message, refused.reason))
     } else if ("login" in value) {
       onCode?.(v.parse(loginCode, value))
     } else if ("event" in value) {
@@ -137,7 +169,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       if (!waiting) return
       if ("error" in value) {
         const refused = v.parse(engineError, value.error)
-        waiting.reject(new EngineError(refused.code, refused.message))
+        waiting.reject(new EngineError(refused.code, refused.message, refused.reason))
       } else waiting.resolve(value.ok)
     }
   }
@@ -146,7 +178,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
   const request = <T>(op: string, fields: Record<string, unknown>, schema: v.GenericSchema<unknown, T>): Promise<T> => {
     if (exited) return Promise.reject(STOPPED())
     const id = nextId++
-    const answer = new Promise<unknown>((resolve, reject) => pending.set(id, { resolve, reject }))
+    const answer = new Promise<unknown>((resolve, reject) => pending.set(id, { op, resolve, reject }))
     child.stdin?.write(`${JSON.stringify({ id, op, ...fields })}\n`)
     return answer.then((value) => v.parse(schema, value))
   }

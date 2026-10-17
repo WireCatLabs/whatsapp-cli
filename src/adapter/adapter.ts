@@ -38,6 +38,7 @@ import {
   type WhatsAppEngine,
 } from "../engine/contract.js"
 import { bareCheck, type Words } from "./checks.js"
+import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
@@ -75,7 +76,7 @@ const translated = async <T>(work: Promise<T>): Promise<T> => {
   try {
     return await work
   } catch (error) {
-    if (error instanceof EngineError) throw new CliError(error.code, error.message)
+    if (error instanceof EngineError) throw fromEngine(error)
     throw error
   }
 }
@@ -84,15 +85,39 @@ const hit = (chat: WaChat | undefined, message: Message): MessageHit => ({ ...me
 
 const ENDED: Partial<Record<ConnectionState, (words: Words) => CliError>> = {
   logged_out: (words) =>
-    new CliError(
-      "authentication_error",
-      `WhatsApp logged this device out — log in again with ${words("session.start")}`,
+    fromEngine(
+      new EngineError(
+        "authentication_error",
+        `WhatsApp logged this device out — log in again with ${words("session.start")}`,
+        "device.logged-out",
+      ),
     ),
   replaced: () =>
-    new CliError("provider_unavailable", "another process took over this WhatsApp login; only one may hold it"),
-  banned: () => new CliError("permission_error", "WhatsApp has banned or restricted this account; see the phone"),
-  outdated: () => new CliError("provider_unavailable", "WhatsApp no longer accepts this version of wa; update it"),
-  stopped: () => new CliError("provider_unavailable", "the WhatsApp engine stopped unexpectedly"),
+    fromEngine(
+      new EngineError(
+        "provider_unavailable",
+        "another process took over this WhatsApp login; only one may hold it",
+        "device.replaced",
+      ),
+    ),
+  banned: () =>
+    fromEngine(
+      new EngineError(
+        "permission_error",
+        "WhatsApp has banned or restricted this account; see the phone",
+        "account.banned",
+      ),
+    ),
+  outdated: () =>
+    fromEngine(
+      new EngineError(
+        "provider_unavailable",
+        "WhatsApp no longer accepts this version of wa; update it",
+        "client.outdated",
+      ),
+    ),
+  stopped: () =>
+    fromEngine(new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly", "engine.stopped")),
 }
 
 /** Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why. */

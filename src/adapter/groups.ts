@@ -1,7 +1,7 @@
 import { CliError } from "@wirecat/cli-base"
 import type { AdminRight, Chat, GroupCard, GroupMember, ProfileFacts } from "@wirecat/cli-core"
 import type { MessengerAdapter } from "@wirecat/cli-core/cli"
-import type { ConnectionState, WhatsAppEngine } from "../engine/contract.js"
+import type { WhatsAppEngine } from "../engine/contract.js"
 import type { WaGroup } from "../engine/groups.js"
 import { toChat, toMember } from "./map.js"
 
@@ -270,22 +270,11 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo }: GroupDeps
 
     addressBook: async () => (await translated(engine.contacts())).map(toMember),
 
-    // Connecting is the check: WhatsApp refuses a banned account's connection and says so.
+    // Connecting is the check: WhatsApp refuses a banned account's connection, and the engine answers with the ban,
+    // whose `standing` holds the profile's writes. A connection lifts that hold (`doctor --online`, WC-PERM-18).
     health: async () => {
-      let ended: ConnectionState | undefined
-      const stop = engine.listen(["connection"], (event) => {
-        if (event.event === "connection" && (event.state === "banned" || event.state === "logged_out"))
-          ended = event.state
-      })
-      try {
-        await translated(engine.ready(new AbortController().signal))
-      } catch (error) {
-        if (ended === "banned") return { standingChecked: true, standing: { state: "banned" } }
-        throw error
-      } finally {
-        stop()
-      }
-      return ended === "banned" ? { standingChecked: true, standing: { state: "banned" } } : { standingChecked: true }
+      await translated(engine.ready(new AbortController().signal))
+      return { standingChecked: true }
     },
   }
 }

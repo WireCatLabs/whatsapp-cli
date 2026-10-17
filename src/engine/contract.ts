@@ -11,7 +11,7 @@ import type { GroupEngine } from "./groups.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 9
+export const PROTOCOL = 10
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -151,7 +151,26 @@ export const engineErrorCode = v.picklist([
   "outcome_unknown",
 ])
 
-export const engineError = v.strictObject({ code: engineErrorCode, message: v.string() })
+/**
+ * Why, for the refusals an agent recovers from differently than their code says: another process holds the device
+ * (`device.in-use`), WhatsApp handed the login to another connection (`device.replaced`), logged the device out, refuses
+ * this version (`client.outdated`), banned the account, or asked it to slow down (`account.rate-limited`, never the
+ * engine's own lookup pace). The CLI registers each one (`src/reasons.ts`).
+ */
+export const engineReason = v.picklist([
+  "device.in-use",
+  "device.replaced",
+  "device.logged-out",
+  "client.outdated",
+  "account.banned",
+  "account.rate-limited",
+])
+
+export const engineError = v.strictObject({
+  code: engineErrorCode,
+  message: v.string(),
+  reason: v.optional(engineReason),
+})
 
 /** The engine's first line: its protocol and the linked account (`self()`), or `null` before a login. */
 export const hello = v.strictObject({
@@ -182,6 +201,9 @@ export type WaHistory = v.InferOutput<typeof waHistory>
 export type EngineEvent = v.InferOutput<typeof engineEvent>
 export type ConnectionState = v.InferOutput<typeof connectionState>
 export type EngineErrorCode = v.InferOutput<typeof engineErrorCode>
+export type EngineReason = v.InferOutput<typeof engineReason>
+/** The engine's reasons, and the client's own for an engine that ended, before a request or during a write. */
+export type WaReason = EngineReason | "engine.stopped" | "engine.stopped-mid-write"
 export type Hello = v.InferOutput<typeof hello>
 export type WaAccount = v.InferOutput<typeof waAccount>
 export type WaChatCard = v.InferOutput<typeof waChatCard>
@@ -261,6 +283,7 @@ export class EngineError extends Error {
   constructor(
     readonly code: EngineErrorCode,
     message: string,
+    readonly reason?: WaReason,
   ) {
     super(message)
   }

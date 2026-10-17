@@ -142,7 +142,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   WhatsApp's own marks (`toWhatsApp` in `src/adapter/format-markdown.ts`), so the engine only ever sends text.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
   JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a
-  file kept like `private.db`. Errors reach the CLI as one of the contract's codes with fixed wording.
+  file kept like `private.db`, through a writer that masks every user JID (phone, device or LID form, and an old
+  group id, which starts with its creator's number) and any other run of seven or more digits
+  (`engine/cmd/wa-engine/redact.go`, WC-SECR-1). Errors reach the CLI as one of the contract's codes with fixed
+  wording, and a reason where the recovery differs (`src/reasons.ts`).
 - **Names without the phone.** WhatsApp has no "list chats" request, but cli-core resolves a chat name through the
   adapter. The engine answers from what it can see without asking the phone: chats pushed in this process, the address
   book in `private.db`, and the joined groups (one request per process, then kept).

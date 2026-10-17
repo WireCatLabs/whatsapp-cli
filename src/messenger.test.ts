@@ -50,7 +50,24 @@ describe("connecting to WhatsApp", () => {
     expect(JSON.parse(result.stderr).error).toMatchObject({
       code: "provider_unavailable",
       message: expect.stringContaining("messages send"),
+      reason: "device.in-use",
     })
+  })
+
+  it("answers a send the engine died during as outcome_unknown, never as a stopped engine to retry", async () => {
+    linked("crashed")
+    const result = await wa(
+      ["crashed", "messages", "send", "100000000000002@lid", "crash before the answer", "--json"],
+      stub("ok"),
+    )
+    expect(result.code).toBe(14)
+    expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error).toMatchObject({
+      code: "outcome_unknown",
+      reason: "engine.stopped-mid-write",
+      details: { operation_id: expect.any(String) },
+      retry: { safe: false },
+    })
+    expect(result.stderr).not.toContain("crash before the answer")
   })
 
   it("says how to log in when the engine finds no device in the store", async () => {

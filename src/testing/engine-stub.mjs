@@ -14,11 +14,17 @@ if (mode === "unlinked-store") {
   process.exit(1)
 }
 if (mode === "refuse") {
-  say({ refused: { code: "provider_unavailable", message: `this WhatsApp login is in use by ${holder}` } })
+  say({
+    refused: {
+      code: "provider_unavailable",
+      message: `this WhatsApp login is in use by ${holder}`,
+      reason: "device.in-use",
+    },
+  })
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 9, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 10, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -33,6 +39,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       say({ id, ok: { jid: self, name: "Owner" } })
       break
     case "send":
+      if (fields.text === "crash before the answer") process.exit(3)
       if (fields.text === "garbled") say({ event: "message", message: { id: 1 } })
       say({
         id,

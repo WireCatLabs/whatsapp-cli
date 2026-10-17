@@ -140,7 +140,10 @@ describe("startGoEngine", () => {
   it("ends listeners with a stopped connection when the engine dies, and refuses later requests", async () => {
     const engine = await stub("ok")
     const stopped = new Promise<EngineEvent>((resolve) => engine.listen(["connection"], resolve))
-    await expect(engine.chat("crash@stub")).rejects.toMatchObject({ code: "provider_unavailable" })
+    await expect(engine.chat("crash@stub")).rejects.toMatchObject({
+      code: "provider_unavailable",
+      reason: "engine.stopped",
+    })
     expect(await stopped).toEqual({ event: "connection", state: "stopped" })
     await expect(engine.me()).rejects.toMatchObject({ code: "provider_unavailable" })
   })
