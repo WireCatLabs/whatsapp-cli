@@ -208,7 +208,7 @@ describe("automatic replies", () => {
                   replyTo: null,
                 },
               })
-              setTimeout(() => controller.abort(), 50)
+              setImmediate(() => controller.abort())
             })
           return stop
         }
@@ -219,7 +219,9 @@ describe("automatic replies", () => {
     expect(result.code, result.stderr).toBe(0)
     expect(engine?.sent).toEqual([])
     expect(engine?.sends).toEqual([])
-    expect(JSON.parse(result.stdout).item.replies).toBeUndefined()
+    const { item } = JSON.parse(result.stdout)
+    expect(item.kept).toEqual({ message: 1 })
+    expect(item.replies).toBeUndefined()
     expect((await wa([profile, "--offline", "chats", "list", "--json"])).code).toBe(0)
   })
 })
