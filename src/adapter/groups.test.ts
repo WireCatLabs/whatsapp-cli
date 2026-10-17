@@ -38,6 +38,7 @@ describe("group write authority", () => {
     const adapter = whatsAppAdapter(engine, {
       message: async () => undefined,
       newestIncoming: async () => undefined,
+      anchor: async () => undefined,
       wroteTo: async (id) => id === "100000000000099@lid",
       close: async () => {},
     })
