@@ -101,10 +101,15 @@ describe("wa messages edit", () => {
     ])
   })
 
+  it("writes --md in WhatsApp's own marks", async () => {
+    const result = await acting(["messages", "edit", seed.busy, fresh.id, "**fixed** text", "--md"])
+    expect(result.code).toBe(0)
+    expect(result.actions).toMatchObject([{ op: "edit", text: "*fixed* text" }])
+  })
+
   it.each([
     ["someone else's message", theirs.id],
     ["a message older than WhatsApp's edit window", oldOwn.id],
-    ["--md, which WhatsApp's edit cannot carry", fresh.id, "--md"],
   ])("refuses %s, and sends nothing", async (_, id, ...options) => {
     const result = await acting(["messages", "edit", seed.busy, id, "fixed text", ...options])
     expect(result.code).toBe(2)

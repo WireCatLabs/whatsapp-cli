@@ -52,6 +52,8 @@ export const toMessage = (message: WaMessage): Message => ({
   ...(message.replyTo === null ? {} : { replyToId: message.replyTo }),
   forwardedFrom: null,
   reactions: null,
+  // Kept with the message in the store: a vote names answers by text, and only the poll's message has them.
+  ...(message.poll === undefined ? {} : { providerMetadata: { poll: message.poll } }),
 })
 
 /** A stored attachment as the engine takes it back, or `undefined` when it is not one this engine wrote. */

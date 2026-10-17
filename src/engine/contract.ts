@@ -11,7 +11,7 @@ import type { GroupEngine } from "./groups.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 5
+export const PROTOCOL = 6
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -58,6 +58,16 @@ export const waAttachment = v.strictObject({
   ref: v.optional(waMediaRef),
 })
 
+/**
+ * A poll as its message carries it. An answer's `id` is the start of the SHA-256 of its text, which is what a vote
+ * names on the wire. Votes arrive later, one encrypted message per voter, and nothing counts them yet.
+ */
+export const waPoll = v.strictObject({
+  question: v.string(),
+  answers: v.array(v.strictObject({ id: v.pipe(v.string(), v.nonEmpty()), text: v.string() })),
+  multiple: v.boolean(),
+})
+
 export const waMessage = v.strictObject({
   id: v.pipe(v.string(), v.nonEmpty()),
   chat: jid,
@@ -69,6 +79,7 @@ export const waMessage = v.strictObject({
   text: v.string(),
   replyTo: v.nullable(v.string()),
   attachments: v.optional(v.array(waAttachment)),
+  poll: v.optional(waPoll),
 })
 
 /** One push from the phone. `kind` follows whatsmeow's sync types; the adapter treats them all alike. */
@@ -141,6 +152,7 @@ export const loginCode = v.strictObject({ login: v.picklist(["qr", "pair"]), cod
 export type WaChat = v.InferOutput<typeof waChat>
 export type WaContact = v.InferOutput<typeof waContact>
 export type WaMessage = v.InferOutput<typeof waMessage>
+export type WaPoll = v.InferOutput<typeof waPoll>
 export type WaMediaRef = v.InferOutput<typeof waMediaRef>
 export type WaAttachment = v.InferOutput<typeof waAttachment>
 export type WaHistory = v.InferOutput<typeof waHistory>
@@ -170,6 +182,15 @@ export interface WaSend {
 /** One file from this machine, sent with `text` as its caption. `kind` is decided as tg decides it. */
 export interface WaSendMedia extends WaSend {
   file: { kind: "photo" | "video" | "voice" | "document"; path: string; name: string }
+}
+
+/** A poll to send; `multiple` lets a voter pick any number of answers, else one. */
+export interface WaNewPoll {
+  chat: string
+  id: string
+  question: string
+  answers: string[]
+  multiple: boolean
 }
 
 /** A stored message sent again, marked forwarded: its text and its one file, by the keys the store holds. */
@@ -246,6 +267,9 @@ export interface WhatsAppEngine extends GroupEngine {
   /** Writes a stored file to `path`, which must not exist yet; the engine creates it readable by this user alone. */
   download(attachment: WaAttachment, path: string): Promise<void>
   forward(request: WaForward): Promise<WaMessage>
+  createPoll(request: WaNewPoll): Promise<WaMessage>
+  /** The account's vote in a poll, by the answers' texts; none takes it back. Everyone in the chat sees it. */
+  vote(key: WaKey, answers: string[]): Promise<void>
   /**
    * Asks the phone for up to `count` of the chat's messages sent before `anchor`, and waits for its answer. WhatsApp
    * keeps no history on its servers: the phone answers only while it is online, and a phone that does not answer in

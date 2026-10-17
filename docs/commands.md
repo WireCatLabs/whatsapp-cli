@@ -1489,6 +1489,83 @@ wa reactions remove <chat> <message>
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `message` | required | the message id. |
 
+## `wa polls`
+
+read a poll, vote in it, close your own, create one
+
+### `wa polls show`
+
+a poll and its answer ids, as the message carries it now
+
+```sh
+wa polls show <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the id of the message that carries the poll. |
+
+### `wa polls vote`
+
+vote in a poll, or take your vote back; the others see it unless the poll is anonymous
+
+**Changes something in WhatsApp.**
+
+```sh
+wa polls vote <chat> <message> [answers] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the id of the message that carries the poll. |
+| `answers` | optional | answer ids, as `polls show` prints them. |
+
+| Option | What it does |
+|---|---|
+| `--retract` | take your vote back. |
+
+### `wa polls close`
+
+close your own poll; nobody can vote after that, and it cannot be reopened
+
+**Changes something in WhatsApp.**
+
+```sh
+wa polls close <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the id of your own message that carries the poll. |
+
+### `wa polls create`
+
+send a poll to a chat, as a message of its own; public unless --anonymous
+
+**Changes something in WhatsApp.**
+
+```sh
+wa polls create <chat> <question> <answers> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `question` | required | the question. |
+| `answers` | required | two answers or more. |
+
+| Option | What it does |
+|---|---|
+| `--multiple` | people may pick several answers. |
+| `--anonymous` | nobody sees who voted for what. |
+| `--revote` | people may change their vote. |
+| `--silent` | send without a notification. |
+| `--send-as <id>` | post as one of the identities `chats send-as` lists; required where the chat posts as someone else by default. |
+| `--operation-id <id>` | repeat a create whose outcome was unknown, without risking a second poll. |
+
 ## `wa models`
 
 models that run on this machine

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { statSync, writeFileSync } from "node:fs"
 import type { Chat, Message } from "@wirecat/cli-core"
 import type { IdMaker, Seed } from "@wirecat/cli-core/testing"
@@ -15,6 +16,7 @@ import {
   type WaKey,
   type WaMessage,
   type WhatsAppEngine,
+  waPoll,
 } from "../engine/contract.js"
 import { eventHub } from "../engine/events.js"
 import { type FakeGroups, fakeGroups } from "./fake-groups.js"
@@ -57,6 +59,7 @@ const waMessageOf = (message: Message): WaMessage => ({
   ...(message.attachments.length === 0
     ? {}
     : { attachments: message.attachments.flatMap((one) => toWaAttachment(one) ?? []) }),
+  ...(message.providerMetadata?.poll === undefined ? {} : { poll: v.parse(waPoll, message.providerMetadata.poll) }),
 })
 
 const UPLOADED: Record<string, { kind: WaAttachment["kind"]; media: "image" | "video" | "audio" | "document" }> = {
@@ -81,7 +84,13 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups {
   /** Each request for older history, by the anchor and count it was asked with. */
   olderAsked: { anchor: WaAnchor; count: number }[]
   /** Every edit, deletion, reaction and read receipt, in order, with the key it was addressed by. */
-  actions: { op: "edit" | "revoke" | "react" | "read"; key: WaKey; text?: string; emoji?: string | null }[]
+  actions: {
+    op: "edit" | "revoke" | "react" | "read" | "vote"
+    key: WaKey
+    text?: string
+    emoji?: string | null
+    answers?: string[]
+  }[]
   closed: boolean
   loggedOut: boolean
 }
@@ -233,6 +242,20 @@ export const fakeEngine = (
         .sort((one, other) => one.timestamp.localeCompare(other.timestamp))
         .slice(-count)
       return { messages: before, more: before.length > 0 }
+    },
+    createPoll: async ({ chat, id, question, answers, multiple }) => {
+      const again = sent.find((message) => message.id === id && message.chat === chat)
+      if (again) return again
+      const message = post(chat, id, question, [])
+      message.poll = {
+        question,
+        answers: answers.map((text) => ({ id: createHash("sha256").update(text).digest("hex").slice(0, 8), text })),
+        multiple,
+      }
+      return message
+    },
+    vote: async (key, answers) => {
+      actions.push({ op: "vote", key, answers })
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

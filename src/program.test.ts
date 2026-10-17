@@ -87,7 +87,7 @@ describe("wa messages send", () => {
     return { ...result, sent: engine?.sent ?? [] }
   }
 
-  it.each([["--silent"], ["--send-as", seed.person], ["--at-time", "1h"], ["--md"]])(
+  it.each([["--silent"], ["--send-as", seed.person], ["--at-time", "1h"]])(
     "refuses %s, which WhatsApp cannot honour, and sends nothing",
     async (...option) => {
       const result = await sending(...option)
@@ -96,6 +96,19 @@ describe("wa messages send", () => {
       expect(result.sent).toEqual([])
     },
   )
+
+  it("writes --md in WhatsApp's own marks", async () => {
+    let engine: FakeEngine | undefined
+    const markdown = "**Agenda**\n- one _item_\n> [notes](https://example.test/n)"
+    const result = await wa(["options", "messages", "send", seed.dialog, markdown, "--md", "--json"], () => {
+      engine = fakeEngine(seed)
+      return engine
+    })
+    expect(result.code).toBe(0)
+    expect(engine?.sent.map((message) => message.text)).toEqual([
+      "*Agenda*\n- one _item_\n> notes (https://example.test/n)",
+    ])
+  })
 
   it("sends with --no-preview, since nothing here builds link previews", async () => {
     const result = await sending("--no-preview")

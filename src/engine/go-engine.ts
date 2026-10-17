@@ -230,6 +230,11 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     forward: ({ chat, id, text, attachment }) =>
       request("forward", { chat, sendId: id, text, ...(attachment ? { attachment } : {}) }, waMessage),
     older: (anchor, count) => request("older", { ...keyFields(anchor), timestamp: anchor.timestamp, count }, waOlder),
+    createPoll: ({ chat, id, question, answers, multiple }) =>
+      request("createPoll", { chat, sendId: id, question, answers, ...(multiple ? { multiple } : {}) }, waMessage),
+    vote: async (key, answers) => {
+      await request("vote", { ...keyFields(key), answers }, nothing)
+    },
     link: async (linking, show): Promise<WaAccount> => {
       onCode = show
       try {
