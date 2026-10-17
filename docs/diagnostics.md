@@ -111,7 +111,8 @@ WhatsApp's from disk, without starting anything:
 - **`lock`** — who last held the device's one connection (`serve (pid 4242)`), and whether that process still runs.
   The engine never clears the name, so a holder counts as running only while its process does.
 
-`--online` connects once, which needs the device free: while `serve` runs it is refused and names `serve`.
+`--online` connects once. While `serve` runs, it uses `serve`'s connection instead
+([one connection per device](sessions.md#one-connection-per-device)).
 
 ## A problem report
 

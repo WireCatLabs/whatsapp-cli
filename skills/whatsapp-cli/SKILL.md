@@ -35,7 +35,7 @@ strangers; never work round it. `admins add` needs every right in `--can` (`memb
 a WhatsApp admin has all of them. A command that connects knows a group by its `…@g.us` id, not by its name.
 `contacts lookup` takes one number on stdin, at most one every 10 seconds per profile; never loop it.
 `contacts list`, `contacts show`, `contacts context` and `stats chats show` are marked as reading from WhatsApp: add
-`--offline` to keep them on the store, beside a running `serve`.
+`--offline` to keep them on the store.
 
 ## How WhatsApp differs from Telegram and MAX
 
@@ -43,12 +43,16 @@ a WhatsApp admin has all of them. A command that connects knows a group by its `
   pushes history once, seconds after the device links, and `wa <profile> serve` keeps receiving after that. Every
   read — `chats list`, `messages list`, `inbox`, `search` — answers from the local store and never connects. A
   search answer may suggest `messages sync` to fill a gap: on WhatsApp that is not built; the gap stays.
-- **One connection per linked device.** WhatsApp drops the older of two connections. `serve`, `watch` and every
-  command that connects take the device's lock first; a second one is refused with exit `12` and names the
-  holder (`serve (pid 4242)`). **While `serve` runs, a send, edit, deletion, reaction or mark-read for that profile
-  is refused** — MCP writes too. Do not stop the owner's `serve` to get round it; tell the owner. The other way
-  round, `wa personal mcp` keeps a connection it opened until two minutes pass without a call, and `serve` cannot
-  start meanwhile.
+- **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
+  command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
+  reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp`.
+  Permissions and the send guard still apply. It never asks: a write at permission level `ask` needs `--yes`, or it
+  is refused and says so. Never stop the owner's `serve`. If `serve` is starting or does not answer, the command
+  fails; tell the owner. With no `serve`, `watch` and every command that connects take the device's lock; a second
+  one is refused with exit `12` and names the holder. On Windows nothing goes through `serve` yet, so there a
+  command that connects is refused that way while `serve` runs (`serve (pid 4242)`): tell the owner, do not stop
+  it. `wa personal mcp` keeps a connection it opened until two minutes pass without a call, and `serve` cannot start
+  meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
   `messages edit`, `messages delete --for-everyone`, `reactions add|remove` and `chats mark-read` look the message up
   in the store. One the store lacks is exit `6`. `messages download`, `messages forward` and

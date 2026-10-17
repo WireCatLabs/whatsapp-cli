@@ -6,8 +6,6 @@ Open work, most important first. The plan in flight is
 1. **Live checks of the engine on the owner's number** (NEED-1387: reads, sends only to the own chat): `serve` end to
    end, send to the own LID chat, the lock against a running `serve`, a fresh `session start` keeping the history
    push, `self()` set right after pairing.
-2. **Writes, `watch` and MCP while `serve` runs.** cli-core has no shared way to route them through the process that
-   holds the connection; decide between adding it to cli-core and a local relay.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Feature groups**: polls, on-demand older history from the phone. Edit, delete for everyone, reactions,
    mark-read, files, group admin, join requests, profiles, blocking and number lookup are built; what they left open:

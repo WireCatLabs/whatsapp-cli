@@ -12,6 +12,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### What's new
 
+- **Commands while `serve` runs**: a send, an edit, a reaction, `watch`, `wa <profile> mcp` and every other command
+  that connects run inside a running `serve`, on its one connection, instead of being refused. Permissions and the
+  send guard still apply; a write at `ask` needs `--yes`. Not on Windows yet.
 - **The foundation**: the shared cli-core commands over a WhatsApp adapter that reads from the local store, an
   engine contract, and the same linters, checks and CI as tg-cli and max-cli.
 - **The WhatsApp engine**: `wa` connects through a Go program built on whatsmeow, started for each command that
