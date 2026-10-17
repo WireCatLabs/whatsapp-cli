@@ -13,8 +13,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`session start`, `session end` and `setup` are refused under `WA_READ_ONLY` before they act** (cli-core 0.328.0,
   `logsInOrOut`), with "this process is read-only (WA_READ_ONLY) — it cannot log in or out" and exit 5. `session
   start` and `setup` on a profile linked before used to go ahead.
-- **Ctrl+C or `--timeout` during the history wait after linking ends the wait, not the command**: `session start` and
-  `setup` keep what arrived, count it and exit 0. They exited 130 or 9, though the device was linked.
+- **Ctrl+C or `--timeout` during the history wait after linking ends the wait, not the command**: `session start`
+  keeps what arrived, counts it and exits 0. It exited 130 or 9, though the device was linked. `setup` still ends on
+  Ctrl+C, since its later steps would otherwise have nothing to stop them.
 - **cli-core 0.328.0's command changes**: `chats list` and `chats show` declare a local read and never connect, so
   they run here while `serve` runs; `recipients add` runs through `serve` instead of being refused with exit 12; a
   link without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds; a command path given as one

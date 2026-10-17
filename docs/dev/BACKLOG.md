@@ -61,7 +61,7 @@ Open work, most important first. The plan in flight is
    npm's trusted publishing is set per package, and I think a package must exist on npm before it can trust a
    workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
    (`bin/release --local`) before `release.yml` can publish them.
-8. **Replace the test-matrix waivers with tests.** On 2026-10-17, 138 commands and options have a wa test and 638 are
+8. **Replace the test-matrix waivers with tests.** On 2026-10-18, 132 commands and options have a wa test and 591 are
    waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver

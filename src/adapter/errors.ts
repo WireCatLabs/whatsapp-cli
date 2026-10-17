@@ -36,7 +36,6 @@ export const fromEngine = (error: EngineError, now = Date.now()): CliError => {
     const dated = ends > now
     return new CliError(error.code, dated ? `${error.message}; the ban ends ${at(ends)}` : error.message, {
       ...reason,
-      ...(dated ? { retry_after_ms: ends - now } : {}),
       standing: {
         state: "frozen",
         hint: "WhatsApp banned or restricted this account",

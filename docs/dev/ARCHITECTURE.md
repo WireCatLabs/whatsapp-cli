@@ -220,7 +220,8 @@ its `serve-relay` is `serve`'s side. On Windows the relay is off for now, so the
 in `src/adapter/` or `engine/` knows about the relay. `session start`, `session end` and `setup` are marked
 `logsInOrOut`: cli-core never relays them (a relayed logout would end `serve`'s own connection and delete the keys
 under it) and refuses them under `WA_READ_ONLY` before they act. Run here, `session end` meets the device lock
-`serve` holds (`device.in-use`) and says to stop `serve` first.
+`serve` holds (`device.in-use`) and says to stop `serve` first. cli-core's `serve` does not refuse a login relayed to
+it, which a client of an older `wa` still does, so `session end` keeps refusing a relayed run itself.
 
 ## 7. What is on disk
 

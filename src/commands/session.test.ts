@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
+import { whatsAppAdapter } from "../adapter/adapter.js"
 import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
@@ -277,6 +278,18 @@ describe("wa session end", () => {
 
     controller.abort()
     expect((await serving).code).toBe(0)
+  })
+
+  it("refuses when an older client relays it into serve, and leaves serve's connection alone", async () => {
+    const store = linkedProfile("relayedend")
+    const served = fakeEngine(seed)
+    const result = await wa(["relayedend", "session", "end", "--json"], never, {
+      relayed: { profile: "relayedend", cwd: process.cwd(), connection: () => whatsAppAdapter(served) },
+    })
+    expect(result.code).toBe(12)
+    expect(JSON.parse(result.stderr).error.reason).toBe("device.in-use")
+    expect(served.loggedOut).toBe(false)
+    expect(existsSync(store)).toBe(true)
   })
 
   it("says nothing was ended for a profile that was never linked", async () => {

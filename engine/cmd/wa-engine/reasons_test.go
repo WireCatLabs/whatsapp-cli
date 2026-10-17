@@ -73,7 +73,7 @@ func TestARefusalGoesOnTheWireWithItsReasonAndAPlainOneWithout(t *testing.T) {
 
 func TestABanWithAnEndCarriesItOnTheWireAndOneWithoutDoesNot(t *testing.T) {
 	now := time.Date(2026, 10, 17, 12, 0, 0, 0, time.UTC)
-	if got := bannedFor(2*time.Hour, now); got.Until != "2026-10-17T14:00:00Z" || got.Reason != "account.banned" {
+	if got := bannedFor(2*time.Hour, now); got.Until != "2026-10-17T14:00:00.000Z" || got.Reason != "account.banned" {
 		t.Errorf("a two-hour ban became %+v", got)
 	}
 	if got := bannedFor(0, now); got.Until != "" {

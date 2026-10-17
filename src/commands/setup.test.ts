@@ -133,6 +133,24 @@ describe("wa setup", () => {
     for (let step = 1; step <= 5; step++) expect(result.stderr).toContain(`${step}/5`)
   })
 
+  it("a cancel after the history wait still ends setup and closes the engine", async () => {
+    const qrFile = join(env.WA_CACHE_DIR ?? "", "cut.png")
+    mkdirSync(dirname(qrFile), { recursive: true })
+    const stop = new AbortController()
+    const engine = unlinked()
+    engine.me = () => {
+      stop.abort()
+      return new Promise(() => {})
+    }
+    const result = await execute(
+      ["setup", "--qr-file", qrFile, "--agent", "none", "--json"],
+      { signal: stop.signal },
+      engine,
+    )
+    expect(result.code).toBe(130)
+    expect(result.engine.closed).toBe(true)
+  })
+
   it("reuses a linked device without a question, also from an agent without a terminal", async () => {
     linkedDevice()
     const engine = fakeEngine(seed)

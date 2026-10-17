@@ -519,7 +519,7 @@ func bannedFor(expire time.Duration, now time.Time) *refusal {
 		return banned
 	}
 	dated := *banned
-	dated.Until = now.Add(expire).UTC().Format(time.RFC3339)
+	dated.Until = iso(now.Add(expire))
 	return &dated
 }
 

@@ -83,6 +83,11 @@ export interface StartSessionOptions {
   indent?: number
   /** Each connection, as it opens, for the caller's deadline to close. */
   track?: (closeable: Closeable) => void
+  /**
+   * Ctrl+C, a cancel or --timeout ends the history wait alone, and the command answers with what was kept. Only for
+   * a command that ends with the wait: after cli-core's untilStopped() nothing stops the steps that would follow.
+   */
+  stopEndsWait?: boolean
 }
 
 export interface Session {
@@ -97,7 +102,15 @@ export interface Session {
 export const startSession = async (
   command: Command,
   context: MessengerContext,
-  { method, qrFile, command: typed = "wa session start", signal, indent: pad = 0, track }: StartSessionOptions,
+  {
+    method,
+    qrFile,
+    command: typed = "wa session start",
+    signal,
+    indent: pad = 0,
+    track,
+    stopEndsWait = false,
+  }: StartSessionOptions,
 ): Promise<Session> => {
   const input = context.stdin
   const terminal = input.isTTY === true && !inputPolicy(input).noInput
@@ -164,8 +177,7 @@ export const startSession = async (
       context.renderer.note(
         "receiving history from the phone; keep WhatsApp open on it. Ctrl+C stops — `serve` picks up the rest.",
       )
-      // Ctrl+C, a cancel or --timeout now ends the wait alone: what was kept is counted and the link stands.
-      const stop = environment.untilStopped?.()
+      const stop = stopEndsWait ? environment.untilStopped?.() : environment.signal
       const ended = AbortSignal.any([signal, stop].filter((one) => one !== undefined))
       session.received = await context.withMessenger(
         (adapter) => {
@@ -184,6 +196,14 @@ export const startSession = async (
 
 const end = async (command: Command) => {
   const context = messengerContext(command, WHATSAPP)
+  // logsInOrOut keeps this off the relay only on the client's side: a client of an older wa still relays it, and
+  // serve would log out its own connection. Drop this when cli-core's serve refuses a relayed login.
+  if (environmentOf(command).relayed)
+    throw new CliError(
+      "provider_unavailable",
+      `serve holds this WhatsApp login — stop it first (\`wa ${asFirstWord(context.profile)}server stop\`), then end the session`,
+      { reason: "device.in-use", sent: false },
+    )
   const store = privateStore(context.profile, context.env)
   if (!existsSync(store)) {
     printItem(context, { profile: context.profile, ended: false })
@@ -237,6 +257,7 @@ export const sessionCommand = () => {
       const session = await startSession(this, context, {
         command: `wa ${asFirstWord(context.profile)}session start`,
         method,
+        stopEndsWait: true,
         ...(qrFile === undefined ? {} : { qrFile }),
       })
       if (context.format === "pretty")
