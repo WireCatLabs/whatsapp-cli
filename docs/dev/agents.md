@@ -15,7 +15,7 @@ worktree's folder; the guards in `.claude/` keep it inside. This file is how, an
 - **Never link a worktree.** A `session start` per worktree would add a device to the owner's account, and WhatsApp
   drops the older of two connections for one device. `bin/wa` keeps each worktree's config, state and store in its
   own `.wa/`, which holds no device, so a branch build never opens the owner's real one.
-- **The skills are linked, never tracked.** `test-live` lives in [`skills/`](skills/); a checkout needs
+- **The skills are linked, never tracked.** `release` and `test-live` live in [`skills/`](skills/); a checkout needs
   `ln -s ../docs/dev/skills .claude/skills` once, from a terminal. A tracked `.claude/skills` breaks every checkout
   that lacks it: inside the sandbox it cannot be created, and the switch is refused.
 - **The live device belongs to the main install.** A running `wa <profile> serve` holds it; leave it alone. Live checks
