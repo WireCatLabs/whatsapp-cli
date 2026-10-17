@@ -13,7 +13,13 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "src/testing/**", "src/bin/**"],
+      exclude: [
+        "src/**/*.test.ts",
+        // The fake engine, the stub and the sandbox: test equipment, measured by the tests that use it.
+        "src/testing/**",
+        // The entry point: one line handing argv to run(), which the suite drives directly.
+        "src/bin/**",
+      ],
       reporter: ["text-summary", "json-summary", "html"],
       // A little under what the suite reaches (2026-10-17: 95/94/91/83), so coverage can rise and not fall.
       thresholds: { lines: 94, statements: 93, functions: 90, branches: 82, perFile: { lines: 50 } },

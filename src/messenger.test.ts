@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
 import { repliesPathFor } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "./adapter/adapter.js"
 import { WA } from "./app.js"
 import { type Environment, WHATSAPP } from "./messenger.js"
@@ -83,14 +83,16 @@ describe("connecting to WhatsApp", () => {
 describe("wa doctor", () => {
   const CHECKOUT = "/home/a/Projects/whatsapp-cli/dist/x.js"
   const doctor = async (profile: string, env: NodeJS.ProcessEnv, scriptPath = CHECKOUT) => {
+    const engine = vi.fn(() => {
+      throw new Error("doctor must never start the engine")
+    })
     const result = await wa([profile, "doctor", "--json"], {
       env: { ...process.env, ...env },
       update: { scriptPath },
-      engine: () => {
-        throw new Error("doctor must never start the engine")
-      },
+      engine,
     })
     expect(result.code).toBe(0)
+    expect(engine).not.toHaveBeenCalled()
     return JSON.parse(result.stdout).item.whatsapp
   }
 

@@ -162,7 +162,10 @@ describe("startGoEngine", () => {
   })
 })
 
-describe.skipIf(!existsSync(engineBinary()))("the built Go engine", () => {
+// Full validation builds the engine and sets WA_ENGINE_TESTS=required, so a missing binary fails there, not skips.
+const noEngine = !existsSync(engineBinary()) && process.env.WA_ENGINE_TESTS !== "required"
+
+describe.skipIf(noEngine)("the built Go engine", () => {
   const storePath = () => join(mkdtempSync(join(tmpdir(), "wa-engine-")), "private.db")
 
   it("refuses a profile that has no device, unless linking", async () => {
@@ -200,7 +203,7 @@ describe("group wire contracts", () => {
         code: "validation_error",
       })
       await expect(engine.leave(group.chat.jid)).rejects.toMatchObject({ code: "validation_error" })
-      await expect(engine.lookup("+12345678900")).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.lookup("+71234567890")).rejects.toMatchObject({ code: "validation_error" })
       await expect(engine.contacts()).rejects.toMatchObject({ code: "validation_error" })
       await expect(engine.createGroup("synthetic", [])).rejects.toMatchObject({ code: "validation_error" })
       await expect(engine.join("synthetic")).rejects.toMatchObject({ code: "validation_error" })

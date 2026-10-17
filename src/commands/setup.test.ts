@@ -225,6 +225,7 @@ describe("wa setup", () => {
     expect(input.prompts).toEqual([expect.stringMatching(/^ {6}phone number/)])
     expect(result.stderr).toContain("Link with phone number instead")
     expect(result.stdout).not.toContain("+0 000")
+    expect(result.stderr).not.toContain("+0 000")
   })
 
   it.each(["account.show", "chats.list"])("respects a denied %s permission before connecting", async (permission) => {
