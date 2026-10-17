@@ -179,6 +179,8 @@ export const WHATSAPP: Messenger = {
   inviteLinkList: false,
   channelComments: false,
   addsWithHistory: false,
+  // A document carries the name the recipient sees; WhatsApp has no spoiler and no caption above.
+  mediaOptions: ["fileName"],
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)

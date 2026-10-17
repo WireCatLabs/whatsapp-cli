@@ -54,6 +54,7 @@ Commands:
   contacts                     people this account has a one-to-one chat with
   messages                     read and send messages
   reactions                    react to messages
+  models                       models that run on this machine
   inbox [options] [query...]   other people's unread messages in every chat;
                                --new for what arrived since the last check
   review [options] [query...]  every message, yours too, in chats that changed
@@ -74,8 +75,10 @@ Commands:
   tags                         your own labels on chats, people, messages and
                                tasks, kept in the local store and never sent;
                                tag: in a search finds them
-  mentions                     phones, e-mail, links, documents, names and
-                               addresses in stored messages
+  mentions                     phones, e-mail, links, documents, people's names
+                               and addresses found in stored messages
+  images                       search pictures by what they show, with a model
+                               on this machine
   stats                        statistics about messages, chats and their
                                authors
   tasks                        what waits on you — unanswered questions,

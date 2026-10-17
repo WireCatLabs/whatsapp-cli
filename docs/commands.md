@@ -1221,6 +1221,7 @@ wa messages send <chat> [text] [options]
 | `--voice <file>` | send an Ogg Opus file as a voice message, alone, with no text. |
 | `--allow-any-file` | send a file even from credential folders or this CLI's own folders. |
 | `--at-time <time>` | let the messenger send it later, even with this machine off: 2026-09-25T09:00 (local time), or 30m, 2h, 1d from now. |
+| `--filename <name>` | the name others see for the --file, instead of its name on disk. |
 
 ### `wa messages show`
 
@@ -1515,6 +1516,106 @@ wa reactions remove <chat> <message>
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `message` | required | the message id. |
+
+## `wa models`
+
+models that run on this machine
+
+### `wa models audio`
+
+speech models for transcribing voice messages
+
+#### `wa models audio list`
+
+the speech models, most suitable first, which are downloaded, and which one is the default
+
+```sh
+wa models audio list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+#### `wa models audio download`
+
+download a speech model once, checked against the sha256 this version expects
+
+**Changes something on this computer only.**
+
+```sh
+wa models audio download <model>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `model` | required | a model id from `models audio list`. |
+
+### `wa models text`
+
+embedding models for searching conversations by meaning
+
+#### `wa models text list`
+
+the embedding models, most suitable first, which are downloaded, and which one is the default
+
+```sh
+wa models text list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+#### `wa models text download`
+
+download an embedding model once, checked against the sha256 this version expects
+
+**Changes something on this computer only.**
+
+```sh
+wa models text download <model> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `model` | required | a model id from `models text list`. |
+
+| Option | What it does |
+|---|---|
+| `--accept-terms` | accept the model's licence terms, for a model that has its own. |
+
+#### `wa models text key`
+
+API keys for embedding and analysis providers
+
+#### `wa models text key set`
+
+store a key, typed at a hidden prompt or piped on stdin — never as an argument
+
+**Changes something on this computer only.**
+
+```sh
+wa models text key set <provider>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `provider` | required | openai, anthropic, or the host of a --base-url server that wants a key. |
+
+#### `wa models text key remove`
+
+forget a stored key
+
+**Changes something on this computer only.**
+
+```sh
+wa models text key remove <provider>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `provider` | required | openai, anthropic, or a server's host. |
 
 ## `wa inbox`
 
@@ -2485,6 +2586,55 @@ wa mentions rebuild [kind]
 | Argument | | What it is |
 |---|---|---|
 | `kind` | optional | only this kind: person-name after people were added or renamed. One of: `phone`, `email`, `url`, `document`, `person-name`, `place`. |
+
+## `wa images`
+
+search pictures by what they show, with a model on this machine
+
+### `wa images embed`
+
+compute a vector for each picture the store knows and has none for — downloading it through the messenger, keeping only the vector; needs `picture_search` on in the profile and `images models download clip-b32`; resumes where it stopped
+
+**Changes something on this computer only.**
+
+```sh
+wa images embed [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--limit <n>` | at most this many pictures in one run; 100 if not given. |
+
+### `wa images models`
+
+models that read pictures, for `images embed` and picture search
+
+#### `wa images models list`
+
+the picture models, which are downloaded, and which one is the default
+
+```sh
+wa images models list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+#### `wa images models download`
+
+download a picture model once, checked against the sha256 this version expects
+
+**Changes something on this computer only.**
+
+```sh
+wa images models download <model>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `model` | required | a model id from `images models list`. |
 
 ## `wa stats`
 

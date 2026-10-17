@@ -1,9 +1,9 @@
-import { existsSync, mkdtempSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, statSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
-import type { EngineEvent, LoginCode } from "./contract.js"
+import type { EngineEvent, LoginCode, WaAttachment } from "./contract.js"
 import { engineBinary, enginePackage, startGoEngine } from "./go-engine.js"
 
 const STUB = fileURLToPath(new URL("../testing/engine-stub.mjs", import.meta.url))
@@ -33,6 +33,25 @@ describe("startGoEngine", () => {
     const key = { chat: "120363000000000001@g.us", id: "3EB0AA", fromMe: true, sender: null }
     expect(await engine.edit(key, "fixed")).toMatchObject({ id: "3EB0AA", chat: key.chat, text: "fixed" })
     await expect(engine.react(key, null)).resolves.toBeUndefined()
+    await engine.close()
+  })
+
+  it("sends a file, forwards a stored one and writes a download where the CLI asked", async () => {
+    const engine = await stub("ok")
+    const sent = await engine.sendMedia({
+      chat: "100000000000002@lid",
+      text: "caption",
+      id: "3EB0AB",
+      file: { kind: "photo", path: "/nowhere/synthetic.png", name: "synthetic.png" },
+    })
+    const attachment = sent.attachments?.[0] as WaAttachment
+    expect(attachment).toMatchObject({ kind: "photo", ref: { directPath: "/v/stub" } })
+    const copy = await engine.forward({ chat: "100000000000003@lid", id: "3EB0AC", text: "", attachment })
+    expect(copy.attachments).toEqual([attachment])
+    const path = join(mkdtempSync(join(tmpdir(), "wa-stub-")), "file")
+    await engine.download(attachment, path)
+    expect(readFileSync(path, "utf8")).toBe("synthetic photo bytes")
+    expect(statSync(path).mode & 0o777).toBe(0o600)
     await engine.close()
   })
 

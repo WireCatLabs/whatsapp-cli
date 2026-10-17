@@ -97,15 +97,6 @@ describe("wa messages send", () => {
     },
   )
 
-  it.each([["--file"], ["--photo"], ["--voice"], ["--as-file", "--file"], ["--allow-any-file", "--file"]])(
-    "refuses an attachment (%s) until media sending exists, and sends nothing",
-    async (...option) => {
-      const result = await sending(...option, "package.json")
-      expect(result.code).toBe(2)
-      expect(result.sent).toEqual([])
-    },
-  )
-
   it("sends with --no-preview, since nothing here builds link previews", async () => {
     const result = await sending("--no-preview")
     expect(result.code).toBe(0)

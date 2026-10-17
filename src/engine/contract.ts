@@ -10,7 +10,7 @@ import * as v from "valibot"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 2
+export const PROTOCOL = 3
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -28,6 +28,35 @@ export const waChat = v.strictObject({
 
 export const waContact = v.strictObject({ jid, name: v.nullable(v.string()) })
 
+/**
+ * What whatsmeow needs to fetch and decrypt a file again, base64 where it is bytes. Stored as the attachment's opaque
+ * `providerRef`, so a download or a forward needs only the store. A channel's files are not encrypted and have no keys.
+ */
+export const waMediaRef = v.strictObject({
+  media: v.picklist(["image", "video", "audio", "document", "sticker"]),
+  directPath: v.pipe(v.string(), v.nonEmpty()),
+  mediaKey: v.optional(v.string()),
+  fileSha256: v.optional(v.string()),
+  fileEncSha256: v.optional(v.string()),
+})
+
+/**
+ * cli-core's Attachment in WhatsApp's terms: `photo`, `video`, `voice`, `audio`, `document`, `sticker`, `location`
+ * (`url` is a `geo:` link), `contact` (its name only — the card holds a phone number). `ref` only for a file.
+ */
+export const waAttachment = v.strictObject({
+  kind: v.picklist(["photo", "video", "voice", "audio", "document", "sticker", "location", "contact"]),
+  url: v.optional(v.string()),
+  width: v.optional(v.number()),
+  height: v.optional(v.number()),
+  title: v.optional(v.string()),
+  name: v.optional(v.string()),
+  size: v.optional(v.number()),
+  mime: v.optional(v.string()),
+  duration: v.optional(v.number()),
+  ref: v.optional(waMediaRef),
+})
+
 export const waMessage = v.strictObject({
   id: v.pipe(v.string(), v.nonEmpty()),
   chat: jid,
@@ -38,6 +67,7 @@ export const waMessage = v.strictObject({
   editedAt: v.nullable(time),
   text: v.string(),
   replyTo: v.nullable(v.string()),
+  attachments: v.optional(v.array(waAttachment)),
 })
 
 /** One push from the phone. `kind` follows whatsmeow's sync types; the adapter treats them all alike. */
@@ -103,6 +133,8 @@ export const loginCode = v.strictObject({ login: v.picklist(["qr", "pair"]), cod
 export type WaChat = v.InferOutput<typeof waChat>
 export type WaContact = v.InferOutput<typeof waContact>
 export type WaMessage = v.InferOutput<typeof waMessage>
+export type WaMediaRef = v.InferOutput<typeof waMediaRef>
+export type WaAttachment = v.InferOutput<typeof waAttachment>
 export type WaHistory = v.InferOutput<typeof waHistory>
 export type EngineEvent = v.InferOutput<typeof engineEvent>
 export type ConnectionState = v.InferOutput<typeof connectionState>
@@ -124,6 +156,19 @@ export interface WaSend {
   /** The message id WhatsApp will carry; a resend with the same id is the same message. */
   id: string
   replyTo?: string
+}
+
+/** One file from this machine, sent with `text` as its caption. `kind` is decided as tg decides it. */
+export interface WaSendMedia extends WaSend {
+  file: { kind: "photo" | "video" | "voice" | "document"; path: string; name: string }
+}
+
+/** A stored message sent again, marked forwarded: its text and its one file, by the keys the store holds. */
+export interface WaForward {
+  chat: string
+  id: string
+  text: string
+  attachment: WaAttachment | null
 }
 
 /**
@@ -179,6 +224,11 @@ export interface WhatsAppEngine {
   react(key: WaKey, emoji: string | null): Promise<void>
   /** A read receipt for someone else's message; the sender sees it. Only a command that asked for it calls this. */
   markRead(key: WaKey): Promise<void>
+  /** Uploads the file, then sends it; a failed upload sent nothing. */
+  sendMedia(request: WaSendMedia): Promise<WaMessage>
+  /** Writes a stored file to `path`, which must not exist yet; the engine creates it readable by this user alone. */
+  download(attachment: WaAttachment, path: string): Promise<void>
+  forward(request: WaForward): Promise<WaMessage>
   /**
    * Links this device to the account, showing each code through `onCode` until the phone confirms. Answers the
    * account at once when the device is already linked.

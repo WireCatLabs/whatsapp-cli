@@ -1,12 +1,16 @@
+import { statSync, writeFileSync } from "node:fs"
 import type { Chat, Message } from "@wirecat/cli-core"
 import type { IdMaker, Seed } from "@wirecat/cli-core/testing"
 import * as v from "valibot"
+import { toWaAttachment } from "../adapter/map.js"
 import {
   EngineError,
   type EngineEvent,
   engineEvent,
+  type WaAttachment,
   type WaChat,
   type WaContact,
+  type WaForward,
   type WaKey,
   type WaMessage,
   type WhatsAppEngine,
@@ -48,12 +52,30 @@ const waMessageOf = (message: Message): WaMessage => ({
   editedAt: message.editedAt,
   text: message.text,
   replyTo: message.replyToId ?? null,
+  ...(message.attachments.length === 0
+    ? {}
+    : { attachments: message.attachments.flatMap((one) => toWaAttachment(one) ?? []) }),
 })
+
+const UPLOADED: Record<string, { kind: WaAttachment["kind"]; media: "image" | "video" | "audio" | "document" }> = {
+  photo: { kind: "photo", media: "image" },
+  video: { kind: "video", media: "video" },
+  voice: { kind: "voice", media: "audio" },
+  document: { kind: "document", media: "document" },
+}
+
+/** The bytes the fake engine "downloads": synthetic, named after the file's kind. */
+export const syntheticBytes = (attachment: WaAttachment): Buffer => Buffer.from(`synthetic ${attachment.kind} bytes`)
 
 export interface FakeEngine extends WhatsAppEngine {
   /** Pushes an event as the engine would, checked against the contract first. */
   push(event: EngineEvent): void
   sent: WaMessage[]
+  /** Each file sent, as the engine read it from disk. */
+  uploads: { kind: string; name: string; size: number }[]
+  /** Each file written for a download, by the attachment it was asked for. */
+  downloads: WaAttachment[]
+  forwards: WaForward[]
   /** Every edit, deletion, reaction and read receipt, in order, with the key it was addressed by. */
   actions: { op: "edit" | "revoke" | "react" | "read"; key: WaKey; text?: string; emoji?: string | null }[]
   closed: boolean
@@ -89,10 +111,33 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
   if (linked) pushHistory()
 
   const actions: FakeEngine["actions"] = []
+  const uploads: FakeEngine["uploads"] = []
+  const downloads: WaAttachment[] = []
+  const forwards: WaForward[] = []
+
+  const post = (chat: string, id: string, text: string, attachments: WaAttachment[], replyTo?: string): WaMessage => {
+    const message: WaMessage = {
+      id,
+      chat,
+      sender: seed.account?.id ?? null,
+      senderName: seed.account?.name ?? null,
+      fromMe: true,
+      timestamp: new Date().toISOString(),
+      editedAt: null,
+      text,
+      replyTo: replyTo ?? null,
+      attachments,
+    }
+    sent.push(message)
+    return message
+  }
 
   const engine: FakeEngine = {
     sent,
     actions,
+    uploads,
+    downloads,
+    forwards,
     closed: false,
     loggedOut: false,
     push,
@@ -148,6 +193,26 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
     },
     markRead: async (key) => {
       actions.push({ op: "read", key })
+    },
+    sendMedia: async ({ chat, text, id, replyTo, file }) => {
+      const again = sent.find((message) => message.id === id && message.chat === chat)
+      if (again) return again
+      const size = statSync(file.path).size
+      uploads.push({ kind: file.kind, name: file.name, size })
+      const { kind, media } = UPLOADED[file.kind] as (typeof UPLOADED)[string]
+      const ref = { media, directPath: `/v/fake/${id}`, mediaKey: Buffer.from(id).toString("base64") }
+      return post(chat, id, text, [{ kind, size, ...(kind === "document" ? { name: file.name } : {}), ref }], replyTo)
+    },
+    download: async (attachment, path) => {
+      if (!attachment.ref) throw new EngineError("validation_error", "the store does not hold this file's keys")
+      downloads.push(attachment)
+      writeFileSync(path, syntheticBytes(attachment), { mode: 0o600, flag: "wx" })
+    },
+    forward: async (request) => {
+      const again = sent.find((message) => message.id === request.id && message.chat === request.chat)
+      if (again) return again
+      forwards.push(request)
+      return post(request.chat, request.id, request.text, request.attachment ? [request.attachment] : [])
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")
