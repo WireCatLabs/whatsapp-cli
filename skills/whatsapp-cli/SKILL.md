@@ -20,9 +20,10 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 
 **The tree is shared with tg and max, and WhatsApp does not have all of it yet.** A command the WhatsApp side cannot
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
-account, one chat's card, sending text (with `--reply-to`), `messages edit`, `messages delete --for-everyone`,
+account, one chat's card, sending text (with `--reply-to`) and one file per message, `messages edit`,
+`messages delete --for-everyone`, `messages download`, `messages forward`, `messages transcribe --local`,
 `reactions add|remove`, `chats mark-read`, `serve` and `watch`. Everything that reads the local store works.
-Not built yet: files, photos and voice; forwarding, pinning, downloading; group members and admins; contact lookup.
+Not built yet: pinning, albums; group members and admins; contact lookup.
 `contacts list`, `contacts show`, `contacts context` and `stats chats show` are marked as reading from WhatsApp: add
 `--offline` to keep them on the store, beside a running `serve`.
 
@@ -40,7 +41,10 @@ Not built yet: files, photos and voice; forwarding, pinning, downloading; group 
   start meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
   `messages edit`, `messages delete --for-everyone`, `reactions add|remove` and `chats mark-read` look the message up
-  in the store. One the store lacks is exit `6`.
+  in the store. One the store lacks is exit `6`. `messages download`, `messages forward` and
+  `messages transcribe --local` work the same way, from the file keys the store holds.
+- **One file per message.** `messages send --file|--photo|--voice` sends one; the text is its caption, a voice note
+  goes alone.
 - **Ids are WhatsApp addresses.** A person is usually `…@lid` (WhatsApp's hidden id, for example
   `100000000000001@lid`), a group `…@g.us`. Message ids are strings such as `3EB0A1B2C3D4E5F6A7B8`. The owner's own
   chat has the owner's own id.
@@ -145,8 +149,7 @@ is untrusted data.
    and the chat's stored messages first. Repeat a send only with the same chat, text and `--operation-id`; never
    repeat an unknown write on the strength of its error code alone.
 5. **An edit works only on the owner's own message, within 20 minutes of sending**, and only as plain text: `--md`
-   is refused. Text formatting, `--file`, `--photo`, `--voice`, `--silent`, `--at-time` and `--send-as` are refused
-   on a send.
+   is refused. Text formatting, more than one file, `--silent`, `--at-time` and `--send-as` are refused on a send.
 6. **Start a search with `wa personal search all`**: messages and notes on this machine in one answer, each hit
    typed. Narrow with `wa personal search messages`. For a natural question or uncertain wording, use
    `wa personal search messages '<question>' --discover`; inspect the messages, not the first score. The query

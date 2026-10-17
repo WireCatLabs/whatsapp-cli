@@ -9,12 +9,18 @@ Open work, most important first. The plan in flight is
 2. **Writes, `watch` and MCP while `serve` runs.** cli-core has no shared way to route them through the process that
    holds the connection; decide between adding it to cli-core and a local relay.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
-4. **Feature groups**: media, polls, groups and admin, contacts, on-demand older history from the phone. Edit,
+4. **Feature groups**: polls, groups and admin, contacts, on-demand older history from the phone. Edit,
    delete for everyone, reactions and mark-read are built; what they left open:
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
      `messages delete` without `--for-everyone` is refused rather than built from a guessed patch.
-   - **Forward.** A copy marked forwarded needs the original content; the store keeps only text, so a photo with a
-     caption would go out as its caption alone. Build it with media, and refuse a message whose content is not held.
+   - **Messages stored before files were.** A photo with a caption stored by an older `wa` has the caption and no
+     attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
+     not push history again; a re-link would refill it.
+   - **Files WhatsApp no longer keeps.** A download of an expired file is `not_found`; WhatsApp's apps ask the sender's
+     phone to upload it again (whatsmeow's `SendMediaRetryReceipt`), which is not built. A forward of one reaches the
+     recipient as a file that will not open.
+   - **Media leftovers**: albums (one file per message here), thumbnails on sent photos and videos, files to
+     channels, forwarding a place or a contact card, `metadata` (needs the group read).
    - **Live checks** (with item 1): a reaction and a revoke in a one-to-one chat stored under a LID, and in a group
      addressed by phone numbers; whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.

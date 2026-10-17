@@ -24,8 +24,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **Changing messages**: `messages edit` (your own, within WhatsApp's 20 minutes), `messages delete --for-everyone`
   (your own, or another's in a group you administer), `reactions add` and `reactions remove`, and `chats mark-read`
   and `--mark-read`, which send a read receipt only when asked. Each needs the message in the local store, which
-  `serve` keeps filled; WhatsApp addresses a message by its sender. Deleting for you alone and forwarding are not
-  built yet.
+  `serve` keeps filled; WhatsApp addresses a message by its sender. Deleting for you alone is not built yet.
+- **Files**: photos, videos, voice notes, audio, documents and stickers arrive as attachments, with places and contact
+  cards named; `messages send --file`, `--photo` and `--voice` send one file with its caption; `messages download`
+  saves a stored message's file; `messages transcribe --local` reads a voice note with a model on this machine
+  (`wa models`); `messages forward` sends a stored message again, marked forwarded, file included; `wa images` searches
+  pictures by what they show. The engine protocol is now 3.
 - **`wa <profile> setup`** is the guided first run, as in tg: it checks this computer, links the device or reuses it,
   reads the account and five chats from the local store, and installs the agent skill (`--agent`). Agents use
   `--qr-file`.
