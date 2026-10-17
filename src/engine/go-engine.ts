@@ -220,6 +220,13 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     markRead: async (key) => {
       await request("read", keyFields(key), nothing)
     },
+    sendMedia: ({ chat, text, id, replyTo, file }) =>
+      request("sendMedia", { chat, text, sendId: id, file, ...(replyTo === undefined ? {} : { replyTo }) }, waMessage),
+    download: async (attachment, path) => {
+      await request("download", { attachment, path }, nothing)
+    },
+    forward: ({ chat, id, text, attachment }) =>
+      request("forward", { chat, sendId: id, text, ...(attachment ? { attachment } : {}) }, waMessage),
     link: async (linking, show): Promise<WaAccount> => {
       onCode = show
       try {

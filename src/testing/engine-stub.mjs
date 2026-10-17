@@ -1,5 +1,6 @@
 // Stands in for the Go engine in tests of the JSON-lines client. `--mode` picks the behaviour; the engine's own
 // flags (--store, --holder, --link) follow and are ignored, except that --holder is echoed in a refusal.
+import { writeFileSync } from "node:fs"
 import { createInterface } from "node:readline"
 
 const args = process.argv.slice(2)
@@ -17,7 +18,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 2, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 3, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -67,6 +68,33 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "react":
       if (fields.emoji !== null) say({ id, error: { code: "validation_error", message: "the stub only removes" } })
       else say({ id, ok: null })
+      break
+    case "sendMedia":
+    case "forward":
+      say({
+        id,
+        ok: {
+          id: fields.sendId,
+          chat: fields.chat,
+          sender: self,
+          senderName: "Owner",
+          fromMe: true,
+          timestamp: "2026-09-01T10:00:00.000Z",
+          editedAt: null,
+          text: fields.text,
+          replyTo: null,
+          attachments: [
+            fields.attachment ?? {
+              kind: fields.file.kind,
+              ref: { media: "image", directPath: "/v/stub", mediaKey: "AAAA" },
+            },
+          ],
+        },
+      })
+      break
+    case "download":
+      writeFileSync(fields.path, `synthetic ${fields.attachment.kind} bytes`, { mode: 0o600, flag: "wx" })
+      say({ id, ok: null })
       break
     case "link":
       say({ login: "pair", code: "ABCD-EFGH" })

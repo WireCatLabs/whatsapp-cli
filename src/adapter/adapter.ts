@@ -1,29 +1,39 @@
 import { randomBytes } from "node:crypto"
+import { createReadStream } from "node:fs"
+import { mkdtemp, rm, writeFile } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { resolve as absolute, extname, join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import type { Chat, Message, MessageEvent, MessageHit } from "@wirecat/cli-core"
 import type {
   LiveUpdates,
   MessageEditing,
+  MessageMedia,
   MessageReactions,
   MessengerCore,
   PushedHistory,
   ReadState,
+  RemoteFile,
   SendOptions,
 } from "@wirecat/cli-core/cli"
+import type { Upload, UploadSource } from "@wirecat/cli-core/sends"
 import {
   type ConnectionState,
   EngineError,
   type EngineEvent,
+  type WaAttachment,
   type WaChat,
   type WaKey,
+  type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
-import { toChat, toMember, toMessage } from "./map.js"
+import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
   PushedHistory &
-  Pick<MessageEditing, "edit" | "delete"> &
+  Pick<MessageEditing, "edit" | "delete" | "forward"> &
+  Pick<MessageMedia, "download"> &
   MessageReactions &
   Pick<ReadState, "markRead">
 
@@ -55,7 +65,6 @@ const REFUSED: (keyof SendOptions)[] = [
   "markup",
   "formatting",
   "at",
-  "attachments",
   "sticker",
   "spoiler",
   "captionAbove",
@@ -108,6 +117,41 @@ const listening = (
   return { done, stop }
 }
 
+const VIDEO = new Set([".mp4", ".m4v", ".mov"])
+
+/** As tg sends them: a photo as a photo, a voice as a voice, a video as a video unless `--as-file`, the rest as files. */
+const uploadKind = ({ kind, name, asFile }: Upload): WaSendMedia["file"]["kind"] =>
+  kind === "photo" || kind === "voice" ? kind : !asFile && VIDEO.has(extname(name).toLowerCase()) ? "video" : "document"
+
+/** A folder only this user can read, gone when `work` ends: the engine writes a download into it, or reads bytes made in memory. */
+const inPrivateFolder = async <T>(work: (folder: string) => Promise<T>): Promise<T> => {
+  const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
+  try {
+    return await work(folder)
+  } finally {
+    await rm(folder, { recursive: true, force: true })
+  }
+}
+
+const onDisk = async <T>(source: UploadSource, work: (path: string) => Promise<T>): Promise<T> => {
+  if (source.kind === "file") return work(absolute(source.path))
+  return inPrivateFolder(async (folder) => {
+    const path = join(folder, "upload")
+    await writeFile(path, source.bytes, { mode: 0o600, flag: "wx" })
+    return work(path)
+  })
+}
+
+const quoted = (message: Message) => ({
+  id: message.id,
+  senderId: message.senderId,
+  senderName: message.senderName,
+  timestamp: message.timestamp,
+  text: message.text,
+  attachments: message.attachments,
+  outgoing: message.outgoing ?? null,
+})
+
 const keyOf = (chatId: string, message: Message): WaKey => ({
   chat: chatId,
   id: message.id,
@@ -127,10 +171,21 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     return message
   }
 
+  async function* fetched(attachment: WaAttachment): AsyncIterable<Uint8Array> {
+    const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
+    try {
+      const path = join(folder, "file")
+      await translated(engine.download(attachment, path))
+      yield* createReadStream(path)
+    } finally {
+      await rm(folder, { recursive: true, force: true })
+    }
+  }
+
   const titled = async (): Promise<Map<string, WaChat>> =>
     new Map((await translated(engine.directory())).map((chat) => [chat.jid, chat]))
 
-  return {
+  const adapter: WhatsAppAdapter = {
     self: () => engine.self(),
 
     newSendId: () => `3EB0${randomBytes(9).toString("hex").toUpperCase()}`,
@@ -171,15 +226,68 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     send: async (chatId: string, text: string, options: SendOptions) => {
       const refused = REFUSED.filter((option) => options[option] !== undefined && options[option] !== false)
       if (refused.length > 0) throw new CliError("validation_error", `WhatsApp cannot send with ${refused.join(", ")}`)
+      const [upload, ...more] = options.attachments ?? []
+      if (more.length > 0) throw new CliError("validation_error", "WhatsApp sends one file per message here")
+      if (upload?.kind === "voice" && text.trim() !== "")
+        throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
+      const request = {
+        chat: chatId,
+        text,
+        id: options.sendId,
+        ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
+      }
       const message = await translated(
-        engine.send({
-          chat: chatId,
-          text,
-          id: options.sendId,
-          ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
-        }),
+        upload
+          ? onDisk(upload.source, (path) =>
+              engine.sendMedia({ ...request, file: { kind: uploadKind(upload), path, name: upload.name } }),
+            )
+          : engine.send(request),
       )
       return { message: toMessage(message), sendId: options.sendId }
+    },
+
+    forward: async (fromChatId, messageId, toChatId, { sendId, silent, sendAs, threadId }) => {
+      if (silent || sendAs !== undefined || threadId !== undefined)
+        throw new CliError("validation_error", "WhatsApp forwards without --silent, --send-as or a topic")
+      const original = await held(fromChatId, messageId)
+      const attachments = original.attachments.map(toWaAttachment)
+      const [attachment] = attachments
+      if (attachments.length > 1 || (attachments.length === 1 && !attachment?.ref))
+        throw new CliError(
+          "validation_error",
+          "the local store does not hold this message's content whole, so it cannot be forwarded; forward it on the phone",
+        )
+      if (!attachment && original.text === "")
+        throw new CliError("validation_error", "that message has nothing to forward")
+      const copy = await translated(
+        engine.forward({ chat: toChatId, id: sendId, text: original.text, attachment: attachment ?? null }),
+      )
+      return { ...toMessage(copy), forwardedFrom: quoted(original) }
+    },
+
+    // From the keys in the store: WhatsApp has no request for an old message. A file that is not one (a place, a
+    // contact card) or that the store has no keys for is named in `skipped`.
+    download: async (chat, messageId) => {
+      const { id: chatId } = await adapter.resolve(chat)
+      const message = await held(chatId, messageId)
+      const files: RemoteFile[] = []
+      const skipped: string[] = []
+      message.attachments.forEach((stored, position) => {
+        const attachment = toWaAttachment(stored)
+        if (!attachment?.ref) {
+          skipped.push(stored.kind)
+          return
+        }
+        files.push({
+          kind: attachment.kind,
+          ...(attachment.name === undefined ? {} : { name: attachment.name }),
+          ...(attachment.mime === undefined ? {} : { mime: attachment.mime }),
+          ...(attachment.size === undefined ? {} : { size: attachment.size }),
+          position,
+          bytes: () => fetched(attachment),
+        })
+      })
+      return { files, skipped }
     },
 
     edit: async (chatId, messageId, text, { markup, formatting }) => {
@@ -256,4 +364,5 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       }
     },
   }
+  return adapter
 }
