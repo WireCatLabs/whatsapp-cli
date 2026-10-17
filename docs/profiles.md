@@ -2,8 +2,7 @@
 
 A **profile** is a name for one linked device of `wa` on this computer: one WhatsApp account, with its own keys and
 its own settings. `wa` never picks one for you: a command that uses an account names its profile as the first word
-(`wa personal chats list`), through `WA_PROFILE`, or through `default_profile` in the config file. With one account,
-set `default_profile` once and forget it.
+(`wa personal chats list`) or through `WA_PROFILE`, every time, even with only one account.
 
 Read this page when you want a second account, or want your AI agent to have fewer rights than you. At the end you
 know how to pick a profile for a command and how to give it its own settings.

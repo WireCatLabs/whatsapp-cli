@@ -95,16 +95,37 @@ cron starts jobs with an almost empty environment: see [running on a schedule](r
 
 ## What waits on you
 
-`review` and `serve` keep a list of tasks in the local store. A question nobody answered, and a message that mentions
-you, opens a task; your answer closes it. A task points at its message and never copies it.
+`review` and `serve` keep a list of tasks in the local store: what you have to do, and what someone owes you. A task
+points at its message and never copies it. Where a rule opens one:
+
+- **A one-to-one chat:** a question you did not answer, and a message that mentions you.
+- **A group:** only a question that replies to your message, and a mention of you. Other people's questions are not
+  your tasks.
+- **A channel or the chat with yourself:** nothing.
+
+Your answer closes the task. To record every question in a group, whoever it is for, tag the group:
+
+```sh
+wa personal tags add --chat 120363000000000001@g.us watch-tasks
+```
 
 The first fill of the store opens no tasks from your history; later messages do. To turn a group's history into
 tasks, list what would open, then open it:
 
 ```sh
-wa personal tasks apply 120363000000000001@g.us
-wa personal tasks apply 120363000000000001@g.us --last 300 --yes
+wa personal tasks scan 120363000000000001@g.us
+wa personal tasks scan 120363000000000001@g.us --last 300 --yes
 ```
+
+When someone promises you something, keep it as their task, and list what others owe you:
+
+```sh
+wa personal tasks add <msg:locator> --type promise --category other --assignee sender
+wa personal tasks list "assignee:any state:open"
+```
+
+`--assignee sender` is whoever sent the message; `--assignee person:<id>` names someone else, and
+`tasks plan <task> --assignee none` clears it. A task with no assignee is fine: better than a missed one.
 
 See what waits on you, oldest first, then only questions and mentions in one group:
 

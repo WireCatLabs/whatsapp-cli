@@ -19,9 +19,10 @@ For each setting, the first of these that is set:
 
 ## The file
 
-`~/.config/whatsapp-cli/config.json`. `default_profile` at the top names the profile used when neither the first
-word nor `WA_PROFILE` names one. Without any of them, a command that uses an account stops with exit code `2` and
-lists the profiles on this computer.
+`~/.config/whatsapp-cli/config.json`. No setting picks a profile: the first word (`wa work …`) or `WA_PROFILE` names
+it. Without either, a command that uses an account stops with exit code `2` and lists the profiles on this computer.
+A file that still has `default_profile` from an older `wa` stops that command too; `wa config unset default_profile`
+removes it.
 
 | Setting | Default | What it does | Overridden for one run by |
 |---|---|---|---|

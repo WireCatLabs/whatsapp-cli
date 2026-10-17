@@ -83,7 +83,9 @@ opens no connection, reserves no write and leaves targets unresolved. See the
 
 MCP uses `wa_tools_search`, then `wa_read` or `wa_write` with `{command, arguments}`, the CLI path such as
 `messages list`. There are no forms; the profile's permissions decide access and `ask` permits the requested MCP
-write. Deleting through MCP is refused: its tool deletes for the owner alone, which wa cannot do yet.
+write. **An agent never deletes for everyone**, at any level: every WhatsApp delete wa makes is for everyone, so
+`messages delete` through MCP is refused with `permission_error` before wa connects. Deleting stays the owner's
+`wa personal messages delete --for-everyone`.
 
 ## Installation readiness
 
@@ -224,6 +226,10 @@ wa personal inbox 'date>2h' --json                 # everything that came in dur
 wa personal review 'date>1d' --json                # every message, the owner's too, in chats that changed
 wa personal review --unanswered --json             # questions nobody answered in 24 h
 wa personal tasks list state:open --json           # what waits on the owner; review and serve open and close tasks
+wa personal tasks scan <chat> --json               # a chat's history as tasks: lists only; add --yes after the owner agrees
+# rules: one-to-one chats fully; groups only replies to the owner and mentions (tag watch-tasks for all); channels never
+wa personal tasks add <ref> --type promise --category <name> --assignee sender --json  # someone owes the owner
+wa personal tasks list "assignee:any state:open" --json   # what others owe the owner
 wa personal tasks close 12 --as dismissed --reason no-reply-needed --json  # only after the owner says so
 wa personal chats list --json                      # find a chat, take its id
 wa personal chats list 'kind:group unread_count>0' --json   # filtered, from the store

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**101 ✅ · 673 ⛔ · 0 ❌** — 242 commands, 532 options.
+**102 ✅ · 674 ⛔ · 0 ❌** — 242 commands, 534 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -561,12 +561,14 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `tasks add` | `--description` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks add` | `--due` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks add` | `--remind-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `tasks add` | `--assignee` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks plan` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks plan` | `--category` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks plan` | `--title` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks plan` | `--description` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks plan` | `--due` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks plan` | `--remind-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `tasks plan` | `--assignee` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks link` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks link` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks link` | `--kind` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -587,8 +589,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `tasks agenda` | `--within` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks agenda` | `--holder` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks categories` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks apply` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks apply` | `--last` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `tasks scan` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `tasks scan` | `--last` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks claim` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks claim` | `--lease` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `tasks claim` | `--holder` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -751,12 +753,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `complete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
-| `mcp` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp` | `--permission` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp` | `--http` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp` | `--port` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp` | `--public-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp` | `--revoke` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `mcp` |  | ✅ |  |
+| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
+| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
+| `mcp` | `--port` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
+| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
+| `mcp` | `--revoke` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused |
 | `mcp config` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `mcp config` | `--permission` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `mcp setup` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
