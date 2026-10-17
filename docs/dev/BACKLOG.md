@@ -7,9 +7,6 @@ Open work, most important first. The plan in flight is
    2026-10-17: `serve` receiving a message from the phone and saving it; send, `--md` send, edit, reaction add and
    remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
    `session start` keeping the history push, `self()` set right after pairing.
-2. **Pick up cli-core 0.321.0's MCP `messages delete` change.** Raise cli-core to 0.321.0 or later, set
-   `deleteForMe: false` on `WHATSAPP` in `src/messenger.ts`, and test over MCP that `messages delete` answers
-   `permission_error` (cli-core STANDARD, Permissions, rule 4).
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
