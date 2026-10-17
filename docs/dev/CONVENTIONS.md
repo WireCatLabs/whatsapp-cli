@@ -7,31 +7,31 @@ where the standards are silent. This page lists only where `wa` differs from max
 ## Code
 
 - **Comments are sparse and say why**, never what — the owner's global rule, stricter than anything a
-  surrounding file shows.
+  surrounding file shows (`WC-STYLE-1`).
 - **Biome** formats and lints (`pnpm lint`): 2 spaces, double quotes, no semicolons, 120 columns.
 - **The engine stays behind `src/adapter/`**, and its objects become domain models there alone
-  ([ARCHITECTURE.md](ARCHITECTURE.md#2-the-layers)).
+  ([ARCHITECTURE.md](ARCHITECTURE.md#2-the-layers), `WC-ARCH-3`).
 - **Command names, options, output shapes and MCP tools** follow the
   [standard for tg, max and wa](https://github.com/WireCatLabs/cli-core/blob/main/docs/dev/STANDARD.md) in
   cli-core — one standard for every CLI; a new verb or option is added there first. Every command
   and option is in its [parity manifest](https://github.com/WireCatLabs/cli-core/blob/main/parity.json),
   and `pnpm parity:check` fails on one that is not.
 - **Messenger-neutral code goes to cli-core**, not here. If a change would help tg or max too, it
-  belongs there.
+  belongs there (`WC-ARCH-4`).
 - **Never a message, a token, a phone number or a real chat id** in a log, a fixture, a test or a
   document. Command output is the only place a message may appear. Fixtures use synthetic JIDs
-  (`whatsAppIds` in `src/testing/fake-engine.ts`).
+  (`whatsAppIds` in `src/testing/fake-engine.ts`; `WC-SECR-1`).
 
 ## Documents
 
-- **English**, in every document of this repository, user pages included.
-- **User pages** — `README.md` and the pages directly under `docs/` — state current facts only: no
-  correction marks, no struck-out text, no internal ids. `pnpm docs:check` enforces it.
-- **Developer pages** (`docs/dev/`) state the current facts too: rewrite a wrong or
-  outdated sentence with no mark; git keeps the old text. A finished plan or handoff is deleted, a
-  done backlog item is deleted in the PR that ships it. `CHANGELOG.md` is the one place for history.
-- **Link, do not copy.** A link to a sibling repository uses its GitHub URL, so it works for a
-  reader who has only this one; `pnpm docs:check` checks every link inside this repository.
+The rules are the handbook's
+[Documents page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md): user pages apart
+from developer pages (`WC-DOC-1`), current facts only (`WC-DOC-2`, `WC-DOC-3`), generated pages never edited by hand
+(`WC-DOC-4`), English in every file (`WC-DOC-13`). `pnpm docs:check` runs the checks the page names. What `wa` adds:
+
+- **The generated pages** are `docs/commands.md` (`pnpm generate`) and `docs/dev/test-matrix.md`
+  (`pnpm test:matrix`). On a conflict, run the generator and commit what it writes.
+- **A link to a sibling repository uses its GitHub URL**, so it works for a reader who has only this one.
 - **Every option a user page names exists**, or the parity manifest plans it for that command (docs
   come first). `pnpm parity:check` checks every `wa <command> --option` on the user pages; a change
   that drops an option fails until its pages stop naming it.
