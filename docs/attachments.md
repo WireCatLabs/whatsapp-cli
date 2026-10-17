@@ -48,7 +48,7 @@ wa personal messages send "Book club" --voice note.ogg
 
 `--filename` changes the name others see, not the format. `wa` refuses a file from a credential folder or from its
 own folders unless you add `--allow-any-file`. WhatsApp has no silent or scheduled delivery and no posting as someone
-else, so `--silent`, `--at-time` and `--send-as` are refused before anything is sent.
+else, so `wa` has no `--silent`, `--at-time` or `--send-as`.
 
 ## What the store keeps
 

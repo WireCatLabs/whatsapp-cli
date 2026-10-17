@@ -221,18 +221,6 @@ wa chats show <chat>
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 
-### `wa chats send-as`
-
-who this account may post as in a chat; changes no saved choice
-
-```sh
-wa chats send-as <chat>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-
 ### `wa chats documents`
 
 the Google Docs and Drive documents linked in a chat's stored messages
@@ -884,7 +872,7 @@ wa contacts link <person> <other>
 | Argument | | What it is |
 |---|---|---|
 | `person` | required | their id, @username, or part of their name. |
-| `other` | required | the same in another messenger of the store, as <messenger>:<person> — max:Ana. |
+| `other` | required | the same in another messenger of the store, as <messenger>:<person> — max:Ana; me: it is you, as zoom:<id> me. |
 
 ### `wa contacts unlink`
 
@@ -1158,7 +1146,7 @@ wa messages list <chat> [query] [options]
 |---|---|
 | `--limit <n>` | how many. |
 | `--cursor <cursor>` | go on from where the last page stopped; page.next gives it. |
-| `--transcribe` | turn voice messages not heard yet into text — by the messenger, or a model on this machine; can take minutes. |
+| `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
 | `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
 | `--mark-read` | also mark the chat read up to the newest message shown; the other person sees it. |
 
@@ -1180,9 +1168,7 @@ wa messages send <chat> [text] [options]
 | Option | What it does |
 |---|---|
 | `--reply-to <message>` | answer this message, by its id in the same chat. |
-| `--send-as <id>` | post as one of the identities `chats send-as` lists; required where the chat posts as someone else by default. |
 | `--operation-id <id>` | repeat a send whose outcome was unknown, without risking a second copy. |
-| `--silent` | deliver without a notification. |
 | `--no-preview` | no preview card for a link in the text. |
 | `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
 | `--file <file>` | attach a file; the text becomes its caption. |
@@ -1190,7 +1176,6 @@ wa messages send <chat> [text] [options]
 | `--as-file` | send the --file as a file to download, a video included. |
 | `--voice <file>` | send an Ogg Opus file as a voice message, alone, with no text. |
 | `--allow-any-file` | send a file even from credential folders or this CLI's own folders. |
-| `--at-time <time>` | let the messenger send it later, even with this machine off: 2026-09-25T09:00 (local time), or 30m, 2h, 1d from now. |
 | `--filename <name>` | the name others see for the --file, instead of its name on disk. |
 
 ### `wa messages show`
@@ -1327,8 +1312,6 @@ wa messages forward <chat> <message> [options]
 | Option | What it does |
 |---|---|
 | `--to <chat>` | where it goes: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-| `--silent` | deliver it without a notification. |
-| `--send-as <id>` | post as one of the identities `chats send-as` lists for the --to chat; required where the chat posts as someone else by default. |
 | `--operation-id <id>` | repeat a forward whose outcome was unknown, without risking a second copy. |
 
 ### `wa messages pin`
@@ -1364,18 +1347,6 @@ wa messages unpin <chat> <message>
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `message` | required | the message id. |
-
-### `wa messages scheduled`
-
-messages waiting to be sent later in a chat, soonest first; cancel one in the app
-
-```sh
-wa messages scheduled <chat>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 
 ### `wa messages link`
 
@@ -1545,7 +1516,7 @@ wa polls vote <chat> <message> [answers] [options]
 
 ### `wa polls create`
 
-send a poll to a chat, as a message of its own; public unless --anonymous
+send a poll to a chat, as a message of its own; everyone sees who voted for what
 
 **Changes something in WhatsApp.**
 
@@ -1562,9 +1533,6 @@ wa polls create <chat> <question> <answers> [options]
 | Option | What it does |
 |---|---|
 | `--multiple` | people may pick several answers. |
-| `--anonymous` | nobody sees who voted for what. |
-| `--silent` | send without a notification. |
-| `--send-as <id>` | post as one of the identities `chats send-as` lists; required where the chat posts as someone else by default. |
 | `--operation-id <id>` | repeat a create whose outcome was unknown, without risking a second poll. |
 
 ## `wa models`
@@ -1685,7 +1653,7 @@ wa inbox [query] [options]
 | `--limit <n>` | at most this many per chat, the newest. |
 | `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
 | `--kind <kinds>` | only chats of these kinds, comma-separated: dialog, group, channel, saved. |
-| `--transcribe` | turn voice messages not heard yet into text — by the messenger, or a model on this machine; can take minutes. |
+| `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
 | `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
 | `--mark-read` | also mark each chat shown read, up to the newest message shown; the other side sees it. |
 | `--no-mark-read` | do not, whatever the catch_up_marks_read setting says. |
@@ -1707,7 +1675,7 @@ wa review [query] [options]
 | `--kind <kinds>` | only chats of these kinds, comma-separated: dialog, group, channel, saved. |
 | `--unanswered [duration]` | only questions to you or a group's admins that nobody answered, asked at least this long ago — 4h, 1d; 24h if not given. |
 | `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
-| `--transcribe` | turn voice messages not heard yet into text — by the messenger, or a model on this machine; can take minutes. |
+| `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
 | `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
 | `--new` | what changed since the last `review --new`, a point per chat — for scheduled runs. |
 | `--mark-read` | also mark each chat shown read, up to the newest message shown; the other side sees it. |
@@ -3551,215 +3519,6 @@ empty the history; saved searches stay
 wa searches clear
 ```
 
-## `wa replies`
-
-rules that answer messages for you, kept in a file of this profile
-
-### `wa replies add`
-
-add a rule with every default written out, off until you edit and enable it
-
-**Changes something on this computer only.**
-
-```sh
-wa replies add <id>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `id` | required | lower-case letters, digits and -; unique in this profile. |
-
-### `wa replies on`
-
-enable one reply rule; its template must be ready
-
-**Changes something on this computer only.**
-
-```sh
-wa replies on <id>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `id` | required | the rule's id. |
-
-### `wa replies off`
-
-disable one reply rule
-
-**Changes something on this computer only.**
-
-```sh
-wa replies off <id>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `id` | required | the rule's id. |
-
-### `wa replies edit`
-
-change only the named fields of a reply rule; lists replace the whole list
-
-**Changes something on this computer only.**
-
-```sh
-wa replies edit <id> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `id` | required | the rule's id. |
-
-| Option | What it does |
-|---|---|
-| `--do <actions>` | actions: reply, task, or both, comma-separated. |
-| `--kinds <kinds>` | chat kinds: dialog, group; comma-separated, empty for any. |
-| `--allow-chats <ids>` | only these chat ids, comma-separated; empty for any. |
-| `--deny-chats <ids>` | leave these chat ids out, comma-separated; empty clears. |
-| `--words <words>` | match any of these whole words, comma-separated; empty clears. |
-| `--question` | match only questions. |
-| `--no-question` | do not require a question. |
-| `--mentions-me` | require a mention of you or a reply to you. |
-| `--no-mentions-me` | do not require a mention of you or a reply to you. |
-| `--allow-people <ids>` | only these sender ids, comma-separated; empty for any. |
-| `--deny-people <ids>` | leave these sender ids out, comma-separated; empty clears. |
-| `--contacts-only` | match only contacts. |
-| `--no-contacts-only` | do not require a contact. |
-| `--template <text>` | the reply template. |
-| `--model <mode>` | legacy template mode: fill-only or may-reword; use ai blocks instead. |
-| `--as-reply` | send as a reply to the matched message. |
-| `--no-as-reply` | send without linking to the matched message. |
-| `--per-chat <limit>` | at most this many per chat, such as 1/12h. |
-| `--per-person <limit>` | at most this many per person, such as 1/1d. |
-| `--outside <hours>` | answer outside this 24-hour window, such as 09:00-19:00. |
-| `--days <days>` | days of the working window, such as mon-fri or sat,sun. |
-| `--timezone <zone>` | the IANA timezone for the working window. |
-| `--no-hours` | clear the working window. |
-
-### `wa replies audience`
-
-show the reply audience, who the rules may answer, or replace its named fields; a new file answers everyone a rule matches
-
-**Changes something on this computer only.**
-
-```sh
-wa replies audience [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--reply <mode>` | answer all or only listed senders and chats: all, listed. |
-| `--allow-people <ids>` | replace allowed sender ids, comma-separated; empty clears. |
-| `--allow-chats <ids>` | replace allowed chat ids, comma-separated; empty clears. |
-| `--deny-people <ids>` | replace denied sender ids, comma-separated; empty clears; deny wins. |
-| `--deny-chats <ids>` | replace denied chat ids, comma-separated; empty clears; deny wins. |
-
-### `wa replies consents`
-
-consent for reply models once per profile and endpoint, with chat opt-outs
-
-#### `wa replies consents show`
-
-show the reply model consent and chat opt-outs; never calls a model
-
-```sh
-wa replies consents show
-```
-
-#### `wa replies consents grant`
-
-allow incoming message data to go to the configured reply model for this profile; chat opt-outs remain
-
-**Changes something on this computer only.**
-
-```sh
-wa replies consents grant
-```
-
-#### `wa replies consents revoke`
-
-revoke the profile's reply model consent immediately; chat opt-outs remain
-
-**Changes something on this computer only.**
-
-```sh
-wa replies consents revoke
-```
-
-#### `wa replies consents deny`
-
-keep this chat's incoming data away from the reply model
-
-**Changes something on this computer only.**
-
-```sh
-wa replies consents deny <chat>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `chat` | required | the native chat id, used as written; never resolved over the network. |
-
-#### `wa replies consents allow`
-
-remove this chat's model opt-out; does not grant profile consent
-
-**Changes something on this computer only.**
-
-```sh
-wa replies consents allow <chat>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `chat` | required | the native chat id, used as written; never resolved over the network. |
-
-### `wa replies test`
-
-what the rules would have answered in the stored messages, to whom and why — sends nothing, changes nothing, never connects
-
-```sh
-wa replies test [rule] [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `rule` | optional | only this rule, by its id; every rule in file order if not given. |
-
-| Option | What it does |
-|---|---|
-| `--since-time <time>` | from this ISO 8601 time, or 2h / 1d ago; 7d ago if not given. |
-| `--ai` | call the configured reply model with stored message data; requires reply consent, otherwise uses fallback. |
-
-### `wa replies pause`
-
-stop every reply rule of this profile at once, a running serve too; resume undoes it
-
-**Changes something on this computer only.**
-
-```sh
-wa replies pause
-```
-
-### `wa replies resume`
-
-let the reply rules answer again after pause
-
-**Changes something on this computer only.**
-
-```sh
-wa replies resume
-```
-
-### `wa replies status`
-
-whether the rules may send, which are on, and who they may answer
-
-```sh
-wa replies status
-```
-
 ## `wa recipients`
 
 the chats this profile may send to, when the list is on
@@ -3923,7 +3682,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, catch_up_marks_read, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 | `value` | required | a number, true or false, or for allow a list like send,reaction; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -4037,7 +3796,7 @@ wa mcp [options]
 
 | Option | What it does |
 |---|---|
-| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+| `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
 | `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
 | `--port <port>` | the local port for --http (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
@@ -4053,7 +3812,7 @@ wa mcp config [options]
 
 | Option | What it does |
 |---|---|
-| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+| `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
 
 ### `wa mcp setup`
 
@@ -4072,7 +3831,7 @@ wa mcp setup <client> [options]
 | Option | What it does |
 |---|---|
 | `--allow-writes` | acknowledge that this profile offers writing tools. |
-| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+| `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
 
 ### `wa mcp doctor`
 
@@ -4084,7 +3843,7 @@ wa mcp doctor [options]
 
 | Option | What it does |
 |---|---|
-| `--permission <key=level>` | override a permission for this server only; repeat for more keys. |
+| `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
 
 ## `wa skill`
 

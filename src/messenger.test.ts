@@ -2,12 +2,15 @@ import { mkdirSync, writeFileSync } from "node:fs"
 import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
+import { repliesPathFor } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it } from "vitest"
-import type { Environment } from "./messenger.js"
+import { whatsAppAdapter } from "./adapter/adapter.js"
+import { WA } from "./app.js"
+import { type Environment, WHATSAPP } from "./messenger.js"
 import { privateStore } from "./paths.js"
 import { run } from "./program.js"
-import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 const STUB = fileURLToPath(new URL("./testing/engine-stub.mjs", import.meta.url))
@@ -127,5 +130,96 @@ describe("wa doctor", () => {
     writeFileSync(`${store}.lock`, "messages send (pid 2147483646)\n")
     expect((await doctor("stale", {})).lock).toMatchObject({ pid: 2147483646, running: false })
     expect((await doctor("unlinked", {})).lock).toMatchObject({ holder: null, running: false })
+  })
+})
+
+describe("what WhatsApp lacks", () => {
+  // cli-core's COMMAND_NEEDS: a method here that the adapter has would refuse a command that works.
+  const COMMAND_NEEDS = [
+    "updateProfile",
+    "sessions",
+    "endOtherSessions",
+    "chatEvents",
+    "inspect",
+    "folders",
+    "createFolder",
+    "updateFolder",
+    "deleteFolder",
+    "addContact",
+    "removeContact",
+    "renameContact",
+    "importContacts",
+    "pin",
+    "unpin",
+  ]
+
+  it("names exactly the methods of COMMAND_NEEDS the adapter does not have", () => {
+    const adapter = whatsAppAdapter(fakeEngine(seed))
+    for (const method of WHATSAPP.lacks ?? []) expect(adapter).not.toHaveProperty(method)
+    expect([...(WHATSAPP.lacks ?? [])].sort()).toEqual(COMMAND_NEEDS.filter((method) => !(method in adapter)).sort())
+  })
+})
+
+describe("automatic replies", () => {
+  it("serve answers nothing by reply rules, even with replies.send at allow", async () => {
+    const profile = "replying"
+    expect((await wa([profile, "config", "set", "permissions.replies.send", "allow"])).code).toBe(0)
+    const rule = {
+      id: "away",
+      on: true,
+      do: ["reply"],
+      where: { kinds: ["dialog"], chats: [], notChats: [] },
+      when: {
+        hours: null,
+        words: [],
+        question: false,
+        mentionsMe: false,
+        from: { people: [], notPeople: [], contactsOnly: false },
+      },
+      reply: { template: "Back soon.", model: "fill-only", asReply: false },
+      limits: { perChat: "1/1d", perPerson: "1/1d" },
+    }
+    writeFileSync(
+      repliesPathFor(WA, profile),
+      JSON.stringify({ audience: { reply: "all", allow: { people: [], chats: [] } }, rules: [rule] }),
+    )
+    const controller = new AbortController()
+    let engine: FakeEngine | undefined
+    const result = await wa([profile, "serve", "--json"], {
+      signal: controller.signal,
+      engine: () => {
+        engine = fakeEngine(seed)
+        const listen = engine.listen
+        engine.listen = (kinds, onEvent) => {
+          const stop = listen(kinds, onEvent)
+          if (kinds.includes("message"))
+            setImmediate(() => {
+              engine?.push({
+                event: "message",
+                message: {
+                  id: "3EB0000000000000000R01",
+                  chat: seed.dialog,
+                  sender: seed.dialog,
+                  senderName: "Synthetic Person",
+                  fromMe: false,
+                  timestamp: new Date().toISOString(),
+                  editedAt: null,
+                  text: "synthetic question?",
+                  replyTo: null,
+                },
+              })
+              setTimeout(() => controller.abort(), 50)
+            })
+          return stop
+        }
+        return engine
+      },
+    })
+
+    expect(result.code, result.stderr).toBe(0)
+    expect(engine?.sent).toEqual([])
+    expect(engine?.sends).toEqual([])
+    expect(JSON.parse(result.stdout).item.replies).toBeUndefined()
+    expect((await wa([profile, "--offline", "chats", "list", "--json"])).code).toBe(0)
   })
 })

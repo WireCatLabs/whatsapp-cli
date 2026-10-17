@@ -174,6 +174,30 @@ export const WHATSAPP: Messenger = {
   pollClose: false,
   pollRevote: false,
   pollVoters: true,
+  pollAnonymous: false,
+  // Every message goes as the account, at once, with a notification.
+  silentSends: false,
+  sendAs: false,
+  scheduledSends: false,
+  // Nothing sends unless a typed command asked: WhatsApp bans accounts that answer like a bot.
+  autoReplies: false,
+  lacks: [
+    "updateProfile",
+    "sessions",
+    "endOtherSessions",
+    "chatEvents",
+    "inspect",
+    "folders",
+    "createFolder",
+    "updateFolder",
+    "deleteFolder",
+    "addContact",
+    "removeContact",
+    "renameContact",
+    "importContacts",
+    "pin",
+    "unpin",
+  ],
   // Every delete wa makes is for everyone, which an agent may never do: the MCP delete refuses up front instead of
   // answering with an "add --for-everyone" that only the owner can act on.
   deleteForMe: false,

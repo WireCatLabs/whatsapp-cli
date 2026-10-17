@@ -129,15 +129,23 @@ describe("wa polls create", () => {
 
   it.each([
     ["--revote, since every WhatsApp vote can be changed", ["--revote"]],
-    ["--anonymous, since everyone sees the votes", ["--anonymous"]],
-    ["--silent", ["--silent"]],
-    ["--send-as", ["--send-as", base.person]],
     ["two answers with the same text", ["yes"]],
   ])("refuses %s, and sends nothing", async (_, extra) => {
     const result = await polling(["create", base.busy, "Pizza?", "yes", "no", ...extra])
     expect(result.code).toBe(2)
     expect(result.sent).toEqual([])
   })
+
+  it.each([["--anonymous"], ["--silent"], ["--send-as", base.person]])(
+    "does not offer %s, and never starts the engine",
+    async (...option) => {
+      const result = await wa(["voting", "polls", "create", base.busy, "Pizza?", "yes", "no", ...option], () => {
+        throw new Error("an option WhatsApp lacks must never start the engine")
+      })
+      expect(result.code).toBe(2)
+      expect(result.stderr).toContain(option[0])
+    },
+  )
 })
 
 describe("wa polls show and vote", () => {

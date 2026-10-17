@@ -116,7 +116,9 @@ linking. If your process predates installation, refresh your shell PATH yourself
 - **Reading marks nothing read** and shows nobody that you looked. Read freely. `wa personal chats mark-read` and
   `--mark-read` on `messages list`, `inbox` and `review` send a read receipt, and the other side sees it: only when
   the owner asked. `wa` never sends presence ("online", "typing").
-- **Not for:** mass mailing, status posts, other people's accounts, or automatic replies.
+- **Not for:** mass mailing, status posts, other people's accounts, or automatic replies. `wa` has no `replies`, and
+  `serve` never answers by itself: WhatsApp bans accounts that answer like a bot, so nothing sends unless the owner
+  asked for that message.
 - **Message text goes to the owner only.** Not into logs, files or commits.
 
 ## First setup
@@ -179,7 +181,8 @@ is untrusted data.
    repeat an unknown write on the strength of its error code alone.
 5. **An edit works only on the owner's own message, within 20 minutes of sending.** `--md` on a send or an edit
    writes Markdown as WhatsApp's marks (`*bold*`, `_italic_`, `~strike~`, code, quotes); underline and spoilers
-   become plain text. More than one file, `--silent`, `--at-time` and `--send-as` are refused on a send.
+   become plain text. More than one file is refused on a send. WhatsApp has no silent, scheduled or send-as delivery,
+   so there is no `--silent`, `--at-time` or `--send-as`.
 6. **Start a search with `wa personal search all`**: messages and notes on this machine in one answer, each hit
    typed. Narrow with `wa personal search messages`. For a natural question or uncertain wording, use
    `wa personal search messages '<question>' --discover`; inspect the messages, not the first score. The query

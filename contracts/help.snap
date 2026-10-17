@@ -90,8 +90,6 @@ Commands:
   searches                     saved searches and the history of search messages
                                and stats messages show, kept in the local store;
                                --saved runs one
-  replies                      rules that answer messages for you, kept in a
-                               file of this profile
   recipients                   the chats this profile may send to, when the list
                                is on
   sends                        every attempt to send from this profile — never

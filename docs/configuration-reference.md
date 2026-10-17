@@ -35,7 +35,7 @@ removes it.
 | `picture_search` | `false` | search stored pictures by what they show, once the model is downloaded | none |
 | `record` | `false` | keep every run | `--record`, `--no-record` |
 | `keep_runs_for_days` | `30` | recorded runs older than this are removed when the next one is kept | none |
-| `permissions` | everything allowed, except deleting and a few other changes ask; reply rules may not send | what the profile may do, per command | none; `--yes` only answers `ask`, it never lifts `deny` |
+| `permissions` | everything allowed, except deleting and a few other changes ask | what the profile may do, per command | none; `--yes` only answers `ask`, it never lifts `deny` |
 | `sends_per_hour` | `30` | the most sends in any hour | none |
 | `requests_per_minute` | the CLI's pace | requests a minute, shared by every process of the profile; `0` turns it off | `WA_REQUESTS_PER_MINUTE` |
 | `transcribe_with` | `auto` | who turns voice into text: `auto`, `messenger` or `local` | `--local`, or `--model` |

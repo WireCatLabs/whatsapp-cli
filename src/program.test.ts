@@ -91,12 +91,13 @@ describe("wa messages send", () => {
   }
 
   it.each([["--silent"], ["--send-as", seed.person], ["--at-time", "1h"]])(
-    "refuses %s, which WhatsApp cannot honour, and sends nothing",
+    "does not offer %s, which WhatsApp cannot honour, and never starts the engine",
     async (...option) => {
-      const result = await sending(...option)
+      const result = await wa(["options", "messages", "send", seed.dialog, "hi", ...option, "--json"], () => {
+        throw new Error("an option WhatsApp lacks must never start the engine")
+      })
       expect(result.code).toBe(2)
-      expect(JSON.parse(result.stderr).error.code).toBe("validation_error")
-      expect(result.sent).toEqual([])
+      expect(result.stderr).toContain(option[0])
     },
   )
 
@@ -180,19 +181,41 @@ describe("commands WhatsApp has no counterpart for", () => {
     ["account", "sessions", "end", "--others"],
     ["chats", "events", seed.busy],
     ["chats", "inspect", "https://chat.whatsapp.com/FAKE0000000000000000AA"],
-    ["chats", "send-as", seed.busy],
     ["chats", "folders", "list"],
     ["chats", "folders", "show", "Work"],
     ["chats", "folders", "create", "Work"],
     ["chats", "folders", "update", "Work", "--title", "Play"],
     ["chats", "folders", "delete", "Work"],
-    ["chats", "moderate", seed.busy],
+    ["contacts", "add", seed.person],
     ["contacts", "remove", seed.person],
     ["contacts", "rename", seed.person, "Synthetic"],
     ["contacts", "import", card],
     ["messages", "pin", seed.busy, message],
     ["messages", "unpin", seed.busy, message],
-    ["messages", "scheduled", seed.busy],
+  ])("refuses `%s %s` before starting the engine", async (...argv) => {
+    const result = await wa(["unsupported", ...argv, "--json"], () => {
+      throw new Error("a command WhatsApp lacks must never start the engine")
+    })
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.code).toBe("validation_error")
+  })
+
+  it("does not offer chats send-as, messages scheduled or replies", async () => {
+    const result = await wa(["commands", "--json"])
+    interface Listed {
+      path: string[]
+      commands: Listed[]
+    }
+    const pathsOf = (commands: Listed[]): string[] =>
+      commands.flatMap((command) => [command.path.join(" "), ...pathsOf(command.commands)])
+    const paths = pathsOf(JSON.parse(result.stdout).commands)
+    expect(paths).toContain("messages send")
+    for (const missing of ["chats send-as", "messages scheduled", "replies", "replies add"])
+      expect(paths).not.toContain(missing)
+  })
+
+  it.each([
+    ["chats", "moderate", seed.busy],
     ["messages", "comments", seed.busy, message],
   ])("refuses `%s %s` as invalid, writes nothing and closes what it started", async (...argv) => {
     let engine: FakeEngine | undefined

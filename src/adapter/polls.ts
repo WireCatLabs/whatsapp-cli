@@ -126,16 +126,10 @@ export const pollAdapter = ({
     return { items: voters.slice(0, limit), hasMore: voters.length > limit, total: voters.length }
   },
 
-  createPoll: async (chatId, poll, { sendId, silent, threadId, sendAs }) => {
-    if (poll.anonymous)
-      throw new CliError(
-        "validation_error",
-        "everyone in a WhatsApp chat sees who voted for what; leave out --anonymous",
-      )
+  createPoll: async (chatId, poll, { sendId, threadId }) => {
     if (poll.quiz !== undefined || poll.closeAfter !== undefined)
       throw new CliError("validation_error", "WhatsApp polls are neither quizzes nor close by themselves")
-    if (silent || threadId !== undefined || sendAs !== undefined)
-      throw new CliError("validation_error", "WhatsApp sends a poll without --silent, --send-as or a topic")
+    if (threadId !== undefined) throw new CliError("validation_error", "WhatsApp sends a poll without a topic")
     if (new Set(poll.answers).size < poll.answers.length)
       throw new CliError("validation_error", "each answer needs text of its own: WhatsApp counts a vote by it")
     const message = await translated(

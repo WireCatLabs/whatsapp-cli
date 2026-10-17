@@ -15,7 +15,6 @@
   "models audio",
   "models text",
   "models text key",
-  "replies consents",
   "stats messages counters",
   "store gaps"
 ]
