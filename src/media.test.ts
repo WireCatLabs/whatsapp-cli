@@ -156,6 +156,14 @@ describe("wa messages download", () => {
     expect(readdirSync(tmpdir()).filter((name) => name.startsWith("wa-media-") && !name.includes("test"))).toEqual([])
   })
 
+  it("saves each stored file of a chat with --all through the engine, newest first, and skips what has no keys", async () => {
+    const output = folder()
+    const result = await driving(["messages", "download", base.busy, "--all", "--pause", "1ms", "--output-dir", output])
+    expect(result.code).toBe(0)
+    expect(result.engine.downloads.map((attachment) => attachment.ref)).toEqual([ref("audio", 2), ref("image", 1)])
+    expect(readdirSync(output).filter((name) => !name.startsWith("."))).toHaveLength(2)
+  })
+
   it("names a place as not a file, and downloads nothing", async () => {
     const result = await driving(["messages", "download", base.busy, place.id, "--output-dir", folder()])
     expect(result.code).toBe(6)
@@ -199,6 +207,27 @@ describe("wa messages forward", () => {
     expect(result.engine.forwards).toEqual([
       expect.objectContaining({ text: "synthetic plain text", attachment: null }),
     ])
+  })
+
+  it("forwards with --operation-id as that WhatsApp message id, and a repeat as the same message", async () => {
+    let engine: FakeEngine | undefined
+    const once = () => {
+      engine ??= fakeEngine(seed)
+      return engine
+    }
+    const id = "3EB0000000000000000F0F"
+    const argv = ["media", "messages", "forward", base.busy, plain.id, "--to", base.dialog, "--operation-id", id]
+    expect((await wa([...argv, "--json"], once)).code).toBe(0)
+    expect((await wa([...argv, "--json"], once)).code).toBe(0)
+    expect(engine?.forwards).toEqual([expect.objectContaining({ id, chat: base.dialog })])
+  })
+
+  it.each(["--silent", "--send-as"])("refuses %s, which WhatsApp has no counterpart for", async (flag) => {
+    const value = flag === "--send-as" ? [base.dialog] : []
+    const result = await driving(["messages", "forward", base.busy, plain.id, "--to", base.dialog, flag, ...value])
+    expect(result.code).toBe(2)
+    expect(errorCode(result.stderr)).toBe("validation_error")
+    expect(result.engine.forwards).toEqual([])
   })
 
   it.each([

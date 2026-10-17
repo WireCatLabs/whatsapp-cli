@@ -10,10 +10,6 @@ export interface Untested {
 }
 
 const SHARED = [
-  "account *",
-  "chats *",
-  "contacts *",
-  "messages *",
   "inbox",
   "review",
   "watch",
@@ -35,14 +31,20 @@ const SHARED = [
   "sends *",
   "runs *",
   "config *",
-  "doctor",
-  "doctor *",
   "commands",
   "commands *",
   "complete",
   "mcp *",
   "skill *",
 ]
+
+/** Answered from the local store by cli-core's shared command; wa adds nothing to it. */
+const cliCore = (tests: string, rows: string[][]): Untested[] =>
+  rows.map(([command, option]) => ({
+    command: command as string,
+    ...(option ? { option } : {}),
+    reason: `cli-core's shared command over the local store, tested in cli-core ${tests}`,
+  }))
 
 export const UNTESTED: Untested[] = [
   // A shared cli-core command mounted unchanged: cli-core's suite drives every option over its fake adapter. wa's own
@@ -52,13 +54,124 @@ export const UNTESTED: Untested[] = [
     reason:
       "shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter",
   })),
-  {
-    command: "doctor",
-    option: "--online",
+  // The messages, chats, contacts, account and doctor groups are listed command by command, so a new subcommand shows
+  // up as missing instead of being waived unseen.
+  ...[
+    ["account update", "--last-name"],
+    ["account update", "--description"],
+    ["account update", "--photo"],
+    ["chats folders create", "--chat"],
+    ["chats folders update", "--add"],
+    ["chats folders update", "--remove"],
+    ["chats moderate", "--since-time"],
+    ["chats moderate", "--dry-run"],
+    ["chats moderate", "--allow-dangerous"],
+    ["chats moderate", "--max-actions"],
+    ["messages pin", "--notify"],
+    ["messages comments", "--limit"],
+    ["messages comments", "--cursor"],
+  ].map(([command, option]) => ({
+    command: command as string,
+    option,
     reason:
-      "connects to WhatsApp, which needs a linked device; cli-core's doctor tests drive it over the fake adapter, " +
-      "and src/messenger.test.ts covers wa's own offline block",
-  },
+      "WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; " +
+      "src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core " +
+      "src/cli/messenger/command-capabilities.test.ts the rule",
+  })),
+  ...cliCore("src/services/account-list.test.ts", [["account list"]]),
+  ...cliCore("src/cli/messenger/chats-answers.test.ts and messenger.test.ts", [["chats show"]]),
+  ...cliCore("src/cli/messenger/chats-documents.test.ts", [
+    ["chats documents list"],
+    ["chats documents list", "--limit"],
+    ["chats documents list", "--page"],
+  ]),
+  ...cliCore(
+    "src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which " +
+      "src/groups.test.ts drives through `chats members list`",
+    [
+      ["chats members history"],
+      ["chats members fetch"],
+      ["chats members fetch", "--track"],
+      ["chats members fetch", "--max-pages"],
+      ["chats members audit"],
+      ["chats members audit", "--max-pages"],
+      ["chats members audit", "--deep"],
+    ],
+  ),
+  ...cliCore("src/cli/messenger/messenger.test.ts", [
+    ["chats tracking list"],
+    ["chats tracking show"],
+    ["chats tracking add"],
+    ["chats tracking remove"],
+  ]),
+  ...cliCore("src/cli/messenger/admin-commands.test.ts", [
+    ["chats rules show"],
+    ["chats rules set"],
+    ["chats rules unset"],
+  ]),
+  ...cliCore("src/cli/messenger/people-answers.test.ts", [
+    ["contacts list"],
+    ["contacts list", "--limit"],
+    ["contacts list", "--page"],
+    ["contacts list", "--all"],
+    ["contacts list", "--order"],
+    ["contacts show"],
+    ["contacts show", "--with-notes"],
+  ]),
+  ...cliCore("src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts", [
+    ["contacts context"],
+    ["contacts context", "--limit"],
+    ["contacts context", "--since-time"],
+    ["contacts context", "--chat"],
+    ["contacts check"],
+    ["contacts check", "--no-registries"],
+    ["contacts link"],
+    ["contacts unlink"],
+  ]),
+  ...cliCore("src/services/person-timeline.test.ts", [
+    ["contacts timeline"],
+    ["contacts timeline", "--scope"],
+    ["contacts timeline", "--since-time"],
+    ["contacts timeline", "--until-time"],
+    ["contacts timeline", "--limit"],
+    ["contacts timeline", "--cursor"],
+  ]),
+  ...cliCore("src/services/private-people.test.ts and person-aliases.test.ts", [
+    ["contacts alias set"],
+    ["contacts alias rm"],
+    ["contacts notes list"],
+    ["contacts notes show"],
+    ["contacts notes add"],
+    ["contacts notes add", "--file"],
+    ["contacts notes edit"],
+    ["contacts notes edit", "--file"],
+    ["contacts notes edit", "--revision"],
+    ["contacts notes remove"],
+  ]),
+  ...cliCore("src/cli/messenger/store-mode.test.ts and src/services/evidence.test.ts", [
+    ["messages evidence"],
+    ["messages evidence", "--limit"],
+    ["messages evidence", "--cursor"],
+  ]),
+  ...cliCore("src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts", [
+    ["messages show"],
+    ["messages context"],
+    ["messages context", "--thread"],
+    ["messages context", "--thread-hops"],
+    ["messages context", "--thread-messages"],
+    ["messages context", "--thread-bytes"],
+    ["messages context", "--thread-within"],
+    ["messages context", "--before-n"],
+    ["messages context", "--after-n"],
+    ["messages links"],
+  ]),
+  ...cliCore("src/services/messages-link.test.ts", [["messages link"]]),
+  ...cliCore("src/cli/messenger/doctor-command.test.ts", [
+    ["doctor report"],
+    ["doctor report create"],
+    ["doctor report create", "--run"],
+    ["doctor report create", "--output"],
+  ]),
   {
     command: "config show",
     option: "--bot",
