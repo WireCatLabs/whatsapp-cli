@@ -84,7 +84,7 @@ const translated = async <T>(work: Promise<T>): Promise<T> => {
 
 const hit = (chat: WaChat | undefined, message: Message): MessageHit => ({ ...message, chatTitle: chat?.name ?? null })
 
-const ENDED: Partial<Record<ConnectionState, (words: Words) => CliError>> = {
+const ENDED: Partial<Record<ConnectionState, (words: Words, until?: string) => CliError>> = {
   logged_out: (words) =>
     fromEngine(
       new EngineError(
@@ -101,12 +101,13 @@ const ENDED: Partial<Record<ConnectionState, (words: Words) => CliError>> = {
         "device.replaced",
       ),
     ),
-  banned: () =>
+  banned: (_words, until) =>
     fromEngine(
       new EngineError(
         "permission_error",
         "WhatsApp has banned or restricted this account; see the phone",
         "account.banned",
+        until,
       ),
     ),
   outdated: () =>
@@ -132,7 +133,7 @@ const listening = (
   let stop = () => {}
   const done = new Promise<void>((resolve, reject) => {
     const unlisten = engine.listen(kinds, (event) => {
-      const ended = event.event === "connection" ? ENDED[event.state]?.(words) : undefined
+      const ended = event.event === "connection" ? ENDED[event.state]?.(words, event.until) : undefined
       if (ended) reject(ended)
       else onEvent(event)
     })

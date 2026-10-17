@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/types/events"
@@ -67,5 +68,42 @@ func TestARefusalGoesOnTheWireWithItsReasonAndAPlainOneWithout(t *testing.T) {
 	}
 	if _, has := second.Error["reason"]; has {
 		t.Errorf("a plain refusal went out with a reason: %s", lines[1])
+	}
+}
+
+func TestABanWithAnEndCarriesItOnTheWireAndOneWithoutDoesNot(t *testing.T) {
+	now := time.Date(2026, 10, 17, 12, 0, 0, 0, time.UTC)
+	if got := bannedFor(2*time.Hour, now); got.Until != "2026-10-17T14:00:00Z" || got.Reason != "account.banned" {
+		t.Errorf("a two-hour ban became %+v", got)
+	}
+	if got := bannedFor(0, now); got.Until != "" {
+		t.Errorf("a ban without an end got one: %+v", got)
+	}
+	if banned.Until != "" {
+		t.Errorf("dating a ban changed the shared refusal: %+v", banned)
+	}
+
+	var out bytes.Buffer
+	e := &engine{out: newWire(&out)}
+	e.handle(&events.TemporaryBan{Expire: time.Hour})
+	var line struct{ Event, State, Until string }
+	_ = json.Unmarshal(out.Bytes(), &line)
+	if line.State != "banned" || line.Until == "" || e.endedBy().Until != line.Until {
+		t.Errorf("a dated ban went out as %s and was kept as %+v", out.String(), e.endedBy())
+	}
+}
+
+func TestARequestCutOffByAnEndedConnectionAnswersWhyItEnded(t *testing.T) {
+	var out bytes.Buffer
+	e := &engine{out: newWire(&out)}
+	if got := e.refusalFor(whatsmeow.ErrNotConnected); got.Code != "network_error" {
+		t.Errorf("before anything ended, not connected became %+v", got)
+	}
+	e.handle(&events.StreamReplaced{})
+	if got := e.refusalFor(whatsmeow.ErrNotConnected); got.Reason != "device.replaced" {
+		t.Errorf("after the login was taken over, not connected became %+v", got)
+	}
+	if got := e.refusalFor(&failure{"not_found", "WhatsApp has no such chat"}); got.Code != "not_found" {
+		t.Errorf("a refusal of its own was replaced by why the connection ended: %+v", got)
 	}
 }

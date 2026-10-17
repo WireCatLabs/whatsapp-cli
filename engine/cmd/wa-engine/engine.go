@@ -136,10 +136,20 @@ func (e *engine) answer(req request) {
 	}()
 	value, err := e.dispatch(req)
 	if err != nil {
-		e.out.fail(req.ID, classify(err))
+		e.out.fail(req.ID, e.refusalFor(err))
 		return
 	}
 	e.out.ok(req.ID, value)
+}
+
+// refusalFor answers a request cut off by WhatsApp ending the connection with why it ended: "not connected" would
+// send an agent to retry into a login another process now holds, or into a ban.
+func (e *engine) refusalFor(err error) *refusal {
+	refused := classify(err)
+	if ended := e.endedBy(); ended != nil && refused.Code == "network_error" {
+		return ended
+	}
+	return refused
 }
 
 func (e *engine) dispatch(req request) (any, error) {
@@ -220,7 +230,11 @@ func (e *engine) end(state string, why *refusal) {
 	e.mu.Lock()
 	e.ended = why
 	e.mu.Unlock()
-	e.out.connection(state)
+	until := ""
+	if why != nil {
+		until = why.Until
+	}
+	e.out.connection(state, until)
 }
 
 func (e *engine) link(method, phone string) (*waAccount, error) {
@@ -468,13 +482,13 @@ func (e *engine) handle(raw any) {
 		e.refreshSelf()
 		e.end("connected", nil)
 	case *events.Disconnected, *events.KeepAliveTimeout:
-		e.out.connection("disconnected")
+		e.out.connection("disconnected", "")
 	case *events.LoggedOut:
 		e.end("logged_out", loggedOut)
 	case *events.StreamReplaced:
 		e.end("replaced", replaced)
 	case *events.TemporaryBan:
-		e.end("banned", banned)
+		e.end("banned", bannedFor(evt.Expire, time.Now()))
 	case *events.ClientOutdated:
 		e.end("outdated", outdated)
 	case *events.ConnectFailure:
@@ -486,7 +500,7 @@ func (e *engine) handle(raw any) {
 		case evt.Reason.IsLoggedOut():
 			e.end("logged_out", loggedOut)
 		default:
-			e.out.connection("disconnected")
+			e.out.connection("disconnected", "")
 		}
 	}
 }
@@ -499,6 +513,16 @@ var (
 	outdated = because("client.outdated", "provider_unavailable", "WhatsApp no longer accepts this version of wa; update it")
 )
 
+// bannedFor dates the ban's end when WhatsApp gives one, so the CLI's hold on writes ends with it.
+func bannedFor(expire time.Duration, now time.Time) *refusal {
+	if expire <= 0 {
+		return banned
+	}
+	dated := *banned
+	dated.Until = now.Add(expire).UTC().Format(time.RFC3339)
+	return &dated
+}
+
 // classify puts any error into the contract's closed list, in fixed wording: whatsmeow's own text can carry a JID.
 func classify(err error) *refusal {
 	var reasoned *refusal
@@ -509,7 +533,7 @@ func classify(err error) *refusal {
 	var iq *whatsmeow.IQError
 	// WhatsApp's own 429, not the engine's lookup pace (people.go): only WhatsApp's holds the account's writes.
 	if errors.As(err, &iq) && iq.Code == 429 {
-		return &refusal{*refused, "account.rate-limited"}
+		return &refusal{failure: *refused, Reason: "account.rate-limited"}
 	}
 	return &refusal{failure: *refused}
 }
