@@ -52,16 +52,17 @@ a WhatsApp admin has all of them. A command that connects knows a group by its `
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp`.
   Permissions and the send guard still apply. It never asks: a write at permission level `ask` needs `--yes`
   (`--allow-dangerous` for a deletion), or it is refused and says so. Never stop the owner's `serve`. If `serve`
-  is starting or does not answer, the command fails; tell the owner. With no `serve`, `watch` and every command that connects take the device's lock; a second
-  one is refused with exit `12` and names the holder. On Windows nothing goes through `serve` yet, so there a
-  command that connects is refused that way while `serve` runs (`serve (pid 4242)`): tell the owner, do not stop
-  it. `wa personal mcp` keeps a connection it opened until two minutes pass without a call, and `serve` cannot start
-  meanwhile.
+  is starting or does not answer, the command fails; tell the owner. With no `serve`, `watch` and every command that
+  connects take the device's lock; a second one is refused with exit `12` and names the holder. On Windows nothing
+  goes through `serve` yet, so there a command that connects is refused that way while `serve` runs
+  (`serve (pid 4242)`): tell the owner, do not stop it. `wa personal mcp` keeps a connection it opened until two
+  minutes pass without a call, and `serve` cannot start meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
   `messages edit`, `messages delete --for-everyone`, `reactions add|remove`, `polls show|vote` and `chats mark-read`
   look the message up in the store. A poll made with `polls create` is not stored yet, so it cannot be shown or voted
   on from `wa`. One the store lacks is exit `6`. `messages download`, `messages forward` and
-  `messages transcribe --local` work the same way, from the file keys the store holds.
+  `messages transcribe --local` work the same way, from the file keys the store holds. A `--reply-to` a message the
+  store lacks still sends, but the phone may show the quote as unavailable.
 - **One file per message.** `messages send --file|--photo|--voice` sends one; the text is its caption, a voice note
   goes alone.
 - **Ids are WhatsApp addresses.** A person is usually `…@lid` (WhatsApp's hidden id, for example
