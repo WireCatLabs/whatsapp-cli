@@ -211,6 +211,15 @@ describe("wa doctor --online", () => {
     expect(result.code).toBe(0)
     expect(JSON.stringify(result.body)).toContain('"state":"active"')
   })
+
+  it("reports a banned account when WhatsApp refuses the connection for it", async () => {
+    const result = await wa([PROFILE, "doctor", "--online", "--json"], () => {
+      const engine = fakeEngine(seed)
+      engine.ready = async () => engine.push({ event: "connection", state: "banned" })
+      return engine
+    })
+    expect(result.stdout).toContain('"state":"banned"')
+  })
 })
 
 describe("wa review --unanswered", () => {

@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -112,5 +114,19 @@ func assertJSON(t *testing.T, value any, want string) {
 	}
 	if string(got) != want {
 		t.Fatalf("got  %s\nwant %s", got, want)
+	}
+}
+
+func TestGroupFailureNamesARefusalToANonAdmin(t *testing.T) {
+	for _, err := range []error{&whatsmeow.IQError{Code: 401}, fmt.Errorf("wrapped: %w", &whatsmeow.IQError{Code: 403})} {
+		if f, ok := groupFailure(err).(*failure); !ok || f.Code != "permission_error" {
+			t.Fatalf("%v: got %v, want a permission_error", err, groupFailure(err))
+		}
+	}
+	if groupFailure(nil) != nil {
+		t.Fatal("no error is no failure")
+	}
+	if got := classify(groupFailure(whatsmeow.ErrNotInGroup)); got.Code != "permission_error" {
+		t.Fatalf("not being in the group: got %v", got)
 	}
 }

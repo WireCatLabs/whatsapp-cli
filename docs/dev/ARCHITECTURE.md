@@ -76,7 +76,7 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,
   `updateGroup` (name, description, `addMode`, `approval`), `resetLink`, `participants` (`add`, `remove`, `promote`,
   `demote`; a phone-addressed group gets phone JIDs), `requests`, `answerRequest`, `profile` (`GetUserInfo` and the
-  photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per engine) and `contacts` (the
+  photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per profile, timed by `private.db.lookup`) and `contacts` (the
   address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
   maps the two switches cli-core has (`onlyAdminsAdd`, `joinApproval`) and puts the rest in `providerMetadata`.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
@@ -136,6 +136,7 @@ account through one more connection and five chats from cli-core's store, since 
 |---|---|---|
 | `~/.local/share/whatsapp-cli/profiles/<profile>/private.db` | the engine's device store: the linked device's keys | 0600, dir 0700 |
 | `…/profiles/<profile>/private.db.lock` | who holds the device's one connection | 0600 |
+| `…/profiles/<profile>/private.db.lookup` | empty; its time is the last number lookup, for the 10-second gap | 0600 |
 | cli-core's store (`~/.local/share/WireCat/wirecat.db`) | chats, people, messages for every messenger | cli-core's |
 | `~/.config/whatsapp-cli/` | settings; never a secret | |
 

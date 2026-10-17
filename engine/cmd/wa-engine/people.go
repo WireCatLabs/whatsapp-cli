@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -23,13 +24,13 @@ type waProfile struct {
 }
 
 // A number lookup is the request a phone makes when someone types a number; many in a row is what a scraper
-// sends, and WhatsApp bans accounts for it. One per lookupGap per engine process.
+// sends, and WhatsApp bans accounts for it. One per lookupGap per profile, across processes: the time of the last
+// one is kept in lookupStamp, beside private.db, written only while the engine holds the profile's lock.
 const lookupGap = 10 * time.Second
 
-var lookups struct {
-	sync.Mutex
-	last time.Time
-}
+var lookupStamp string
+
+var lookups sync.Mutex
 
 func (e *engine) dispatchPeople(req request) (any, bool, error) {
 	switch req.Op {
@@ -60,6 +61,12 @@ func (e *engine) profile(raw string) (*waProfile, error) {
 		return nil, err
 	}
 	info, found := infos[jid]
+	if !found && len(infos) == 1 {
+		// WhatsApp may answer under the other form of the id asked for.
+		for _, only := range infos {
+			info, found = only, true
+		}
+	}
 	if !found {
 		return nil, &failure{"not_found", "WhatsApp has no such person"}
 	}
@@ -129,14 +136,9 @@ func (e *engine) lookup(phone string) (*waContact, error) {
 	if len(digits) < 6 || len(digits) > 15 || strings.ContainsRune(digits, 'x') {
 		return nil, &failure{"validation_error", "that is not a phone number — digits, with a country code"}
 	}
-	lookups.Lock()
-	wait := time.Until(lookups.last.Add(lookupGap))
-	if wait > 0 {
-		lookups.Unlock()
-		return nil, &failure{"rate_limited", "one number lookup at a time; wait a few seconds"}
+	if err := takeLookup(lookupStamp, time.Now()); err != nil {
+		return nil, err
 	}
-	lookups.last = time.Now()
-	lookups.Unlock()
 	if err := e.connect(); err != nil {
 		return nil, err
 	}
@@ -151,4 +153,21 @@ func (e *engine) lookup(phone string) (*waContact, error) {
 		}
 	}
 	return nil, &failure{"not_found", "nobody on WhatsApp has that number, or their privacy hides them"}
+}
+
+// takeLookup refuses a lookup sooner than lookupGap after the last one and records this one. Without a stamp file
+// (tests) it allows every lookup.
+func takeLookup(stamp string, now time.Time) error {
+	if stamp == "" {
+		return nil
+	}
+	lookups.Lock()
+	defer lookups.Unlock()
+	if info, err := os.Stat(stamp); err == nil && now.Sub(info.ModTime()) < lookupGap {
+		return &failure{"rate_limited", "one number lookup every 10 seconds; wait and try again"}
+	}
+	if err := os.WriteFile(stamp, nil, 0o600); err != nil {
+		return &failure{"provider_error", "could not record the lookup's time beside the device keys"}
+	}
+	return os.Chtimes(stamp, now, now)
 }
