@@ -12,6 +12,7 @@ import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { whatsAppAdapter } from "./adapter/adapter.js"
 import { resolveSettings, WA } from "./app.js"
+import { diagnoseWhatsApp } from "./diagnose.js"
 import { EngineError, type LoginCode, type WhatsAppEngine } from "./engine/contract.js"
 import { startGoEngine } from "./engine/go-engine.js"
 import { privateStore } from "./paths.js"
@@ -145,6 +146,8 @@ export const WHATSAPP: Messenger = {
   savedChatId: (account) => account.account,
   partnerOf: (chat) => (chat.kind === "dialog" ? chat.id : undefined),
   skill: SKILL,
+  diagnose: async (command, base) =>
+    diagnoseWhatsApp(base.settings.profile, base.env, environmentOf<Environment>(command).update),
   // What WhatsApp does not have, so the shared commands do not offer it: forum topics, folders, more than one
   // invite link per group, channel comments, and history shown to people added later.
   topics: false,
