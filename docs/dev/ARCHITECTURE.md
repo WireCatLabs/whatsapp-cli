@@ -27,6 +27,11 @@ answered by `src/engine-binary.ts`, a leaf with only Node imports, so `doctor` (
 without reaching the engine. `src/adapter/` never reaches commands, the program, the messenger or the shared store;
 `src/engine/` never imports cli-core at all.
 
+The adapter names no command: a refusal that sends the person somewhere carries a check from
+[`src/adapter/checks.ts`](../../src/adapter/checks.ts), and `src/messenger.ts` words it as `wa <profile> <command>`,
+as tg's `src/commands/checks.ts` does. What a command sees of a login is `LinkCode`, declared in `src/messenger.ts`,
+not the engine's contract type: the lint cannot see a type that arrives by inference.
+
 ## 3. History comes from the store
 
 WhatsApp has no "list chats" request and keeps no history on its servers. The phone pushes history when a device
