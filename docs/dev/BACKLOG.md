@@ -10,10 +10,11 @@ Open work, most important first. The plan in flight is
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
-   **First live try (2026-10-17, ~12:30, own chat, through `serve`): the phone sent nothing back** — no event of any
-   kind for 75 s after the request, with the chat named by its LID and again by phone number; the request itself was
-   accepted (no send error). Untested cause: the phone not active (WhatsApp may not answer peer requests while the app
-   is in the background) or the own chat being special. Next try: with WhatsApp open on the phone, own chat first.
+   **Live (2026-10-17, own chat, through `serve`):** with the app in the background the phone sent nothing for 75 s;
+   once the owner opened WhatsApp it answered the queued requests (2 older messages, saved by `serve` as a history
+   push because no request was waiting any more), and a new request then got an empty answer — the chat's true start,
+   confirmed by the owner. So the LID form of the own chat works. Still open: a chat with more than 50 older messages
+   (one chunk or several), and matching by `PeerDataRequestSessionID` so a late answer is credited to its request.
    Ask cli-core what reads `fetched:<chat>` (`completeness.ts` uses only its time): wa's first page is the one before
    the oldest stored message, not the newest. Live checks before calling it done (NEED-1387, own chat only): whether
    the phone finds a chat named by its LID when it knows it by phone number; whether a 50-message answer comes in one

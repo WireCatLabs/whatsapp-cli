@@ -35,9 +35,11 @@ connected may still come when `serve` starts again.
 
 WhatsApp keeps no copy of your chats on its servers: the only full copy is on your phone. So there is no download, only
 a request to the phone: "send me the 50 messages of this chat before this one". `wa` counts back from the oldest
-message of the chat the store already holds, so a chat the store has nothing of cannot be asked about. The phone
-answers only while it is on and connected, and may take seconds or not answer at all; then the request fails with
-`timeout` and nothing is lost.
+message of the chat the store already holds, so a chat the store has nothing of cannot be asked about.
+
+**Open WhatsApp on your phone first.** The phone answers while the app is open; in the background it keeps the request
+and answers when you next open it. A request it does not answer within 25 seconds fails with `timeout`; the late answer
+still arrives, and a running `serve` saves it, so nothing is lost. An empty answer means the chat starts there.
 
 `wa personal messages sync <chat>` makes this request, page after page, at least 2 seconds apart, until it reaches
 `--limit` or the chat's start. It asks about one chat at a time: `--all` is refused, as WhatsApp has no chat list to
