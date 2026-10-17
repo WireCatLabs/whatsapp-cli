@@ -95,9 +95,9 @@ closes, so there is no `polls close`. Vote by the ids `polls show` prints. `poll
 device a poll's key only when the poll reaches it, so a poll from before the link may refuse a vote.
 
 WhatsApp has no request for the votes: each one arrives once, as its own message. `wa serve` and `wa watch` keep each
-person's newest vote in the local store (`watch --events` prints each new one), and the votes the phone sends with its history
-right after linking too, so the counts are what the store heard. A vote cast while nothing listened is missed until
-that person votes again.
+person's newest vote in the local store (`watch --events` prints each new one), and the votes the phone sends with
+its history right after linking too, so the counts are what the store heard. A vote cast while nothing listened is
+missed until that person votes again.
 
 ## Send, save and forward files
 

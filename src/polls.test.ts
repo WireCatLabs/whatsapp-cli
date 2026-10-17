@@ -274,6 +274,7 @@ describe("votes from WhatsApp", () => {
   })
 
   it("keeps a live vote over an older one the history push carries for the same voter", async () => {
+    await watching([history()])
     await watching([vote(other, ["Monday"], "2026-09-01T09:10:00.000Z", { chat: pushed.chat, message: pushed.id })])
     await watching([history(pushedVote(["Tuesday"], "2026-09-01T09:07:00.000Z"))])
     expect(await showPushed()).toMatchObject({ answers: [{ voters: 1 }, { voters: 0 }], voters: 1 })
