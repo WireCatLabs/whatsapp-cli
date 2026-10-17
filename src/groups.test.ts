@@ -356,6 +356,8 @@ describe("wa doctor --online", () => {
     )
     expect(errorOf(meanwhile.stderr).details.standing).toMatchObject({ state: "limited" })
     expect((await wa([profile, "account", "show", "--json"], () => fakeEngine(seed))).code).toBe(0)
+    const checked = await wa([profile, "doctor", "--online", "--json"], () => fakeEngine(seed))
+    expect(JSON.parse(checked.stdout).item.flood.send_block).toMatchObject({ state: "limited" })
 
     expect((await wa([profile, "flood", "clear", "--json"])).code).toBe(0)
     const lifted = await wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], () =>

@@ -50,9 +50,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # A release publishes this job's build, so a packing run restores no cache another run could have written.
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: engine/go.mod
+          cache: ${{ !inputs.pack }}
           cache-dependency-path: engine/go.sum
       - run: |
           unformatted=$(gofmt -l .)
@@ -68,7 +70,8 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-          cache: pnpm
+          cache: ${{ !inputs.pack && 'pnpm' || '' }}
+          package-manager-cache: ${{ !inputs.pack }}
       - run: pnpm install --frozen-lockfile --ignore-scripts
       # The sandbox drops WA_ENGINE, so the shipped linux-x64 build goes where a checkout's own build would.
       - run: mkdir -p engine/bin && cp packages/engine-linux-x64/bin/wa-engine engine/bin/
