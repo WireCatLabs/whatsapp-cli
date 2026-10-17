@@ -81,15 +81,11 @@ Open work, most important first. The plan in flight is
 12. **cli-core could resolve names from the store for `history: "store"` messengers.** Today it always asks the
     adapter, so the engine keeps its own small chat directory (ARCHITECTURE §4). Raise it in cli-core.
 13. **Standards gaps left by the 2026-10-17 audit** (the handbook's areas, where a fix needs design):
-    - **No Go check on a pull request.** `go vet`, `go test` and `gofmt` run only in full validation (`ci.yml`), so
-      a broken engine first shows on `main`. A Go step in `standards.yml` needs Go set up from `engine/go.mod` and
-      stays inside the two-minute `ci:quick` ceiling.
-    - **`engine/cmd/wa-engine/groups.go` is over 500 lines** (MODULARITY: split or explain). Biome's cap covers only
-      TypeScript.
+    - **The engine links `go.mau.fi/libsignal`, which is GPL-3.0**, through whatsmeow (`engine/THIRD_PARTY_NOTICES`),
+      while the engine packages declare Apache-2.0. What licence the shipped binary carries, and what source offer it
+      needs, is the owner's decision.
     - **Two `setup` tests wait for real** (`--timeout 100ms` in `src/commands/setup.test.ts`); a wait goes through an
       injected sleep (cli-base TESTING).
-    - **The engine packages carry no third-party notices.** Each ships a binary linking whatsmeow (MPL-2.0) and
-      BSD/MIT Go modules, with only wa's own LICENSE beside it; tg ships `THIRD_PARTY_NOTICES`.
     - **Refuse automatic replies.** wa mounts `replies`, and `serve` applies the rules once
       `permissions.replies.send` is `allow`. That sends without a typed command, against local rule 1 and the skill's
       "not for automatic replies", so wa will refuse `replies` and gets no replies page. Waits on a cli-core switch

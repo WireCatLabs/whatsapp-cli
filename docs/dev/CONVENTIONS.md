@@ -61,6 +61,8 @@ for code and documents. This page lists only where `wa` differs or adds.
   (`node scripts/engine-packages.mjs build`, Go from `engine/go.mod`); `publish` uploads them, skipping any npm already
   has, then the CLI. A CLI published ahead of its engines would install without one: npm skips an optional dependency
   it cannot find. `bin/release --local` does the same from this machine.
+- **Each engine package ships `THIRD_PARTY_NOTICES`** beside wa's `LICENSE`, copied from `engine/` by
+  `node scripts/engine-packages.mjs build`.
 - **Install tests use packed engines.** Before a release the engine is on no registry, so the install jobs
   (`install-windows.yml`: Linux, macOS, Windows) build the engine package for their system, install it together with
   the packed CLI, and check that `engineBinary()` finds it and that it prints the version.
@@ -76,6 +78,11 @@ Preserve released command facts and existing URLs/anchors.
 
 ## Go
 
-- `engine/` is a Go module of its own. `gofmt` and `go vet` are the style; `pnpm engine:test` runs both and the tests.
+- `engine/` is a Go module of its own. `gofmt` and `go vet` are the style; `pnpm engine:test` runs both and the tests,
+  on every pull request through `ci:quick`.
+- `engine/THIRD_PARTY_NOTICES` holds the licence of every Go module the engine links, on all six targets, and Go's
+  own. It is generated: after a change to `engine/go.mod`, run `node scripts/engine-packages.mjs notices` and commit
+  the result. `node scripts/engine-packages.mjs check` (in `ci:quick`, `pnpm version:check` and the release) fails
+  while the file was made from another `go.mod`.
 - whatsmeow is pinned by commit in `engine/go.mod`, with checksums in `go.sum`; it is never vendored or patched in
   place. A protocol fix upstream is a one-line bump.
