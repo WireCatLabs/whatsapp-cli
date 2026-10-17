@@ -65,7 +65,8 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile --ignore-scripts
-      - run: pnpm engine:build
+      # The sandbox drops WA_ENGINE, so the shipped linux-x64 build goes where a checkout's own build would.
+      - run: mkdir -p engine/bin && cp packages/engine-linux-x64/bin/wa-engine engine/bin/
       - name: the TypeScript client against the built engine
         env:
           WA_ENGINE_TESTS: required
