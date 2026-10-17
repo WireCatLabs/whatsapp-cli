@@ -70,6 +70,18 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
 The protocol runs in a Go program built on [whatsmeow](https://github.com/tulir/whatsmeow), started as a child
 process. Why Go and why whatsmeow: [the protocol decision](https://github.com/WireCatLabs/cli-private/blob/main/research/2026-10-16-whatsapp-protocol-decision.md) (private).
 
+- **A separate program, under its own licence.** The engine links go.mau.fi/libsignal (GPL-3.0) through whatsmeow
+  (MPL-2.0, whose files carry no "Incompatible With Secondary Licenses" notice), so `engine/` and the
+  `@wirecat/whatsapp-engine-*` packages are GPL-3.0-only ([`engine/LICENSE`](../../engine/LICENSE)), and the
+  TypeScript CLI stays Apache-2.0 (the owner's ruling of 2026-10-17 in
+  [decisions](https://github.com/WireCatLabs/cli-private/blob/main/decisions/whatsapp.md), private). That holds only
+  while the two stay separate programs: the CLI starts the binary as a child process and exchanges JSON lines with it
+  on stdin and stdout, never links or loads it in-process, and its npm package never carries the binary or Go code.
+  [`scripts/release/checks.test.ts`](../../scripts/release/checks.test.ts) checks both, and the release check refuses
+  a CLI package with engine files in it. Each engine package's README points at the commit it was built from
+  (`git rev-parse HEAD` in [`scripts/engine-packages.mjs`](../../scripts/engine-packages.mjs), checked by
+  [`scripts/engine-packages.test.ts`](../../scripts/engine-packages.test.ts)), not at the tag: `release.yml` pushes
+  `v<version>` only after npm has the version, so a tag link would not resolve while the package is first offered.
 - **The contract** is [`src/engine/contract.ts`](../../src/engine/contract.ts): every event and answer as a Valibot
   schema, in WhatsApp's own terms (JIDs, `fromMe`, sync kinds). `PROTOCOL` is checked at the engine's hello.
 - **Two engines implement it**: the Go engine (`engine/cmd/wa-engine`, driven by

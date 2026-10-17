@@ -2,6 +2,7 @@
 // CLI finds its own with require.resolve and npm installs only the package whose os and cpu match.
 //
 //   node scripts/engine-packages.mjs build [<os>-<arch> ...]   # all six when none is named → packages/engine-*/
+//   node scripts/engine-packages.mjs readme <os>-<arch>        # print the README that package gets
 //   node scripts/engine-packages.mjs check                     # optionalDependencies pin package.json's version
 //   node scripts/engine-packages.mjs sync                      # rewrite those pins to it
 //   node scripts/engine-packages.mjs notices [--check]         # regenerate engine/THIRD_PARTY_NOTICES, or fail
@@ -117,7 +118,7 @@ const notices = () => {
   const header = [
     "Third-party material in the wa engine",
     "",
-    "bin/wa-engine is built from whatsapp-cli's engine/ (Apache-2.0, see LICENSE) and statically links the Go",
+    "bin/wa-engine is built from whatsapp-cli's engine/ (GPL-3.0-only, see LICENSE) and statically links the Go",
     "modules below and the Go standard library, all unmodified. Each module's licence files follow as they ship",
     "in that module at the version listed, with where its source is. Under a copyleft licence:",
     "",
@@ -129,7 +130,46 @@ const notices = () => {
   console.log(`${noticesPath} — ${sections.length} components`)
 }
 
-const build = (target) => {
+const ENGINE_LICENSE = "GPL-3.0-only"
+const REPOSITORY = "https://github.com/WireCatLabs/whatsapp-cli"
+
+// GPL-3.0 section 6 wants the source reachable when the binary is conveyed. The release tag is pushed only after
+// npm has the version, so the README names the commit being built, which GitHub serves before anything is published.
+const sourceCommit = () => {
+  const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim()
+  if (!/^[0-9a-f]{40}$/.test(sha)) throw new Error(`git rev-parse HEAD gave ${sha}, not a commit`)
+  return sha
+}
+
+const readme = (target, commit = sourceCommit()) =>
+  [
+    `# ${packageName(target)}`,
+    "",
+    `The WhatsApp engine of [${manifest.name}](https://www.npmjs.com/package/${manifest.name}) for ${target}: the`,
+    "Go program `bin/wa-engine`, which the CLI starts as a child process and talks to over stdin and stdout.",
+    "Install the CLI, not this package; npm adds the engine for your system on its own.",
+    "",
+    "## Licence",
+    "",
+    `${ENGINE_LICENSE} (see LICENSE). The engine links go.mau.fi/libsignal, which is under the GNU General Public`,
+    "License 3.0. The CLI itself is a separate program under Apache-2.0. THIRD_PARTY_NOTICES lists every Go module",
+    "the binary links, its licence and where its source is.",
+    "",
+    "## Source",
+    "",
+    `The corresponding source of this binary is commit ${commit} of the public repository:`,
+    "",
+    `<${REPOSITORY}/tree/${commit}>`,
+    "",
+    `Once the release is out, the tag v${manifest.version} points at the same commit:`,
+    `<${REPOSITORY}/tree/v${manifest.version}>.`,
+    "",
+    "The engine is in `engine/`; `scripts/engine-packages.mjs` builds it with `go build -trimpath` and",
+    "`CGO_ENABLED=0` for each target.",
+    "",
+  ].join("\n")
+
+const build = (target, commit) => {
   const [goos, goarch] = TARGETS[target] ?? []
   if (!goos) throw new Error(`unknown target ${target} — one of ${Object.keys(TARGETS).join(", ")}`)
   const [os, cpu] = target.split("-")
@@ -148,19 +188,22 @@ const build = (target) => {
     },
   )
   chmodSync(binary, 0o755)
-  copyFileSync(join(root, "LICENSE"), join(dir, "LICENSE"))
+  copyFileSync(join(engineDir, "LICENSE"), join(dir, "LICENSE"))
   copyFileSync(noticesPath, join(dir, "THIRD_PARTY_NOTICES"))
+  writeFileSync(join(dir, "README.md"), readme(target, commit))
   const engine = {
     name: packageName(target),
     version: manifest.version,
     description: `The WhatsApp engine of ${manifest.name} for ${target}`,
-    license: manifest.license,
+    // The engine links go.mau.fi/libsignal (GPL-3.0) through whatsmeow; the CLI stays Apache-2.0 because it only
+    // talks to this binary over stdin and stdout.
+    license: ENGINE_LICENSE,
     author: manifest.author,
     // npm provenance refuses a package whose repository is not the one that built it.
     repository: manifest.repository,
     os: [os],
     cpu: [cpu],
-    files: ["bin", "LICENSE", "THIRD_PARTY_NOTICES"],
+    files: ["bin", "LICENSE", "README.md", "THIRD_PARTY_NOTICES"],
     publishConfig: { access: "public" },
   }
   writeFileSync(join(dir, "package.json"), `${JSON.stringify(engine, null, 2)}\n`)
@@ -173,7 +216,10 @@ const pinned = () =>
 const [command, ...args] = process.argv.slice(2)
 if (command === "build") {
   assertNoticesCurrent()
-  for (const target of args.length ? args : Object.keys(TARGETS)) build(target)
+  const commit = sourceCommit()
+  for (const target of args.length ? args : Object.keys(TARGETS)) build(target, commit)
+} else if (command === "readme" && TARGETS[args[0]]) {
+  process.stdout.write(readme(args[0]))
 } else if (command === "check") {
   const stale = pinned().filter(([, version]) => version !== manifest.version)
   for (const [name, version] of stale) console.error(`${name} is ${version ?? "missing"}, not ${manifest.version}`)
@@ -197,6 +243,9 @@ if (command === "build") {
   writeFileSync(manifestPath, text)
   console.log(`engine packages pinned to ${manifest.version}`)
 } else {
-  console.error("usage: node scripts/engine-packages.mjs build [<os>-<arch> ...] | check | sync | notices [--check]")
+  console.error(
+    "usage: node scripts/engine-packages.mjs build [<os>-<arch> ...] | readme <os>-<arch> | check | sync" +
+      " | notices [--check]",
+  )
   process.exit(2)
 }

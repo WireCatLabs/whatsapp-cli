@@ -18,7 +18,7 @@ import {
   packContents,
   releaseCheck,
 } from "@wirecat/cli-base/release"
-import { CHANGELOG, docsRules, PACKED, PACKED_SAID } from "./release/checks.ts"
+import { CHANGELOG, docsRules, engineOutOfPackage, PACKED, PACKED_SAID } from "./release/checks.ts"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const version = packageVersion(root)
@@ -58,6 +58,7 @@ const failed = releaseCheck(
     },
     { name: "tree unchanged", run: command(root, "git", "diff", "--exit-code", "--stat") },
     { name: "package contents", run: packContents(root, PACKED, PACKED_SAID) },
+    { name: "no engine in the CLI package", run: engineOutOfPackage(root) },
     ...(process.env.SECURITY_SECRETS_CHECKED === "1" && process.env.CI
       ? []
       : [
@@ -69,7 +70,7 @@ const failed = releaseCheck(
   ].filter(
     (check) =>
       !process.argv.includes("--artifact-only") ||
-      ["changelog", "web client version", "package contents"].includes(check.name),
+      ["changelog", "web client version", "package contents", "no engine in the CLI package"].includes(check.name),
   ),
   { version, log: console.log },
 )
