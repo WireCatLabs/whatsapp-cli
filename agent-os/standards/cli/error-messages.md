@@ -6,6 +6,6 @@
 
 **Why:** A person or an agent can copy the fix and run it as is.
 
-**Open:** Is this wa-only, or should it move to the cli-core standard for both CLIs?
+**Handbook:** WC-ARCH-16: below the commands, a message carries a check from `src/adapter/checks.ts`, and `src/messenger.ts` words it with the profile.
 
 See: [tg-cli `src/commands/context.ts`](https://github.com/WireCatLabs/tg-cli/blob/main/src/commands/context.ts) · [tg-cli `src/commands/proxy-config.ts`](https://github.com/WireCatLabs/tg-cli/blob/main/src/commands/proxy-config.ts) · [tg-cli `src/commands/setup.ts`](https://github.com/WireCatLabs/tg-cli/blob/main/src/commands/setup.ts)

@@ -37,7 +37,8 @@ What holds for `wa` alone, on top of the handbook:
 3. **One-shot means the process exits.** Whatever starts the engine stops it on every exit path.
 4. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
    starts the engine.
-5. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces it.
+5. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces the
+   imports; a type that arrives by inference through `src/messenger.ts` is caught only in review.
 6. **The device keys (`private.db`), messages and phone numbers never reach a log, a fixture or a document.**
 7. **On the wire we look like a browser, not like ourselves.** No "whatsapp-cli" in any field WhatsApp sees.
 
