@@ -4,10 +4,12 @@ import {
   asFirstWord,
   type BaseContext,
   type BaseEnvironment,
+  type Closeable,
   environmentOf,
   type Messenger,
 } from "@wirecat/cli-core/cli"
 import { type MessageStore, openStore } from "@wirecat/cli-core/store"
+import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { type StoredMessages, whatsAppAdapter } from "./adapter/adapter.js"
 import { resolveSettings, WA } from "./app.js"
@@ -30,6 +32,8 @@ export interface Environment extends BaseEnvironment {
   engineCommand?: { file: string; args: string[] }
   /** Tests shorten how long `session start` waits for the phone's history. */
   historyWait?: { firstMs: number; quietMs: number }
+  /** npm, the package manager and this install's path, for `upgrade` and the update notice; tests hand them in. */
+  update?: UpdateEnvironment
 }
 
 const holderOf = (command: Command): string => {
@@ -114,12 +118,24 @@ export const linkDevice = async (
     method,
     phone,
     onCode,
-  }: { method: "qr" | "phone"; phone: () => Promise<string>; onCode: (code: LoginCode) => void },
+    beforeLink,
+    track,
+  }: {
+    method: "qr" | "phone"
+    phone: () => Promise<string>
+    onCode: (code: LoginCode) => void
+    /** Throws when nobody could answer: a store can exist without a device, after a link that did not finish. */
+    beforeLink?: () => void
+    /** Closed by the caller's deadline as well. */
+    track?: (engine: Closeable) => void
+  },
 ): Promise<Linked> => {
   const engine = await openEngine(command, base, { link: true, listen: true })
+  track?.(engine)
   let keep = false
   try {
     const alreadyLinked = engine.self() !== null
+    if (!alreadyLinked) beforeLink?.()
     const account = alreadyLinked
       ? await engine.me()
       : await engine.link(method === "phone" ? { method, phone: await phone() } : { method }, onCode)

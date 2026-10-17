@@ -1,37 +1,33 @@
 import { chmodSync, existsSync, rmSync, writeFileSync } from "node:fs"
 import { resolve } from "node:path"
-import { CliError, indent, type Renderer, type RenderFormat } from "@wirecat/cli-base"
+import { CliError, indent } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { qrPng, readSecret, terminalQr } from "@wirecat/cli-core"
 import {
   asFirstWord,
+  type Closeable,
+  commandWords,
   environmentOf,
   inputPolicy,
-  itemOf,
-  jsonlRecords,
   type MessengerAdapter,
   type MessengerContext,
   messengerContext,
   REMOTE_WRITE,
-  sealed,
+  refuseCommandName,
+  rootOf,
 } from "@wirecat/cli-core/cli"
 import { Argument, Command } from "commander"
 import { type Environment, linkDevice, WHATSAPP } from "../messenger.js"
 import { privateStore } from "../paths.js"
+import { printItem } from "./answer.js"
 
 /** The phone pushes its history right after linking, once; how long to keep receiving it. */
 export const HISTORY_WAIT = { firstMs: 120_000, quietMs: 45_000 }
 
-interface Received {
+export interface Received {
   chats: number
   messages: number
   people: number
-}
-
-const printItem = ({ renderer, format }: { renderer: Renderer; format: RenderFormat }, item: unknown): void => {
-  if (format === "json") renderer.result(sealed(itemOf(item)))
-  else if (format === "jsonl") renderer.stream(jsonlRecords(itemOf(item)))
-  else renderer.result(item)
 }
 
 /**
@@ -76,26 +72,56 @@ const linkedText = (profile: string, account: { name: string | null }, alreadyLi
   ].join("\n")
 }
 
-const start = async (command: Command, method: "qr" | "phone", qrFile: string | undefined) => {
-  const context: MessengerContext = messengerContext(command, WHATSAPP)
-  const typed = `wa ${asFirstWord(context.profile)}session start`
+export interface StartSessionOptions {
+  method: "qr" | "phone"
+  qrFile?: string
+  /** The command as typed, for the messages that name it. */
+  command?: string
+  signal?: AbortSignal
+  /** How far the questions and the QR code sit right, to line up under a setup step. */
+  indent?: number
+  /** Each connection, as it opens, for the caller's deadline to close. */
+  track?: (closeable: Closeable) => void
+}
+
+export interface Session {
+  profile: string
+  account: { id: string; name: string | null }
+  alreadyLinked: boolean
+  received: Received
+}
+
+/** Links the profile's device unless it is linked already, then keeps the history the phone pushes once. */
+export const startSession = async (
+  command: Command,
+  context: MessengerContext,
+  { method, qrFile, command: typed = "wa session start", signal, indent: pad = 0, track }: StartSessionOptions,
+): Promise<Session> => {
   const input = context.stdin
   const terminal = input.isTTY === true && !inputPolicy(input).noInput
   if (qrFile !== undefined && method !== "qr") throw new CliError("validation_error", "--qr-file is for a QR login")
-  if (!terminal && qrFile === undefined)
-    throw new CliError(
-      "validation_error",
-      `${typed} shows a code to scan or type — run it in a terminal, or pass --qr-file`,
-    )
+  const unanswerable = () =>
+    new CliError("validation_error", `${typed} shows a code to scan or type — run it in a terminal, or pass --qr-file`)
+  // A device that is linked already asks nothing, so only a profile without one is refused before the engine starts.
+  if (!terminal && qrFile === undefined && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
   const qrPath = qrFile === undefined ? undefined : resolve(qrFile)
   const environment = environmentOf<Environment>(command)
 
   try {
     const linked = await linkDevice(command, context, {
       method,
+      ...(track ? { track } : {}),
+      beforeLink: () => {
+        signal?.throwIfAborted()
+        if (!terminal && qrFile === undefined) throw unanswerable()
+      },
       phone: async () => {
         if (!terminal) throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`)
-        return readSecret("phone number, international format: ", { input, echo: true })
+        return readSecret(`${" ".repeat(pad)}phone number, international format: `, {
+          input,
+          echo: true,
+          ...(signal === undefined ? {} : { signal }),
+        })
       },
       onCode: ({ login, code }) => {
         if (login === "pair") {
@@ -108,7 +134,7 @@ const start = async (command: Command, method: "qr" | "phone", qrFile: string | 
         }
         context.renderer.note("scan in WhatsApp → Settings → Linked devices → Link a device")
         if (!qrPath) {
-          context.streams.diagnostic(`\n${indent(terminalQr(code).text, 2)}`)
+          context.streams.diagnostic(`\n${indent(terminalQr(code).text, pad + 2)}`)
           return
         }
         writeFileSync(qrPath, qrPng(code), { mode: 0o600 })
@@ -117,26 +143,23 @@ const start = async (command: Command, method: "qr" | "phone", qrFile: string | 
       },
     })
     if (qrPath) rmSync(qrPath, { force: true })
+    signal?.throwIfAborted()
 
     let received: Received = { chats: 0, messages: 0, people: 0 }
     if (!linked.alreadyLinked) {
       context.renderer.note(
         "receiving history from the phone; keep WhatsApp open on it. Ctrl+C stops — `serve` picks up the rest.",
       )
+      const stop = AbortSignal.any([signal, environment.signal].filter((one) => one !== undefined))
       received = await context.withMessenger(
-        (adapter) => receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, environment.signal),
+        (adapter) => {
+          track?.(adapter)
+          return receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, stop)
+        },
         { listen: true },
       )
     }
-    if (context.format === "pretty")
-      context.streams.data(linkedText(context.profile, linked.account, linked.alreadyLinked, received))
-    else
-      printItem(context, {
-        profile: context.profile,
-        account: linked.account,
-        already_linked: linked.alreadyLinked,
-        received,
-      })
+    return { profile: context.profile, account: linked.account, alreadyLinked: linked.alreadyLinked, received }
   } finally {
     // The image links the account for as long as it is valid; it does not outlive the login.
     if (qrPath) rmSync(qrPath, { force: true })
@@ -174,14 +197,31 @@ export const sessionCommand = () => {
     .option("--qr-file <png>", "write the QR code to this PNG instead of drawing it, for an agent to pass on")
     .addHelpText(
       "after",
-      "\nqr: scan the code in WhatsApp > Settings > Linked devices > Link a device.\n" +
+      "\nFirst time? Use `wa personal setup` for linking, a check of five chats and an agent skill.\n" +
+        "\nqr: scan the code in WhatsApp > Settings > Linked devices > Link a device.\n" +
         "phone: type your number here, then type the code WhatsApp shows here into the phone.\n" +
         "\nRight after linking, the phone pushes your history once; this command keeps it in the local store\n" +
         "until the phone goes quiet. Then run `wa <profile> server install` to keep receiving.\n" +
         "Agents: --qr-file writes the QR as a PNG (mode 600) and removes it after the login.\n",
     )
     .action(async function (this: Command, method: "qr" | "phone") {
-      await start(this, method, this.opts<{ qrFile?: string }>().qrFile)
+      const context = messengerContext(this, WHATSAPP)
+      refuseCommandName(context.profile, commandWords(rootOf(this)), "wa")
+      const { qrFile } = this.opts<{ qrFile?: string }>()
+      const session = await startSession(this, context, {
+        command: `wa ${asFirstWord(context.profile)}session start`,
+        method,
+        ...(qrFile === undefined ? {} : { qrFile }),
+      })
+      if (context.format === "pretty")
+        context.streams.data(linkedText(context.profile, session.account, session.alreadyLinked, session.received))
+      else
+        printItem(context, {
+          profile: session.profile,
+          account: session.account,
+          already_linked: session.alreadyLinked,
+          received: session.received,
+        })
     })
 
   annotate(session.command("end"), { effects: REMOTE_WRITE, examples: ["wa personal session end"] })
