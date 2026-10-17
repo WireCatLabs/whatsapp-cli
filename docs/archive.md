@@ -45,8 +45,9 @@ phone for older history is planned ([roadmap](roadmap.md)).
 - **The messages you send** with `wa`.
 - **Chats and people** as WhatsApp names them: a person by a `…@lid` id, a group by a `…@g.us` id.
 
-It keeps the text of every message it has seen. Photos, voice notes and files are not kept yet; a message that had
-only a file is stored without content. The file is readable by your user only, and it is not encrypted
+It keeps the text of every message it has seen. For a photo, voice note or file it keeps its name, size and type, and
+the keys WhatsApp needs to fetch it again (`messages download`), not the file itself; the keys never appear in an
+answer. Messages saved before `wa` handled files have none. The store is readable by your user only, and it is not encrypted
 ([security](security.md)).
 
 **It is one file for every account and every messenger CLI** built on the same library, such as
