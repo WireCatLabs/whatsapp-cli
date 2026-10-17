@@ -24,8 +24,8 @@ if (Get-Command wa -ErrorAction SilentlyContinue) { throw 'Expected wa to be abs
 # in the same install, because the engine of an unreleased version is not on npm yet.
 & npm.cmd install --global --prefix $prefix --allow-scripts=@wirecat/whatsapp-cli --foreground-scripts $Tarball $EngineTarball
 if ($LASTEXITCODE -ne 0) { throw 'Packed global npm install failed.' }
-$goEngine = [Uri]::new((Join-Path $prefix 'node_modules/@wirecat/whatsapp-cli/dist/engine/go-engine.js')).AbsoluteUri
-$engine = & $node --input-type=module -e "import('$goEngine').then((m) => console.log(m.engineBinary()))"
+$engineBinary = [Uri]::new((Join-Path $prefix 'node_modules/@wirecat/whatsapp-cli/dist/engine-binary.js')).AbsoluteUri
+$engine = & $node --input-type=module -e "import('$engineBinary').then((m) => console.log(m.engineBinary()))"
 if ($LASTEXITCODE -ne 0 -or $engine -notmatch 'whatsapp-engine-win32-') { throw 'The engine package did not resolve.' }
 $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
 if ((& $engine --version) -ne $version) { throw 'The installed engine did not run, or is another version.' }
