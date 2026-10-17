@@ -162,6 +162,8 @@ export const WHATSAPP: Messenger = {
   name: "WhatsApp",
   resolveSettings,
   history: "store",
+  // WhatsApp drops the older of two connections, so while serve holds the device every command runs through it.
+  connection: "exclusive",
   // Ids are WhatsApp's own strings, so held stretches are keyed by time. Paging applies only to on-demand history
   // from the phone, which is not built yet.
   fetching: { page: 50, pause: "2s", jitter: true, maxPages: 20, orderBy: "time" },

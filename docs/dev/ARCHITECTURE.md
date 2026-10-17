@@ -107,13 +107,13 @@ person's phone JID and once under their LID would split its messages. **The engi
 LID form** when WhatsApp has a LID for the user, and the phone JID only as a linked identity. In the first live run,
 58 of 71 one-to-one chats were already LIDs.
 
-## 6. One connection per linked device (planned)
+## 6. One connection per linked device
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot
 write can each open one. So the engine takes an exclusive lock on `private.db.lock` **before it can connect**, and
 writes the holder into it (`serve (pid 4242)`); a second engine is refused with that name. The lock is `flock` on
-Unix and `LockFileEx` on Windows, and the operating system releases it when the process dies. Routing writes through
-a running `serve` is open work ([BACKLOG.md](BACKLOG.md)).
+Unix and `LockFileEx` on Windows, and the operating system releases it when the process dies. While `serve` runs,
+other commands go through it instead ([6b](#6b-commands-through-a-running-serve)).
 
 ## 6a. Linking
 
@@ -129,6 +129,18 @@ account through one more connection and five chats from cli-core's store, since 
 
 `wa doctor` reads the engine binary, the device keys' modes and the lock's holder text from disk
 (`src/diagnose.ts`). The engine never clears the holder text, so a holder counts as running only while its pid does.
+
+## 6b. Commands through a running `serve`
+
+cli-core does this; `wa` only opts in. `WHATSAPP` in [`src/messenger.ts`](../../src/messenger.ts) sets
+`connection: "exclusive"` (cli-core 0.313.0 and later). `serve` then listens on a socket beside cli-core's serve
+lock (`<state>/serve/<profile>.sock`, mode `0600`; not the engine's `private.db.lock`) and writes its address into
+that lock. A command that would connect
+finds the address there and runs inside `serve`, on `serve`'s connection, instead of starting an engine of its own.
+The send guard and the permissions run in `serve` with the client's environment. Linking, `mcp --http` and
+`--offline` or `--dry-run` runs stay in their own process. cli-core's `relay-route` picks what goes through `serve`;
+its `serve-relay` is `serve`'s side. On Windows the relay is off for now, so there the lock refuses as in §6. Nothing
+in `src/adapter/` or `engine/` knows about the relay.
 
 ## 7. What is on disk
 

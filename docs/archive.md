@@ -81,12 +81,12 @@ started stays a gap.
 `wa personal serve` stays connected until stopped and saves every new message, edit, deletion and reaction. One
 `serve` runs per profile. **Nothing starts it for you.**
 
-While `serve` runs it holds the device's one connection, so a send, an edit or a reaction for the same profile is
-refused and names `serve` ([one connection per device](sessions.md#one-connection-per-device)). Reads never
-connect, so they work beside it. A read with no `serve` behind it warns that the store may be out of date.
+While `serve` runs it holds the device's one connection, so a send, an edit or a reaction for the same profile goes
+through `serve` and uses that connection ([one connection per device](sessions.md#one-connection-per-device)). Reads
+never connect, so they work beside it. A read with no `serve` behind it warns that the store may be out of date.
 
-`wa personal watch` prints new messages as they arrive and needs the same connection, so it cannot run beside
-`serve` either.
+`wa personal watch` prints new messages as they arrive. While `serve` runs, it listens through `serve`; without
+`serve`, it holds the connection itself.
 
 ### In the background
 

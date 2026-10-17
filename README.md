@@ -45,8 +45,8 @@ their agent tools, so what you learn in one works in the others. WhatsApp is dif
 - **History comes from your phone.** WhatsApp has no way to ask for old messages. Your phone sends your recent chats
   once, when `wa` links, and `wa serve` keeps receiving new ones. Every read answers from the local store and never
   connects.
-- **One connection per device.** While `wa serve` runs, nothing else may connect for the same profile — a send
-  included. Stop `serve` to send, or wait: routing writes through it is planned.
+- **One connection per device.** WhatsApp allows one. While `wa serve` runs, other commands for the same profile,
+  a send included, run through its connection. On Windows they are refused until `serve` stops, for now.
 - **Unofficial.** WhatsApp's terms forbid unofficial clients, and WhatsApp may ban an account that uses one. `wa`
   never sends in bulk or to strangers, never sends "online" or "typing", and marks nothing read unless you ask.
 

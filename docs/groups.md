@@ -149,8 +149,8 @@ is not there, so a number is a minimum, never a proof of silence.
 wa personal chats show 120363000000000001@g.us
 ```
 
-The group's kind, unread count, last message time and its members. This one asks WhatsApp, so it connects, and while
-`serve` holds the device it is refused ([one connection per device](sessions.md#one-connection-per-device)).
+The group's kind, unread count, last message time and its members. This one asks WhatsApp, so it connects; while
+`serve` runs, it goes through `serve` ([one connection per device](sessions.md#one-connection-per-device)).
 
 ## Deleting for everyone
 
@@ -179,7 +179,7 @@ wa personal chats leave 120363000000000001@g.us
 ```
 
 - **The members see each of these**, so each goes through the profile's [permissions](permissions.md) and hourly
-  limit, like a send, and connects (refused while `serve` holds the device).
+  limit, like a send, and connects (through `serve` while it runs).
 - **Only people you know are added.** `chats create` and `members add` take someone in your address book or that you
   have written to, and refuse anyone else: WhatsApp bans accounts that add strangers.
 - **An admin has every right.** WhatsApp has one kind of admin, so `admins add` takes the whole list in `--can`.

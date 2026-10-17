@@ -75,8 +75,24 @@ first; another command for the same profile is refused and names the holder:
 this WhatsApp login is in use by serve (pid 4242)
 ```
 
-While `serve` runs, a send, an edit or a reaction for the same profile is refused this way. Stop `serve`, write, and
-start it again; routing writes through a running `serve` is planned. Reads never connect, so they work beside it.
+`serve` is the exception. While it runs, a command for the same profile that would connect does not take the lock:
+it runs inside `serve`, on `serve`'s connection. It reaches `serve` through a socket next to `serve`'s lock
+(`<state>/serve/<profile>.sock`, mode `0600`, so only your own user can open it). This covers sends, edits,
+deletions, reactions, marking read, downloads, group and people commands, `watch`, `doctor --online` and the MCP
+server `wa <profile> mcp`. The send guard and the profile's permissions still apply. A command run this way never
+asks: a write at permission level `ask` needs `--yes`, or it is refused and says so.
+
+- **Not through `serve`:** linking (`session start`, `setup`) and `mcp --http`. `--offline` and `--dry-run` runs do
+  not connect at all.
+- **`serve` is starting or does not answer:** the command fails. It never opens a second connection.
+- **`wa` was upgraded and `serve` not restarted:** the command runs inside the older `serve`, with its code. When the
+  two speak different relay versions, the command is refused and says to restart `serve`. `wa upgrade` restarts
+  running servers itself; otherwise use `wa <profile> server restart`.
+- **Windows:** not built yet. While `serve` runs, a command that connects is refused as above, with exit code 12.
+
+With no `serve` running, each command connects on its own. While one of them holds the device, or `wa personal mcp`,
+which keeps its connection for two minutes after a call, `serve` cannot start. Reads never connect, so they work
+beside any of them.
 
 ## How long a link lives
 

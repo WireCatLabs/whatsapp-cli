@@ -42,8 +42,9 @@ ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal 
   its settings. The recipient list and the hourly limit still apply
   ([what an agent may do](mcp.md#what-an-agent-may-do), [permissions](permissions.md)).
 - **The server shares the device's one connection with `serve`.** Reads from the local store work while `serve`
-  runs; a send, an edit or a reaction from the app is refused until `serve` stops, and `serve` cannot start while
-  the server holds a connection ([one connection, shared with `serve`](mcp.md#one-connection-shared-with-serve)).
+  runs. Unlike the terminal and `wa personal mcp`, the HTTP server does not go through `serve`: a send, an edit or a
+  reaction from the app is refused until `serve` stops, and `serve` cannot start while the server holds a connection
+  ([one connection, shared with `serve`](mcp.md#one-connection-shared-with-serve)).
 - **The computer that runs `wa` must stay on.** To use it from a phone, or from a laptop with nothing installed, run
   all of this on a small server that is always on, and link `wa` there (`wa personal setup --agent none`). That is
   one more linked device on your phone.
@@ -228,7 +229,8 @@ Those apps must log in again with a new code. This does not unlink the device fr
   Tailscale.
 - **The app connects, but there are no tools:** `wa personal mcp doctor` checks that the MCP server starts and lists
   its tools. It does not check the link to WhatsApp or the tunnel; `wa personal doctor` reads the device's state.
-- **Reading works, writing fails:** a write is refused while `serve` holds the device; the error names it. Otherwise
+- **Reading works, writing fails:** the HTTP server does not go through `serve`, so a write is refused while `serve`
+  runs; the error names it. Otherwise
   check the profile's permissions and any `--permission` overrides: `deny` and `readonly` block writes whatever the
   app approves.
 - **You need a record of the calls:** `wa personal runs list` shows them. Successful calls appear only when recording

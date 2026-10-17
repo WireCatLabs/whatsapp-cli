@@ -72,7 +72,7 @@ wa personal recipients add 100000000000001@lid   # and only to the chats on this
 ```
 
 `readonly` on one resource does not cover the others: `messages` alone still lets the agent react or mark a chat
-read. `recipients add` looks the chat up on WhatsApp, so it connects: run it while `serve` is stopped.
+read. `recipients add` looks the chat up on WhatsApp, so it connects; while `serve` runs, it goes through `serve`.
 `permissions` limits your own commands too, until you change it back:
 `wa personal config unset permissions.messages`. To limit only the agent, give it a profile of its own. Every attempt
 to send, refused ones included, is in `wa personal sends list`. See [permissions](permissions.md).
@@ -178,5 +178,6 @@ Writes to WhatsApp: **only after your yes**. This one is for a conversation with
 > send it — show me the text.
 
 Once you agree, the agent sends it: `wa personal messages send 100000000000001@lid "…"`. While `serve` runs, the send
-is refused, because `serve` holds the device's one connection ([linking](sessions.md#one-connection-per-device)).
+goes through `serve`'s connection ([one connection per device](sessions.md#one-connection-per-device)); there it
+cannot ask, so at permission level `ask` it needs `--yes`.
 An MCP client asks you before each write if you leave `wa_write` unapproved in it.

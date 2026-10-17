@@ -121,8 +121,9 @@ The MCP server follows the same rule as every other `wa` command:
   `review` work while `serve` runs.
 - **A tool that needs WhatsApp connects, and takes the device's lock**: every write — a send, an edit, a reaction,
   marking read — and the few reads that ask WhatsApp, such as `account show` and `chats show`.
-- **While `serve` holds the device, those tools are refused**, and the error names `serve`. Stop `serve`, or run the
-  write in a terminal after it stops. Routing writes through a running `serve` is planned.
+- **While `serve` runs, the server runs inside it**, and those tools use `serve`'s connection. The profile's
+  permissions and the send guard apply as before. This is not built on Windows yet: there they are refused while
+  `serve` runs, and the error names it. The HTTP server never goes through `serve` ([remote](remote.md)).
 - **While the MCP server holds a connection, `serve` cannot start** for that profile. The server lets the connection
   go after 2 minutes without a call ([below](#how-it-holds-the-connection)).
 
@@ -178,7 +179,7 @@ The server offers six ready prompts — in Claude Code they are `/` commands:
 | `open-tasks` | `chat` — optional | calls review to refresh tasks, lists open tasks and suggests drafts; closes a task only after your approval; sends nothing |
 
 `reply` and `review` send through `wa_write` (`command: "messages send"`). So where `messages.send` is `readonly`,
-the agent only shows the drafts. A send from a prompt is refused while `serve` runs, like any other write.
+the agent only shows the drafts. While `serve` runs, a send from a prompt goes through it, like any other write.
 
 Chats are resources `wa://chat/<id>` — in Claude Code you can mention them with `@`. A resource is the chat and its
 recent messages. The list comes from the local store and never connects to WhatsApp; until `serve` or a link filled

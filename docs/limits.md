@@ -25,9 +25,10 @@ this WhatsApp login is in use by serve (pid 4242)
 ```
 
 This is not a wait: `wa` does not queue the second command. Stop the holder, or wait for it to finish, and run the
-command again. While `serve` runs, a send, an edit or a reaction for the same profile is refused this way; routing
-writes through a running `serve` is planned. Reads answer from the local store and never connect, so they work
-beside it ([one connection per device](sessions.md#one-connection-per-device)).
+command again. `serve` is the exception: while it runs, a send, an edit or a reaction for the same profile runs
+inside `serve`, on its connection, and is not refused. On Windows it is still refused for now. Reads answer from the
+local store and never connect, so they work beside it
+([one connection per device](sessions.md#one-connection-per-device)).
 
 ## The pace
 

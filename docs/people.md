@@ -88,7 +88,7 @@ of a note that changed since you read it.
 
 ## Ask WhatsApp about a person
 
-These connect, so they are refused while `serve` holds the device.
+These connect; while `serve` runs, they go through `serve`'s connection.
 
 ```sh
 wa personal contacts profile 100000000000001@lid        # their name, about line and whether they show a photo

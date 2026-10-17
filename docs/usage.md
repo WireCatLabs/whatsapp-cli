@@ -41,7 +41,8 @@ the phone goes quiet. Then `wa personal server install` keeps receiving in the b
 unlinks the device and deletes its keys here.
 
 Only one `wa` command may connect a profile at a time; WhatsApp would drop the first connection. While `serve` runs,
-a send for the same profile is refused and names `serve`.
+a send for the same profile goes through `serve` and uses its connection. It cannot ask there, so at permission
+level `ask` it needs `--yes` ([one connection per device](sessions.md#one-connection-per-device)).
 
 ## Change a message
 

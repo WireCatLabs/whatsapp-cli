@@ -10,9 +10,10 @@ from your phone. Link the profile first with `wa <profile> setup`.
 ## "this WhatsApp login is in use by serve (pid …)"
 
 WhatsApp allows one connection per linked device, and another `wa` command holds it. Stop that command, or wait for
-it to finish. Writes through a running `serve` are planned
-([one connection per device](sessions.md#one-connection-per-device)). `wa <profile> doctor` names the last holder and says
-whether its process still runs.
+it to finish. When the holder is `serve`, commands normally go through it instead; you see this on Windows, where
+that is not built yet, or while `serve` is still starting
+([one connection per device](sessions.md#one-connection-per-device)). `wa <profile> doctor` names the last holder and
+says whether its process still runs.
 
 ## "the WhatsApp engine is not installed"
 

@@ -18,8 +18,9 @@ which is the private repository and never part of this one.
 - **The device is the main install's.** A worktree's `bin/wa` keeps its own `.wa/` folder with no device, and no
   worktree links one: a second linked device is a change to the owner's account. Live checks run the owner's
   installed `wa` against the owner's profile, by the owner or with the owner's yes for that run.
-- **One connection per device.** The owner's `wa <profile> serve` holds it. A scenario that connects needs `serve`
-  stopped by the owner first and started again after; an agent never stops the owner's `serve`.
+- **One connection per device.** The owner's `wa <profile> serve` holds it, and a command that connects goes
+  through it (C1). W and C2 need `serve` stopped by the owner first and started again after; an agent never stops
+  the owner's `serve`.
 - **Read receipts only with the owner's yes.** `chats mark-read` and `--mark-read` tell the other side; in the own
   chat they tell no one, so that is where they run.
 - **Record the shape, never the content**: exit codes, one JSON value on stdout, stderr empty or one diagnostic, the
@@ -59,7 +60,7 @@ Every command runs with `--json` and a timeout.
 
 | Id | What | Commands | Puts back |
 |---|---|---|---|
-| C1 | a write while `serve` runs is refused and names it | with `serve` running, `messages send <Own> "<fixed text>" --dry-run`, then without `--dry-run` | nothing sent; exit code and holder recorded |
+| C1 | a write while `serve` runs goes through `serve` | with `serve` running, `messages send <Own> "<fixed text>"`; then `messages list <Own> --limit 1` has it, and `doctor` still shows `lock.running` naming `serve` | the message deleted for everyone |
 | C2 | `serve` and `watch` end, and see a write | `watch --events` in the background, a send to Own from the phone, stop by PID; then the same with `serve` | the message deleted for everyone |
 | C3 | the store from live receipt | after C2, `messages list <Own>` and `search messages` find it; `--offline` reads | the owner's store only |
 
