@@ -7,6 +7,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- Internal attachment references stay out of live-event, JSON and MCP output (Core0.315.0), keeping media keys inside the client.
+
 - Invite links must name WhatsApp's exact invite host; unrelated URL prefixes are refused before connecting.
 - Shared Core 0.314.0 protects WhatsApp state from uploads in the other messengers and preserves a running server's read-only lock when a command is relayed.
 
