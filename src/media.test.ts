@@ -100,6 +100,7 @@ describe("wa messages send with a file", () => {
     expect(result.code).toBe(0)
     expect(result.engine.uploads).toEqual([{ kind: "photo", name: "synthetic.png", size: 19 }])
     expect(result.engine.sent[0]).toMatchObject({ text: "synthetic caption", attachments: [{ kind: "photo" }] })
+    expect(result.stdout).not.toContain("mediaKey")
   })
 
   it.each([
@@ -188,6 +189,7 @@ describe("wa messages forward", () => {
         attachment: expect.objectContaining({ kind: "photo", ref: ref("image", 1) }),
       }),
     ])
+    expect(result.stdout).not.toContain("mediaKey")
   })
 
   it("sends stored text again", async () => {

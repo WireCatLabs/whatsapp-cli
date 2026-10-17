@@ -206,6 +206,12 @@ func (c *converter) message(evt *events.Message, k known) (change, bool) {
 	out.Text = text
 	out.ReplyTo = replyOf(content)
 	out.Attachments = attachmentsOf(content)
+	if evt.IsViewOnce {
+		// WhatsApp's apps neither save nor forward a view-once file; without its keys, wa cannot either.
+		for i := range out.Attachments {
+			out.Attachments[i].Ref = nil
+		}
+	}
 	return change{"message", out}, true
 }
 
