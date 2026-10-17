@@ -1,3 +1,4 @@
+import { annotate } from "@wirecat/cli-base/commands"
 import {
   environmentOf,
   outputFor,
@@ -10,18 +11,21 @@ import type { Environment } from "../messenger.js"
 import { installer, latest, PACKAGE, restartServer, runUpdate, type UpdateEnvironment } from "../update.js"
 
 export const upgradeCommand = () =>
-  sharedUpgradeCommand(WA, PACKAGE, (command) => {
-    const context = environmentOf<Environment>(command)
-    const environment = context.update ?? {}
-    const env = context.env ?? process.env
-    return {
-      ...outputFor(command),
-      installer: () => installer(environment),
-      latest: () => latest(environment),
-      install: (argv) => runUpdate(argv, environment),
-      afterUpdate: () => restartServers(env, environment),
-    }
-  })
+  annotate(
+    sharedUpgradeCommand(WA, PACKAGE, (command) => {
+      const context = environmentOf<Environment>(command)
+      const environment = context.update ?? {}
+      const env = context.env ?? process.env
+      return {
+        ...outputFor(command),
+        installer: () => installer(environment),
+        latest: () => latest(environment),
+        install: (argv) => runUpdate(argv, environment),
+        afterUpdate: () => restartServers(env, environment),
+      }
+    }),
+    { examples: ["wa upgrade --check", "wa upgrade"] },
+  )
 
 /**
  * A running serve keeps the code it started with; the update replaced the files under it. Each is

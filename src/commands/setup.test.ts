@@ -141,7 +141,9 @@ describe("wa setup", () => {
     }
     const result = await execute(["setup", "--agent", "claude", "--json"], {}, engine)
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.stdout).item).toMatchObject({ device: { reused: true }, history: { messages: 0 } })
+    const answer = JSON.parse(result.stdout).item
+    expect(answer).toMatchObject({ device: { reused: true } })
+    expect(answer).not.toHaveProperty("history")
     expect(input.prompts).toEqual([])
     expect(installSkill).toHaveBeenCalledWith(expect.anything(), expect.any(URL), { targets: ["claude"], env })
   })
@@ -199,6 +201,7 @@ describe("wa setup", () => {
   it("refuses a first link without a terminal before starting the engine", async () => {
     const result = await execute(["setup", "--agent", "none", "--json"])
     expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr).error).toMatchObject({ reason: "input.required" })
     expect(JSON.parse(result.stderr).error.message).toContain("--qr-file")
     expect(result.requests).toEqual([])
   })
