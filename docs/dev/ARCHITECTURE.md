@@ -82,8 +82,9 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   anchor, `count` up to 50) sends whatsmeow's `BuildHistorySyncRequest` to the phone with `SendPeerMessage` and waits
   up to 30 s for the `ON_DEMAND` history sync that answers it, then answers `{messages, more}`. One request is in
   flight per process, so the batch is matched by its chat after conversion to LID form, or by naming no chat at all
-  (nothing older); other chats and push names in the same batch go out as a `history` event. `more` is whether the
-  phone sent any of the chat's messages, even ones the contract skips.
+  (nothing older); other chats and push names in the same batch go out as a `history` event (saved only where a
+  `feed` listens, as under `serve`). A batch of only messages the contract skips is asked past from its oldest one,
+  up to three rounds, since cli-core reads an empty page as the chat's start.
 - **Group and people requests** (`engine/cmd/wa-engine/groups.go`, `people.go`; the contract in
   [`src/engine/groups.ts`](../../src/engine/groups.ts)): `group` (with `withLink` for the invite link, which only
   admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,

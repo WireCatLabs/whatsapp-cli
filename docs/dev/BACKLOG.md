@@ -9,9 +9,13 @@ Open work, most important first. The plan in flight is
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone needs cli-core to let `messages sync` through.** The adapter's `history` and the
    engine's `older` are built and tested; cli-core's `archiveService.fetch` calls `pushed()` and refuses every
-   `reads: "store"` messenger. Fix in cli-core: refuse only when the connection has no `history`
-   (`capability(connection, "history", …)` already says so), and let `--dry-run` keep refusing. Then flip the test
-   in `src/older-history.test.ts` and the docs that say it refuses. Live checks before calling it done (NEED-1387,
+   `reads: "store"` messenger, before any connection exists. Fix in cli-core: a `Messenger` trait saying a pushed
+   history can still be read back one chat at a time (deciding from the connection would start the engine and take
+   the device's lock just to refuse); `--all` and `--dry-run` keep refusing (`fetchAll` needs `chats`, which wa has
+   not). Ask cli-core what reads `fetched:<chat>` (`completeness.ts` uses only its time): wa's first page is the
+   one before the oldest stored message, not the newest. While `serve` runs, a one-shot sync is refused by the lock
+   until wa declares `connection: "exclusive"` (cli-core 0.313.0's serve relay). Then flip the test in
+   `src/older-history.test.ts` and the docs that say it refuses. Live checks before calling it done (NEED-1387,
    own chat only): whether the phone finds a chat named by its LID when it knows it by phone number; whether a
    50-message answer comes in one `ON_DEMAND` chunk; whether the notification's `PeerDataRequestSessionID` equals the
    request's message id, which would match an answer more surely than its chat.
