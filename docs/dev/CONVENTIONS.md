@@ -45,9 +45,10 @@ for code and documents. This page lists only where `wa` differs or adds.
   one and leaves the published section alone.
 - The headings and what goes under each are the handbook's
   [WC-DOC-15](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-15--changelog-entries-go-under-five-fixed-headings-each-at-most-once-per-section),
-  [WC-DOC-16](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-16--a-change-a-caller-may-notice-goes-under-changed--may-break-callers)
-  and [WC-DOC-17](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-17--each-entry-says-what-changed-for-the-caller-why-and-what-to-watch-for).
-  `pnpm docs:check` refuses any other heading.
+  [WC-DOC-16](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-16--a-change-a-caller-may-notice-goes-under-changed--may-break-callers),
+  [WC-DOC-17](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-17--each-entry-says-what-changed-for-the-caller-why-and-what-to-watch-for)
+  and [WC-DOC-18](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-18--the-changelog-has-no-internal-ids).
+  `pnpm docs:check` refuses any other heading and any internal id.
 
 
 ## Releases
