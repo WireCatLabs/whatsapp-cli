@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from "node:fs"
-import { dirname } from "node:path"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
 import { repliesPathFor } from "@wirecat/cli-core/cli"
@@ -233,5 +233,36 @@ describe("automatic replies", () => {
     expect(item.kept).toEqual({ message: 1 })
     expect(item.replies).toBeUndefined()
     expect((await wa([profile, "--offline", "chats", "list", "--json"])).code).toBe(0)
+  })
+})
+
+describe("serve and the commands it runs for others", () => {
+  it("keeps its engine open while a relayed command runs, and closes it when serve stops", async () => {
+    const profile = "relaying"
+    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
+    const controller = new AbortController()
+    const opened: FakeEngine[] = []
+    const serving = wa([profile, "serve", "--json"], {
+      signal: controller.signal,
+      engine: () => {
+        const engine = fakeEngine(seed)
+        opened.push(engine)
+        return engine
+      },
+    })
+    await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+
+    const relayed = await wa([profile, "account", "show", "--json"], {
+      engine: () => {
+        throw new Error("a relayed command must not open its own engine")
+      },
+    })
+    expect(relayed.code, relayed.stderr).toBe(0)
+    expect(opened).toHaveLength(1)
+    expect(opened[0]?.closed).toBe(false)
+
+    controller.abort()
+    expect((await serving).code).toBe(0)
+    expect(opened[0]?.closed).toBe(true)
   })
 })
