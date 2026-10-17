@@ -33,10 +33,10 @@ for (const directory of [".agents", ".claude"]) {
 const installed = join(prefix, "bin/wa")
 const version = execFileSync(installed, ["--version"], { env, encoding: "utf8" }).trim()
 assert.equal(version, JSON.parse(readFileSync("package.json", "utf8")).version)
-const goEngine = pathToFileURL(join(prefix, "lib/node_modules/@wirecat/whatsapp-cli/dist/engine/go-engine.js")).href
+const engineBinary = pathToFileURL(join(prefix, "lib/node_modules/@wirecat/whatsapp-cli/dist/engine-binary.js")).href
 const engine = execFileSync(
   process.execPath,
-  ["--input-type=module", "-e", `import(${JSON.stringify(goEngine)}).then((m) => console.log(m.engineBinary()))`],
+  ["--input-type=module", "-e", `import(${JSON.stringify(engineBinary)}).then((m) => console.log(m.engineBinary()))`],
   { env, encoding: "utf8" },
 ).trim()
 assert.ok(engine.includes(join("node_modules", "@wirecat", "whatsapp-engine-")), engine)
