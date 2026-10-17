@@ -60,7 +60,8 @@ const acting = async (argv: string[]) => {
   return { ...result, actions: engine?.actions ?? [], closed: engine?.closed }
 }
 
-const errorCode = (stderr: string) => JSON.parse(stderr).error.code
+// A command that reads the store may first warn that no `wa serve` keeps it up to date.
+const errorCode = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf("{"))).error.code
 
 beforeAll(async () => {
   const controller = new AbortController()

@@ -8,10 +8,9 @@ import {
   environmentOf,
   type Messenger,
 } from "@wirecat/cli-core/cli"
-import { type MessageStore, openStore } from "@wirecat/cli-core/store"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
-import { type StoredMessages, whatsAppAdapter } from "./adapter/adapter.js"
+import { whatsAppAdapter } from "./adapter/adapter.js"
 import { ADMIN_RIGHTS, GROUP_SETTINGS } from "./adapter/groups.js"
 import { resolveSettings, WA } from "./app.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
@@ -76,39 +75,6 @@ export const openEngine = async (
       throw new CliError("authentication_error", `${error.message} — run ${loginHint(profile)}`)
     if (error instanceof EngineError) throw new CliError(error.code, error.message)
     throw error
-  }
-}
-
-/** The account's messages in cli-core's store, opened on the first lookup: most commands never need one. */
-export const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredMessages => {
-  let opened: Promise<MessageStore> | undefined
-  const store = () => (opened ??= openStore({ env, command: WA.command }))
-  const key = { provider: "whatsapp", account: account ?? "" }
-  return {
-    message: async (chatId, messageId) => (await store()).messages.message(key, messageId, { chatId }),
-    newestIncoming: async (chatId, before) => {
-      const page = await (await store()).messages.messages(key, chatId, {
-        limit: 1,
-        outgoing: false,
-        ...(before === undefined ? {} : { before }),
-      })
-      return page.items.at(-1)
-    },
-    anchor: async (chatId, at) =>
-      (
-        await (
-          await store()
-        ).messages.messagesWindow(
-          key,
-          chatId,
-          at === undefined ? { at: new Date(0).toISOString(), before: 0, after: 1 } : { at, before: 1, after: 0 },
-        )
-      )[0],
-    wroteTo: async (personId) =>
-      (await (await store()).messages.messages(key, personId, { limit: 1, outgoing: true })).items.length > 0,
-    close: async () => {
-      await (await opened?.catch(() => undefined))?.close()
-    },
   }
 }
 
@@ -204,10 +170,14 @@ export const WHATSAPP: Messenger = {
   groupSettings: GROUP_SETTINGS,
   adminRights: ADMIN_RIGHTS,
   pickAdminRights: false,
+  // A WhatsApp poll stays open, and any vote in it can be changed; everyone sees who voted for what.
+  pollClose: false,
+  pollRevote: false,
+  pollVoters: true,
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)
-    if (linked) return whatsAppAdapter(linked, storedMessages(base.env, linked.self()))
+    if (linked) return whatsAppAdapter(linked, options.stored)
     const engine = await openEngine(command, base, { listen: options.listen === true })
     if (engine.self() === null) {
       await engine.close()
@@ -216,6 +186,6 @@ export const WHATSAPP: Messenger = {
         `profile "${base.settings.profile}" is not linked to WhatsApp — run ${loginHint(base.settings.profile)}`,
       )
     }
-    return whatsAppAdapter(engine, storedMessages(base.env, engine.self()))
+    return whatsAppAdapter(engine, options.stored)
   },
 }

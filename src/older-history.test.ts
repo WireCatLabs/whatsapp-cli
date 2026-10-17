@@ -1,9 +1,11 @@
 import { captureStreams } from "@wirecat/cli-base"
+import type { StoredMessages } from "@wirecat/cli-core/cli"
+import { openStore } from "@wirecat/cli-core/store"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 import { whatsAppAdapter } from "./adapter/adapter.js"
 import type { WaMessage, WhatsAppEngine } from "./engine/contract.js"
-import { storedMessages } from "./messenger.js"
+
 import { run } from "./program.js"
 import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
@@ -31,7 +33,25 @@ const wa = async (argv: string[], engine: () => WhatsAppEngine, signal?: AbortSi
   return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
 }
 
-const stored = storedMessages(process.env, account)
+// The lookups cli-core hands a connection, over the store the CLI filled, for calling the adapter directly.
+const opened = openStore({ env: process.env, command: "wa" })
+const key = { provider: "whatsapp", account: account ?? "" }
+const stored: StoredMessages = {
+  message: async (chatId, messageId) => (await opened).messages.message(key, messageId, { chatId }),
+  newestIncoming: async () => undefined,
+  anchor: async (chatId, at) =>
+    (
+      await (
+        await opened
+      ).messages.messagesWindow(
+        key,
+        chatId,
+        at === undefined ? { at: new Date(0).toISOString(), before: 0, after: 1 } : { at, before: 1, after: 0 },
+      )
+    )[0],
+  wroteTo: async () => false,
+  pollVotes: async () => [],
+}
 
 beforeAll(async () => {
   const controller = new AbortController()
@@ -48,7 +68,7 @@ beforeAll(async () => {
   expect((await wa(["older", "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
 })
 
-afterAll(() => stored.close())
+afterAll(async () => (await opened).close())
 
 describe("older history from the phone", () => {
   it("counts back from the oldest stored message on the first page, and asks at most 50", async () => {

@@ -1,27 +1,30 @@
 import { CliError } from "@wirecat/cli-base"
-import type { Message, Poll } from "@wirecat/cli-core"
-import type { MessagePolls } from "@wirecat/cli-core/cli"
+import { countedPoll, type Message, type Poll, type PollVoteEvent } from "@wirecat/cli-core"
+import type { MessagePolls, StoredMessages } from "@wirecat/cli-core/cli"
 import * as v from "valibot"
-import { type WaKey, type WaPoll, type WhatsAppEngine, waPoll } from "../engine/contract.js"
+import { type WaKey, type WaPoll, type WaVote, type WhatsAppEngine, waPoll } from "../engine/contract.js"
 import { toMessage } from "./map.js"
 
-export type PollAdapter = Omit<MessagePolls, "pollVoters">
+// WhatsApp polls never close, so there is nothing for `closePoll` to do.
+export type PollAdapter = Omit<MessagePolls, "closePoll">
 
-const pollOf = (message: Message): WaPoll => {
-  const parsed = v.safeParse(waPoll, message.providerMetadata?.poll)
-  if (!parsed.success) throw new CliError("not_found", `message ${message.id} carries no poll`)
-  return parsed.output
+const pollIn = (message: Message | undefined): WaPoll | undefined => {
+  const parsed = v.safeParse(waPoll, message?.providerMetadata?.poll)
+  return parsed.success ? parsed.output : undefined
 }
 
-/**
- * What the store knows of a poll. WhatsApp has no request for the votes: each comes once, encrypted, as its own
- * message, and nothing counts them, so the counts are `null` and `chosen` says only what this command voted.
- */
-const toPoll = (chatId: string, message: Message, poll: WaPoll, chosen: readonly string[] = []): Poll => ({
+const pollOf = (message: Message): WaPoll => {
+  const poll = pollIn(message)
+  if (!poll) throw new CliError("not_found", `message ${message.id} carries no poll`)
+  return poll
+}
+
+/** The poll as its message carries it, before the votes the store keeps are counted in. */
+const toPoll = (chatId: string, message: Message, poll: WaPoll): Poll => ({
   chatId,
   messageId: message.id,
   question: poll.question,
-  answers: poll.answers.map(({ id, text }) => ({ id, text, voters: null, chosen: chosen.includes(id) })),
+  answers: poll.answers.map(({ id, text }) => ({ id, text, voters: null, chosen: false })),
   closed: false,
   multiple: poll.multiple,
   anonymous: false,
@@ -32,25 +35,58 @@ const toPoll = (chatId: string, message: Message, poll: WaPoll, chosen: readonly
 })
 
 /**
+ * A vote as cli-core keeps it. WhatsApp names each chosen answer by the full hash of its text, an answer id is the
+ * start of it. A vote whose answers this poll does not have is dropped rather than kept as a vote taken back; so is a
+ * vote for a poll neither the event nor the store holds.
+ */
+export const toVoteEvent = async (
+  vote: WaVote,
+  chatTitle: string | null,
+  stored: StoredMessages,
+): Promise<PollVoteEvent | undefined> => {
+  const poll = vote.poll ?? pollIn(await stored.message(vote.chat, vote.message).catch(() => undefined))
+  if (!poll) return undefined
+  const answers = poll.answers
+    .filter((answer) => vote.selected.some((hash) => hash.startsWith(answer.id)))
+    .map((answer) => answer.id)
+  if (answers.length === 0 && vote.selected.length > 0) return undefined
+  return {
+    event: "vote",
+    chatId: vote.chat,
+    chatTitle,
+    messageId: vote.message,
+    vote: { person: { id: vote.voter, name: vote.voterName, username: null }, answers, votedAt: vote.votedAt },
+  }
+}
+
+/**
  * Polls as WhatsApp has them: everyone in the chat sees who voted for what, a vote can always be changed, and a poll
- * neither closes nor is a quiz. A poll is read from the store, which holds the message that carries it.
+ * neither closes nor is a quiz. A poll is read from the store, which holds the message that carries it and each
+ * voter's newest vote; WhatsApp has no request for either.
  */
 export const pollAdapter = ({
   engine,
+  stored,
   held,
   keyOf,
   translated,
 }: {
   engine: WhatsAppEngine
+  stored: StoredMessages
   held: (chatId: string, messageId: string) => Promise<Message>
   keyOf: (chatId: string, message: Message) => WaKey
   translated: <T>(work: Promise<T>) => Promise<T>
 }): PollAdapter => ({
   poll: async (chatId, messageId) => {
     const message = await held(chatId, messageId)
-    return toPoll(chatId, message, pollOf(message))
+    return countedPoll(
+      toPoll(chatId, message, pollOf(message)),
+      await stored.pollVotes(chatId, messageId),
+      engine.self(),
+    )
   },
 
+  // cli-core keeps this vote only after it returns, so the answer counts it in itself.
   vote: async (chatId, messageId, answerIds) => {
     const message = await held(chatId, messageId)
     const poll = pollOf(message)
@@ -69,11 +105,21 @@ export const pollAdapter = ({
         answerIds.map((answer) => known.get(answer) as string),
       ),
     )
-    return toPoll(chatId, message, poll, answerIds)
+    const self = engine.self()
+    const others = (await stored.pollVotes(chatId, messageId)).filter((vote) => vote.person.id !== self)
+    const mine =
+      self === null
+        ? []
+        : [{ person: { id: self, name: null, username: null }, answers: answerIds, votedAt: new Date().toISOString() }]
+    return countedPoll(toPoll(chatId, message, poll), [...mine, ...others], self)
   },
 
-  closePoll: async () => {
-    throw new CliError("validation_error", "WhatsApp polls cannot be closed; they stay open")
+  pollVoters: async (chatId, messageId, { limit, answerId }) => {
+    await held(chatId, messageId)
+    const voters = (await stored.pollVotes(chatId, messageId)).filter(
+      (vote) => vote.answers.length > 0 && (answerId === undefined || vote.answers.includes(answerId)),
+    )
+    return { items: voters.slice(0, limit), hasMore: voters.length > limit, total: voters.length }
   },
 
   createPoll: async (chatId, poll, { sendId, silent, threadId, sendAs }) => {
