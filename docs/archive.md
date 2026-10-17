@@ -4,8 +4,8 @@
 want that saved history to be current: to search it, to let your agent answer without connecting, or to export a
 chat to a file.
 
-After reading it you know what `wa` saves and where, why it cannot download older history, how to keep the store
-current while you are away, how to export and back it up, and how to check it is healthy.
+After reading it you know what `wa` saves and where, why it cannot download older history from WhatsApp, how to
+keep the store current while you are away, how to export and back it up, and how to check it is healthy.
 
 Terms used on this page:
 
@@ -25,8 +25,18 @@ WhatsApp has no request for "chats" or "older messages". Two things fill the sto
 - **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send.
 
 So a chat holds what the phone pushed and what arrived while `serve` ran. A message that arrived while nothing was
-connected may still come when `serve` starts again; what the phone never pushed, `wa` cannot fetch. Asking the
-phone for older history is planned ([roadmap](roadmap.md)).
+connected may still come when `serve` starts again.
+
+### Why it cannot download older history
+
+WhatsApp keeps no copy of your chats on its servers: the only full copy is on your phone. So there is no download, only
+a request to the phone: "send me the 50 messages of this chat before this one". `wa` counts back from the oldest
+message of the chat the store already holds, so a chat the store has nothing of cannot be asked about. The phone
+answers only while it is on and connected, and may take seconds or not answer at all; then the request fails with
+`timeout` and nothing is lost.
+
+`wa` can make this request, but `messages sync` does not use it yet: today it refuses, saying the history is pushed.
+It is next on the [roadmap](roadmap.md). Until then, what the phone never pushed stays out of the store.
 
 ## What you can do
 

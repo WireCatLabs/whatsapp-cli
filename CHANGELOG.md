@@ -27,6 +27,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   send guard still apply; a write at `ask` needs `--yes`. Not on Windows yet.
 - **The foundation**: the shared cli-core commands over a WhatsApp adapter that reads from the local store, an
   engine contract, and the same linters, checks and CI as tg-cli and max-cli.
+- **Older history from the phone, engine side**: the engine can ask the phone for the 50 messages of a chat before
+  one the local store holds, and waits up to 30 seconds for the answer (engine protocol 5). `messages sync` does not
+  use it yet: cli-core still refuses a sync for a messenger whose history is pushed.
 - **The WhatsApp engine**: `wa` connects through a Go program built on whatsmeow, started for each command that
   connects and stopped when it ends. One command at a time may connect a profile; a second is told which one holds it.
 - **Installs with its engine**: `npm install --global @wirecat/whatsapp-cli` also installs the engine for your system,

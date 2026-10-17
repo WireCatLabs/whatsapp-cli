@@ -75,6 +75,12 @@ can be saved and forwarded later, since the store keeps what WhatsApp needs to f
 for a limited time, so an old one may be gone. A place or a contact card is shown, not saved. WhatsApp has no speech
 recognition of its own, so `transcribe` uses a model on this machine (`wa models audio list`).
 
+## Older messages
+
+WhatsApp keeps no history on its servers, so older messages can only come from your phone, 50 at a time, while it is
+online. `wa` can ask for them, but `messages sync` does not use that yet
+([why](archive.md#why-it-cannot-download-older-history)).
+
 ## Keep wa up to date
 
 `wa upgrade` installs the newest version with the package manager that installed `wa`, and restarts each running

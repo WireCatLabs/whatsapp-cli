@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**82 ✅ · 698 ⛔ · 0 ❌** — 238 commands, 542 options.
+**83 ✅ · 697 ⛔ · 0 ❌** — 238 commands, 542 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -196,20 +196,20 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages comments` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages comments` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages links` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--page-size` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--pause` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--last` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--catch-up` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--no-catch-up` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--catch-up-chunks` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--catch-up-messages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--catch-up-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--background` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages sync` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `messages sync` |  | ✅ |  |
+| `messages sync` | `--all` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--limit` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--page-size` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--pause` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--since-time` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--last` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--catch-up` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--no-catch-up` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--catch-up-chunks` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--catch-up-messages` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--catch-up-time` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--background` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
+| `messages sync` | `--dry-run` | ⛔ | cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read (src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly |
 | `reactions add` |  | ✅ |  |
 | `reactions remove` |  | ✅ |  |
 | `models audio list` |  | ✅ |  |

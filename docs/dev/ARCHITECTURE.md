@@ -27,13 +27,20 @@ imports cli-core at all.
 
 ## 3. History comes from the store
 
-WhatsApp has no "list chats" or "give me older messages" request. The phone pushes history when a device links, and
-the socket carries new messages after that. So `WHATSAPP.history` is `"store"`:
+WhatsApp has no "list chats" request and keeps no history on its servers. The phone pushes history when a device
+links, and the socket carries new messages after that. So `WHATSAPP.history` is `"store"`:
 
 - **Reads never connect.** `chats list`, `messages list`, `search` and `inbox` answer from cli-core's store.
 - **`serve` fills the store.** It runs the adapter's `feed` (history pushes) beside `watch` (live messages) on one
   connection, and cli-core saves each batch.
 - **Writes connect.** `messages send` opens the engine, sends, and closes it.
+- **Older history is asked of the phone.** The adapter's `history` (cli-core's `ServerReads.history`, what
+  `messages sync` pages through) sends the engine's `older` request, counting back from a stored message: the oldest
+  one of the chat on the first page, then the newest stored at or before the time the last page reached. Its
+  answer is saved by cli-core like any server read. A phone that does not answer is `timeout`, never an empty page,
+  since an empty page tells cli-core the chat's start is held. `fetching.maxPageSize` is 50, what WhatsApp's own
+  clients ask. cli-core still refuses `messages sync` for a `history: "store"` messenger, so nothing reaches it yet
+  ([BACKLOG.md](BACKLOG.md)).
 - **A file is fetched by the keys in the store.** whatsmeow needs a file's path on WhatsApp's servers and its keys
   to fetch and decrypt it. The engine sends them with each message as the attachment's `ref`, and cli-core keeps them
   as the opaque `providerRef`, never shown in an answer. `messages download` and `messages transcribe --local` look the
@@ -71,6 +78,12 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   removes after reading) and `forward` (`attachment` and `text` as stored). No file crosses the JSON line itself. In a
   group still addressed by phone numbers, the engine turns the stored LID sender into the phone JID the group
   expects.
+- **Older history** (`engine/cmd/wa-engine/older.go`): `older` (`chat`, `message`, `fromMe`, `timestamp` of the
+  anchor, `count` up to 50) sends whatsmeow's `BuildHistorySyncRequest` to the phone with `SendPeerMessage` and waits
+  up to 30 s for the `ON_DEMAND` history sync that answers it, then answers `{messages, more}`. One request is in
+  flight per process, so the batch is matched by its chat after conversion to LID form, or by naming no chat at all
+  (nothing older); other chats and push names in the same batch go out as a `history` event. `more` is whether the
+  phone sent any of the chat's messages, even ones the contract skips.
 - **Group and people requests** (`engine/cmd/wa-engine/groups.go`, `people.go`; the contract in
   [`src/engine/groups.ts`](../../src/engine/groups.ts)): `group` (with `withLink` for the invite link, which only
   admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,

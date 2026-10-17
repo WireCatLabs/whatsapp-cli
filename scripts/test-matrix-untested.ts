@@ -93,6 +93,27 @@ export const UNTESTED: Untested[] = [
       "needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, " +
       "and cli-core's src/speech tests drive the local model",
   })),
+  ...[
+    "--all",
+    "--limit",
+    "--page-size",
+    "--pause",
+    "--since-time",
+    "--last",
+    "--catch-up",
+    "--no-catch-up",
+    "--catch-up-chunks",
+    "--catch-up-messages",
+    "--catch-up-time",
+    "--background",
+    "--dry-run",
+  ].map((option) => ({
+    command: "messages sync",
+    option,
+    reason:
+      "cli-core refuses `messages sync` for a messenger whose history is pushed, before any option is read " +
+      "(src/older-history.test.ts); cli-core tests the options, and the adapter's older-history read is tested directly",
+  })),
   ...["--silent", "--send-as"].map((option) => ({
     command: "messages forward",
     option,

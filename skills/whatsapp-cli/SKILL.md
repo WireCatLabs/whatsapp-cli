@@ -42,7 +42,10 @@ a WhatsApp admin has all of them. A command that connects knows a group by its `
 - **History comes from the phone, not from a server.** WhatsApp has no "give me older messages" request. The phone
   pushes history once, seconds after the device links, and `wa <profile> serve` keeps receiving after that. Every
   read — `chats list`, `messages list`, `inbox`, `search` — answers from the local store and never connects. A
-  search answer may suggest `messages sync` to fill a gap: on WhatsApp that is not built; the gap stays.
+  search answer may suggest `messages sync` to fill a gap: on WhatsApp it still refuses; the gap stays.
+- **Older history** can only be asked of the owner's phone, 50 messages at a time, counting back from the oldest
+  stored message of one chat. The phone must be online; no answer is exit `timeout`, not an empty chat. `wa` can make
+  the request, but `messages sync` does not use it yet — do not promise it to the owner.
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp`.

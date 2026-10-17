@@ -64,6 +64,8 @@ WA_REQUESTS_PER_MINUTE=30 wa personal messages send 100000000000001@lid "on my w
 
 ## No bulk reads
 
-WhatsApp has no request for older messages, so `wa` has no history download to pace. The phone pushes your recent
+WhatsApp keeps no history on its servers, so `wa` has no history download to pace. The phone pushes your recent
 history once, right after linking, and `serve` keeps receiving after that ([the local store](archive.md)). Every read
-and search answers from the local store and sends WhatsApp nothing.
+and search answers from the local store and sends WhatsApp nothing. Older messages can only be asked of the phone, 50
+at a time, with at least 2 seconds between requests; `messages sync` does not ask yet
+([why](archive.md#why-it-cannot-download-older-history)).
