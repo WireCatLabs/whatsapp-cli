@@ -18,3 +18,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   and `--mark-read`, which send a read receipt only when asked. Each needs the message in the local store, which
   `serve` keeps filled; WhatsApp addresses a message by its sender. Deleting for you alone and forwarding are not
   built yet.
+- **`wa <profile> setup`** is the guided first run, as in tg: it checks this computer, links the device or reuses it,
+  reads the account and five chats from the local store, and installs the agent skill (`--agent`). Agents use
+  `--qr-file`.
+- **`wa upgrade`** installs the newest version with the package manager that installed `wa` and restarts running
+  servers; a daily line on stderr says when a newer version exists.
+- **`wa doctor`** reports whether the engine program is found, whether the device keys exist with private file
+  modes, and who last held the device's lock and whether that process still runs.
