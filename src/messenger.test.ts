@@ -68,3 +68,57 @@ describe("connecting to WhatsApp", () => {
     expect(engine.closed).toBe(true)
   })
 })
+
+describe("wa doctor", () => {
+  const CHECKOUT = "/home/a/Projects/whatsapp-cli/dist/x.js"
+  const doctor = async (profile: string, env: NodeJS.ProcessEnv, scriptPath = CHECKOUT) => {
+    const result = await wa([profile, "doctor", "--json"], {
+      env: { ...process.env, ...env },
+      update: { scriptPath },
+      engine: () => {
+        throw new Error("doctor must never start the engine")
+      },
+    })
+    expect(result.code).toBe(0)
+    return JSON.parse(result.stdout).item.whatsapp
+  }
+
+  it("says the engine is missing and how to get it, for a checkout and for an install", async () => {
+    const env = { WA_ENGINE: `${process.env.TMPDIR}/no-such-engine` }
+    expect((await doctor("noengine", env)).engine).toMatchObject({
+      found: false,
+      hint: expect.stringContaining("pnpm engine:build"),
+    })
+    const installed = await doctor("noengine", env, "/home/a/.npm-global/lib/node_modules/@wirecat/whatsapp-cli/x.js")
+    expect(installed.engine.hint).toContain("WA_ENGINE")
+  })
+
+  it("finds the engine, checks the device keys' modes without opening them, and names the lock's holder", async () => {
+    const binary = `${process.env.TMPDIR}/wa-engine-found`
+    writeFileSync(binary, "", { mode: 0o755 })
+    const store = privateStore("checked")
+    mkdirSync(dirname(store), { recursive: true, mode: 0o700 })
+    writeFileSync(store, "not a database", { mode: 0o644 })
+    writeFileSync(`${store}.lock`, `serve (pid ${process.pid})\n`)
+
+    const report = await doctor("checked", { WA_ENGINE: binary })
+    expect(report.engine).toMatchObject({ found: true })
+    expect(report.device).toMatchObject({ exists: true, files: { checked: true, ok: false } })
+    expect(report.device.files.problems).toEqual([expect.objectContaining({ path: store, mode: "0644", want: "0600" })])
+    expect(report.lock).toEqual({
+      path: `${store}.lock`,
+      holder: `serve (pid ${process.pid})`,
+      pid: process.pid,
+      running: true,
+    })
+    expect(JSON.stringify(report)).not.toContain("not a database")
+  })
+
+  it("does not count a holder whose process has ended as holding the lock", async () => {
+    const store = privateStore("stale")
+    mkdirSync(dirname(store), { recursive: true })
+    writeFileSync(`${store}.lock`, "messages send (pid 2147483646)\n")
+    expect((await doctor("stale", {})).lock).toMatchObject({ pid: 2147483646, running: false })
+    expect((await doctor("unlinked", {})).lock).toMatchObject({ holder: null, running: false })
+  })
+})
