@@ -12,7 +12,8 @@ import (
 const olderMax = 50
 
 // olderWait bounds how long the phone may take: it answers only while it is online, and may never answer at all.
-var olderWait = 30 * time.Second
+// It stays under cli-core's default 30 s command timeout, so the owner gets this answer, not a bare timeout.
+var olderWait = 25 * time.Second
 
 // olderRounds bounds how often one request asks again when the phone sent only messages the contract skips.
 const olderRounds = 3
