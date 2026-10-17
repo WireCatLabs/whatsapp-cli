@@ -4,13 +4,14 @@ import { join } from "node:path"
 import { afterAll } from "vitest"
 import { ARGV_LOG } from "./argv-log.js"
 
+const saved = { ...process.env }
+
 /**
  * **Moves the whole installation into a temporary directory, for every test file**, as max-cli and tg-cli do: a
  * test that reaches a command would otherwise read the owner's config, migrate the owner's store, and could open
  * the owner's linked WhatsApp device. `pnpm test` must not be able to write anything a person owns.
  */
 // macOS's own temporary directory is long enough to push a socket path past its 104 bytes.
-const saved = { ...process.env }
 const sandbox = mkdtempSync(join(process.platform === "darwin" ? "/tmp" : tmpdir(), "wa-test-"))
 
 process.env.WA_CONFIG_DIR = join(sandbox, "config")
