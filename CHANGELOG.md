@@ -53,6 +53,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   guard like a send; adding people is refused for anyone not in the address book or written to before, since
   WhatsApp bans accounts that add strangers. A number lookup is one per call, one every 10 seconds per profile.
   Engine protocol 4.
+- **Formatting and polls**: `messages send --md` and `messages edit --md` write Markdown as WhatsApp's own marks
+  (bold, italic, strike, code, quotes; a link becomes its label and address; underline and spoilers become plain
+  text). `polls create` (one answer or `--multiple`), `polls show` and `polls vote` (`--retract` too) work on polls
+  in the local store; votes are not counted yet, and `--anonymous` and `polls close` are refused, since WhatsApp has
+  neither. Engine protocol 6.
 - **`wa <profile> setup`** is the guided first run, as in tg: it checks this computer, links the device or reuses it,
   reads the account and five chats from the local store, and installs the agent skill (`--agent`). Agents use
   `--qr-file`.

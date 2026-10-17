@@ -58,6 +58,37 @@ WhatsApp names a message by who sent it as well as by its id, so these work on m
 delete a message for yourself alone on the phone. Nothing is marked read unless you ask: `chats mark-read`, or
 `--mark-read` on `messages list`, `inbox` and `review`.
 
+## Format a message
+
+```sh
+wa personal messages send "Book club" "**Agenda**\n- the _new_ book\n> [notes](https://example.com/n)" --md
+wa personal messages edit "Book club" 3EB0… "**moved** to Friday" --md
+```
+
+`--md` reads Markdown and sends it in WhatsApp's own marks: `**bold**` or `*bold*` becomes `*bold*`, `_italic_`
+stays `_italic_`, `~~strike~~` becomes `~strike~`, `` `code` `` and ```` ``` ```` blocks stay, quotes (`>`) and
+lists (`-`, `1.`) stay as they are, and a `#` heading becomes bold. A link becomes its label and then its address, which
+WhatsApp makes clickable. Underline, spoilers and highlights have no mark in WhatsApp and stay plain text. WhatsApp
+has no way to keep a `*` literal, so `\*word\*` still reads as bold there. Without `--md` the text goes as typed, so
+WhatsApp's own marks work anyway.
+
+## Polls
+
+```sh
+wa personal polls create "Book club" "Which day?" Monday Tuesday            # one answer each
+wa personal polls create "Book club" "Which books?" Dune Emma Ulysses --multiple
+wa personal polls show "Book club" 3EB0…        # the question and its answer ids
+wa personal polls vote "Book club" 3EB0… <answer id>
+wa personal polls vote "Book club" 3EB0… --retract
+```
+
+Everyone in the chat sees who voted for what, and a vote can always be changed, so `--anonymous` is refused and
+`--revote` changes nothing. A WhatsApp poll has 2 to 12 answers, each with its own text; it is never a quiz and never
+closes, so `polls close` is refused. Vote by the ids `polls show` prints. `polls show` and `polls vote` work on a poll
+the local store holds, and WhatsApp gives a device a poll's key only when the poll reaches it, so a poll from before
+the link may refuse a vote. WhatsApp has no request for the votes, so `wa` does not count them yet: `voters` is
+`null`.
+
 ## Send, save and forward files
 
 ```sh

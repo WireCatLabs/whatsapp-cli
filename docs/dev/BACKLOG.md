@@ -19,8 +19,22 @@ Open work, most important first. The plan in flight is
    own chat only): whether the phone finds a chat named by its LID when it knows it by phone number; whether a
    50-message answer comes in one `ON_DEMAND` chunk; whether the notification's `PeerDataRequestSessionID` equals the
    request's message id, which would match an answer more surely than its chat.
-5. **Feature groups**: polls. Edit, delete for everyone, reactions,
-   mark-read, files, group admin, join requests, profiles, blocking and number lookup are built; what they left open:
+5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
+   profiles, blocking, number lookup, Markdown and polls are built; what they left open:
+   - **Poll votes are not counted.** whatsmeow decrypts a vote (`DecryptPollVote`, with the secret it keeps), but
+     cli-core has no message event for a vote and no stored place for votes, so `polls show` answers `voters: null`
+     and `pollVoters` is not offered. A history push carries a poll's votes already decrypted
+     (`WebMessageInfo.pollUpdates`); live ones arrive as `PollUpdateMessage`.
+   - **A poll made with `polls create` is not stored.** cli-core's stored connection saves what `send` and `forward`
+     return but not `createPoll`, and WhatsApp does not echo a device's own message back to it, so `polls vote` on it
+     is `not_found` until the phone's next history push. Fix in cli-core: save `createPoll`'s message like `send`'s.
+   - **`polls close` and `--revote`.** WhatsApp polls never close and always let a vote change; cli-core has no flag to
+     hide `polls close`, which is refused, and passes `revote: false` unless `--revote`, which is ignored.
+   - **Newer poll fields** (`endTime`, `hideParticipantName`, `pollType`, `correctAnswer` on `PollCreationMessage`)
+     would map to `--close-time`, `--anonymous` and `--quiz`; whatsmeow does not build them and no WhatsApp client has
+     been seen to show them, so they are not used.
+   - **Live checks** of `polls create` and `polls vote` (one-to-one, group, phone-addressed group) and of `--md` on the
+     phone: the vote's key and encryption follow whatsmeow's code and have not been run against WhatsApp.
    - **Group members are never listed.** cli-core refuses `chats members fetch` and `audit` for a messenger whose
      history is `"store"` (`fromStore` in its `services/chats`), and `chats members list` reads only the stored roster,
      so the adapter's `members` is reached by nothing but `chats moderate`. Fix in cli-core: refuse those two only

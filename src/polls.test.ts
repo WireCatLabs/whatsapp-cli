@@ -82,11 +82,28 @@ describe("wa polls create", () => {
     ])
   })
 
+  it("sends with --revote, which every WhatsApp poll allows, and repeats with --operation-id as one message", async () => {
+    const result = await polling([
+      "create",
+      base.busy,
+      "Pizza?",
+      "yes",
+      "no",
+      "--revote",
+      "--operation-id",
+      "3EB0000000000000000002",
+    ])
+    expect(result.code).toBe(0)
+    expect(result.sent).toMatchObject([{ id: "3EB0000000000000000002", poll: { multiple: false } }])
+  })
+
   it.each([
-    ["--anonymous, since everyone sees the votes", "--anonymous"],
-    ["two answers with the same text", "yes"],
+    ["--anonymous, since everyone sees the votes", ["--anonymous"]],
+    ["--silent", ["--silent"]],
+    ["--send-as", ["--send-as", base.person]],
+    ["two answers with the same text", ["yes"]],
   ])("refuses %s, and sends nothing", async (_, extra) => {
-    const result = await polling(["create", base.busy, "Pizza?", "yes", "no", extra])
+    const result = await polling(["create", base.busy, "Pizza?", "yes", "no", ...extra])
     expect(result.code).toBe(2)
     expect(result.sent).toEqual([])
   })
