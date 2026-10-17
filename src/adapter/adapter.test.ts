@@ -40,10 +40,10 @@ const watching = async (pushes: (engine: ReturnType<typeof fakeEngine>) => void)
 describe("whatsAppAdapter", () => {
   it("refuses a send option WhatsApp cannot honour, before the engine sees it", async () => {
     const engine = fakeEngine(seed)
-    const sending = whatsAppAdapter(engine).send(seed.dialog, "hi", { sendId: "3EB0AA", silent: true })
+    const sending = whatsAppAdapter(engine).send(seed.dialog, "hi", { sendId: "3EB0AA", spoiler: true })
     await expect(sending).rejects.toMatchObject({
       code: "validation_error",
-      message: expect.stringContaining("silent"),
+      message: expect.stringContaining("spoiler"),
     })
     expect(engine.sent).toEqual([])
   })

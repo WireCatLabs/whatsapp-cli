@@ -88,7 +88,3 @@ Open work, most important first. The plan in flight is
       needs, is the owner's decision.
     - **Two `setup` tests wait for real** (`--timeout 100ms` in `src/commands/setup.test.ts`); a wait goes through an
       injected sleep (cli-base TESTING).
-    - **Refuse automatic replies.** wa mounts `replies`, and `serve` applies the rules once
-      `permissions.replies.send` is `allow`. That sends without a typed command, against local rule 1 and the skill's
-      "not for automatic replies", so wa will refuse `replies` and gets no replies page. Waits on a cli-core switch
-      that lets a messenger turn the feature off.

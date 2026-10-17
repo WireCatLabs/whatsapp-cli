@@ -26,7 +26,6 @@ const SHARED = [
   "tasks *",
   "search *",
   "searches *",
-  "replies *",
   "recipients *",
   "sends *",
   "runs *",
@@ -221,11 +220,6 @@ export const UNTESTED: Untested[] = [
     reason:
       "cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through " +
       "run() and its older-history paging are tested in src/older-history.test.ts",
-  })),
-  ...["--silent", "--send-as"].map((option) => ({
-    command: "messages forward",
-    option,
-    reason: "refused by the adapter before the engine, as `messages send` refuses them (src/program.test.ts)",
   })),
   {
     command: "messages forward",

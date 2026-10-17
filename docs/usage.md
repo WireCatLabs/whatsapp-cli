@@ -88,8 +88,8 @@ wa personal polls vote "Book club" 3EB0… --retract
 wa personal polls voters "Book club" 3EB0…      # who voted for what, newest first
 ```
 
-Everyone in the chat sees who voted for what, and a vote can always be changed, so `--anonymous` is refused and
-there is no `--revote`. A WhatsApp poll has 2 to 12 answers, each with its own text; it is never a quiz and never
+Everyone in the chat sees who voted for what, and a vote can always be changed, so there is no `--anonymous` and
+no `--revote`. A WhatsApp poll has 2 to 12 answers, each with its own text; it is never a quiz and never
 closes, so there is no `polls close`. Vote by the ids `polls show` prints. `polls show`, `polls vote` and
 `polls voters` work on a poll the local store holds, a poll made with `wa polls create` among them. WhatsApp gives a
 device a poll's key only when the poll reaches it, so a poll from before the link may refuse a vote.

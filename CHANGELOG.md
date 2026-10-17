@@ -7,6 +7,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break scripts
 
+- **No automatic replies** (cli-core 0.324.0). `wa` no longer has `replies`, and `serve` never answers by reply
+  rules, even with `permissions.replies.send` at `allow`: WhatsApp bans accounts that answer like a bot, and `wa`
+  sends nothing the owner did not ask for. A rules file left in the config folder is ignored.
+- **Options WhatsApp has no counterpart for are no longer offered** (cli-core 0.324.0): `--silent` and `--send-as` on
+  `messages send`, `messages forward` and `polls create`, `--at-time` on `messages send`, `--anonymous` on
+  `polls create`, and the commands `chats send-as` and `messages scheduled`. They were refused before; now they are
+  unknown, still with exit 2, and the MCP tools no longer take `silent`, `send_as`, `at_time` or `anonymous`.
+- **Commands WhatsApp lacks refuse before connecting** (cli-core 0.324.0): `account update`, `account sessions list`
+  and `end`, `chats events`, `chats inspect`, `chats folders *`, `contacts add`, `remove`, `rename` and `import`,
+  `messages pin` and `unpin` refuse with exit 2 before connecting to WhatsApp.
 - **`watch --events` no longer prints the votes of the phone's history push** (cli-core 0.322.0). They were
   printed as new votes; they are old ones, and the store now saves them with the push, together with their poll and
   dated when each person voted, so an older one never replaces a newer live vote. A script that read history votes

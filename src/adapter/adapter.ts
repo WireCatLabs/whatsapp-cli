@@ -68,16 +68,7 @@ const NOTHING_STORED: StoredMessages = {
 const EDIT_WINDOW_MS = 20 * 60 * 1000
 
 /** Options WhatsApp has no way to honour; `noPreview` is always true, since nothing here builds link previews. */
-const REFUSED: (keyof SendOptions)[] = [
-  "threadId",
-  "silent",
-  "markup",
-  "at",
-  "sticker",
-  "spoiler",
-  "captionAbove",
-  "sendAs",
-]
+const REFUSED: (keyof SendOptions)[] = ["threadId", "markup", "sticker", "spoiler", "captionAbove"]
 
 const translated = async <T>(work: Promise<T>): Promise<T> => {
   try {
@@ -261,9 +252,8 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       return { message: toMessage(message), sendId: options.sendId }
     },
 
-    forward: async (fromChatId, messageId, toChatId, { sendId, silent, sendAs, threadId }) => {
-      if (silent || sendAs !== undefined || threadId !== undefined)
-        throw new CliError("validation_error", "WhatsApp forwards without --silent, --send-as or a topic")
+    forward: async (fromChatId, messageId, toChatId, { sendId, threadId }) => {
+      if (threadId !== undefined) throw new CliError("validation_error", "WhatsApp forwards without a topic")
       const original = await held(fromChatId, messageId)
       const attachments = original.attachments.map(toWaAttachment)
       const [attachment] = attachments

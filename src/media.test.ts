@@ -222,12 +222,16 @@ describe("wa messages forward", () => {
     expect(engine?.forwards).toEqual([expect.objectContaining({ id, chat: base.dialog })])
   })
 
-  it.each(["--silent", "--send-as"])("refuses %s, which WhatsApp has no counterpart for", async (flag) => {
+  it.each(["--silent", "--send-as"])("does not offer %s, and never starts the engine", async (flag) => {
     const value = flag === "--send-as" ? [base.dialog] : []
-    const result = await driving(["messages", "forward", base.busy, plain.id, "--to", base.dialog, flag, ...value])
+    const result = await wa(
+      ["media", "messages", "forward", base.busy, plain.id, "--to", base.dialog, flag, ...value, "--json"],
+      () => {
+        throw new Error("an option WhatsApp lacks must never start the engine")
+      },
+    )
     expect(result.code).toBe(2)
-    expect(errorCode(result.stderr)).toBe("validation_error")
-    expect(result.engine.forwards).toEqual([])
+    expect(result.stderr).toContain(flag)
   })
 
   it.each([
