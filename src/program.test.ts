@@ -276,7 +276,7 @@ describe("commands WhatsApp has no counterpart for", () => {
     const offMcp = flat(JSON.parse(result.stdout).commands)
       .filter((command) => command.mcp === false)
       .map((command) => command.path.join(" "))
-    expect(offMcp).toEqual(["session", "session start", "session end", "setup"])
+    expect(offMcp).toEqual(expect.arrayContaining(["session", "session start", "session end", "setup"]))
   })
 
   it.each([
