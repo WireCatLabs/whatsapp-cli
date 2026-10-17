@@ -61,7 +61,8 @@ delete a message for yourself alone on the phone. Nothing is marked read unless 
 ## Format a message
 
 ```sh
-wa personal messages send "Book club" "**Agenda**\n- the _new_ book\n> [notes](https://example.com/n)" --md
+wa personal messages send "Book club" "**Friday** at _8_, see [the notes](https://example.com/n)" --md
+printf '**Agenda**\n- the _new_ book\n> a quote\n' | wa personal messages send "Book club" --md
 wa personal messages edit "Book club" 3EB0… "**moved** to Friday" --md
 ```
 
@@ -86,7 +87,8 @@ Everyone in the chat sees who voted for what, and a vote can always be changed, 
 `--revote` changes nothing. A WhatsApp poll has 2 to 12 answers, each with its own text; it is never a quiz and never
 closes, so `polls close` is refused. Vote by the ids `polls show` prints. `polls show` and `polls vote` work on a poll
 the local store holds, and WhatsApp gives a device a poll's key only when the poll reaches it, so a poll from before
-the link may refuse a vote. WhatsApp has no request for the votes, so `wa` does not count them yet: `voters` is
+the link may refuse a vote. A poll made with `wa polls create` is not kept in the local store yet, so it cannot be
+shown or voted on from `wa`; vote on it on the phone. WhatsApp has no request for the votes, so `wa` does not count them yet: `voters` is
 `null`.
 
 ## Send, save and forward files

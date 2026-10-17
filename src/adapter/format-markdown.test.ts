@@ -24,6 +24,7 @@ describe("Markdown as WhatsApp writes it", () => {
     ["**bold\nnext line**", "*bold*\n*next line*"],
     ["\\*literal\\* 2*3*4 file_name", "*literal* 2*3*4 file_name"],
     ["plain text", "plain text"],
+    ["```mono``` at the start", "```mono``` at the start"],
   ])("%j → %j", (markdown, expected) => {
     expect(whatsApp(markdown)).toBe(expected)
   })

@@ -59,7 +59,8 @@ a WhatsApp admin has all of them. A command that connects knows a group by its `
   meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
   `messages edit`, `messages delete --for-everyone`, `reactions add|remove`, `polls show|vote` and `chats mark-read`
-  look the message up in the store. One the store lacks is exit `6`. `messages download`, `messages forward` and
+  look the message up in the store. A poll made with `polls create` is not stored yet, so it cannot be shown or voted
+  on from `wa`. One the store lacks is exit `6`. `messages download`, `messages forward` and
   `messages transcribe --local` work the same way, from the file keys the store holds.
 - **One file per message.** `messages send --file|--photo|--voice` sends one; the text is its caption, a voice note
   goes alone.
