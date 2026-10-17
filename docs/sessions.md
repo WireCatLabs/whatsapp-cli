@@ -117,10 +117,10 @@ export WA_PROFILE=work     # the same for the whole shell session
 `messages` or any other command word. Names are letters, digits, dot, dash and underscore, starting with a letter or
 a digit.
 
-The order, first match wins: the first word, then `WA_PROFILE`. With neither,
-a command that uses an account stops with exit code `2` and lists the profiles on this computer. `wa` never picks
-one, not even the only one. Commands that use no account run without a profile: `--help`, `--version`, `commands`,
-`skill show`, `account list` and `config show`.
+The order, first match wins: the first word, then `WA_PROFILE`. With neither, a command that uses an account stops
+with exit code `2` and lists the profiles on this computer. `wa` never picks one, not even the only one. Commands
+that use no account run without a profile: `--help`, `--version`, `commands`, `skill show`, `account list` and
+`config show`.
 
 **`WA_PROFILE_LOCK` pins a process to one profile.** Set it where an agent runs, and a first word or `WA_PROFILE`
 naming any other profile is refused (exit code `5`). Without it, an agent could pick a profile with fewer limits.
