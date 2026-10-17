@@ -153,6 +153,7 @@
   "server status",
   "server stop",
   "server uninstall",
+  "setup",
   "skill install",
   "skill show",
   "stats charts",
@@ -200,5 +201,6 @@
   "tasks list",
   "tasks plan",
   "tasks show",
+  "upgrade",
   "watch"
 ]
