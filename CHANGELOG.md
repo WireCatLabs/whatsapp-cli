@@ -5,6 +5,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Security
+
+- The Go engine builds with Go 1.26.9 and `golang.org/x/net` 0.60.0, clearing the affected
+  runtime and networking advisory paths while retaining the current Go release branch.
+
 ### Fixed
 
 - Release and monthly source checks include the Go engine using its module toolchain. Local

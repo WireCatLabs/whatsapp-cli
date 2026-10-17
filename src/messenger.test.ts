@@ -103,8 +103,15 @@ describe("wa doctor", () => {
 
     const report = await doctor("checked", { WA_ENGINE: binary })
     expect(report.engine).toMatchObject({ found: true })
-    expect(report.device).toMatchObject({ exists: true, files: { checked: true, ok: false } })
-    expect(report.device.files.problems).toEqual([expect.objectContaining({ path: store, mode: "0644", want: "0600" })])
+    expect(report.device.exists).toBe(true)
+    if (process.platform === "win32") {
+      expect(report.device.files).toMatchObject({ checked: false, reason: "Windows has no Unix file modes" })
+    } else {
+      expect(report.device.files).toMatchObject({ checked: true, ok: false })
+      expect(report.device.files.problems).toEqual([
+        expect.objectContaining({ path: store, mode: "0644", want: "0600" }),
+      ])
+    }
     expect(report.lock).toEqual({
       path: `${store}.lock`,
       holder: `serve (pid ${process.pid})`,
