@@ -9,7 +9,7 @@ import { type ChangelogRules, type DocsRules, JOURNAL_IDS, markdownFiles } from 
 const IDS = [...JOURNAL_IDS, "OPS", "CLI"]
 
 export const CHANGELOG: ChangelogRules = {
-  headings: ["What's new", "Changed — may break scripts", "Fixed", "Security", "Removed"],
+  headings: ["Added", "Changed — may break callers", "Fixed", "Security", "Removed"],
   unreleased: "Unreleased",
   ids: IDS,
 }
