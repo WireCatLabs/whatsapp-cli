@@ -71,6 +71,14 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   removes after reading) and `forward` (`attachment` and `text` as stored). No file crosses the JSON line itself. In a
   group still addressed by phone numbers, the engine turns the stored LID sender into the phone JID the group
   expects.
+- **Group and people requests** (`engine/cmd/wa-engine/groups.go`, `people.go`; the contract in
+  [`src/engine/groups.ts`](../../src/engine/groups.ts)): `group` (with `withLink` for the invite link, which only
+  admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,
+  `updateGroup` (name, description, `addMode`, `approval`), `resetLink`, `participants` (`add`, `remove`, `promote`,
+  `demote`; a phone-addressed group gets phone JIDs), `requests`, `answerRequest`, `profile` (`GetUserInfo` and the
+  photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per engine) and `contacts` (the
+  address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
+  maps the two switches cli-core has (`onlyAdminsAdd`, `joinApproval`) and puts the rest in `providerMetadata`.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
   JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a
   file kept like `private.db`. Errors reach the CLI as one of the contract's codes with fixed wording.

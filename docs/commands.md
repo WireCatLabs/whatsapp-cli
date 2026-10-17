@@ -492,11 +492,8 @@ wa chats update <chat> [options]
 |---|---|
 | `--title <title>` | the new name. |
 | `--description <text>` | the new description. |
-| `--all-can-pin <on\|off>` | every member may pin messages. |
 | `--only-admins-add <on\|off>` | only admins may add members. |
-| `--only-admins-call <on\|off>` | only admins may start a call. |
-| `--only-owner-edits-info <on\|off>` | only the owner may change the name and photo. |
-| `--members-see-link <on\|off>` | members may see the invite link. |
+| `--join-approval <on\|off>` | people ask to join, and an admin lets them in. |
 
 ### `wa chats link`
 
@@ -513,21 +510,6 @@ wa chats link show <chat>
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-
-#### `wa chats link revoke`
-
-stop one link; for the group's own link, the answer is the new one
-
-**Changes something in WhatsApp.**
-
-```sh
-wa chats link revoke <chat> <link>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-| `link` | required | the link, as `chats link list` shows it. |
 
 #### `wa chats link reset`
 
@@ -572,18 +554,13 @@ let them in; the group sees them join
 **Changes something in WhatsApp.**
 
 ```sh
-wa chats requests accept <chat> [person] [options]
+wa chats requests accept <chat> <person>
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-| `person` | optional | who asked: an id from `chats requests list`. |
-
-| Option | What it does |
-|---|---|
-| `--all` | every pending request, counted against the hourly limit first. |
-| `--link <link>` | with --all: only the requests made by this invite link. |
+| `person` | required | who asked: an id from `chats requests list`. |
 
 #### `wa chats requests decline`
 
@@ -592,18 +569,13 @@ turn the request away
 **Changes something in WhatsApp.**
 
 ```sh
-wa chats requests decline <chat> [person] [options]
+wa chats requests decline <chat> <person>
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-| `person` | optional | who asked: an id from `chats requests list`. |
-
-| Option | What it does |
-|---|---|
-| `--all` | every pending request, counted against the hourly limit first. |
-| `--link <link>` | with --all: only the requests made by this invite link. |
+| `person` | required | who asked: an id from `chats requests list`. |
 
 ### `wa chats admins`
 
@@ -626,7 +598,7 @@ wa chats admins add <chat> <person> [options]
 
 | Option | What it does |
 |---|---|
-| `--can <rights>` | what they may do, comma-separated: read, members, admins, info, pin, link, post, edit, delete. |
+| `--can <rights>` | what they may do, comma-separated: members, admins, info, pin, link, post, delete. |
 
 #### `wa chats admins remove`
 

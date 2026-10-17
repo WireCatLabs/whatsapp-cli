@@ -22,7 +22,6 @@
   "chats join",
   "chats leave",
   "chats link reset",
-  "chats link revoke",
   "chats link show",
   "chats list",
   "chats mark-read",

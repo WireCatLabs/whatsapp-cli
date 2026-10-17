@@ -115,6 +115,20 @@ describe("wa chats create, join, leave, update, link", () => {
     expect(result.done).toEqual([{ op: "createGroup", people: [seed.person] }])
   })
 
+  it("refuses --channel, which WhatsApp makes in the app only, and makes nothing", async () => {
+    const result = await acting("chats", "create", "Synthetic news", "--channel")
+    expect(result.code).toBe(2)
+    expect(result.done).toEqual([])
+  })
+
+  it("renames a group and changes its description", async () => {
+    const result = await acting("chats", "update", seed.busy, "--title", "Synthetic club", "--description", "synthetic")
+    expect(result.code).toBe(0)
+    expect(result.done).toEqual([
+      { op: "updateGroup", jid: seed.busy, change: { title: "Synthetic club", description: "synthetic" } },
+    ])
+  })
+
   it("joins by an invite link, or says the request waits for an admin", async () => {
     const joined = await acting("chats", "join", "https://chat.whatsapp.com/FAKE0000000000000000AB")
     expect(joined.code).toBe(0)
@@ -151,7 +165,7 @@ describe("wa chats create, join, leave, update, link", () => {
 
 describe("wa chats requests", () => {
   it("lists who asked to join and lets one in", async () => {
-    const listed = await acting("chats", "requests", "list", seed.busy)
+    const listed = await acting("chats", "requests", "list", seed.busy, "--limit", "1", "--page", "1")
     expect(listed.code).toBe(0)
     expect(listed.body.items).toEqual([expect.objectContaining({ person_id: REQUESTER })])
     const accepted = await acting("chats", "requests", "accept", seed.busy, REQUESTER)
