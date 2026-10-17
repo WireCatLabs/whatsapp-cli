@@ -1,8 +1,8 @@
 See [`CLAUDE.md`](CLAUDE.md) — the working rules apply to every agent. Start from [`docs/dev/ARCHITECTURE.md`](docs/dev/ARCHITECTURE.md).
 
-The [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md) (also in
-`node_modules/@wirecat/cli-base/docs/standards/`) win over this file and over `CLAUDE.md`. Read the page for the area
-you change before changing it, and cite the rule ids your change touches (`WC-<AREA>-<n>`) in the commit message and
+The [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md) (offline, in a
+cli-base checkout: `git show origin/main:docs/standards/<page>.md`) win over this file and over `CLAUDE.md`. Read the
+page for the area you change before changing it, and cite the rule ids your change touches (`WC-<AREA>-<n>`) in the commit message and
 the PR body.
 
 
