@@ -144,26 +144,12 @@ wa personal store backup ~/wa-backup.db   # a copy, safe while the store is in u
 
 More: [search](docs/search.md) · [the local store](docs/archive.md) · [query language](docs/query-language.md)
 
-## Files
-
-```sh
-wa personal messages send "Book club" "the agenda" --file agenda.pdf
-wa personal messages download "Book club" 3EB0A1B2C3D4E5F6A7B8 --output-dir ~/Downloads
-wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local   # a model on this machine
-wa personal search messages 'content:"reading list"'                      # the text inside files
-```
-
-One file per message, with the text as its caption. The store keeps what WhatsApp needs to fetch a file again, never
-the file, and never shows those keys; a view-once photo keeps none.
-
-More: [file attachments](docs/attachments.md)
-
 ## Groups you run
 
 ```sh
 wa personal review chat:Hiking --unanswered          # questions nobody answered
 wa personal review 'chat:Hiking date>7d'             # the week: decisions, promises, open questions
-wa personal stats chats show Hiking                  # the group's activity, from the local store
+wa personal stats chats show Hiking --offline        # the group's activity, from the local store
 wa personal chats create "Hiking 2027" 100000000000002@lid   # a new group, with people you know
 wa personal chats members add 120363000000000001@g.us 100000000000002@lid
 wa personal chats update 120363000000000001@g.us --join-approval on
