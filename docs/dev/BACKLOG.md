@@ -24,7 +24,6 @@ Open work, most important first. The plan in flight is
    workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
    (`bin/release --local`) before `release.yml` can publish them.
 6. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
-7. **Agent settings like tg's** (`.claude/settings.json`: sandbox on, writes kept inside the project, `bin/wa` excluded so the engine reaches WhatsApp). Left out of the foundation because it changes how agents run here.
 8. **Replace the test-matrix waivers with tests.** `scripts/test-matrix-untested.ts` waives every shared command as
    tested in cli-core (736 options on 2026-10-16; 23 have wa tests). Each group that gets an engine path gets tests
    through `run()`, and its waiver goes.
