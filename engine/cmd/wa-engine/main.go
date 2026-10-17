@@ -43,6 +43,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer lock.Close()
+	lookupStamp = *storePath + ".lookup"
 
 	// SIGINT reaches the whole process group on Ctrl+C; the CLI decides when to stop, through stdin.
 	signal.Ignore(os.Interrupt)

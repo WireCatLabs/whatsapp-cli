@@ -68,6 +68,30 @@ const groupNameLimit = 25
 var inviteCode = regexp.MustCompile(`(?i)chat\.whatsapp\.com/([A-Za-z0-9]+)`)
 
 func (e *engine) dispatchGroups(req request) (any, bool, error) {
+	if value, handled, err := e.groupOp(req); handled {
+		return value, true, groupFailure(err)
+	}
+	return e.dispatchPeople(req)
+}
+
+// groupFailure names what WhatsApp answers a member who is not an admin. classify would read its 401 as a device
+// that is no longer linked, and an agent told that may unlink the device.
+func groupFailure(err error) error {
+	var known *failure
+	switch {
+	case err == nil:
+		return nil
+	case errors.As(err, &known):
+		return known
+	case errors.Is(err, whatsmeow.ErrNotInGroup), errors.Is(err, whatsmeow.ErrGroupNotFound):
+		return err
+	case isIQ(err, 401), isIQ(err, 403):
+		return &failure{"permission_error", "only the group's admins may do that"}
+	}
+	return err
+}
+
+func (e *engine) groupOp(req request) (any, bool, error) {
 	switch req.Op {
 	case "group":
 		value, err := e.group(req.JID, req.WithLink)
@@ -95,7 +119,7 @@ func (e *engine) dispatchGroups(req request) (any, bool, error) {
 	case "answerRequest":
 		return nil, true, e.answerRequest(req)
 	}
-	return e.dispatchPeople(req)
+	return nil, false, nil
 }
 
 // member is the id the store keys a person by: their LID when WhatsApp has one.
@@ -169,14 +193,11 @@ func (e *engine) readGroup(jid types.JID, withLink bool) (*waGroup, error) {
 	if err != nil {
 		return nil, err
 	}
+	// A link WhatsApp will not give is no link, never a failure: this read also follows writes that succeeded.
 	var link *string
 	if withLink {
-		got, err := e.client.GetGroupInviteLink(e.ctx, jid, false)
-		switch {
-		case err == nil:
+		if got, err := e.client.GetGroupInviteLink(e.ctx, jid, false); err == nil {
 			link = &got
-		case !errors.Is(err, whatsmeow.ErrGroupInviteLinkUnauthorized):
-			return nil, err
 		}
 	}
 	group := e.conv.group(info, link)
