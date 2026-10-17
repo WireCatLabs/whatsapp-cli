@@ -1,19 +1,46 @@
 #!/usr/bin/env sh
 # Publishes the version in package.json and tags it. Run on a clean `main`. When npm already has that
 # version, or a higher one, it raises it to the next free one through a pull request and publishes that. Nothing is
-# published until `pnpm release:check` passes; the judgement half is `.claude/skills/release/SKILL.md`.
-# An Unreleased section left above the dated, unpublished version is folded into it the same way.
+# published until `pnpm release:check` passes. The owner runs it, never an agent: the judgement half is the release
+# skill (docs/dev/skills/release/SKILL.md), and its report, docs_ai/releases/whatsapp-cli/<version>.md, must name
+# this commit and carry the owner's sign-off (WC-REL-10). docs_ai/ is a clone of the private repository
+# WireCatLabs/cli-private; a fork without it passes its own signed report. An Unreleased section left above the
+# dated, unpublished version is folded into it the same way, and the report is carried with a fold or a raise.
 #
-#   bin/release           # publishes from GitHub Actions (.github/workflows/release.yml)
-#   bin/release --local   # publishes from this machine: NPM_TOKEN if exported, else the keyring
+#   bin/release                   # publishes from GitHub Actions (.github/workflows/release.yml)
+#   bin/release --local           # publishes from this machine: NPM_TOKEN if exported, else the keyring
+#   bin/release --report <path>   # checks that signed report instead of docs_ai/releases/whatsapp-cli/<version>.md
 #
 # The npm token is never printed and never written to a file — not on success, not in an error.
 set -eu
 
+usage() { echo "usage: bin/release [--local] [--report <path>]" >&2; exit 2; }
+mode=ci
+custom=""
+pending=""
+for arg; do
+  if [ -n "$pending" ]; then custom=$arg; pending=""; continue; fi
+  case "$arg" in
+    --local) mode=local ;;
+    --report) pending=1 ;;
+    *) usage ;;
+  esac
+done
+[ -z "$pending" ] || usage
+case "$custom" in
+  "" | /*) ;;
+  *) custom="$PWD/$custom" ;;
+esac
+# The re-exec below runs from the repository root, where a relative --report would point elsewhere.
+set --
+[ "$mode" = ci ] || set -- --local
+[ -z "$custom" ] || set -- "$@" --report "$custom"
+
 cd "$(dirname "$0")/.."
 self=$(git hash-object bin/release)
 # The fold and land() fast-forward main, and sh reads this file as it goes: a newer bin/release would run half old,
-# half new. Run the new one from the start instead: the second run finds the fold and the raise already on main.
+# half new. Run the new one from the start instead: the second run finds the fold and the raise already on main, and
+# the report carried to them.
 rerun_if_changed() {
   [ "$(git hash-object bin/release)" != "$self" ] || return 0
   [ -z "${WIRECAT_RELEASE_RERUN:-}" ] || { echo "bin/release changed again while releasing — run it again" >&2; exit 1; }
@@ -22,13 +49,6 @@ rerun_if_changed() {
   exec ./bin/release "$@"
 }
 package=@wirecat/whatsapp-cli
-
-mode=ci
-case "${1:-}" in
-  "") ;;
-  --local) mode=local ;;
-  *) echo "usage: bin/release [--local]" >&2; exit 2 ;;
-esac
 
 git fetch -q origin
 [ "$(git branch --show-current)" = "main" ] || { echo "not on main" >&2; exit 1; }
@@ -53,6 +73,56 @@ version=$(node -p 'require("./package.json").version')
 # `npm view` rather than the registry document, which a CDN serves stale for minutes.
 published() {
   npm view "$package@$version" version --prefer-online >/dev/null 2>&1
+}
+
+# The judgement half of the release — changelog, docs, the live scenarios on the owner's account — is the release
+# skill's, and its report is the only record that it ran for this exact commit.
+if [ -n "$custom" ]; then
+  report=$custom
+elif [ -d docs_ai ]; then
+  report="docs_ai/releases/whatsapp-cli/$version.md"
+else
+  echo "no docs_ai/ — release reports live in the private repository WireCatLabs/cli-private, cloned into" \
+    "docs_ai/, as releases/whatsapp-cli/$version.md. A fork passes its own signed report: bin/release --report <path>" >&2
+  exit 1
+fi
+[ -f "$report" ] || { echo "no release report $report — run the release skill first" >&2; exit 1; }
+grep -qx "Commit: $(git rev-parse HEAD)" "$report" || { echo "$report is for another commit than HEAD" >&2; exit 1; }
+# A date, not the template's placeholder, so a report copied from the template does not pass as signed.
+grep -Eq '^Signed off: [0-9]{4}-[0-9]{2}-[0-9]{2}' "$report" || { echo "$report is not signed off by the owner" >&2; exit 1; }
+
+# Released already: the renumbering below would relabel that version's notes and publish the same code again.
+if [ -n "$(git tag -l "v$version")" ] && [ "$(git rev-list -n 1 "v$version")" = "$(git rev-parse HEAD)" ]; then
+  echo "v$version is this very commit — nothing new to release" >&2
+  exit 1
+fi
+
+# The report stays the owner's: it is checked above for the commit they signed, and carried to the new HEAD only
+# when the commits since change nothing but the number and the changelog.
+committed() {
+  [ -n "$custom" ] || git -C docs_ai ls-files --error-unmatch "releases/whatsapp-cli/$version.md" >/dev/null 2>&1 ||
+    { echo "$report is not committed in docs_ai — commit it first" >&2; exit 1; }
+  signed=$(git rev-parse HEAD)
+}
+carry() {
+  to=$1 note=$2 subject=$3
+  extra=$(git diff --name-only "$signed" HEAD | grep -vx -e package.json -e src/version.ts -e CHANGELOG.md || true)
+  [ -z "$extra" ] || { echo "main changed more than the number since $report was signed: $extra" >&2; exit 1; }
+  if [ -z "$custom" ] && [ "$to" != "$version" ]; then
+    git -C docs_ai mv "releases/whatsapp-cli/$version.md" "releases/whatsapp-cli/$to.md"
+    report="docs_ai/releases/whatsapp-cli/$to.md"
+  fi
+  node -e 'const fs = require("fs"); const [file, o, n, signed, head, note] = process.argv.slice(1)
+    const text = fs.readFileSync(file, "utf8").replace(`# ${o}\n`, `# ${n}\n`)
+    const carried = text.replace(`Commit: ${signed}`, `Commit: ${head}`).trimEnd()
+    fs.writeFileSync(file, `${carried}\n\n${note} Signed for ${signed}; ${head} changes only the number and the changelog.\n`)' \
+    "$report" "$version" "$to" "$signed" "$(git rev-parse HEAD)" "$note"
+  if [ -z "$custom" ]; then
+    git -C docs_ai commit -q -m "$subject" -- "releases/whatsapp-cli/$version.md" "releases/whatsapp-cli/$to.md"
+    git -C docs_ai push -q || echo "docs_ai: the carried report is committed but not pushed — push docs_ai" >&2
+  else
+    echo "$report now reports $to at $(git rev-parse HEAD) — commit it yourself" >&2
+  fi
 }
 
 # main takes changes only through a pull request (the repository's ruleset), as in max-cli.
@@ -81,8 +151,17 @@ land() {
 # --land folds on a fresh main through its own pull request, and folds again once if main moves under it.
 # cli-dev is pinned rather than taken from the dependencies: cli-core accepts only an older cli-base.
 folded=""
-published || folded=$(npx -y -p @wirecat/cli-base@0.36.0 cli-dev changelog fold --land --version "$version")
-[ -z "$folded" ] || echo "$folded"
+if ! published; then
+  signed_at=$(git rev-parse HEAD)
+  folded=$(npx -y -p @wirecat/cli-base@0.36.0 cli-dev changelog fold --land --version "$version")
+fi
+if [ -n "$folded" ]; then
+  echo "$folded"
+  committed
+  signed=$signed_at
+  carry "$version" "bin/release folded Unreleased into $version." \
+    "docs(releases): whatsapp-cli $version carried to the folded changelog by bin/release"
+fi
 rerun_if_changed "$@"
 
 # Two sessions preparing the same number is normal; the second takes the next free one (2026-09-29).
@@ -93,6 +172,7 @@ if [ "$next" != "$version" ]; then
   taken=""
   if published; then taken=1; why="$version is already on npm"; else why="$version is not above npm's latest $latest"; fi
   echo "$why — publishing $next instead"
+  committed
   # A version npm already has keeps its changelog section; the unreleased one becomes the new version.
   node -e 'const fs = require("fs"); const [o, n, taken] = process.argv.slice(1)
     const swap = (file, from, to) => fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace(from, to))
@@ -104,6 +184,8 @@ if [ "$next" != "$version" ]; then
   node scripts/engine-packages.mjs sync
   body="bin/release: $why. Only the number changes: package.json (and its engine packages), src/version.ts, the CHANGELOG heading."
   land "release/$next" "chore(release): $next" "$body"
+  carry "$next" "Renumbered by bin/release: $version → $next ($why)." \
+    "docs(releases): whatsapp-cli $version → $next, renumbered by bin/release"
   rerun_if_changed "$@"
   version=$next
 fi
@@ -111,6 +193,10 @@ if published; then
   echo "$version is already on npm — raise the version first" >&2
   exit 1
 fi
+
+# The fold fast-forwards main even when it has nothing to fold, so HEAD can be a commit nobody signed.
+grep -qx "Commit: $(git rev-parse HEAD)" "$report" ||
+  { echo "main moved past the commit $report was signed for — sign the new HEAD and run again" >&2; exit 1; }
 
 echo "== checks for $version =="
 pnpm install --frozen-lockfile
