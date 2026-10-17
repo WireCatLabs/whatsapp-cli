@@ -59,6 +59,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### What's new
 
+- **Each engine package carries `THIRD_PARTY_NOTICES`**: the licence of every Go module the engine links and of Go
+  itself, with where each module's source is. whatsmeow and `go.mau.fi/util` are under the Mozilla Public License
+  2.0 and `go.mau.fi/libsignal` under the GNU General Public License 3.0, all unmodified.
 - **Tasks have assignees** (cli-core 0.320.0): `tasks add` and `tasks plan` take `--assignee sender` (whoever sent
   the message) or `--assignee person:<id>`; `none` clears it. `tasks list "assignee:any state:open"` is what others
   owe you.

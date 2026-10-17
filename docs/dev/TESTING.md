@@ -2,7 +2,7 @@
 
 ```sh
 pnpm lint && pnpm typecheck && pnpm test:coverage   # what CI runs, with the coverage floor
-pnpm engine:test                                    # go vet and go test over engine/
+pnpm engine:test                                    # gofmt, go vet and go test over engine/
 pnpm test:matrix                                    # every command and option has a test or a reason
 pnpm docs:check                                     # links, anchors, user pages, the changelog's shape
 pnpm build && pnpm smoke:bun                        # the built command, executed under Bun
