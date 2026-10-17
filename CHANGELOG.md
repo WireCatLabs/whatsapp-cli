@@ -5,6 +5,24 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Changed — may break scripts
+
+- **An agent never deletes for everyone** (cli-core 0.321.0). Every WhatsApp delete `wa` makes is for everyone, so
+  `messages delete` through MCP is refused with `permission_error`, before `wa` connects, whatever the profile's
+  level; the owner still has `wa <profile> messages delete --for-everyone`.
+- **`mcp --permission <key=level>` only narrows** (cli-core 0.321.0). An override that would give the server more
+  than the profile — `readonly` to `allow`, a `deny` to anything — stops it at startup with `validation_error` naming
+  the key. To let an agent do more, set the level in the profile. The browser setup no longer starts the server with
+  `--permission messages.send=allow`.
+- **Tasks open only where something is asked of you** (cli-core 0.318.0). In a one-to-one chat every question you did
+  not answer opens one, as before; in a group only a question in reply to your message and a mention of you; in a
+  channel or the chat with yourself nothing.
+- **`tasks apply` is now `tasks scan`** (cli-core 0.320.0); MCP `tasks_scan`, permission key `tasks.scan`.
+- **No setting picks a profile any more** (cli-core 0.319.0). A command names its profile with the first word or
+  `WA_PROFILE`. A config file that still has `default_profile` stops a command that names no profile, with the profile
+  to type and `wa config unset default_profile`; `wa config set default_profile` is refused. A profile called `default`
+  is an ordinary name: `wa default mcp config` names its server `wa-default`, not `wa`.
+
 ### Security
 
 - Internal attachment references stay out of live-event, JSON and MCP output (Core0.315.0), keeping media keys inside the client.
@@ -29,6 +47,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### What's new
 
+- **Tasks have assignees** (cli-core 0.320.0): `tasks add` and `tasks plan` take `--assignee sender` (whoever sent
+  the message) or `--assignee person:<id>`; `none` clears it. `tasks list "assignee:any state:open"` is what others
+  owe you.
+- **`wa <profile> tags add --chat <group> watch-tasks`** records every question in that group as a task, whoever it
+  is for.
 - **Poll votes are counted**: `serve` and `watch` keep each person's newest vote, from the phone's history push and
   as votes arrive (`watch --events` prints them), so `polls show` counts the answers and says which you chose, and
   the new `polls voters` lists who voted for what. A poll made with `polls create` is kept in the local store, so it

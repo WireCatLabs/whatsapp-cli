@@ -1,3 +1,4 @@
+import { PassThrough } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
@@ -148,6 +149,66 @@ describe("wa messages delete", () => {
     const result = await acting(["messages", "delete", seed.busy, fresh.id, "--allow-dangerous"])
     expect(result.code).toBe(2)
     expect(result.actions).toEqual([])
+  })
+
+  it("refuses an agent's delete over MCP with permission_error, without connecting", async () => {
+    expect((await wa(["agent", "config", "set", "permissions.messages.delete", "allow"])).code).toBe(0)
+    let connects = 0
+    const neverConnect = (): never => {
+      connects += 1
+      throw new Error("an agent's delete must never connect")
+    }
+    const input = new PassThrough()
+    const output = new PassThrough()
+    const answers: { id?: number; result?: { content: { text: string }[] } }[] = []
+    output.setEncoding("utf8")
+    let buffered = ""
+    output.on("data", (chunk: string) => {
+      buffered += chunk
+      const lines = buffered.split("\n")
+      buffered = lines.pop() ?? ""
+      for (const line of lines) if (line) answers.push(JSON.parse(line))
+    })
+    const answered = async (id: number) => {
+      while (!answers.some((answer) => answer.id === id)) await new Promise((resolve) => setTimeout(resolve, 5))
+      return answers.find((answer) => answer.id === id)
+    }
+    const send = (message: object) => input.write(`${JSON.stringify({ jsonrpc: "2.0", ...message })}\n`)
+    const controller = new AbortController()
+    const serving = run(["agent", "mcp"], {
+      streams: captureStreams(),
+      tty: false,
+      stdin: input,
+      stdout: output,
+      signal: controller.signal,
+      engine: neverConnect,
+      relayed: { profile: "agent", cwd: process.cwd(), connection: neverConnect },
+    })
+
+    send({
+      id: 1,
+      method: "initialize",
+      params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "0" } },
+    })
+    await answered(1)
+    send({ method: "notifications/initialized" })
+    send({
+      id: 2,
+      method: "tools/call",
+      params: {
+        name: "wa_write",
+        arguments: { command: "messages delete", arguments: { chat: seed.busy, messages: [fresh.id] } },
+      },
+    })
+    const refused = JSON.parse((await answered(2))?.result?.content[0]?.text ?? "null")
+    controller.abort()
+    input.end()
+    await serving
+
+    expect(refused.error).toMatchObject({ code: "permission_error" })
+    expect(refused.error.message).toContain("deletes only for everyone")
+    expect(refused.error.message).toContain("wa messages delete --for-everyone")
+    expect(connects).toBe(0)
   })
 })
 

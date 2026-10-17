@@ -30,7 +30,7 @@ ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal 
 | Connect a browser or phone AI app to WhatsApp | [Start the tunnel and server](#start-the-tunnel-and-server), then [connect the app](#connect-the-app) |
 | Run wa beside tg or max | [Run several servers together](#run-several-servers-together) |
 | Use Cloudflare instead of Tailscale | [Alternative: Cloudflare Tunnel](#alternative-cloudflare-tunnel) |
-| Allow more or less for one server run | [Permissions for this server process](#permissions-for-this-server-process) |
+| Allow less for one server run | [Permissions for this server process](#permissions-for-this-server-process) |
 | Stop the server or log every app out | [Stop or revoke access](#stop-or-revoke-access) |
 
 ## Before you start
@@ -74,8 +74,8 @@ when asked. The origin is the address without `/mcp` or any other path. Keep an 
 in it.
 
 The server listens on `127.0.0.1:8765` and prints a one-time access code. It never needs administrator rights; only
-the tunnel may need them. The commands below allow sending for this server process only, with
-`--permission messages.send=allow`; see [permissions for this server process](#permissions-for-this-server-process).
+the tunnel may need them. What the app may do is the profile's own
+`permissions`; set them before you start ([permissions for this server process](#permissions-for-this-server-process)).
 
 ### Windows (PowerShell)
 
@@ -94,7 +94,7 @@ Second window: normal PowerShell, as the user who linked `wa`:
 
 ```powershell
 $mcpPublicUrl = Read-Host 'Paste the HTTPS origin printed by Funnel (no /mcp)'
-wa.cmd personal mcp --http --port 8765 --public-url $mcpPublicUrl --permission messages.send=allow
+wa.cmd personal mcp --http --port 8765 --public-url $mcpPublicUrl
 ```
 
 Run both processes in Windows itself. WSL is a separate environment: a Windows tunnel that points at the Windows
@@ -114,7 +114,7 @@ Second Terminal window, as the same user who ran `wa personal setup`. This works
 ```sh
 printf 'Paste the HTTPS origin printed by Funnel (no /mcp): '
 IFS= read -r mcpPublicUrl
-wa personal mcp --http --port 8765 --public-url "$mcpPublicUrl" --permission messages.send=allow
+wa personal mcp --http --port 8765 --public-url "$mcpPublicUrl"
 ```
 
 ### Linux (Terminal)
@@ -131,7 +131,7 @@ Second terminal window: your normal user, without `sudo`, so `wa` finds the devi
 ```sh
 printf 'Paste the HTTPS origin printed by Funnel (no /mcp): '
 IFS= read -r mcpPublicUrl
-wa personal mcp --http --port 8765 --public-url "$mcpPublicUrl" --permission messages.send=allow
+wa personal mcp --http --port 8765 --public-url "$mcpPublicUrl"
 ```
 
 ## Run several servers together
@@ -196,9 +196,12 @@ itself. After 30 days without use, it asks for a new code.
 The server cannot see whether the app asked you before a call. If the app always allows a tool, the next call can go
 through without a new question.
 
-Repeat `--permission key=level` to change permissions only for this server process. Levels are `deny`, `readonly`,
-`ask` and `allow`. For example, add `--permission messages.send=allow` to allow sending from a read-only profile.
-The saved configuration, the recipient list and the hourly limit do not change. Permission keys are on the
+The profile's `permissions` decide what the app may do. Repeat `--permission key=level` to narrow them for this
+server process only: `--permission messages.send=readonly` stops sending. It never loosens: an override that would
+give more than the profile — `readonly` to `allow`, a `deny` to anything — stops the server at startup with
+`validation_error` naming the key. To let the app send from a read-only profile, set
+`wa personal config set permissions.messages.send allow` first. The saved configuration, the recipient list and the
+hourly limit do not change. Permission keys are on the
 [permissions](permissions.md) page.
 
 ## Stop or revoke access

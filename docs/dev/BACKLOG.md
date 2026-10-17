@@ -46,7 +46,8 @@ Open work, most important first. The plan in flight is
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
-     `messages delete` without `--for-everyone` is refused rather than built from a guessed patch.
+     `messages delete` without `--for-everyone` is refused rather than built from a guessed patch. Until it is built,
+     `WHATSAPP.deleteForMe` is `false`, so an agent's MCP delete is refused; building it means setting that to `true`.
    - **Messages stored before files were.** A photo with a caption stored by an older `wa` has the caption and no
      attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
      not push history again; a re-link would refill it.

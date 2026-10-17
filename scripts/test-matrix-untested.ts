@@ -40,7 +40,6 @@ const SHARED = [
   "commands",
   "commands *",
   "complete",
-  "mcp",
   "mcp *",
   "skill *",
 ]
@@ -138,6 +137,13 @@ export const UNTESTED: Untested[] = [
     reason:
       "a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, " +
       "the one option that could reach the engine (for group admins)",
+  })),
+  ...["--permission", "--http", "--port", "--public-url", "--revoke"].map((option) => ({
+    command: "mcp",
+    option,
+    reason:
+      "cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); " +
+      "src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused",
   })),
   ...["--defaults", "--personal", "--bot"].map((option) => ({
     command: "config set",

@@ -117,7 +117,7 @@ export WA_PROFILE=work     # the same for the whole shell session
 `messages` or any other command word. Names are letters, digits, dot, dash and underscore, starting with a letter or
 a digit.
 
-The order, first match wins: the first word, `WA_PROFILE`, `default_profile` in the config file. With none of them,
+The order, first match wins: the first word, then `WA_PROFILE`. With neither,
 a command that uses an account stops with exit code `2` and lists the profiles on this computer. `wa` never picks
 one, not even the only one. Commands that use no account run without a profile: `--help`, `--version`, `commands`,
 `skill show`, `account list` and `config show`.
