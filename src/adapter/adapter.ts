@@ -41,7 +41,7 @@ export type WhatsAppAdapter = MessengerCore &
   Pick<MessageEditing, "edit" | "delete" | "forward"> &
   Pick<MessageMedia, "download"> &
   MessageReactions &
-  Pick<ReadState, "markRead"> &
+  ReadState &
   Pick<ServerReads, "history"> &
   MarkdownFormatting &
   PollAdapter &
