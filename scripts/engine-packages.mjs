@@ -2,14 +2,13 @@
 // CLI finds its own with require.resolve and npm installs only the package whose os and cpu match.
 //
 //   node scripts/engine-packages.mjs build [<os>-<arch> ...]   # all six when none is named → packages/engine-*/
-//   node scripts/engine-packages.mjs check                     # optionalDependencies pin package.json's version,
-//                                                              # and the notices match engine/go.mod
+//   node scripts/engine-packages.mjs check                     # optionalDependencies pin package.json's version
 //   node scripts/engine-packages.mjs sync                      # rewrite those pins to it
-//   node scripts/engine-packages.mjs notices                   # regenerate engine/THIRD_PARTY_NOTICES (needs Go)
+//   node scripts/engine-packages.mjs notices [--check]         # regenerate engine/THIRD_PARTY_NOTICES, or fail
+//                                                              # when it names other modules or another Go
 //
 // Plain Node with no dependencies: the release job runs it before anything is installed.
 import { execFileSync } from "node:child_process"
-import { createHash } from "node:crypto"
 import { chmodSync, copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -33,12 +32,6 @@ const packageDir = (target) => join(root, "packages", `engine-${target}`)
 
 const engineDir = join(root, "engine")
 const noticesPath = join(engineDir, "THIRD_PARTY_NOTICES")
-const goModHash = () =>
-  createHash("sha256")
-    .update(readFileSync(join(engineDir, "go.mod")))
-    .digest("hex")
-const stamp = () => `Generated from engine/go.mod sha256 ${goModHash()}`
-
 const go = (args, env = {}) =>
   execFileSync("go", args, { cwd: engineDir, env: { ...process.env, ...env }, encoding: "utf8" })
 
@@ -77,6 +70,35 @@ const COPYLEFT = [
   ["GNU GENERAL PUBLIC LICENSE", "the GNU General Public License"],
 ]
 
+const standardHead = () => `The Go standard library and runtime, ${go(["env", "GOVERSION"]).trim()}`
+
+// The first line of every section: what the binary links. Anything else in the file follows from these.
+const expectedHeads = () => [...linkedModules().map((module) => module.replace("@", " ")), standardHead()]
+const SEPARATOR = `\n${"=".repeat(80)}\n\n`
+const writtenHeads = () => {
+  try {
+    return readFileSync(noticesPath, "utf8")
+      .split(SEPARATOR)
+      .slice(1)
+      .map((section) => section.split("\n", 1)[0])
+  } catch {
+    return []
+  }
+}
+
+const assertNoticesCurrent = () => {
+  const expected = expectedHeads()
+  const written = new Set(writtenHeads())
+  const wanted = new Set(expected)
+  const missing = expected.filter((head) => !written.has(head))
+  const extra = [...written].filter((head) => !wanted.has(head))
+  if (!missing.length && !extra.length) return
+  for (const head of missing) console.error(`engine/THIRD_PARTY_NOTICES lacks ${head}`)
+  for (const head of extra) console.error(`engine/THIRD_PARTY_NOTICES still names ${head}`)
+  console.error("run `node scripts/engine-packages.mjs notices` and commit the result")
+  process.exit(1)
+}
+
 const notices = () => {
   const copyleft = []
   const sections = linkedModules().map((module) => {
@@ -90,8 +112,7 @@ const notices = () => {
     return [`${Path} ${Version}`, `Source: ${origin}${proxy}`, "", ...texts].join("\n")
   })
   const goroot = go(["env", "GOROOT"]).trim()
-  const goVersion = go(["env", "GOVERSION"]).trim()
-  const standard = [`The Go standard library and runtime, ${goVersion}`, "Source: https://go.dev/dl/", ""]
+  const standard = [standardHead(), "Source: https://go.dev/dl/", ""]
   sections.push([...standard, ...licenceTexts(goroot)].join("\n"))
   const header = [
     "Third-party material in the wa engine",
@@ -102,18 +123,10 @@ const notices = () => {
     "",
     ...copyleft.map((line) => `  ${line}`),
     "",
-    `${stamp()}; regenerate with \`node scripts/engine-packages.mjs notices\`.`,
+    "Generated; regenerate with `node scripts/engine-packages.mjs notices`.",
   ].join("\n")
-  writeFileSync(noticesPath, [header, ...sections].join(`\n${"=".repeat(80)}\n\n`))
+  writeFileSync(noticesPath, [header, ...sections].join(SEPARATOR))
   console.log(`${noticesPath} — ${sections.length} components`)
-}
-
-const noticesCurrent = () => {
-  try {
-    return readFileSync(noticesPath, "utf8").includes(stamp())
-  } catch {
-    return false
-  }
 }
 
 const build = (target) => {
@@ -159,24 +172,21 @@ const pinned = () =>
 
 const [command, ...args] = process.argv.slice(2)
 if (command === "build") {
+  assertNoticesCurrent()
   for (const target of args.length ? args : Object.keys(TARGETS)) build(target)
 } else if (command === "check") {
   const stale = pinned().filter(([, version]) => version !== manifest.version)
   for (const [name, version] of stale) console.error(`${name} is ${version ?? "missing"}, not ${manifest.version}`)
   if (stale.length) {
     console.error("run `pnpm version:sync`")
+    process.exit(1)
   }
-  if (!noticesCurrent()) {
-    console.error(
-      "engine/THIRD_PARTY_NOTICES does not match engine/go.mod — run `node scripts/engine-packages.mjs notices`",
-    )
-  }
-  if (stale.length || !noticesCurrent()) process.exit(1)
-  console.log(
-    `engine packages ${manifest.version} — all ${pinned().length} optionalDependencies agree, notices current`,
-  )
+  console.log(`engine packages ${manifest.version} — all ${pinned().length} optionalDependencies agree`)
 } else if (command === "notices") {
-  notices()
+  if (args.includes("--check")) {
+    assertNoticesCurrent()
+    console.log("engine/THIRD_PARTY_NOTICES names every linked module and Go")
+  } else notices()
 } else if (command === "sync") {
   // In place, so the rest of package.json keeps its bytes; the pins are added by hand once, with the targets.
   let text = readFileSync(manifestPath, "utf8")
@@ -187,6 +197,6 @@ if (command === "build") {
   writeFileSync(manifestPath, text)
   console.log(`engine packages pinned to ${manifest.version}`)
 } else {
-  console.error("usage: node scripts/engine-packages.mjs build [<os>-<arch> ...] | check | sync | notices")
+  console.error("usage: node scripts/engine-packages.mjs build [<os>-<arch> ...] | check | sync | notices [--check]")
   process.exit(2)
 }
