@@ -5,15 +5,18 @@ import { describe, expect, it } from "vitest"
 import { pathsFor, privateStore } from "../paths.js"
 
 describe("the test sandbox", () => {
-  it("keeps every directory a test can write out of the owner's home", () => {
+  // Windows keeps its temporary directory under the home folder, so "outside home" cannot be the test there.
+  it("keeps every directory a test can write inside its own temporary root", () => {
+    const root = tmpdir()
     const written = [
       ...Object.values(pathsFor()),
       resolvePaths({ appName: "WireCat", prefix: "WIRECAT" }).state,
       storePath(),
       privateStore("default"),
-      tmpdir(),
     ]
 
-    for (const path of written) expect(path.startsWith(homedir()), path).toBe(false)
+    expect(root).not.toBe(homedir())
+    expect(root).toMatch(/wa-test-/)
+    for (const path of written) expect(path.startsWith(root), path).toBe(true)
   })
 })
