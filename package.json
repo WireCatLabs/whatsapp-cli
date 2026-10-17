@@ -39,8 +39,8 @@
     "release:check": "pnpm build && node --experimental-strip-types scripts/release-check.ts",
     "docs:check": "cli-dev docs-check --rules scripts/release/checks.ts --pages && cspell --no-progress --no-summary README.md 'docs/*.md' && rumdl check --config config/wirecat/rumdl.toml README.md docs/*.md",
     "parity:check": "pnpm build && node dist/bin/wa.js commands --json | cli-core-parity wa && node dist/bin/wa.js commands --json | cli-core-parity wa --pages README.md docs/*.md",
-    "version:check": "cli-dev version",
-    "version:sync": "cli-dev version --sync",
+    "version:check": "cli-dev version && node scripts/engine-packages.mjs check",
+    "version:sync": "cli-dev version --sync && node scripts/engine-packages.mjs sync",
     "prepare": "lefthook install || true",
     "secrets:scan": "gitleaks git --no-banner --redact .",
     "prepack": "rm -rf dist tsconfig.tsbuildinfo && pnpm build",
@@ -53,13 +53,22 @@
     "contracts:check": "cli-contract contracts/plan.json",
     "security:no-leak": "cli-testing security no-leak . contracts/no-leak.json",
     "lint:commands": "cli-dev lint --cli dist/bin/wa.js",
-    "engine:build": "cd engine && go build -trimpath -ldflags=\"-s -w\" -o bin/wa-engine ./cmd/wa-engine"
+    "engine:build": "cd engine && go build -trimpath -ldflags=\"-s -w\" -o bin/wa-engine ./cmd/wa-engine",
+    "engine:packages": "node scripts/engine-packages.mjs build"
   },
   "dependencies": {
     "@wirecat/cli-base": "0.40.0",
     "@wirecat/cli-core": "0.309.0",
     "commander": "15.0.0",
     "valibot": "1.5.0"
+  },
+  "optionalDependencies": {
+    "@wirecat/whatsapp-engine-darwin-arm64": "0.1.0",
+    "@wirecat/whatsapp-engine-darwin-x64": "0.1.0",
+    "@wirecat/whatsapp-engine-linux-arm64": "0.1.0",
+    "@wirecat/whatsapp-engine-linux-x64": "0.1.0",
+    "@wirecat/whatsapp-engine-win32-arm64": "0.1.0",
+    "@wirecat/whatsapp-engine-win32-x64": "0.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.4",

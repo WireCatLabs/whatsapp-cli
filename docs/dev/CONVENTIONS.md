@@ -50,6 +50,22 @@ for code and documents. This page lists only where `wa` differs or adds.
   for — as max-cli's changelog section describes. No internal ids, no file paths.
 
 
+## Releases
+
+`bin/release` publishes; its header says how. The engine adds three things to tg's process:
+
+- **Seven packages, one version.** `package.json` pins the six engine packages in `optionalDependencies` to its own
+  version. `pnpm version:check` (also in CI and `pnpm release:check`) fails when they differ; `pnpm version:sync` and
+  `bin/release`'s version bump rewrite them.
+- **Engines first.** The release workflow's `build` job builds and packs the six engine packages
+  (`node scripts/engine-packages.mjs build`, Go from `engine/go.mod`); `publish` uploads them, skipping any npm already
+  has, then the CLI. A CLI published ahead of its engines would install without one: npm skips an optional dependency
+  it cannot find. `bin/release --local` does the same from this machine.
+- **Install tests use packed engines.** Before a release the engine is on no registry, so the install jobs
+  (`install-windows.yml`: Linux, macOS, Windows) build the engine package for their system, install it together with
+  the packed CLI, and check that `engineBinary()` finds it and that it prints the version.
+  `pnpm engine:packages linux-x64` and `npm pack ./packages/engine-linux-x64` give the same pair locally.
+
 ## Documentation authoring
 
 Before documentation work, read the [shared authoring rules](https://github.com/WireCatLabs/cli-docs/blob/main/docs/AUTHORING.md).

@@ -21,7 +21,12 @@ func main() {
 	storePath := flag.String("store", "", "the profile's device store (private.db)")
 	holder := flag.String("holder", "wa", "who holds the connection, named to anyone refused it")
 	linking := flag.Bool("link", false, "allow an empty store: this run links a new device")
+	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 	ownerOnly()
 	out := newWire(os.Stdout)
 	if *storePath == "" {

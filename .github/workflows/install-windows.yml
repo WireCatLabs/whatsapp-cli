@@ -21,10 +21,20 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: npm pack --ignore-scripts
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: engine/go.mod
+          cache-dependency-path: engine/go.sum
+      # One engine package for each system the install jobs run on; macos-latest is arm64.
+      - run: |
+          pnpm engine:packages linux-x64 darwin-arm64 win32-x64
+          for dir in packages/engine-*; do npm pack "./$dir" --pack-destination engines; done
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: install-readiness-package
-          path: wirecat-whatsapp-cli-*.tgz
+          path: |
+            wirecat-whatsapp-cli-*.tgz
+            engines/*.tgz
 
   install:
     needs: pack
@@ -47,4 +57,30 @@ jobs:
           path: package
       - name: Install without PATH and verify direct launch and skills
         shell: pwsh
-        run: ./scripts/install-windows.test.ps1 -Tarball (Get-ChildItem package/*.tgz).FullName
+        run: |
+          ./scripts/install-windows.test.ps1 -Tarball (Get-ChildItem package/wirecat-whatsapp-cli-*.tgz).FullName `
+            -EngineTarball (Get-ChildItem package/engines/wirecat-whatsapp-engine-win32-x64-*.tgz).FullName
+
+  unix-install:
+    needs: pack
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: ["22.16.0", "24"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: install-readiness-package
+          path: package
+      - run: |
+          target=$(node -p 'process.platform + "-" + process.arch')
+          node scripts/install-unix.test.mjs package/wirecat-whatsapp-cli-*.tgz package/engines/wirecat-whatsapp-engine-"$target"-*.tgz
