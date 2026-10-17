@@ -198,9 +198,10 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
   }
 
   // A live edit carries only the new text, stamped with the edit's time; the store would take it as the whole message
-  // and lose its time, reply and reactions. A message the store lacks goes as it came.
+  // and lose its time, reply and reactions. A message the store lacks, or cannot read, goes as it came: a failed
+  // read must not stop `serve`.
   const edited = async (change: WaMessage): Promise<Message> => {
-    const original = await stored.message(change.chat, change.id)
+    const original = await stored.message(change.chat, change.id).catch(() => undefined)
     return original ? { ...original, text: change.text, editedAt: change.editedAt } : toMessage(change)
   }
 
@@ -395,18 +396,13 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       }
       // In arrival order: a deletion handed on before the edit it follows would let the edit bring the message back.
       let queue = Promise.resolve()
-      let failed: (error: unknown) => void = () => {}
-      const failure = new Promise<never>((_, reject) => {
-        failed = reject
-      })
-      failure.catch(() => {})
       const live = listening(engine, ["message", "edit", "delete", "connection"], signal, (event) => {
-        queue = queue.then(() => handed(event)).catch(failed)
+        queue = queue.then(() => handed(event))
       })
       try {
         await translated(engine.ready(signal))
         if (!signal.aborted) onReady?.()
-        await Promise.race([live.done, failure])
+        await live.done
       } finally {
         live.stop()
         await queue

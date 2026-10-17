@@ -193,7 +193,7 @@ describe("replies and live edits", () => {
   it("keeps an edited message's time and reply when the edit arrives live", async () => {
     const controller = new AbortController()
     const editing = () => {
-      const engine = fakeEngine(seed)
+      const engine = fakeEngine({ ...seed, messages: [] })
       const listen = engine.listen
       engine.listen = (kinds, onEvent) => {
         const stop = listen(kinds, onEvent)
