@@ -8,7 +8,7 @@ in that module at the version listed, with where its source is. Under a copyleft
   go.mau.fi/util (the Mozilla Public License 2.0)
   go.mau.fi/whatsmeow (the Mozilla Public License 2.0)
 
-Generated from engine/go.mod sha256 6b28bbdc309f9edbcbaf3a323d84a92252639070bbfdd76d7d1ed9a37c389b0b; regenerate with `node scripts/engine-packages.mjs notices`.
+Generated; regenerate with `node scripts/engine-packages.mjs notices`.
 ================================================================================
 
 filippo.io/edwards25519 v1.2.0
