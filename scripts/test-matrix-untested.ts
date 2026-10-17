@@ -143,7 +143,7 @@ export const UNTESTED: Untested[] = [
     option,
     reason:
       "cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); " +
-      "src/message-actions.test.ts drives plain stdio `mcp` only to see wa's delete refused",
+      "src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused",
   })),
   ...["--defaults", "--personal", "--bot"].map((option) => ({
     command: "config set",

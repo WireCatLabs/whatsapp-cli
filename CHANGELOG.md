@@ -35,6 +35,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`wa upgrade`'s "held back" hint names the package and keeps pnpm's release-age exemption** (cli-core 0.320.0).
+- **An agent's `chats members list` and `chats send-as` follow their own permission keys**, `chats.members.list` and
+  `chats.send-as`, so a deny on those keys reaches the MCP agent too (cli-core 0.321.0).
 - A reply to a message the local store holds names the quoted message's sender and carries its text, so phones show
   the quote instead of "unavailable"; a reply to one the store lacks still goes, with the message's id alone.
 - An edit that `serve` or `watch` hears keeps the message's own time, reply and reactions in the local store; before,
