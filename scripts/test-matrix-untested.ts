@@ -108,6 +108,27 @@ export const UNTESTED: Untested[] = [
     option: "--allow-any-file",
     reason: "cli-core's file check, tested in cli-core (src/sends/upload.test.ts); wa receives the file it allowed",
   },
+  {
+    command: "contacts profile",
+    option: "--show-phone",
+    reason:
+      "wa's profile never carries a phone number (the engine leaves it out), so there is nothing to unmask; " +
+      "cli-core tests the masking",
+  },
+  ...["--kind", "--all", "--transcribe", "--model", "--new", "--mark-read", "--no-mark-read"].map((option) => ({
+    command: "review",
+    option,
+    reason:
+      "a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, " +
+      "the one option that could reach the engine (for group admins)",
+  })),
+  ...["--defaults", "--personal", "--bot"].map((option) => ({
+    command: "config set",
+    option,
+    reason:
+      "cli-core's shared config command, tested in cli-core; src/groups.test.ts uses `config set` only to deny a " +
+      "permission",
+  })),
   ...[
     "--verbose",
     "--quiet",

@@ -86,6 +86,23 @@ the account you use now; a note about a person shows in every profile on this co
 finds a person by your alias unless it matches someone else's name; then it needs the id. `--revision` stops an edit
 of a note that changed since you read it.
 
+## Ask WhatsApp about a person
+
+These connect, so they are refused while `serve` holds the device.
+
+```sh
+wa personal contacts profile 100000000000001@lid        # their name, about line and whether they show a photo
+wa personal contacts block 100000000000001@lid
+wa personal contacts unblock 100000000000001@lid
+echo "+34 600 000 000" | wa personal contacts lookup    # whether this number has WhatsApp, and its id
+wa personal contacts sync                                # the phone's address book into the local store
+```
+
+- `contacts profile` tells the person nothing. It shows no phone number.
+- `contacts lookup` reads the number from stdin, never from the command line, and sends nothing to it. It takes one
+  number, at most one every 10 seconds for the profile: many lookups in a row are what WhatsApp bans scrapers for.
+- WhatsApp keeps your address book on the phone, so `contacts add`, `remove`, `rename` and `import` are refused.
+
 ## Next step
 
 To see what a whole group is doing, and who waits for an answer there, read [groups](groups.md). An AI agent can run

@@ -24,6 +24,11 @@ Some words on this page:
 | See the week's activity | `wa personal stats chats show --offline` |
 | See one group and who is in it | `wa personal chats show` |
 | Delete a message for everyone, as the group's admin | `wa personal messages delete --for-everyone` |
+| Make a group, join one by its link, or leave | `wa personal chats create`, `chats join`, `chats leave` |
+| Add or remove people, make someone an admin | `wa personal chats members add`, `chats admins add` |
+| Rename a group, or change who may add people | `wa personal chats update` |
+| Show or replace the invite link | `wa personal chats link show`, `chats link reset` |
+| Let in or turn away people who asked to join | `wa personal chats requests list`, `chats requests accept` |
 
 Every option is in the [command reference](commands.md).
 
@@ -156,6 +161,38 @@ wa personal messages delete 120363000000000001@g.us 3EB0AAAAAAAAAAAAAAAAAA --for
 In a group you administer, this removes another member's message for everyone; anywhere, it removes your own. It
 needs the message in the local store, since WhatsApp addresses a message by its sender too. It asks first by
 default, and it cannot be undone. Deleting for yourself alone is not built: do that on the phone.
+
+## Run a group
+
+```sh
+wa personal chats create "Hiking" 100000000000002@lid
+wa personal chats members add 120363000000000001@g.us 100000000000002@lid
+wa personal chats members remove 120363000000000001@g.us 100000000000003@lid
+wa personal chats admins add 120363000000000001@g.us 100000000000002@lid --can members,admins,info,pin,link,post,delete
+wa personal chats update 120363000000000001@g.us --title "Hiking club" --only-admins-add on --join-approval on
+wa personal chats link show 120363000000000001@g.us
+wa personal chats link reset 120363000000000001@g.us
+wa personal chats requests list 120363000000000001@g.us
+wa personal chats requests accept 120363000000000001@g.us 100000000000004@lid
+wa personal chats join https://chat.whatsapp.com/AAAAAAAAAAAAAAAAAAAAAA
+wa personal chats leave 120363000000000001@g.us
+```
+
+- **The members see each of these**, so each goes through the profile's [permissions](permissions.md) and hourly
+  limit, like a send, and connects (refused while `serve` holds the device).
+- **Only people you know are added.** `chats create` and `members add` take someone in your address book or that you
+  have written to, and refuse anyone else: WhatsApp bans accounts that add strangers.
+- **An admin has every right.** WhatsApp has one kind of admin, so `admins add` takes the whole list in `--can`.
+- **One invite link.** A group has one link; `link reset` replaces it, and the old one stops working. Only admins see
+  it.
+- **Settings.** `update` changes the name, the description, `--only-admins-add` and `--join-approval`. Announcement
+  mode, "only admins edit info" and disappearing messages show in the group's `provider_metadata` and are changed in
+  the app for now.
+- **Name a group by its id** here: a command that connects knows group names only after it connects.
+- `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
+
+Not built yet: listing a group's members from WhatsApp (`chats members list` shows only what is stored), who joined
+and left (`chats events`), and the group photo.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's
 [permissions](permissions.md) allow.

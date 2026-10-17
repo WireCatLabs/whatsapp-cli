@@ -76,8 +76,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,
   `updateGroup` (name, description, `addMode`, `approval`), `resetLink`, `participants` (`add`, `remove`, `promote`,
   `demote`; a phone-addressed group gets phone JIDs), `requests`, `answerRequest`, `profile` (`GetUserInfo` and the
-  photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per profile, timed by `private.db.lookup`) and `contacts` (the
-  address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
+  photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per profile, timed by
+  `private.db.lookup`) and `contacts` (the address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
   maps the two switches cli-core has (`onlyAdminsAdd`, `joinApproval`) and puts the rest in `providerMetadata`.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
   JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a

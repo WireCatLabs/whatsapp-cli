@@ -5,13 +5,15 @@ feature: it may already be on the way. The order is approximate and can change. 
 [issue on GitHub](https://github.com/WireCatLabs/whatsapp-cli/issues).
 
 Linking, receiving into the local store, sending text with replies, files (sent, received, downloaded, forwarded),
-edits, deleting for everyone, reactions and marking read are in `wa` already ([using wa](usage.md)).
+edits, deleting for everyone, reactions, marking read, running a group ([groups](groups.md#run-a-group)) and a
+person's profile, blocking and number lookup ([people](people.md#ask-whatsapp-about-a-person)) are in `wa` already
+([using wa](usage.md)).
 
 ## Next
 
 1. **The first release on npm**, with the engine for Linux, macOS and Windows.
 2. **Writes while `serve` runs.** Today a send for a profile is refused while `serve` holds its one connection.
-3. **Groups and contacts**: members, admins and invite links; looking a person up.
+3. **Group members from WhatsApp**: listing who is in a group, who joined and left, and the group photo.
 4. **Older history from your phone**, on request.
 
 What each released version changed is in the [changelog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).
