@@ -1,9 +1,15 @@
 ---
 name: release
-description: Prepare, check and publish a whatsapp-cli release — run release:check, draft the changelog in the handbook's headings, audit the docs against what changed, review the change against the handbook and CLAUDE.md, run the live scenarios with the owner's yes, write the release report for the owner to sign, raise the version and run bin/release. Use when asked to release, prepare a release, cut a version, «выпуск», «выпустить версию».
+description: Prepare and check a whatsapp-cli release for the owner to publish — run release:check, draft the changelog in the handbook's headings, audit the docs against what changed, review the change against the handbook and CLAUDE.md, run the live scenarios with the owner's yes, write the release report for the owner to sign, raise the version in a pull request; the owner merges it and runs bin/release, never an agent. Use when asked to release, prepare a release, cut a version, «выпуск», «выпустить версию».
 ---
 
 # Release whatsapp-cli
+
+**An agent never releases `wa` on its own.** The owner releases `wa`. Two of the owner's decisions are open: the first
+publish to npm is done by hand (NEED-1407), and the engine's licence is not settled — it links libsignal, which is
+GPL-3.0 (NEED-1429). An agent may do steps 0 to 6 and open the `chore(release)` pull request of step 7. It never
+merges that pull request, runs `bin/release` or starts `release.yml`, even when the owner has closed both decisions:
+the owner does those.
 
 The rules are the handbook's
 [Releases page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/releases.md) (`WC-REL-<n>`), which
@@ -66,10 +72,10 @@ A messenger CLI is released only with a report the owner signed for that commit 
 `docs_ai/releases/whatsapp-cli/<version>.md` in the main checkout's `docs_ai/` (cli-private): the version, what
 changed for a user, the results of steps 1 to 5, and `Commit: <sha>`, the full SHA of `main` after the release pull
 request merged. Leave out the `Signed off:` line: the owner adds it, with the date. **Never write it yourself.** Commit
-and push `docs_ai/`, then tell the owner the path. `bin/release` does not check the report yet; run it only once the
-owner has signed.
+and push `docs_ai/`, then tell the owner the path. `bin/release` does not check the report yet; the owner runs it only
+once the report is signed.
 
-## 7. Raise the version and publish
+## 7. Raise the version; the owner publishes
 
 ```sh
 npm view @wirecat/whatsapp-cli version         # what is really published
@@ -79,8 +85,8 @@ pnpm version:sync                              # src/version.ts and the six engi
 pnpm release:check                             # now every check passes
 ```
 
-Commit `chore(release): <version>`, open the pull request, and merge it once CI is green. Then, in the main checkout
-on a clean `main`:
+Commit `chore(release): <version>`, open the pull request and tell the owner. The owner merges it once CI is green,
+then runs, in the main checkout on a clean `main`:
 
 ```sh
 gh run list --workflow release.yml --limit 1   # nothing in progress — two releases at once race
@@ -90,4 +96,4 @@ bin/release
 `bin/release` takes the release lock (`WC-REL-3`), refuses within two hours of the last version on npm (`WC-REL-8`),
 runs `release:check` again, takes the next free version if another session published first, and starts
 `release.yml`, which publishes the six engine packages before the CLI ([CONVENTIONS.md](../../CONVENTIONS.md#releases)).
-Report the version, the run and what the live step did.
+Report the pull request, the report's path and what the live step did.
