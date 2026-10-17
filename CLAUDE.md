@@ -22,8 +22,8 @@ vulnerabilities are reported as the [security policy](SECURITY.md) says.
 ## Standards
 
 Every WireCat CLI follows the [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md)
-(also in `node_modules/@wirecat/cli-base/docs/standards/`). Read the page for the area you change before changing
-it. The handbook wins over this file and over every document in this repository; a rule here may be stricter, never
+(offline, in a cli-base checkout: `git show origin/main:docs/standards/<page>.md`). Read the page for the area you
+change before changing it. The handbook wins over this file and over every document in this repository; a rule here may be stricter, never
 looser.
 
 Cite the ids of the rules your change touches (`WC-<AREA>-<n>`, such as `WC-OUT-1`) in the commit message and the PR
