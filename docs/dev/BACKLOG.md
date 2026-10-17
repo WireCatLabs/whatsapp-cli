@@ -26,8 +26,8 @@ Open work, most important first. The plan in flight is
      and `pollVoters` is not offered. A history push carries a poll's votes already decrypted
      (`WebMessageInfo.pollUpdates`); live ones arrive as `PollUpdateMessage`.
    - **A poll made with `polls create` is not stored.** cli-core's stored connection saves what `send` and `forward`
-     return but not `createPoll`, and WhatsApp does not echo a device's own message back to it, so `polls vote` on it
-     is `not_found` until the phone's next history push. Fix in cli-core: save `createPoll`'s message like `send`'s.
+     return but not `createPoll`, and WhatsApp does not echo a device's own message back to it, so `polls show|vote` on
+     it is `not_found`, today for good: the phone pushes history once, right after linking. Fix in cli-core: save `createPoll`'s message like `send`'s.
    - **`polls close` and `--revote`.** WhatsApp polls never close and always let a vote change; cli-core has no flag to
      hide `polls close`, which is refused, and passes `revote: false` unless `--revote`, which is ignored.
    - **Newer poll fields** (`endTime`, `hideParticipantName`, `pollType`, `correctAnswer` on `PollCreationMessage`)

@@ -65,6 +65,7 @@ claude -p "$(cat ~/wa-recipes/morning.md)" --allowedTools "Bash(wa personal inbo
 ```sh
 wa personal config set permissions.messages readonly
 wa personal config set permissions.reactions readonly
+wa personal config set permissions.polls readonly
 wa personal config set permissions.chats readonly
 wa personal config show                     # check the permissions in force
 wa personal config set sends_per_hour 5     # or: at most five sends an hour

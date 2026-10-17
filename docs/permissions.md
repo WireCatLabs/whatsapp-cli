@@ -43,8 +43,8 @@ More specific keys win: `permissions.messages.send ask` still permits sending, w
 without a server form over MCP. Set that key to `readonly` to refuse sends. Check other exceptions with
 `wa work config show`.
 
-This controls messages. Other actions have their own keys: `reactions` for reactions, `chats.mark-read` for read
-receipts. The other side sees both, so give them the same care as sending.
+This controls messages. Other actions have their own keys: `reactions` for reactions, `polls` for polls and votes,
+`chats.mark-read` for read receipts. The other side sees all three, so give them the same care as sending.
 
 ## Questions in scripts
 

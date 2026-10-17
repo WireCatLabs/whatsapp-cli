@@ -52,6 +52,13 @@ const parse = (input: string, depth = 0): FormattedText => {
     const lineStart = at === 0 || input[at - 1] === "\n"
     if (lineStart && input.startsWith("```", at)) {
       const opening = /^```([\w.+#-]*)[ \t]*\r?\n/u.exec(input.slice(at))
+      // WhatsApp's own monospace sits on one line.
+      const inline = opening ? null : /^```([^`\r\n]+)```/u.exec(input.slice(at))
+      if (inline) {
+        append({ text: inline[1] ?? "", spans: [] }, "pre", { language: "" })
+        at += inline[0].length
+        continue
+      }
       if (!opening)
         throw new CliError("validation_error", "a Markdown code fence needs a newline and an optional language token")
       if (opening) {
