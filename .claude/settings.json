@@ -46,7 +46,14 @@
   "sandbox": {
     "enabled": true,
     "filesystem": {
-      "allowWrite": ["/home/leemour/Projects/AI/**", "~/.local/share/pnpm/**", "~/.cache/**", "~/.npm/**", "/tmp/**"],
+      "allowWrite": [
+        "/home/leemour/Projects/AI/**",
+        "~/.local/share/pnpm/**",
+        "~/.cache/**",
+        "~/go/**",
+        "~/.npm/**",
+        "/tmp/**"
+      ],
       "allowRead": ["~/.ssh/id_ed25519.pub", "~/.ssh/known_hosts"],
       "denyRead": ["~/.ssh", "~/.gnupg", "~/.aws", "~/.npmrc", "~/.pypirc"]
     },
