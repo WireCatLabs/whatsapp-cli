@@ -36,6 +36,8 @@ type request struct {
 	File       *waUpload     `json:"file,omitempty"`
 	Attachment *waAttachment `json:"attachment,omitempty"`
 	Path       string        `json:"path,omitempty"`
+
+	groupFields
 }
 
 // failure carries a code from the contract's closed list and fixed wording: never a JID, a name or anything typed.

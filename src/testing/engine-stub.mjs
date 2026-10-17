@@ -107,6 +107,30 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "directory":
       say({ id, ok: [] })
       break
+    // The same lines engine/cmd/wa-engine's wire-shape tests expect the Go engine to write.
+    case "group":
+      process.stdout.write(
+        `{"id":${id},"ok":{"chat":{"jid":"120363000000000001@g.us","name":"Book club","kind":"group","unread":null,` +
+          `"lastMessageAt":null,"participants":1},"description":"synthetic description",` +
+          `"link":"https://chat.whatsapp.com/AAAAAAAAAAAAAAAAAAAAAA","addMode":"admin_add","approval":true,` +
+          `"announce":true,"locked":false,"ephemeral":0,"members":[{"jid":"100000000000001@lid","name":null,"role":"owner"}]}}\n`,
+      )
+      break
+    case "requests":
+      process.stdout.write(
+        `{"id":${id},"ok":[{"jid":"100000000000002@lid","name":"Ann Lee","requestedAt":"2026-09-01T10:00:00.000Z"},` +
+          `{"jid":"100000000000003@lid","name":null,"requestedAt":null}]}\n`,
+      )
+      break
+    case "profile":
+      process.stdout.write(
+        `{"id":${id},"ok":{"jid":"100000000000002@lid","name":"Ann Lee","about":"synthetic about","business":false,` +
+          `"verified":false,"contact":true,"photo":null}}\n`,
+      )
+      break
+    case "participants":
+      process.stdout.write(`{"id":${id},"ok":{"notAdded":[]}}\n`)
+      break
     case "close":
       say({ id, ok: null })
       process.exit(0)

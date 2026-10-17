@@ -12,6 +12,7 @@ import { type MessageStore, openStore } from "@wirecat/cli-core/store"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { type StoredMessages, whatsAppAdapter } from "./adapter/adapter.js"
+import { ADMIN_RIGHTS, GROUP_SETTINGS } from "./adapter/groups.js"
 import { resolveSettings, WA } from "./app.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
 import { EngineError, type LoginCode, type WhatsAppEngine } from "./engine/contract.js"
@@ -93,6 +94,8 @@ const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredM
       })
       return page.items.at(-1)
     },
+    wroteTo: async (personId) =>
+      (await (await store()).messages.messages(key, personId, { limit: 1, outgoing: true })).items.length > 0,
     close: async () => {
       await (await opened?.catch(() => undefined))?.close()
     },
@@ -171,16 +174,21 @@ export const WHATSAPP: Messenger = {
   diagnose: async (command, base) =>
     diagnoseWhatsApp(base.settings.profile, base.env, environmentOf<Environment>(command).update),
   // What WhatsApp does not have, so the shared commands do not offer it: forum topics, folders, more than one
-  // invite link per group, channel comments, and history shown to people added later.
+  // invite link per group (`chats link reset` replaces the one there is), answering every join request at once,
+  // channel comments, history shown to people added later, and admins with some rights but not others.
   topics: false,
   folderOrder: false,
   folderJoin: false,
   inviteLinkCreate: false,
   inviteLinkList: false,
+  inviteLinkRevoke: false,
+  joinRequestsAll: false,
   channelComments: false,
   addsWithHistory: false,
   // A document carries the name the recipient sees; WhatsApp has no spoiler and no caption above.
   mediaOptions: ["fileName"],
+  groupSettings: GROUP_SETTINGS,
+  adminRights: ADMIN_RIGHTS,
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)

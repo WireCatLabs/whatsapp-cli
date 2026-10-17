@@ -1,0 +1,292 @@
+import { CliError } from "@wirecat/cli-base"
+import type { AdminRight, Chat, GroupCard, GroupMember, ProfileFacts } from "@wirecat/cli-core"
+import type { MessengerAdapter } from "@wirecat/cli-core/cli"
+import type { ConnectionState, WhatsAppEngine } from "../engine/contract.js"
+import type { WaGroup } from "../engine/groups.js"
+import { toChat, toMember } from "./map.js"
+
+/** Group moderation and admin, join requests, profiles, blocking, number lookup and the account's health. */
+export type GroupAdapter = Required<
+  Pick<
+    MessengerAdapter,
+    | "members"
+    | "admins"
+    | "people"
+    | "createGroup"
+    | "join"
+    | "leave"
+    | "group"
+    | "updateGroup"
+    | "resetInviteLink"
+    | "addMembers"
+    | "removeMembers"
+    | "addAdmin"
+    | "removeAdmin"
+    | "joinRequests"
+    | "answerJoinRequest"
+    | "profile"
+    | "block"
+    | "unblock"
+    | "lookup"
+    | "addressBook"
+    | "health"
+  >
+>
+
+/**
+ * What a WhatsApp admin may do. WhatsApp has one kind of admin, with all of these at once, so `admins add` takes
+ * all of them or none.
+ */
+export const ADMIN_RIGHTS = [
+  "members",
+  "admins",
+  "info",
+  "pin",
+  "link",
+  "post",
+  "delete",
+] as const satisfies AdminRight[]
+
+/** The switches of cli-core's `chats update` that WhatsApp has the same way; announce, locked and ephemeral it has not. */
+export const GROUP_SETTINGS = ["onlyAdminsAdd", "joinApproval"] as const
+
+const isPerson = (id: string) => id.endsWith("@lid") || id.endsWith("@s.whatsapp.net")
+
+/**
+ * A group as `chats update` and `chats create` answer it. WhatsApp's switches that cli-core has no name for go in
+ * `providerMetadata`, so they are shown rather than dropped.
+ */
+export const toGroupCard = (group: WaGroup): GroupCard => {
+  const chat = toChat(group.chat)
+  return {
+    ...chat,
+    description: group.description,
+    link: group.link,
+    settings: {
+      allCanPin: null,
+      onlyAdminsAdd: group.addMode === "" ? null : group.addMode === "admin_add",
+      onlyAdminsCall: null,
+      onlyOwnerEditsInfo: null,
+      membersSeeLink: null,
+      joinApproval: group.approval,
+    },
+    providerMetadata: {
+      ...chat.providerMetadata,
+      onlyAdminsSend: group.announce,
+      onlyAdminsEditInfo: group.locked,
+      disappearingSeconds: group.ephemeral,
+    },
+  }
+}
+
+const toGroupMember = ({ jid, name, role }: WaGroup["members"][number]): GroupMember => ({
+  id: jid,
+  name,
+  username: null,
+  role,
+})
+
+export interface GroupDeps {
+  engine: WhatsAppEngine
+  resolve: (reference: string) => Promise<Chat>
+  translated: <T>(work: Promise<T>) => Promise<T>
+  /** Whether the owner has written to this person; from cli-core's store. */
+  wroteTo: (personId: string) => Promise<boolean>
+}
+
+export const groupAdapter = ({ engine, resolve, translated, wroteTo }: GroupDeps): GroupAdapter => {
+  const groupId = async (reference: string): Promise<string> => {
+    const { id } = await resolve(reference)
+    if (!id.endsWith("@g.us")) throw new CliError("validation_error", "that chat is not a WhatsApp group")
+    return id
+  }
+
+  const personId = async (reference: string): Promise<string> => {
+    const { id } = await resolve(reference)
+    if (!isPerson(id)) throw new CliError("validation_error", "that is a chat, not a person")
+    return id
+  }
+
+  // WhatsApp bans accounts that add strangers to groups, so only someone in the address book or written to before.
+  const refuseStrangers = async (people: string[]) => {
+    const book = new Set((await translated(engine.contacts())).map((contact) => contact.jid))
+    for (const person of people) {
+      if (book.has(person) || (await wroteTo(person))) continue
+      throw new CliError(
+        "permission_error",
+        "wa adds only people in your address book or that you have written to — WhatsApp bans accounts that add strangers",
+      )
+    }
+  }
+
+  return {
+    members: async (chat, { limit, offset }) => {
+      const group = await translated(engine.group(await groupId(chat)))
+      const end = limit === undefined ? group.members.length : offset + limit
+      return {
+        chatId: group.chat.jid,
+        items: group.members.slice(offset, end).map(toGroupMember),
+        hasMore: group.members.length > end,
+        participantsCount: group.members.length,
+      }
+    },
+
+    admins: async (chat) => {
+      const group = await translated(engine.group(await groupId(chat)))
+      return group.members.filter((member) => member.role !== "member").map((member) => member.jid)
+    },
+
+    people: async (references) => {
+      const chats = await translated(engine.directory())
+      return references.map((reference) => {
+        const typed = reference.trim()
+        if (typed.includes("@")) {
+          if (!isPerson(typed)) throw new CliError("validation_error", "that is a chat, not a person")
+          return typed
+        }
+        const wanted = typed.toLowerCase()
+        const people = chats.filter((chat) => chat.kind === "dm" && isPerson(chat.jid) && chat.name !== null)
+        const exact = people.filter((chat) => chat.name?.toLowerCase() === wanted)
+        const found = exact.length > 0 ? exact : people.filter((chat) => chat.name?.toLowerCase().includes(wanted))
+        if (found.length === 1 && found[0]) return found[0].jid
+        if (found.length > 1)
+          throw new CliError(
+            "validation_error",
+            `${found.length} people match that name — name one by their id (…@lid)`,
+          )
+        throw new CliError("not_found", "nobody by that name in your WhatsApp contacts; name them by their id (…@lid)")
+      })
+    },
+
+    createGroup: async (title, people, { channel }) => {
+      if (channel) throw new CliError("validation_error", "wa makes groups only; WhatsApp channels are made in the app")
+      await refuseStrangers(people)
+      const { group, notAdded } = await translated(engine.createGroup(title, people))
+      const card = toGroupCard(group)
+      return notAdded.length === 0 ? card : { ...card, providerMetadata: { ...card.providerMetadata, notAdded } }
+    },
+
+    join: async (link) => {
+      const joined = await translated(engine.join(link))
+      return joined.group ? toGroupCard(joined.group) : { requested: true as const }
+    },
+
+    leave: async (chat) => {
+      const chatId = await groupId(chat)
+      await translated(engine.leave(chatId))
+      return { chatId }
+    },
+
+    group: async (chat) => toGroupCard(await translated(engine.group(await groupId(chat), { withLink: true }))),
+
+    updateGroup: async (chatId, { title, description, settings = {}, photo }) => {
+      if (photo !== undefined) throw new CliError("validation_error", "wa does not set a group's photo yet")
+      const missing = Object.keys(settings).filter((key) => !(GROUP_SETTINGS as readonly string[]).includes(key))
+      if (missing.length > 0)
+        throw new CliError("validation_error", `WhatsApp has no group setting ${missing.join(", ")}`)
+      const { onlyAdminsAdd, joinApproval } = settings
+      const group = await translated(
+        engine.updateGroup(await groupId(chatId), {
+          ...(title === undefined ? {} : { title }),
+          ...(description === undefined ? {} : { description }),
+          ...(typeof onlyAdminsAdd === "boolean" ? { addMode: onlyAdminsAdd ? "admin_add" : "all_member_add" } : {}),
+          ...(typeof joinApproval === "boolean" ? { approval: joinApproval } : {}),
+        }),
+      )
+      return toGroupCard(group)
+    },
+
+    resetInviteLink: async (chatId) => toGroupCard(await translated(engine.resetInviteLink(await groupId(chatId)))),
+
+    addMembers: async (chatId, people, { history }) => {
+      if (history)
+        throw new CliError("validation_error", "WhatsApp does not show people added the messages from before")
+      await refuseStrangers(people)
+      return translated(engine.participants(await groupId(chatId), "add", people))
+    },
+
+    removeMembers: async (chatId, people) => {
+      await translated(engine.participants(await groupId(chatId), "remove", people))
+    },
+
+    addAdmin: async (chatId, person, rights) => {
+      const missing = ADMIN_RIGHTS.filter((right) => !rights.includes(right))
+      if (missing.length > 0)
+        throw new CliError(
+          "validation_error",
+          `a WhatsApp admin gets every right at once — give --can ${ADMIN_RIGHTS.join(",")}`,
+        )
+      await translated(engine.participants(await groupId(chatId), "promote", [person]))
+    },
+
+    removeAdmin: async (chatId, person) => {
+      await translated(engine.participants(await groupId(chatId), "demote", [person]))
+    },
+
+    joinRequests: async (chatId, { limit, search, link }) => {
+      if (link !== undefined)
+        throw new CliError("validation_error", "a WhatsApp group has one invite link; leave out --link")
+      const wanted = search?.toLowerCase()
+      const found = (await translated(engine.joinRequests(await groupId(chatId))))
+        .filter((one) => wanted === undefined || (one.name?.toLowerCase().includes(wanted) ?? false))
+        .sort((a, b) => (b.requestedAt ?? "").localeCompare(a.requestedAt ?? ""))
+      return {
+        items: found.slice(0, limit).map((one) => ({
+          person: { id: one.jid, name: one.name, username: null },
+          requestedAt: one.requestedAt,
+        })),
+        hasMore: found.length > limit,
+        total: found.length,
+      }
+    },
+
+    answerJoinRequest: async (chatId, person, accept) => {
+      await translated(engine.answerJoinRequest(await groupId(chatId), person, accept))
+      return { already: false }
+    },
+
+    profile: async (reference): Promise<ProfileFacts> => {
+      const found = await translated(engine.profile(await personId(reference)))
+      return {
+        id: found.jid,
+        name: found.name,
+        usernames: [],
+        bio: found.about,
+        flags: found.verified ? { verified: true } : {},
+        contact: found.contact,
+        ...(found.photo === null ? {} : { hasPhoto: found.photo }),
+        chats: [],
+      }
+    },
+
+    block: async (person) => {
+      await translated(engine.block(person, true))
+    },
+
+    unblock: async (person) => {
+      await translated(engine.block(person, false))
+    },
+
+    lookup: async (phone) => toMember(await translated(engine.lookup(phone))),
+
+    addressBook: async () => (await translated(engine.contacts())).map(toMember),
+
+    // Connecting is the check: WhatsApp refuses a banned account's connection and says so.
+    health: async () => {
+      let ended: ConnectionState | undefined
+      const stop = engine.listen(["connection"], (event) => {
+        if (event.event === "connection" && (event.state === "banned" || event.state === "logged_out"))
+          ended = event.state
+      })
+      try {
+        await translated(engine.ready(new AbortController().signal))
+      } catch (error) {
+        if (ended === "banned") return { standingChecked: true, standing: { state: "banned" } }
+        throw error
+      } finally {
+        stop()
+      }
+      return ended === "banned" ? { standingChecked: true, standing: { state: "banned" } } : { standingChecked: true }
+    },
+  }
+}

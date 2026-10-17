@@ -16,6 +16,7 @@ import {
   type WhatsAppEngine,
 } from "../engine/contract.js"
 import { eventHub } from "../engine/events.js"
+import { type FakeGroups, fakeGroups } from "./fake-groups.js"
 
 /** Ids shaped like WhatsApp's: groups, LIDs and web message ids. */
 export const whatsAppIds: IdMaker = (kind, n) =>
@@ -67,7 +68,7 @@ const UPLOADED: Record<string, { kind: WaAttachment["kind"]; media: "image" | "v
 /** The bytes the fake engine "downloads": synthetic, named after the file's kind. */
 export const syntheticBytes = (attachment: WaAttachment): Buffer => Buffer.from(`synthetic ${attachment.kind} bytes`)
 
-export interface FakeEngine extends WhatsAppEngine {
+export interface FakeEngine extends WhatsAppEngine, FakeGroups {
   /** Pushes an event as the engine would, checked against the contract first. */
   push(event: EngineEvent): void
   sent: WaMessage[]
@@ -133,6 +134,7 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
   }
 
   const engine: FakeEngine = {
+    ...fakeGroups(seed, chats),
     sent,
     actions,
     uploads,

@@ -165,6 +165,9 @@ func (e *engine) dispatch(req request) (any, error) {
 	case "logout":
 		return nil, e.client.Logout(e.ctx)
 	}
+	if value, handled, err := e.dispatchGroups(req); handled {
+		return value, err
+	}
 	return nil, &failure{"validation_error", "the engine has no such request"}
 }
 

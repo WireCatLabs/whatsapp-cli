@@ -55,6 +55,20 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("reads the group and people answers the Go engine writes", async () => {
+    const engine = await stub("ok")
+    expect(await engine.group("120363000000000001@g.us", { withLink: true })).toMatchObject({
+      addMode: "admin_add",
+      members: [{ role: "owner" }],
+    })
+    expect(await engine.joinRequests("120363000000000001@g.us")).toHaveLength(2)
+    expect(await engine.profile("100000000000002@lid")).toMatchObject({ about: "synthetic about", photo: null })
+    expect(await engine.participants("120363000000000001@g.us", "add", ["100000000000002@lid"])).toEqual({
+      notAdded: [],
+    })
+    await engine.close()
+  })
+
   it("hands the connection event to a listener and resolves ready once connected", async () => {
     const engine = await stub("ok")
     const events: EngineEvent[] = []
