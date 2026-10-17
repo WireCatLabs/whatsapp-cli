@@ -179,9 +179,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages context` | `--after-n` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages download` |  | ✅ |  |
 | `messages download` | `--output-dir` | ✅ |  |
-| `messages download` | `--all` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/cli/messenger/download-command.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
-| `messages download` | `--pause` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/cli/messenger/download-command.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
-| `messages download` | `--extract` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/cli/messenger/download-command.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
+| `messages download` | `--all` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
+| `messages download` | `--pause` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
+| `messages download` | `--extract` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
 | `messages transcribe` |  | ✅ |  |
 | `messages transcribe` | `--local` | ⛔ | needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, and cli-core's src/speech tests drive the local model |
 | `messages transcribe` | `--model` | ⛔ | needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, and cli-core's src/speech tests drive the local model |
@@ -194,7 +194,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages forward` | `--to` | ✅ |  |
 | `messages forward` | `--silent` | ⛔ | refused by the adapter before the engine, as `messages send` refuses them (src/program.test.ts) |
 | `messages forward` | `--send-as` | ⛔ | refused by the adapter before the engine, as `messages send` refuses them (src/program.test.ts) |
-| `messages forward` | `--operation-id` | ⛔ | a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/*.test.ts) |
+| `messages forward` | `--operation-id` | ⛔ | a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/guard.test.ts) |
 | `messages pin` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages pin` | `--notify` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages unpin` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |

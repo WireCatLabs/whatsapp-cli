@@ -19,6 +19,9 @@ Open work, most important first. The plan in flight is
    - **Files WhatsApp no longer keeps.** A download of an expired file is `not_found`; WhatsApp's apps ask the sender's
      phone to upload it again (whatsmeow's `SendMediaRetryReceipt`), which is not built. A forward of one reaches the
      recipient as a file that will not open.
+   - **`watch --jsonl` prints a file's keys.** cli-core's watch writes the message as the adapter gave it, `providerRef`
+     included, while every other answer leaves it out (`messageItem`). The keys are needed for the store, so the fix
+     is in cli-core's watch output, not here.
    - **Media leftovers**: albums (one file per message here), thumbnails on sent photos and videos, files to
      channels, forwarding a place or a contact card, `metadata` (needs the group read).
    - **Live checks** (with item 1): a reaction and a revoke in a one-to-one chat stored under a LID, and in a group

@@ -83,6 +83,17 @@ func TestAMessageCarriesItsAttachments(t *testing.T) {
 	}
 }
 
+func TestAViewOnceFileKeepsNoKeys(t *testing.T) {
+	content := &waE2E.Message{ImageMessage: &waE2E.ImageMessage{DirectPath: proto.String("/v/t62/synthetic"),
+		MediaKey: syntheticKey, FileSHA256: syntheticSum, FileEncSHA256: syntheticEnc}}
+	evt := incoming(annLID, annLID, content)
+	evt.IsViewOnce = true
+	changed, ok := testConverter().message(evt, nil)
+	if !ok || len(changed.message.Attachments) != 1 || changed.message.Attachments[0].Ref != nil {
+		t.Fatalf("got %+v", changed.message.Attachments)
+	}
+}
+
 func TestContentOfSendsTheStoredKeysAgain(t *testing.T) {
 	forwarded := &waE2E.ContextInfo{IsForwarded: proto.Bool(true), ForwardingScore: proto.Uint32(1)}
 	for _, a := range []waAttachment{
