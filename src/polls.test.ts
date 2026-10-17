@@ -230,6 +230,38 @@ describe("votes from WhatsApp", () => {
     expect(second.items).toMatchObject([{ person_id: base.person }])
   })
 
+  it("keeps the votes a history push carries, right behind the poll they are for", async () => {
+    const pushed = {
+      id: "3EB0000000000000000P03",
+      chat: "120363000000000077@g.us",
+      sender: base.person,
+      senderName: null,
+      fromMe: false,
+      timestamp: "2026-09-01T09:00:00.000Z",
+      editedAt: null,
+      text: whichDay.question,
+      replyTo: null,
+      poll: whichDay,
+    }
+    const chat = {
+      jid: pushed.chat,
+      name: null,
+      kind: "group",
+      unread: 0,
+      lastMessageAt: null,
+      participants: 2,
+    } as const
+    await watching([
+      { event: "history", history: { kind: "recent", chats: [chat], contacts: [], messages: [pushed] } },
+      vote(other, ["Tuesday"], "2026-09-01T09:05:00.000Z", { chat: pushed.chat, message: pushed.id, poll: whichDay }),
+    ])
+    const shown = await polling(["show", pushed.chat, pushed.id])
+    expect(JSON.parse(shown.stdout).item, shown.stderr).toMatchObject({
+      answers: [{ voters: 0 }, { voters: 1 }],
+      voters: 1,
+    })
+  })
+
   it("counts the account's own vote once, whether this command or the phone cast it", async () => {
     const voted = await polling(["vote", base.busy, counted.id, answerId("Monday")])
     expect(JSON.parse(voted.stdout).item.poll).toMatchObject({
