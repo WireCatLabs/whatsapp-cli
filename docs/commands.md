@@ -2371,7 +2371,7 @@ wa tags list [query]
 
 ## `wa mentions`
 
-phones, e-mail, links, documents, people's names and addresses found in stored messages
+phones, e-mail, links, documents, names and addresses in stored messages
 
 ### `wa mentions list`
 
