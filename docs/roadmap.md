@@ -14,6 +14,8 @@ person's profile, blocking and number lookup ([people](people.md#ask-whatsapp-ab
 
 1. **The first release on npm**, with the engine for Linux, macOS and Windows.
 2. **Group members from WhatsApp**: listing who is in a group, who joined and left, and the group photo.
-3. **Older history from your phone**, on request.
+3. **Older history from your phone**, on request: `messages sync <chat>` asking the phone for 50 messages at a time,
+   while it is online. `wa` can already ask; `messages sync` still refuses
+   ([why](archive.md#why-it-cannot-download-older-history)).
 
 What each released version changed is in the [changelog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).

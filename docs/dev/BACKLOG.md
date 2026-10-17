@@ -7,7 +7,15 @@ Open work, most important first. The plan in flight is
    end, send to the own LID chat, the lock against a running `serve`, a fresh `session start` keeping the history
    push, `self()` set right after pairing.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
-4. **Feature groups**: polls, on-demand older history from the phone. Edit, delete for everyone, reactions,
+4. **Older history from the phone needs cli-core to let `messages sync` through.** The adapter's `history` and the
+   engine's `older` are built and tested; cli-core's `archiveService.fetch` calls `pushed()` and refuses every
+   `reads: "store"` messenger. Fix in cli-core: refuse only when the connection has no `history`
+   (`capability(connection, "history", …)` already says so), and let `--dry-run` keep refusing. Then flip the test
+   in `src/older-history.test.ts` and the docs that say it refuses. Live checks before calling it done (NEED-1387,
+   own chat only): whether the phone finds a chat named by its LID when it knows it by phone number; whether a
+   50-message answer comes in one `ON_DEMAND` chunk; whether the notification's `PeerDataRequestSessionID` equals the
+   request's message id, which would match an answer more surely than its chat.
+5. **Feature groups**: polls. Edit, delete for everyone, reactions,
    mark-read, files, group admin, join requests, profiles, blocking and number lookup are built; what they left open:
    - **Group members are never listed.** cli-core refuses `chats members fetch` and `audit` for a messenger whose
      history is `"store"` (`fromStore` in its `services/chats`), and `chats members list` reads only the stored roster,
@@ -41,12 +49,12 @@ Open work, most important first. The plan in flight is
    - **Live checks** (with item 1): a reaction and a revoke in a one-to-one chat stored under a LID, and in a group
      addressed by phone numbers; whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.
-5. **Distribution — first publish.** The engine packages, the release steps and the install tests on three systems are
+6. **Distribution — first publish.** The engine packages, the release steps and the install tests on three systems are
    built (`scripts/engine-packages.mjs`, `release.yml`, `install-windows.yml`) but have not run in CI or published.
    npm's trusted publishing is set per package, and I think a package must exist on npm before it can trust a
    workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
    (`bin/release --local`) before `release.yml` can publish them.
-6. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
+7. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
 8. **Replace the test-matrix waivers with tests.** `scripts/test-matrix-untested.ts` waives every shared command as
    tested in cli-core (736 options on 2026-10-16; 23 have wa tests). Each group that gets an engine path gets tests
    through `run()`, and its waiver goes.
