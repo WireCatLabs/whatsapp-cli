@@ -1,5 +1,5 @@
 import { appendFileSync } from "node:fs"
-import { exitCodeFor } from "@wirecat/cli-base"
+import { exitCodeFor, processStreams } from "@wirecat/cli-base"
 import {
   accountCommand,
   attachmentsCommand,
@@ -37,7 +37,9 @@ import {
 import type { Command } from "commander"
 import { CONFIG, WA } from "./app.js"
 import { sessionCommand } from "./commands/session.js"
+import { upgradeCommand } from "./commands/update.js"
 import { type Environment, SKILL, WHATSAPP } from "./messenger.js"
+import { updateNotice } from "./update.js"
 
 /** A revoked or missing login fails the same on every retry. */
 export const NO_RESTART_ON = [exitCodeFor("authentication_error")]
@@ -84,6 +86,7 @@ const definition: ProgramDefinition = {
       doctorCommand(WHATSAPP),
       commandsCommand(WA),
       completeCommand(WHATSAPP, CONFIG),
+      upgradeCommand(),
       mcpCommand(WHATSAPP),
       skillCommand(WA, SKILL),
     ]),
@@ -93,11 +96,18 @@ export const createProgram = (): Command => create(definition)
 
 /** Never throws: every outcome is an exit code, and a failure is said once, on stderr. */
 export const run = async (argv: string[], environment: Environment = {}): Promise<number> => {
+  const notice = updateNotice(argv, {
+    ...(environment.tty === undefined ? {} : { tty: environment.tty }),
+    ...(environment.update ? { environment: environment.update } : {}),
+    ...(environment.env ? { env: environment.env } : {}),
+  })
   const code = await runCli(argv, definition, environment as Record<string, unknown>)
+  const line = await notice
   const argvLog = process.env.WA_TEST_ARGV_LOG
   // --version ends before any action, so the preAction hook never sees it.
   if (argvLog && code === 0 && argv.some((word) => word === "--version" || word === "-V"))
     appendFileSync(argvLog, `${JSON.stringify({ command: "", options: ["--version"] })}\n`)
+  if (line && code === 0) (environment.streams ?? processStreams).diagnostic(line)
   return code
 }
 
