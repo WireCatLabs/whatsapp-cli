@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/rs/zerolog"
+	"go.mau.fi/whatsmeow/types"
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
@@ -30,6 +31,22 @@ func TestTheEngineLogMasksPhoneNumbersAndUserIDs(t *testing.T) {
 	} {
 		if !strings.Contains(got, kept) {
 			t.Errorf("the log lost %q:\n%s", kept, got)
+		}
+	}
+}
+
+func TestTheEngineLogMasksJIDsInsideStructDumps(t *testing.T) {
+	var file bytes.Buffer
+	logger := waLog.Zerolog(zerolog.New(redacting{&file}).Level(zerolog.WarnLevel))
+	phone := types.JID{User: "71234567890", Device: 12, Server: types.DefaultUserServer}
+	lid := types.JID{User: "100000000000126", Server: types.HiddenUserServer}
+	info := types.MessageInfo{MessageSource: types.MessageSource{Chat: phone, Sender: phone, SenderAlt: lid}}
+	logger.Warnf("%v %+v %#v %#v", info, &info, phone, lid)
+
+	got := file.String()
+	for _, number := range []string{"71234567890", "100000000000126"} {
+		if strings.Contains(got, number) {
+			t.Errorf("the log kept %s:\n%s", number, got)
 		}
 	}
 }

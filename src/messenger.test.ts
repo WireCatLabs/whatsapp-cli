@@ -282,4 +282,23 @@ describe("serve and the commands it runs for others", () => {
     expect((await serving).code).toBe(0)
     expect(opened[0]?.closed).toBe(true)
   })
+
+  it("stops with the reason when WhatsApp hands the login to another connection", async () => {
+    const profile = "replaced"
+    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
+    let engine: FakeEngine | undefined
+    const serving = wa([profile, "serve", "--json"], {
+      engine: () => {
+        engine = fakeEngine(seed)
+        return engine
+      },
+    })
+    await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+    engine?.push({ event: "connection", state: "replaced" })
+
+    const result = await serving
+    expect(result.code, result.stdout).toBe(12)
+    expect(result.stderr).toContain("device.replaced")
+    expect(engine?.closed).toBe(true)
+  })
 })
