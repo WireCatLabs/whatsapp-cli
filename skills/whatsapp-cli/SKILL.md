@@ -50,8 +50,8 @@ a WhatsApp admin has all of them. A command that connects knows a group by its `
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp`.
-  Permissions and the send guard still apply. It never asks: a write at permission level `ask` needs `--yes`, or it
-  is refused and says so. Never stop the owner's `serve`. If `serve` is starting or does not answer, the command
+  Permissions and the send guard still apply. It never asks: a write at permission level `ask` needs `--yes`
+  (`--allow-dangerous` for a deletion), or it is refused and says so. Never stop the owner's `serve`. If `serve` is starting or does not answer, the command
   fails; tell the owner. With no `serve`, `watch` and every command that connects take the device's lock; a second
   one is refused with exit `12` and names the holder. On Windows nothing goes through `serve` yet, so there a
   command that connects is refused that way while `serve` runs (`serve (pid 4242)`): tell the owner, do not stop

@@ -3,9 +3,10 @@
 Open work, most important first. The plan in flight is
 [the foundation plan](https://github.com/WireCatLabs/cli-private/blob/main/plans/2026-10-16-whatsapp-foundation.md) (private).
 
-1. **Live checks of the engine on the owner's number** (NEED-1387: reads, sends only to the own chat): `serve` end to
-   end, send to the own LID chat, the lock against a running `serve`, a fresh `session start` keeping the history
-   push, `self()` set right after pairing.
+1. **Live checks of the engine on the owner's number** (NEED-1387: reads, sends only to the own chat). Done on
+   2026-10-17: `serve` receiving a message from the phone and saving it; send, `--md` send, edit, reaction add and
+   remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
+   `session start` keeping the history push, `self()` set right after pairing.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone needs cli-core to let `messages sync` through.** The adapter's `history` and the
    engine's `older` are built and tested; cli-core's `archiveService.fetch` calls `pushed()` and refuses every
@@ -64,8 +65,8 @@ Open work, most important first. The plan in flight is
      is in cli-core's watch output, not here.
    - **Media leftovers**: albums (one file per message here), thumbnails on sent photos and videos, files to
      channels, forwarding a place or a contact card, `metadata` (needs the group read).
-   - **Live checks** (with item 1): a reaction and a revoke in a one-to-one chat stored under a LID, and in a group
-     addressed by phone numbers; whether one read receipt for the newest message clears the phone's unread count, or
+   - **Live checks** (with item 1): a reaction and a revoke in a group addressed by phone numbers (the own LID chat
+     works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.
 6. **Distribution — first publish.** The engine packages, the release steps and the install tests on three systems are
    built (`scripts/engine-packages.mjs`, `release.yml`, `install-windows.yml`) but have not run in CI or published.
