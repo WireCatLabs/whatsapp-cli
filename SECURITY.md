@@ -10,3 +10,6 @@ message text, or anyone's messages.
 
 What `wa` keeps on your computer and what stops a send: the
 [shared security page](https://wirecat.dev/en/docs/security) and [docs/security.md](docs/security.md).
+
+Security audits of `wa` follow the shared
+[security method](https://github.com/WireCatLabs/cli-testing/tree/main/docs/security) in cli-testing.
