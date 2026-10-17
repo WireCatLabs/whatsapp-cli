@@ -22,9 +22,10 @@ engine/               the Go engine: whatsmeow in a child process   Go
 ```
 
 Dependencies point down only. `biome.json` enforces it: nothing in `src/` above the adapter reaches the adapter or
-the engine, except the composition root: `src/messenger.ts`, which starts them, and `src/diagnose.ts`, which only
-finds the engine binary for `doctor`. `src/adapter/` never reaches commands, the program, the messenger or the shared
-store; `src/engine/` never imports cli-core at all.
+the engine, except the composition root, `src/messenger.ts`, which starts them. Where the engine binary lives is
+answered by `src/engine-binary.ts`, a leaf with only Node imports, so `doctor` (`src/diagnose.ts`) finds the binary
+without reaching the engine. `src/adapter/` never reaches commands, the program, the messenger or the shared store;
+`src/engine/` never imports cli-core at all.
 
 ## 3. History comes from the store
 

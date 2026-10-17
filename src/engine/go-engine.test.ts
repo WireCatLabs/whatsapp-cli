@@ -3,9 +3,10 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
+import { engineBinary, enginePackage } from "../engine-binary.js"
 import { assertPrivate } from "../testing/private-files.js"
 import type { EngineEvent, LoginCode, WaAttachment } from "./contract.js"
-import { engineBinary, enginePackage, startGoEngine } from "./go-engine.js"
+import { startGoEngine } from "./go-engine.js"
 
 const STUB = fileURLToPath(new URL("../testing/engine-stub.mjs", import.meta.url))
 
