@@ -1,6 +1,6 @@
 name: Windows and macOS
 
-# Check onboarding changes in PRs; other changes can be checked before a release by hand.
+# Never on a pull request (cli-base WC-CI-5): the release and the monthly run call it, and it runs by hand on request.
 on:
   workflow_call:
   workflow_dispatch:
