@@ -1489,7 +1489,7 @@ wa reactions remove <chat> <message>
 
 ## `wa polls`
 
-read a poll, vote in it, close your own, create one
+read a poll, vote in it, create one
 
 ### `wa polls show`
 
@@ -1503,6 +1503,25 @@ wa polls show <chat> <message>
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `message` | required | the id of the message that carries the poll. |
+
+### `wa polls voters`
+
+who voted for what, newest first; not in an anonymous poll
+
+```sh
+wa polls voters <chat> <message> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the id of the message that carries the poll. |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
 
 ### `wa polls vote`
 
@@ -1524,21 +1543,6 @@ wa polls vote <chat> <message> [answers] [options]
 |---|---|
 | `--retract` | take your vote back. |
 
-### `wa polls close`
-
-close your own poll; nobody can vote after that, and it cannot be reopened
-
-**Changes something in WhatsApp.**
-
-```sh
-wa polls close <chat> <message>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-| `message` | required | the id of your own message that carries the poll. |
-
 ### `wa polls create`
 
 send a poll to a chat, as a message of its own; public unless --anonymous
@@ -1559,7 +1563,6 @@ wa polls create <chat> <question> <answers> [options]
 |---|---|
 | `--multiple` | people may pick several answers. |
 | `--anonymous` | nobody sees who voted for what. |
-| `--revote` | people may change their vote. |
 | `--silent` | send without a notification. |
 | `--send-as <id>` | post as one of the identities `chats send-as` lists; required where the chat posts as someone else by default. |
 | `--operation-id <id>` | repeat a create whose outcome was unknown, without risking a second poll. |
@@ -1720,7 +1723,7 @@ wa watch [options]
 
 | Option | What it does |
 |---|---|
-| `--events` | also edits, deletions and reactions; every line then names its event. |
+| `--events` | also edits, deletions, reactions and poll votes; every line then names its event. |
 
 ## `wa serve`
 
@@ -3256,7 +3259,7 @@ wa tasks categories
 
 ### `wa tasks apply`
 
-the task rules over a chat's newest stored messages: a question nobody answered and a mention of you open a task, and your answer closes one — for a chat the first sync left alone (config task_first_pass_per_chat). Lists what would open and changes nothing unless --yes; with --yes the duplicate check runs as on a sync. Reads only the local store
+the task rules over a chat's newest stored messages: in a one-to-one chat a question you did not answer, in a group only a question in reply to you and a mention of you, open a task, and your answer closes one; a channel opens none — for a chat the first sync left alone (config task_first_pass_per_chat). Lists what would open and changes nothing unless --yes; with --yes the duplicate check runs as on a sync. Reads only the local store
 
 **Changes something on this computer only.**
 

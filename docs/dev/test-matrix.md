@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**100 ✅ · 673 ⛔ · 0 ❌** — 242 commands, 531 options.
+**101 ✅ · 673 ⛔ · 0 ❌** — 242 commands, 532 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -214,13 +214,14 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `reactions add` |  | ✅ |  |
 | `reactions remove` |  | ✅ |  |
 | `polls show` |  | ✅ |  |
+| `polls voters` |  | ✅ |  |
+| `polls voters` | `--limit` | ✅ |  |
+| `polls voters` | `--page` | ✅ |  |
 | `polls vote` |  | ✅ |  |
 | `polls vote` | `--retract` | ✅ |  |
-| `polls close` |  | ✅ |  |
 | `polls create` |  | ✅ |  |
 | `polls create` | `--multiple` | ✅ |  |
 | `polls create` | `--anonymous` | ✅ |  |
-| `polls create` | `--revote` | ✅ |  |
 | `polls create` | `--silent` | ✅ |  |
 | `polls create` | `--send-as` | ✅ |  |
 | `polls create` | `--operation-id` | ✅ |  |
