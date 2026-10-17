@@ -16,6 +16,7 @@ import type {
   RemoteFile,
   SendOptions,
   ServerReads,
+  StoredMessages,
 } from "@wirecat/cli-core/cli"
 import type { Upload, UploadSource } from "@wirecat/cli-core/sends"
 import {
@@ -26,14 +27,13 @@ import {
   type WaAttachment,
   type WaChat,
   type WaKey,
-  type WaMessage,
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
 import { formatMarkdown, toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
-import { type PollAdapter, pollAdapter } from "./polls.js"
+import { type PollAdapter, pollAdapter, toVoteEvent } from "./polls.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
@@ -47,28 +47,14 @@ export type WhatsAppAdapter = MessengerCore &
   PollAdapter &
   GroupAdapter
 
-/**
- * The messages cli-core's store holds, by the account's own key. WhatsApp addresses a message by its sender and by
- * whether it is the account's own, and the engine keeps no messages, so an edit, a deletion, a reaction or a read
- * receipt looks the message up here first.
- */
-export interface StoredMessages {
-  message(chatId: string, messageId: string): Promise<Message | undefined>
-  /** The newest message from someone else in the chat, older than `before` when it is given. */
-  newestIncoming(chatId: string, before?: string): Promise<Message | undefined>
-  /** Whether the account has sent this person a message in their one-to-one chat. */
-  wroteTo(personId: string): Promise<boolean>
-  /** The newest message in the chat sent at `at` or earlier; without `at`, the oldest one held. */
-  anchor(chatId: string, at?: string): Promise<Message | undefined>
-  close(): Promise<void>
-}
-
+// WhatsApp addresses a message by its sender and by whether it is the account's own, and the engine keeps no
+// messages, so an edit, a deletion, a reaction or a read receipt looks the message up in cli-core's store first.
 const NOTHING_STORED: StoredMessages = {
   message: async () => undefined,
   newestIncoming: async () => undefined,
   anchor: async () => undefined,
   wroteTo: async () => false,
-  close: async () => {},
+  pollVotes: async () => [],
 }
 
 // whatsmeow's EditWindow: WhatsApp clients ignore an edit that comes later.
@@ -195,14 +181,6 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     } finally {
       await rm(folder, { recursive: true, force: true })
     }
-  }
-
-  // A live edit carries only the new text, stamped with the edit's time; the store would take it as the whole message
-  // and lose its time, reply and reactions. A message the store lacks, or cannot read, goes as it came: a failed
-  // read must not stop `serve`.
-  const edited = async (change: WaMessage): Promise<Message> => {
-    const original = await stored.message(change.chat, change.id).catch(() => undefined)
-    return original ? { ...original, text: change.text, editedAt: change.editedAt } : toMessage(change)
   }
 
   const titled = async (): Promise<Map<string, WaChat>> =>
@@ -375,9 +353,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
 
     logout: () => translated(engine.logout()),
 
-    close: async () => {
-      await Promise.all([engine.close(), stored.close()])
-    },
+    close: () => engine.close(),
 
     watch: async (onEvent: (event: MessageEvent) => void, signal: AbortSignal, onReady?: () => void) => {
       const chats = await titled()
@@ -385,7 +361,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
         if (event.event === "message")
           onEvent({ event: "message", message: hit(chats.get(event.message.chat), toMessage(event.message)) })
         else if (event.event === "edit")
-          onEvent({ event: "edit", message: hit(chats.get(event.message.chat), await edited(event.message)) })
+          onEvent({ event: "edit", message: hit(chats.get(event.message.chat), toMessage(event.message)) })
         else if (event.event === "delete")
           onEvent({
             event: "delete",
@@ -393,10 +369,14 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
             chatTitle: chats.get(event.chat)?.name ?? null,
             messageId: event.id,
           })
+        else if (event.event === "vote") {
+          const vote = await toVoteEvent(event.vote, chats.get(event.vote.chat)?.name ?? null, stored)
+          if (vote) onEvent(vote)
+        }
       }
-      // In arrival order: a deletion handed on before the edit it follows would let the edit bring the message back.
+      // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
       let queue = Promise.resolve()
-      const live = listening(engine, ["message", "edit", "delete", "connection"], signal, (event) => {
+      const live = listening(engine, ["message", "edit", "delete", "vote", "connection"], signal, (event) => {
         queue = queue.then(() => handed(event))
       })
       try {
@@ -426,6 +406,6 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
   return {
     ...core,
     ...groupAdapter({ engine, resolve: core.resolve, translated, wroteTo: (person) => stored.wroteTo(person) }),
-    ...pollAdapter({ engine, held, keyOf, translated }),
+    ...pollAdapter({ engine, stored, held, keyOf, translated }),
   }
 }

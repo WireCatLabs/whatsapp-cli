@@ -40,7 +40,7 @@ describe("group write authority", () => {
       newestIncoming: async () => undefined,
       anchor: async () => undefined,
       wroteTo: async (id) => id === "100000000000099@lid",
-      close: async () => {},
+      pollVotes: async () => [],
     })
     await adapter.addMembers(seed.busy, ["100000000000099@lid"], {})
     expect(engine.groupActions).toEqual([{ op: "add", jid: seed.busy, people: ["100000000000099@lid"] }])

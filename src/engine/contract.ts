@@ -11,7 +11,7 @@ import type { GroupEngine } from "./groups.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 7
+export const PROTOCOL = 8
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -60,7 +60,7 @@ export const waAttachment = v.strictObject({
 
 /**
  * A poll as its message carries it. An answer's `id` is the start of the SHA-256 of its text, which is what a vote
- * names on the wire. Votes arrive later, one encrypted message per voter, and nothing counts them yet.
+ * names on the wire. Votes arrive later, one `vote` event per voter; cli-core's store counts them.
  */
 export const waPoll = v.strictObject({
   question: v.string(),
@@ -79,6 +79,21 @@ export const waMessage = v.strictObject({
   text: v.string(),
   replyTo: v.nullable(v.string()),
   attachments: v.optional(v.array(waAttachment)),
+  poll: v.optional(waPoll),
+})
+
+/**
+ * One person's newest choice in a poll: `selected` is the full SHA-256 of each chosen answer's text, and none takes
+ * the vote back. `voter` is in LID form like a sender, and the account's own vote is under `self()`. A vote from the
+ * history push carries its `poll`, since the store may not hold that poll yet.
+ */
+export const waVote = v.strictObject({
+  chat: jid,
+  message: v.pipe(v.string(), v.nonEmpty()),
+  voter: jid,
+  voterName: v.nullable(v.string()),
+  selected: v.array(v.string()),
+  votedAt: time,
   poll: v.optional(waPoll),
 })
 
@@ -113,6 +128,7 @@ export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("message"), message: waMessage }),
   v.strictObject({ event: v.literal("edit"), message: waMessage }),
   v.strictObject({ event: v.literal("delete"), chat: jid, id: v.string() }),
+  v.strictObject({ event: v.literal("vote"), vote: waVote }),
   v.strictObject({ event: v.literal("connection"), state: connectionState }),
 ])
 
@@ -153,6 +169,7 @@ export type WaChat = v.InferOutput<typeof waChat>
 export type WaContact = v.InferOutput<typeof waContact>
 export type WaMessage = v.InferOutput<typeof waMessage>
 export type WaPoll = v.InferOutput<typeof waPoll>
+export type WaVote = v.InferOutput<typeof waVote>
 export type WaMediaRef = v.InferOutput<typeof waMediaRef>
 export type WaAttachment = v.InferOutput<typeof waAttachment>
 export type WaHistory = v.InferOutput<typeof waHistory>

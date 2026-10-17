@@ -412,7 +412,9 @@ func (e *engine) send(req request) (*waMessage, error) {
 func (e *engine) handle(raw any) {
 	switch evt := raw.(type) {
 	case *events.Message:
-		if changed, ok := e.conv.message(evt, nil); ok {
+		if evt.Message.GetPollUpdateMessage() != nil {
+			e.pollVote(evt)
+		} else if changed, ok := e.conv.message(evt, nil); ok {
 			if changed.kind == "delete" {
 				e.out.deleted(changed.message.Chat, changed.message.ID)
 			} else {
@@ -422,12 +424,16 @@ func (e *engine) handle(raw any) {
 	case *events.HistorySync:
 		history := e.conv.history(evt.Data, e.client.ParseWebMessage)
 		e.remember(history.Chats)
+		votes := history.votes
 		if history.Kind == "on_demand" {
-			if history = e.olderAsks.deliver(history); history.empty() {
-				return
-			}
+			history = e.olderAsks.deliver(history)
 		}
-		e.out.event("history", history)
+		if history.Kind != "on_demand" || !history.empty() {
+			e.out.event("history", history)
+		}
+		for _, vote := range votes {
+			e.out.event("vote", vote)
+		}
 	case *events.AppStateSyncComplete:
 		// The address book arrives in this patch; until then contacts have no names.
 		if evt.Name == appstate.WAPatchCriticalUnblockLow {

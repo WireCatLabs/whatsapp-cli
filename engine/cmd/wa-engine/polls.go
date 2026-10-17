@@ -4,10 +4,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
+	"go.mau.fi/whatsmeow/proto/waWeb"
 	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/types/events"
 )
 
 // pollFields are the request fields of createPoll and vote. A vote names answers by their text: WhatsApp counts a
@@ -23,12 +26,128 @@ type waPollAnswer struct {
 	Text string `json:"text"`
 }
 
-// waPoll is a poll as its message carries it. Votes come later, encrypted, one message per voter; nothing here
-// counts them.
+// waPoll is a poll as its message carries it. Votes come later, one message per voter; nothing here counts them.
 type waPoll struct {
 	Question string         `json:"question"`
 	Answers  []waPollAnswer `json:"answers"`
 	Multiple bool           `json:"multiple"`
+}
+
+// waVote is one person's newest choice in a poll: the full SHA-256 of each chosen answer's text, as WhatsApp sends
+// it; none takes the vote back. A vote from the history push comes with its poll, which the same message carries:
+// the adapter cannot count on the store holding that poll yet.
+type waVote struct {
+	Chat      string   `json:"chat"`
+	Message   string   `json:"message"`
+	Voter     string   `json:"voter"`
+	VoterName *string  `json:"voterName"`
+	Selected  []string `json:"selected"`
+	VotedAt   string   `json:"votedAt"`
+	Poll      *waPoll  `json:"poll,omitempty"`
+}
+
+func hashesOf(options [][]byte) []string {
+	hashes := make([]string, len(options))
+	for i, option := range options {
+		hashes[i] = hex.EncodeToString(option)
+	}
+	return hashes
+}
+
+// vote is a live vote once whatsmeow has decrypted it. The account's own vote, cast on the phone, carries the
+// account's id exactly as self() has it: cli-core keeps the CLI's own vote under that id, and two ids would count
+// one person twice.
+func (c *converter) vote(evt *events.Message, decrypted *waE2E.PollVoteMessage) (waVote, bool) {
+	info := evt.Info
+	update := evt.Message.GetPollUpdateMessage()
+	poll := update.GetPollCreationMessageKey().GetID()
+	if poll == "" || info.Chat == types.StatusBroadcastJID {
+		return waVote{}, false
+	}
+	k := known{}
+	k.add(info.Sender, info.SenderAlt)
+	k.add(info.SenderAlt, info.Sender)
+	if !info.IsGroup {
+		k.add(info.Chat, info.RecipientAlt)
+		k.add(info.RecipientAlt, info.Chat)
+	}
+	voter, voterName := c.self, (*string)(nil)
+	if !info.IsFromMe {
+		voter = c.canonical(info.Sender, k)
+		voterName = name(info.PushName, c.nameOf(voter))
+	}
+	if voter.IsEmpty() {
+		return waVote{}, false
+	}
+	at := info.Timestamp
+	if ms := update.GetSenderTimestampMS(); ms > 0 {
+		at = time.UnixMilli(ms)
+	}
+	return waVote{
+		Chat:      c.canonical(info.Chat, k).String(),
+		Message:   poll,
+		Voter:     voter.String(),
+		VoterName: voterName,
+		Selected:  hashesOf(decrypted.GetSelectedOptions()),
+		VotedAt:   iso(at),
+	}, true
+}
+
+// historyVotes are the votes the phone pushes beside their poll, already decrypted. A vote's key names its voter:
+// the participant in a group, the chat in a one-to-one chat, the account when it is its own.
+func (c *converter) historyVotes(poll waMessage, web *waWeb.WebMessageInfo, k known) []waVote {
+	var votes []waVote
+	for _, update := range web.GetPollUpdates() {
+		key := update.GetPollUpdateMessageKey()
+		voter := c.self
+		if !key.GetFromMe() {
+			raw := key.GetParticipant()
+			if raw == "" {
+				raw = key.GetRemoteJID()
+			}
+			parsed, err := types.ParseJID(raw)
+			if err != nil {
+				continue
+			}
+			voter = c.canonical(parsed, k)
+		}
+		if voter.IsEmpty() || voter.Server == types.GroupServer {
+			continue
+		}
+		at := poll.Timestamp
+		for _, ms := range []int64{update.GetSenderTimestampMS(), update.GetServerTimestampMS()} {
+			if ms > 0 {
+				at = iso(time.UnixMilli(ms))
+				break
+			}
+		}
+		var voterName *string
+		if voter != c.self {
+			voterName = name(c.nameOf(voter))
+		}
+		votes = append(votes, waVote{
+			Chat:      poll.Chat,
+			Message:   poll.ID,
+			Voter:     voter.String(),
+			VoterName: voterName,
+			Selected:  hashesOf(update.GetVote().GetSelectedOptions()),
+			VotedAt:   at,
+			Poll:      poll.Poll,
+		})
+	}
+	return votes
+}
+
+// pollVote decrypts a vote with the poll's secret, which whatsmeow keeps for every poll this device saw. A vote for
+// a poll it never saw cannot be read, and is passed over.
+func (e *engine) pollVote(evt *events.Message) {
+	decrypted, err := e.client.DecryptPollVote(e.ctx, evt)
+	if err != nil {
+		return
+	}
+	if vote, ok := e.conv.vote(evt, decrypted); ok {
+		e.out.event("vote", vote)
+	}
 }
 
 // What WhatsApp's apps let a poll have.

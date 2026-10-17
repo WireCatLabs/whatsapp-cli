@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 7
+const protocol = 8
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -92,6 +92,7 @@ type waHistory struct {
 	Messages []waMessage `json:"messages"`
 
 	oldest map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
+	votes  []waVote          // sent as vote events after the batch: cli-core's history batch has no votes
 }
 
 type waAccount struct {
@@ -132,8 +133,9 @@ func (w *wire) deleted(chat, id string) {
 }
 
 func fieldOf(event string) string {
-	if event == "history" {
-		return "history"
+	switch event {
+	case "history", "vote":
+		return event
 	}
 	return "message"
 }

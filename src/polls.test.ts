@@ -3,28 +3,32 @@ import { captureStreams } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
-import type { WhatsAppEngine } from "./engine/contract.js"
+import type { EngineEvent, WaVote, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
-const answerId = (text: string) => createHash("sha256").update(text).digest("hex").slice(0, 8)
+const hashOf = (text: string) => createHash("sha256").update(text).digest("hex")
+const answerId = (text: string) => hashOf(text).slice(0, 8)
 
 const base = contractSeed({ ids: whatsAppIds })
 const theirs = base.messages.find((message) => message.chatId === base.busy && !message.outgoing) as Message
+const whichDay = {
+  question: "Which day?",
+  answers: ["Monday", "Tuesday"].map((text) => ({ id: answerId(text), text })),
+  multiple: false,
+}
 const poll: Message = {
   ...theirs,
   id: "3EB0000000000000000P01",
   text: "Which day?",
   attachments: [],
-  providerMetadata: {
-    poll: {
-      question: "Which day?",
-      answers: ["Monday", "Tuesday"].map((text) => ({ id: answerId(text), text })),
-      multiple: false,
-    },
-  },
+  providerMetadata: { poll: whichDay },
 }
-const seed = { ...base, messages: [...base.messages, poll] }
+// Its own poll, so the votes it collects do not change what the poll above shows.
+const counted: Message = { ...poll, id: "3EB0000000000000000P02" }
+const seed = { ...base, messages: [...base.messages, poll, counted] }
+const self = base.account?.id ?? ""
+const other = "100000000000088@lid"
 
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
@@ -34,7 +38,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
   })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join(""), lines: streams.stdout, stderr: streams.stderr.join("") }
 }
 
 const polling = async (argv: string[]) => {
@@ -46,25 +50,50 @@ const polling = async (argv: string[]) => {
   return { ...result, actions: engine?.actions ?? [], sent: engine?.sent ?? [] }
 }
 
-const errorCode = (stderr: string) => JSON.parse(stderr).error.code
+// A command that reads the store may first warn that no `wa serve` keeps it up to date.
+const errorCode = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf("{"))).error.code
 
-beforeAll(async () => {
+/** `wa watch` while the engine pushes `events`, as the phone would, then stops. */
+const watching = async (events: EngineEvent[] = []) => {
   const controller = new AbortController()
-  const filling = () => {
+  const pushing = () => {
     const engine = fakeEngine(seed)
     const listen = engine.listen
     engine.listen = (kinds, onEvent) => {
       const stop = listen(kinds, onEvent)
-      if (kinds.includes("history")) setImmediate(() => controller.abort())
+      if (kinds.includes("vote"))
+        setImmediate(() => {
+          for (const event of events) engine.push(event)
+          setImmediate(() => controller.abort())
+        })
       return stop
     }
     return engine
   }
-  expect((await wa(["voting", "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
+  const result = await wa(["voting", "watch", "--events", "--jsonl"], pushing, controller.signal)
+  expect(result.code, result.stderr).toBe(0)
+  return result.lines.map((line) => JSON.parse(line))
+}
+
+const vote = (voter: string, answers: string[], votedAt: string, extra: Partial<WaVote> = {}): EngineEvent => ({
+  event: "vote",
+  vote: {
+    chat: base.busy,
+    message: counted.id,
+    voter,
+    voterName: null,
+    selected: answers.map(hashOf),
+    votedAt,
+    ...extra,
+  },
+})
+
+beforeAll(async () => {
+  await watching()
 })
 
 describe("wa polls create", () => {
-  it("sends a poll whose answers are named by the hash a vote carries", async () => {
+  it("sends a poll whose answers are named by the hash a vote carries, and keeps it to show", async () => {
     const result = await polling(["create", base.busy, "Pizza?", "yes", "no", "--multiple"])
     expect(result.code).toBe(0)
     expect(result.sent).toMatchObject([
@@ -80,16 +109,17 @@ describe("wa polls create", () => {
         },
       },
     ])
+    const shown = await polling(["show", base.busy, result.sent[0]?.id ?? ""])
+    expect(JSON.parse(shown.stdout).item).toMatchObject({ question: "Pizza?", creator: true })
   })
 
-  it("sends with --revote, which every WhatsApp poll allows, and repeats with --operation-id as one message", async () => {
+  it("repeats with --operation-id as one message", async () => {
     const result = await polling([
       "create",
       base.busy,
       "Pizza?",
       "yes",
       "no",
-      "--revote",
       "--operation-id",
       "3EB0000000000000000002",
     ])
@@ -98,6 +128,7 @@ describe("wa polls create", () => {
   })
 
   it.each([
+    ["--revote, since every WhatsApp vote can be changed", ["--revote"]],
     ["--anonymous, since everyone sees the votes", ["--anonymous"]],
     ["--silent", ["--silent"]],
     ["--send-as", ["--send-as", base.person]],
@@ -110,16 +141,16 @@ describe("wa polls create", () => {
 })
 
 describe("wa polls show and vote", () => {
-  it("reads the poll from the store, its votes uncounted", async () => {
+  it("reads the poll from the store, with nobody's vote yet", async () => {
     const result = await polling(["show", base.busy, poll.id])
     expect(result.code, result.stderr).toBe(0)
     expect(JSON.parse(result.stdout).item).toMatchObject({
       question: "Which day?",
       answers: [
-        { id: answerId("Monday"), text: "Monday", voters: null },
-        { id: answerId("Tuesday"), text: "Tuesday", voters: null },
+        { id: answerId("Monday"), text: "Monday", voters: 0 },
+        { id: answerId("Tuesday"), text: "Tuesday", voters: 0 },
       ],
-      voters: null,
+      voters: 0,
       closed: false,
       anonymous: false,
     })
@@ -153,9 +184,68 @@ describe("wa polls show and vote", () => {
     expect(result.actions).toEqual([])
   })
 
-  it("refuses to close a poll, which WhatsApp cannot do", async () => {
+  it("has no `polls close`: a WhatsApp poll stays open", async () => {
     const result = await polling(["close", base.busy, poll.id])
     expect(result.code).toBe(2)
     expect(result.actions).toEqual([])
+  })
+})
+
+describe("votes from WhatsApp", () => {
+  const show = async () => JSON.parse((await polling(["show", base.busy, counted.id])).stdout).item
+
+  it("passes each vote on as `watch` reads it, by answer id, and counts it in `polls show`", async () => {
+    const events = await watching([
+      vote(base.person, ["Monday"], "2026-09-01T10:01:00.000Z"),
+      vote(other, ["Tuesday"], "2026-09-01T10:02:00.000Z", { voterName: "Synthetic Voter", poll: whichDay }),
+      vote(other, ["Lunch"], "2026-09-01T10:03:00.000Z"),
+    ])
+    expect(events.filter((event) => event.event === "vote")).toMatchObject([
+      {
+        chatId: base.busy,
+        messageId: counted.id,
+        vote: { person: { id: base.person }, answers: [answerId("Monday")] },
+      },
+      { vote: { person: { id: other, name: "Synthetic Voter" }, answers: [answerId("Tuesday")] } },
+    ])
+    expect(await show()).toMatchObject({
+      answers: [
+        { id: answerId("Monday"), voters: 1, chosen: false },
+        { id: answerId("Tuesday"), voters: 1, chosen: false },
+      ],
+      voters: 2,
+    })
+  })
+
+  it("lists who voted for what with `polls voters`, newest first", async () => {
+    const all = await polling(["voters", base.busy, counted.id])
+    expect(all.code, all.stderr).toBe(0)
+    expect(JSON.parse(all.stdout).items.map((one: { person_id: string }) => one.person_id)).toEqual([
+      other,
+      base.person,
+    ])
+    const monday = await polling(["voters", base.busy, counted.id, `answers:${answerId("Monday")}`])
+    expect(JSON.parse(monday.stdout).items).toMatchObject([{ person_id: base.person, answers: [answerId("Monday")] }])
+    const second = JSON.parse((await polling(["voters", base.busy, counted.id, "--limit", "1", "--page", "2"])).stdout)
+    expect(second.items).toMatchObject([{ person_id: base.person }])
+  })
+
+  it("counts the account's own vote once, whether this command or the phone cast it", async () => {
+    const voted = await polling(["vote", base.busy, counted.id, answerId("Monday")])
+    expect(JSON.parse(voted.stdout).item.poll).toMatchObject({
+      answers: [
+        { id: answerId("Monday"), voters: 2, chosen: true },
+        { id: answerId("Tuesday"), voters: 1, chosen: false },
+      ],
+      voters: 3,
+    })
+    await watching([vote(self, ["Tuesday"], new Date(Date.now() + 60_000).toISOString())])
+    expect(await show()).toMatchObject({
+      answers: [
+        { id: answerId("Monday"), voters: 1, chosen: false },
+        { id: answerId("Tuesday"), voters: 2, chosen: true },
+      ],
+      voters: 3,
+    })
   })
 })
