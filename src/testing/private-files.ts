@@ -11,7 +11,13 @@ export const assertPrivate = (path: string, unixMode: number): void => {
 $ErrorActionPreference = 'Stop'
 $owner = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 $allowed = @($owner, 'S-1-5-18', 'S-1-5-32-544')
-$rules = (Get-Acl -LiteralPath $env:WA_TEST_PRIVATE_PATH).GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier])
+$path = $env:WA_TEST_PRIVATE_PATH
+$acl = if (([System.IO.File]::GetAttributes($path) -band [System.IO.FileAttributes]::Directory) -ne 0) {
+  [System.IO.Directory]::GetAccessControl($path)
+} else {
+  [System.IO.File]::GetAccessControl($path)
+}
+$rules = $acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier])
 foreach ($rule in $rules) {
   if ($rule.AccessControlType -eq 'Allow' -and
       ($rule.PropagationFlags -band [System.Security.AccessControl.PropagationFlags]::InheritOnly) -eq 0 -and
