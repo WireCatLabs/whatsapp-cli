@@ -113,10 +113,8 @@ func textOf(m *waE2E.Message) (string, bool) {
 		return m.GetVideoMessage().GetCaption(), true
 	case m.DocumentMessage != nil:
 		return m.GetDocumentMessage().GetCaption(), true
-	case m.PollCreationMessage != nil:
-		return m.GetPollCreationMessage().GetName(), true
-	case m.PollCreationMessageV3 != nil:
-		return m.GetPollCreationMessageV3().GetName(), true
+	case pollCreationOf(m) != nil:
+		return pollCreationOf(m).GetName(), true
 	case m.AudioMessage != nil, m.PtvMessage != nil, m.StickerMessage != nil, m.LocationMessage != nil, m.LiveLocationMessage != nil,
 		m.ContactMessage != nil, m.ContactsArrayMessage != nil:
 		return "", true
@@ -206,6 +204,7 @@ func (c *converter) message(evt *events.Message, k known) (change, bool) {
 	out.Text = text
 	out.ReplyTo = replyOf(content)
 	out.Attachments = attachmentsOf(content)
+	out.Poll = pollOf(pollCreationOf(content))
 	if evt.IsViewOnce {
 		// WhatsApp's apps neither save nor forward a view-once file; without its keys, wa cannot either.
 		for i := range out.Attachments {

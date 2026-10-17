@@ -4,7 +4,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { resolve as absolute, extname, join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
-import type { Chat, Message, MessageEvent, MessageHit } from "@wirecat/cli-core"
+import type { Chat, MarkdownFormatting, Message, MessageEvent, MessageHit } from "@wirecat/cli-core"
 import type {
   LiveUpdates,
   MessageEditing,
@@ -29,8 +29,10 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
+import { formatMarkdown, toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
+import { type PollAdapter, pollAdapter } from "./polls.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
@@ -40,6 +42,8 @@ export type WhatsAppAdapter = MessengerCore &
   MessageReactions &
   Pick<ReadState, "markRead"> &
   Pick<ServerReads, "history"> &
+  MarkdownFormatting &
+  PollAdapter &
   GroupAdapter
 
 /**
@@ -74,7 +78,6 @@ const REFUSED: (keyof SendOptions)[] = [
   "threadId",
   "silent",
   "markup",
-  "formatting",
   "at",
   "sticker",
   "spoiler",
@@ -196,7 +199,9 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
   const titled = async (): Promise<Map<string, WaChat>> =>
     new Map((await translated(engine.directory())).map((chat) => [chat.jid, chat]))
 
-  const core: Omit<WhatsAppAdapter, keyof GroupAdapter> = {
+  const core: Omit<WhatsAppAdapter, keyof GroupAdapter | keyof PollAdapter> = {
+    formatMarkdown: async (text) => formatMarkdown(text),
+
     self: () => engine.self(),
 
     newSendId: () => `3EB0${randomBytes(9).toString("hex").toUpperCase()}`,
@@ -243,7 +248,7 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
       const request = {
         chat: chatId,
-        text,
+        text: options.formatting ? toWhatsApp(text, options.formatting) : text,
         id: options.sendId,
         ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
       }
@@ -302,13 +307,14 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     },
 
     edit: async (chatId, messageId, text, { markup, formatting }) => {
-      if (markup !== undefined || formatting !== undefined)
-        throw new CliError("validation_error", "WhatsApp edits plain text only here; leave out --md")
+      if (markup !== undefined) throw new CliError("validation_error", "WhatsApp cannot edit with markup")
       const original = await held(chatId, messageId)
       if (!original.outgoing) throw new CliError("validation_error", "only your own messages can be edited")
       if (Date.now() - Date.parse(original.timestamp) > EDIT_WINDOW_MS)
         throw new CliError("validation_error", "WhatsApp takes an edit only within 20 minutes of sending")
-      const edited = await translated(engine.edit(keyOf(chatId, original), text))
+      const edited = await translated(
+        engine.edit(keyOf(chatId, original), formatting ? toWhatsApp(text, formatting) : text),
+      )
       return { ...original, text: edited.text, editedAt: edited.editedAt }
     },
 
@@ -398,5 +404,6 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
   return {
     ...core,
     ...groupAdapter({ engine, resolve: core.resolve, translated, wroteTo: (person) => stored.wroteTo(person) }),
+    ...pollAdapter({ engine, held, keyOf, translated }),
   }
 }

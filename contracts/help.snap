@@ -54,6 +54,8 @@ Commands:
   contacts                     people this account has a one-to-one chat with
   messages                     read and send messages
   reactions                    react to messages
+  polls                        read a poll, vote in it, close your own, create
+                               one
   models                       models that run on this machine
   inbox [options] [query...]   other people's unread messages in every chat;
                                --new for what arrived since the last check
