@@ -33,7 +33,7 @@
     "test:coverage": "vitest run --coverage",
     "test:matrix": "vitest run >/dev/null && pnpm build >/dev/null && cli-dev test-matrix --program dist/program.js --untested scripts/test-matrix-untested.ts --name wa --check",
     "test:slow": "vitest run --reporter=json --outputFile=coverage/tests.json >/dev/null; cli-dev slow-tests",
-    "engine:test": "cd engine && go vet ./... && go test ./...",
+    "engine:test": "cd engine && test -z \"$(gofmt -l .)\" && go vet ./... && go test ./...",
     "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts",
     "smoke:bun": "bun run scripts/smoke.ts",
     "release:check": "pnpm build && node --experimental-strip-types scripts/release-check.ts",

@@ -22,7 +22,10 @@ process.env.WIRECAT_STATE_DIR = join(sandbox, "wirecat")
 // `wa server install` writes the systemd unit under it — the owner's real one otherwise.
 process.env.XDG_CONFIG_HOME = join(sandbox, "xdg-config")
 process.env.TMPDIR = sandbox
+process.env.TMP = sandbox
+process.env.TEMP = sandbox
 delete process.env.WA_ENGINE
+delete process.env.WA_TIMEOUT
 delete process.env.WA_PROFILE_LOCK
 // No profile is ever assumed; a test about "none named" removes this from its own env.
 process.env.WA_PROFILE = "default"

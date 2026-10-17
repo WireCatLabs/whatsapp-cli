@@ -25,28 +25,28 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
-- Internal attachment references stay out of live-event, JSON and MCP output (Core0.315.0), keeping media keys inside the client.
-
-- Invite links must name WhatsApp's exact invite host; unrelated URL prefixes are refused before connecting.
-- Shared Core 0.314.0 protects WhatsApp state from uploads in the other messengers and preserves a running server's read-only lock when a command is relayed.
-
-- The Go engine builds with Go 1.26.9 and `golang.org/x/net` 0.60.0, clearing the affected
-  runtime and networking advisory paths while retaining the current Go release branch.
+- **Media keys stay inside the client**: internal attachment references stay out of live-event, JSON and MCP output
+  (cli-core 0.315.0).
+- **Invite links must name WhatsApp's exact invite host**; unrelated URL prefixes are refused before connecting.
+- **WhatsApp state is safe from the other messengers' uploads** (cli-core 0.314.0), and a running server's read-only
+  lock holds when a command is relayed to it.
+- **The Go engine builds with Go 1.26.9 and `golang.org/x/net` 0.60.0**, clearing the affected runtime and
+  networking advisory paths while retaining the current Go release branch.
 
 ### Fixed
 
 - **`wa upgrade`'s "held back" hint names the package and keeps pnpm's release-age exemption** (cli-core 0.320.0).
 - **An agent's `chats members list` and `chats send-as` follow their own permission keys**, `chats.members.list` and
   `chats.send-as`, so a deny on those keys reaches the MCP agent too (cli-core 0.321.0).
-- A reply to a message the local store holds names the quoted message's sender and carries its text, so phones show
-  the quote instead of "unavailable"; a reply to one the store lacks still goes, with the message's id alone.
-- An edit that `serve` or `watch` hears keeps the message's own time, reply and reactions in the local store; before,
-  it took the edit's time as the message's.
-
-- Windows download checks verify file access rules instead of Unix mode bits. Group administration tests verify stranger refusals and unsupported changes before writes.
-
-- Release and monthly source checks include the Go engine using its module toolchain. Local
-  tests resolve the shared TypeScript config directly so they run in isolated worktrees.
+- **A reply names the quoted message's sender and carries its text** when the local store holds that message, so
+  phones show the quote instead of "unavailable"; a reply to one the store lacks still goes, with the message's id
+  alone.
+- **An edit keeps the message's own time**: one that `serve` or `watch` hears keeps the message's time, reply and
+  reactions in the local store; before, it took the edit's time as the message's.
+- **Tests on Windows check file access rules** instead of Unix mode bits. Group administration tests verify
+  stranger refusals and unsupported changes before writes.
+- **Release and monthly source checks include the Go engine**, using its module toolchain. Local tests resolve the
+  shared TypeScript config directly so they run in isolated worktrees.
 
 ### What's new
 

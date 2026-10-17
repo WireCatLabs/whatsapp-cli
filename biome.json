@@ -29,7 +29,15 @@
   },
   "overrides": [
     {
-      "includes": ["src/commands/**", "!**/*.test.ts"],
+      "includes": [
+        "src/**",
+        "!src/adapter/**",
+        "!src/engine/**",
+        "!src/testing/**",
+        "!src/messenger.ts",
+        "!src/diagnose.ts",
+        "!**/*.test.ts"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -38,8 +46,15 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["**/engine/**", "../engine/*", "**/adapter/**", "../adapter/*"],
-                    "message": "commands speak the domain model through cli-core's port; the engine and the adapter stay below it"
+                    "group": [
+                      "**/engine/**",
+                      "./engine/*",
+                      "../engine/*",
+                      "**/adapter/**",
+                      "./adapter/*",
+                      "../adapter/*"
+                    ],
+                    "message": "above the adapter, code speaks the domain model through cli-core's port; only the composition root (src/messenger.ts, src/diagnose.ts) reaches the engine and the adapter"
                   }
                 ]
               }

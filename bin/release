@@ -11,6 +11,16 @@
 set -eu
 
 cd "$(dirname "$0")/.."
+self=$(git hash-object bin/release)
+# The fold and land() fast-forward main, and sh reads this file as it goes: a newer bin/release would run half old,
+# half new. Run the new one from the start instead: the second run finds the fold and the raise already on main.
+rerun_if_changed() {
+  [ "$(git hash-object bin/release)" != "$self" ] || return 0
+  [ -z "${WIRECAT_RELEASE_RERUN:-}" ] || { echo "bin/release changed again while releasing — run it again" >&2; exit 1; }
+  echo "bin/release changed on main — running the new one"
+  export WIRECAT_RELEASE_RERUN=1
+  exec ./bin/release "$@"
+}
 package=@wirecat/whatsapp-cli
 
 mode=ci
@@ -73,6 +83,7 @@ land() {
 folded=""
 published || folded=$(npx -y -p @wirecat/cli-base@0.36.0 cli-dev changelog fold --land --version "$version")
 [ -z "$folded" ] || echo "$folded"
+rerun_if_changed "$@"
 
 # Two sessions preparing the same number is normal; the second takes the next free one (2026-09-29).
 latest=$(npm view "$package" version --prefer-online 2>/dev/null || true)
@@ -93,6 +104,7 @@ if [ "$next" != "$version" ]; then
   node scripts/engine-packages.mjs sync
   body="bin/release: $why. Only the number changes: package.json (and its engine packages), src/version.ts, the CHANGELOG heading."
   land "release/$next" "chore(release): $next" "$body"
+  rerun_if_changed "$@"
   version=$next
 fi
 if published; then
