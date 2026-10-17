@@ -7,6 +7,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break scripts
 
+- **`watch --events` no longer prints the votes of the phone's history push** (cli-core 0.322.0). They were
+  printed as new votes; they are old ones, and the store now saves them with the push, together with their poll and
+  dated when each person voted, so an older one never replaces a newer live vote. A script that read history votes
+  from `watch` reads `polls voters` instead. Engine protocol 9.
 - **An agent never deletes for everyone** (cli-core 0.321.0). Every WhatsApp delete `wa` makes is for everyone, so
   `messages delete` through MCP is refused with `permission_error`, before `wa` connects, whatever the profile's
   level; the owner still has `wa <profile> messages delete --for-everyone`.
@@ -35,9 +39,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
-- **Poll votes from the phone's history push are kept without a `watch`** (cli-core 0.322.0). The store saves them
-  with the push that carries them, dated when each person voted, so an older one never replaces a newer live vote;
-  `watch --events` no longer prints them as new votes. Engine protocol 9.
 - **No `messages sync` advice `wa` cannot follow** (cli-core 0.322.0): where a command points at the store's gaps it
   names `messages sync <chat>` for one chat, never `--all`.
 - **`wa upgrade`'s "held back" hint names the package and keeps pnpm's release-age exemption** (cli-core 0.320.0).

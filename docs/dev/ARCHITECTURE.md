@@ -114,7 +114,7 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   (LID first, the account's own vote under `self()`), the full SHA-256 of each chosen answer, and `votedAt`, when the
   voter cast it by WhatsApp's clock (the update's sender time). A live vote is a `vote` event, which `watch` hands on
   as cli-core's vote event. A history vote rides in the `history` line's `votes` with its poll (protocol 9), and
-  `feed` puts it in cli-core's `HistoryBatch.votes`, so the store saves it with the push, with or without a `watch`.
+  `feed` puts it in cli-core's `HistoryBatch.votes`, so the store saves it with the push, not as a `watch` event.
   Both map the hashes onto answer ids. The store keeps each voter's newest vote by `votedAt`; `polls show` counts
   them with cli-core's `countedPoll`, and `polls voters` lists them.
 - **Markdown**: `formatMarkdown` is cli-core's shared `parseMarkdownSpans`; `send` and `edit` write its spans back as
