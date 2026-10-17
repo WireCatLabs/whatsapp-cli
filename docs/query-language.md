@@ -88,8 +88,9 @@ plain text. A name that the store does not know is not looked up on WhatsApp.
 
 On WhatsApp, `kind:private` is a one-to-one chat, `kind:group` a group, `kind:saved` the chat with yourself and
 `kind:channel` a WhatsApp channel. Quote an id: `@` is an operator. The file fields — `content`, `filename`, `mime`,
-`size`, and `has:` with `file`, `photo`, `voice` and the other attachment kinds — are accepted, but `wa` keeps no
-files yet, so they match nothing. `topic:` has nothing to match: WhatsApp has no forum topics.
+`size`, and `has:` with `file`, `photo`, `voice` and the other attachment kinds — match the files of messages stored
+since `wa` handled files; `content:` needs the file's text read first ([file attachments](attachments.md)).
+`topic:` has nothing to match: WhatsApp has no forum topics.
 
 ## Mentions
 
