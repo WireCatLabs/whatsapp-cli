@@ -84,7 +84,7 @@ describe("wa messages send", () => {
       engine = fakeEngine(seed)
       return engine
     })
-    return { ...result, sent: engine?.sent ?? [] }
+    return { ...result, sent: engine?.sent ?? [], sends: engine?.sends ?? [] }
   }
 
   it.each([["--silent"], ["--send-as", seed.person], ["--at-time", "1h"]])(
@@ -116,10 +116,11 @@ describe("wa messages send", () => {
     expect(result.sent).toHaveLength(1)
   })
 
-  it("answers a message with --reply-to", async () => {
+  it("answers a message the store lacks with --reply-to, by its id alone", async () => {
     const result = await sending("--reply-to", seed.messages[0]?.id ?? "")
     expect(result.code).toBe(0)
     expect(result.sent[0]?.replyTo).toBe(seed.messages[0]?.id)
+    expect(result.sends[0]?.quoted).toBeUndefined()
   })
 
   it("repeats a send with --operation-id as the same WhatsApp message", async () => {

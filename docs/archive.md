@@ -22,7 +22,9 @@ WhatsApp has no request for "chats" or "older messages". Two things fill the sto
 
 - **The history push** right after linking. `wa <profile> session start` and `setup` keep the connection open and
   save it, until the phone has been quiet for 45 seconds.
-- **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send.
+- **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send. An edit
+  keeps the message's own time, reply and reactions; only an edit of a message the store lacks is saved with the
+  edit's time.
 
 So a chat holds what the phone pushed and what arrived while `serve` ran. A message that arrived while nothing was
 connected may still come when `serve` starts again.

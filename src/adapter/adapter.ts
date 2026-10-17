@@ -26,6 +26,7 @@ import {
   type WaAttachment,
   type WaChat,
   type WaKey,
+  type WaMessage,
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
@@ -196,6 +197,13 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
     }
   }
 
+  // A live edit carries only the new text, stamped with the edit's time; the store would take it as the whole message
+  // and lose its time, reply and reactions. A message the store lacks goes as it came.
+  const edited = async (change: WaMessage): Promise<Message> => {
+    const original = await stored.message(change.chat, change.id)
+    return original ? { ...original, text: change.text, editedAt: change.editedAt } : toMessage(change)
+  }
+
   const titled = async (): Promise<Map<string, WaChat>> =>
     new Map((await translated(engine.directory())).map((chat) => [chat.jid, chat]))
 
@@ -246,11 +254,16 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       if (more.length > 0) throw new CliError("validation_error", "WhatsApp sends one file per message here")
       if (upload?.kind === "voice" && text.trim() !== "")
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
+      // A reply to a message the store lacks still goes, with its id alone, as before.
+      const answered = options.replyTo === undefined ? undefined : await stored.message(chatId, options.replyTo)
       const request = {
         chat: chatId,
         text: options.formatting ? toWhatsApp(text, options.formatting) : text,
         id: options.sendId,
         ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
+        ...(answered
+          ? { quoted: { fromMe: answered.outgoing === true, sender: answered.senderId, text: answered.text } }
+          : {}),
       }
       const message = await translated(
         upload
@@ -367,9 +380,11 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
 
     watch: async (onEvent: (event: MessageEvent) => void, signal: AbortSignal, onReady?: () => void) => {
       const chats = await titled()
-      const live = listening(engine, ["message", "edit", "delete", "connection"], signal, (event) => {
-        if (event.event === "message" || event.event === "edit")
-          onEvent({ event: event.event, message: hit(chats.get(event.message.chat), toMessage(event.message)) })
+      const handed = async (event: EngineEvent) => {
+        if (event.event === "message")
+          onEvent({ event: "message", message: hit(chats.get(event.message.chat), toMessage(event.message)) })
+        else if (event.event === "edit")
+          onEvent({ event: "edit", message: hit(chats.get(event.message.chat), await edited(event.message)) })
         else if (event.event === "delete")
           onEvent({
             event: "delete",
@@ -377,13 +392,24 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
             chatTitle: chats.get(event.chat)?.name ?? null,
             messageId: event.id,
           })
+      }
+      // In arrival order: a deletion handed on before the edit it follows would let the edit bring the message back.
+      let queue = Promise.resolve()
+      let failed: (error: unknown) => void = () => {}
+      const failure = new Promise<never>((_, reject) => {
+        failed = reject
+      })
+      failure.catch(() => {})
+      const live = listening(engine, ["message", "edit", "delete", "connection"], signal, (event) => {
+        queue = queue.then(() => handed(event)).catch(failed)
       })
       try {
         await translated(engine.ready(signal))
         if (!signal.aborted) onReady?.()
-        await live.done
+        await Promise.race([live.done, failure])
       } finally {
         live.stop()
+        await queue
       }
     },
 

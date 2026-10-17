@@ -51,7 +51,11 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   is the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
   `reactions` and `chats mark-read` look the message up in cli-core's store first (`StoredMessages`, opened by
   `messenger.ts`, since the adapter may not reach the store) and send the engine the full key. A message the store
-  lacks is refused as `not_found`: a guessed key is not refused by WhatsApp, it is dropped without a word.
+  lacks is refused as `not_found`: a guessed key is not refused by WhatsApp, it is dropped without a word. A reply
+  is the exception: it goes either way, and only carries the quoted sender and text when the store has them. A live
+  edit carries only the new text, stamped with the edit's time, and cli-core's store saves an edit as the whole
+  message; so `watch` hands it on as the stored message with the new text and `editedAt`, the way tg's edit update
+  carries the full message.
 
 ## 4. The engine
 
@@ -69,10 +73,14 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `engineEvent`; a login shows `{"login": "qr"|"pair", "code"}`. The phone number for a pairing code travels on stdin,
   never as an argument (`ps` shows arguments). When stdin closes the engine disconnects and exits, so it never
   outlives the CLI; it ignores Ctrl+C and lets the CLI decide.
-- **The requests**: `connect`, `link`, `me`, `directory`, `chat`, `send`, `logout` and `close`, and four on a message
-  the account already has, each addressed by `chat`, `message` (its id), `fromMe` and `sender`: `edit` (with
-  `text`; whatsmeow's `BuildEdit`), `revoke` (`BuildRevoke`; someone else's message only in a group, as its admin),
-  `react` (with `emoji`, `null` to take it off; `BuildReaction`) and `read` (one read receipt; `MarkRead`). Three
+- **The requests**: `connect`, `link`, `me`, `directory`, `chat`, `send`, `logout` and `close`. A reply (`send` or
+  `sendMedia` with `replyTo`) also carries `quote` — `fromMe`, `sender` and `text` of the quoted message as the store
+  holds it — so the engine names the quoted sender in the form the chat addresses people by and adds the quoted
+  text, as mautrix-whatsapp does; without `quote` (a message the store lacks) the reply carries the id alone. Four
+  act on a message the account already has, each addressed by `chat`, `message` (its id), `fromMe` and `sender`:
+  `edit` (with `text`; whatsmeow's `BuildEdit`), `revoke` (`BuildRevoke`; someone else's message only in a group, as
+  its admin), `react` (with `emoji`, `null` to take it off; `BuildReaction`) and `read` (one read receipt;
+  `MarkRead`). Three
   carry files: `sendMedia` (`file`: a path on this machine and its kind; uploaded with `UploadReader`, then sent),
   `download` (`attachment` as stored, and `path`, which the engine creates 0600 in a folder the CLI made 0700 and
   removes after reading) and `forward` (`attachment` and `text` as stored). No file crosses the JSON line itself. In a
