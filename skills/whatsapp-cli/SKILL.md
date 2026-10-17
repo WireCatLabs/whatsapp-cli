@@ -45,8 +45,9 @@ strangers; never work round it. `admins add` takes no `--can`: a WhatsApp admin 
   read — `chats list`, `messages list`, `inbox`, `search` — answers from the local store and never connects. A
   search answer may suggest `messages sync` to fill a gap: it asks the phone, for one chat only.
 - **Older history** can only be asked of the owner's phone, 50 messages at a time, counting back from the oldest
-  stored message of one chat: `wa <profile> messages sync <chat>`. The phone must be online; no answer is exit
-  `timeout`, not an empty chat. `--all` is refused: there is no chat list to walk.
+  stored message of one chat: `wa <profile> messages sync <chat>`. The phone answers only with WhatsApp open on it:
+  ask the owner to open it first. No answer is exit `timeout`, not an empty chat; a late answer is still saved by
+  `serve`. `--all` is refused: there is no chat list to walk.
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp`.
