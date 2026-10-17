@@ -18,6 +18,7 @@ const input = vi.hoisted(() => ({
   cancel: false,
   wait: false,
   waiting: () => {},
+  signal: undefined as AbortSignal | undefined,
 }))
 
 vi.mock("@wirecat/cli-core", async (original) => ({
@@ -27,6 +28,7 @@ vi.mock("@wirecat/cli-core", async (original) => ({
     if (input.cancel) throw new CliError("cancelled", "cancelled")
     if (input.wait)
       return new Promise<string>((_resolve, reject) => {
+        input.signal = options.signal
         options.signal?.addEventListener("abort", () => reject(new CliError("cancelled", "cancelled")), { once: true })
         input.waiting()
       })
@@ -61,6 +63,7 @@ beforeEach(() => {
   input.cancel = false
   input.wait = false
   input.waiting = () => {}
+  input.signal = undefined
   vi.mocked(installSkill).mockClear()
 })
 afterEach(() => vi.useRealTimers())
@@ -312,6 +315,7 @@ describe("wa setup", () => {
     const result = await running
     expect(result.code).not.toBe(0)
     expect(result.stderr).toContain("did not finish within 100ms")
+    expect(input.signal?.aborted).toBe(true)
     expect(installSkill).not.toHaveBeenCalled()
   })
 
