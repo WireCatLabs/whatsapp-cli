@@ -80,7 +80,7 @@ export const openEngine = async (
 }
 
 /** The account's messages in cli-core's store, opened on the first lookup: most commands never need one. */
-const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredMessages => {
+export const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredMessages => {
   let opened: Promise<MessageStore> | undefined
   const store = () => (opened ??= openStore({ env, command: WA.command }))
   const key = { provider: "whatsapp", account: account ?? "" }
@@ -94,6 +94,16 @@ const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredM
       })
       return page.items.at(-1)
     },
+    anchor: async (chatId, at) =>
+      (
+        await (
+          await store()
+        ).messages.messagesWindow(
+          key,
+          chatId,
+          at === undefined ? { at: new Date(0).toISOString(), before: 0, after: 1 } : { at, before: 1, after: 0 },
+        )
+      )[0],
     wroteTo: async (personId) =>
       (await (await store()).messages.messages(key, personId, { limit: 1, outgoing: true })).items.length > 0,
     close: async () => {
@@ -164,9 +174,9 @@ export const WHATSAPP: Messenger = {
   history: "store",
   // WhatsApp drops the older of two connections, so while serve holds the device every command runs through it.
   connection: "exclusive",
-  // Ids are WhatsApp's own strings, so held stretches are keyed by time. Paging applies only to on-demand history
-  // from the phone, which is not built yet.
-  fetching: { page: 50, pause: "2s", jitter: true, maxPages: 20, orderBy: "time" },
+  // Ids are WhatsApp's own strings, so held stretches are keyed by time. A page is one request to the phone for older
+  // messages (the adapter's `history`), and WhatsApp's own clients ask 50 at a time.
+  fetching: { page: 50, maxPageSize: 50, pause: "2s", jitter: true, maxPages: 20, orderBy: "time" },
   chatArgument: "a chat: its name, or its WhatsApp id (…@lid, …@g.us)",
   inviteLinks: /chat\.whatsapp\.com\/[A-Za-z0-9]+/i,
   // The chat with yourself has your own id.

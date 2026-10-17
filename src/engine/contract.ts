@@ -11,7 +11,7 @@ import type { GroupEngine } from "./groups.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 4
+export const PROTOCOL = 5
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -79,6 +79,12 @@ export const waHistory = v.strictObject({
   messages: v.array(waMessage),
 })
 
+/**
+ * The phone's answer to `older`: the chat's messages sent before the anchor, as many as were asked or fewer. `more`
+ * says the phone sent any of the chat's messages, even ones the contract does not carry; only `false` is the start.
+ */
+export const waOlder = v.strictObject({ messages: v.array(waMessage), more: v.boolean() })
+
 /** `outdated`: WhatsApp refuses this engine's version. `stopped`: the engine process ended without being asked. */
 export const connectionState = v.picklist([
   "connected",
@@ -144,6 +150,7 @@ export type Hello = v.InferOutput<typeof hello>
 export type WaAccount = v.InferOutput<typeof waAccount>
 export type WaChatCard = v.InferOutput<typeof waChatCard>
 export type LoginCode = v.InferOutput<typeof loginCode>
+export type WaOlder = v.InferOutput<typeof waOlder>
 
 export interface WaLink {
   method: "qr" | "phone"
@@ -183,6 +190,14 @@ export interface WaKey {
   fromMe: boolean
   /** Who sent it; in a group, required for someone else's message. */
   sender: string | null
+}
+
+/** The most messages one `older` request asks the phone for, as WhatsApp's own clients ask. */
+export const OLDER_MAX = 50
+
+/** A stored message the phone counts back from: WhatsApp needs its id, whether it is the account's own, and its time. */
+export interface WaAnchor extends WaKey {
+  timestamp: string
 }
 
 /**
@@ -230,6 +245,12 @@ export interface WhatsAppEngine extends GroupEngine {
   /** Writes a stored file to `path`, which must not exist yet; the engine creates it readable by this user alone. */
   download(attachment: WaAttachment, path: string): Promise<void>
   forward(request: WaForward): Promise<WaMessage>
+  /**
+   * Asks the phone for up to `count` of the chat's messages sent before `anchor`, and waits for its answer. WhatsApp
+   * keeps no history on its servers: the phone answers only while it is online, and a phone that does not answer in
+   * time is a `timeout`.
+   */
+  older(anchor: WaAnchor, count: number): Promise<WaOlder>
   /**
    * Links this device to the account, showing each code through `onCode` until the phone confirms. Answers the
    * account at once when the device is already linked.

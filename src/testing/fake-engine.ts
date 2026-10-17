@@ -7,6 +7,7 @@ import {
   EngineError,
   type EngineEvent,
   engineEvent,
+  type WaAnchor,
   type WaAttachment,
   type WaChat,
   type WaContact,
@@ -77,6 +78,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups {
   /** Each file written for a download, by the attachment it was asked for. */
   downloads: WaAttachment[]
   forwards: WaForward[]
+  /** Each request for older history, by the anchor and count it was asked with. */
+  olderAsked: { anchor: WaAnchor; count: number }[]
   /** Every edit, deletion, reaction and read receipt, in order, with the key it was addressed by. */
   actions: { op: "edit" | "revoke" | "react" | "read"; key: WaKey; text?: string; emoji?: string | null }[]
   closed: boolean
@@ -85,9 +88,13 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups {
 
 /**
  * The engine in memory, filled from cli-core's contract seed. It pushes the seed's history once, as the phone does
- * right after linking, and drops a repeated message id as WhatsApp does.
+ * right after linking, and drops a repeated message id as WhatsApp does. `phone` is what the phone still holds and
+ * sends when asked for older history; without it the phone is offline and every such request times out.
  */
-export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } = {}): FakeEngine => {
+export const fakeEngine = (
+  seed: Seed,
+  { linked = true, phone }: { linked?: boolean; phone?: WaMessage[] } = {},
+): FakeEngine => {
   const hub = eventHub()
   let self = linked ? (seed.account?.id ?? null) : null
   const chats = seed.chats.map(waChatOf)
@@ -115,6 +122,7 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
   const uploads: FakeEngine["uploads"] = []
   const downloads: WaAttachment[] = []
   const forwards: WaForward[] = []
+  const olderAsked: FakeEngine["olderAsked"] = []
 
   const post = (chat: string, id: string, text: string, attachments: WaAttachment[], replyTo?: string): WaMessage => {
     const message: WaMessage = {
@@ -140,6 +148,7 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
     uploads,
     downloads,
     forwards,
+    olderAsked,
     closed: false,
     loggedOut: false,
     push,
@@ -215,6 +224,15 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
       if (again) return again
       forwards.push(request)
       return post(request.chat, request.id, request.text, request.attachment ? [request.attachment] : [])
+    },
+    older: async (anchor, count) => {
+      olderAsked.push({ anchor, count })
+      if (!phone) throw new EngineError("timeout", "the phone did not send older messages in time")
+      const before = phone
+        .filter((message) => message.chat === anchor.chat && message.timestamp < anchor.timestamp)
+        .sort((one, other) => one.timestamp.localeCompare(other.timestamp))
+        .slice(-count)
+      return { messages: before, more: before.length > 0 }
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

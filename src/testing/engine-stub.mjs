@@ -18,7 +18,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 4, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 5, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -103,6 +103,18 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "chat":
       if (fields.jid === "crash@stub") process.exit(3)
       say({ id, error: { code: "not_found", message: "WhatsApp has no such chat" } })
+      break
+    // One message just before the anchor, written as the Go engine writes an `older` answer; an offline phone times out.
+    case "older":
+      if (fields.chat === "offline@stub") {
+        say({ id, error: { code: "timeout", message: "the phone did not send older messages in time" } })
+        break
+      }
+      process.stdout.write(
+        `{"id":${id},"ok":{"messages":[{"id":"3EB0OLDER${fields.count}${fields.fromMe ? "M" : "T"}","chat":"${fields.chat}",` +
+          `"sender":"100000000000002@lid","senderName":null,"fromMe":false,"timestamp":"2026-08-31T23:59:59.000Z",` +
+          `"editedAt":null,"text":"synthetic older text","replyTo":null}],"more":true}}\n`,
+      )
       break
     case "directory":
       say({ id, ok: [] })

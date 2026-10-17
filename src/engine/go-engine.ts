@@ -19,6 +19,7 @@ import {
   waChat,
   waChatCard,
   waMessage,
+  waOlder,
 } from "./contract.js"
 import { eventHub } from "./events.js"
 import { goGroups } from "./groups.js"
@@ -228,6 +229,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     },
     forward: ({ chat, id, text, attachment }) =>
       request("forward", { chat, sendId: id, text, ...(attachment ? { attachment } : {}) }, waMessage),
+    older: (anchor, count) => request("older", { ...keyFields(anchor), timestamp: anchor.timestamp, count }, waOlder),
     link: async (linking, show): Promise<WaAccount> => {
       onCode = show
       try {

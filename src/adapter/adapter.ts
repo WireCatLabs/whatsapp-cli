@@ -15,12 +15,14 @@ import type {
   ReadState,
   RemoteFile,
   SendOptions,
+  ServerReads,
 } from "@wirecat/cli-core/cli"
 import type { Upload, UploadSource } from "@wirecat/cli-core/sends"
 import {
   type ConnectionState,
   EngineError,
   type EngineEvent,
+  OLDER_MAX,
   type WaAttachment,
   type WaChat,
   type WaKey,
@@ -37,6 +39,7 @@ export type WhatsAppAdapter = MessengerCore &
   Pick<MessageMedia, "download"> &
   MessageReactions &
   Pick<ReadState, "markRead"> &
+  Pick<ServerReads, "history"> &
   GroupAdapter
 
 /**
@@ -50,12 +53,15 @@ export interface StoredMessages {
   newestIncoming(chatId: string, before?: string): Promise<Message | undefined>
   /** Whether the account has sent this person a message in their one-to-one chat. */
   wroteTo(personId: string): Promise<boolean>
+  /** The newest message in the chat sent at `at` or earlier; without `at`, the oldest one held. */
+  anchor(chatId: string, at?: string): Promise<Message | undefined>
   close(): Promise<void>
 }
 
 const NOTHING_STORED: StoredMessages = {
   message: async () => undefined,
   newestIncoming: async () => undefined,
+  anchor: async () => undefined,
   wroteTo: async () => false,
   close: async () => {},
 }
@@ -326,6 +332,25 @@ export const whatsAppAdapter = (engine: WhatsAppEngine, stored: StoredMessages =
       const anchor = until === undefined ? undefined : await held(chatId, until)
       const target = anchor && !anchor.outgoing ? anchor : await stored.newestIncoming(chatId, until)
       if (target) await translated(engine.markRead(keyOf(chatId, target)))
+    },
+
+    // `messages sync` pages back through this. WhatsApp keeps no history on its servers, so each page is asked of the
+    // phone, counting back from a message the store holds: the oldest one on the first page, then the one the last
+    // page reached (`before` is a time, `fetching.orderBy: "time"`).
+    history: async (chat, { limit, before }) => {
+      const { id: chatId } = await core.resolve(chat)
+      const anchor = await stored.anchor(chatId, before)
+      if (!anchor)
+        throw new CliError(
+          "not_found",
+          "nothing of this chat is in the local store to count back from — the phone sends messages older than one " +
+            "the store holds; `serve` keeps the store filled",
+        )
+      const older = await translated(
+        engine.older({ ...keyOf(chatId, anchor), timestamp: anchor.timestamp }, Math.min(limit, OLDER_MAX)),
+      )
+      const items = older.messages.map(toMessage).sort((one, other) => one.timestamp.localeCompare(other.timestamp))
+      return { items, hasMore: older.more }
     },
 
     logout: () => translated(engine.logout()),
