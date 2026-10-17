@@ -73,7 +73,6 @@ export const openEngine = async (
   }
 }
 
-/** An engine that just linked, kept open for the command's next connect: the first history push comes on it. */
 /** The account's messages in cli-core's store, opened on the first lookup: most commands never need one. */
 const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredMessages => {
   let opened: Promise<MessageStore> | undefined
@@ -95,6 +94,7 @@ const storedMessages = (env: NodeJS.ProcessEnv, account: string | null): StoredM
   }
 }
 
+/** An engine that just linked, kept open for the command's next connect: the first history push comes on it. */
 const handedOver = new WeakMap<Command, WhatsAppEngine>()
 
 export interface Linked {
