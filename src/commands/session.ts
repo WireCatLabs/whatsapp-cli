@@ -189,6 +189,14 @@ export const startSession = async (
 const end = async (command: Command) => {
   const context = messengerContext(command, WHATSAPP)
   refuseUnderReadOnly(context)
+  // Run by serve for us, the logout would end serve's own connection and the keys would go from under it.
+  if (environmentOf(command).relayed)
+    throw new CliError(
+      "provider_unavailable",
+      `serve holds this WhatsApp login — stop it first (\`wa ${asFirstWord(context.profile)}server stop\`, or Ctrl+C ` +
+        "where it runs), then end the session",
+      { reason: "device.in-use", sent: false },
+    )
   const store = privateStore(context.profile, context.env)
   if (!existsSync(store)) {
     printItem(context, { profile: context.profile, ended: false })
