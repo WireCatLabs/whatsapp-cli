@@ -61,6 +61,17 @@ describe("wa session start", () => {
     expect(JSON.parse(result.stderr).error.message).toContain("--qr-file")
   })
 
+  it("refuses a store left without a device by an unfinished link, when nobody can scan", async () => {
+    const store = privateStore("halfdone")
+    mkdirSync(dirname(store), { recursive: true })
+    writeFileSync(store, "")
+    const engine = fakeEngine(seed, { linked: false })
+    const result = await wa(["halfdone", "session", "start", "--json"], () => engine)
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr).error.message).toContain("--qr-file")
+    expect(engine.closed).toBe(true)
+  })
+
   it("refuses --qr-file with the phone method", async () => {
     const result = await wa(["both", "session", "start", "phone", "--qr-file", "x.png", "--json"])
     expect(result.code).toBe(2)
