@@ -34,6 +34,12 @@ the socket carries new messages after that. So `WHATSAPP.history` is `"store"`:
 - **`serve` fills the store.** It runs the adapter's `feed` (history pushes) beside `watch` (live messages) on one
   connection, and cli-core saves each batch.
 - **Writes connect.** `messages send` opens the engine, sends, and closes it.
+- **A file is fetched by the keys in the store.** whatsmeow needs a file's path on WhatsApp's servers and its keys
+  to fetch and decrypt it. The engine sends them with each message as the attachment's `ref`, and cli-core keeps them
+  as the opaque `providerRef`, never shown in an answer. `messages download` and `messages transcribe --local` look the
+  message up and hand the engine the stored attachment; `messages forward` sends the same keys again marked forwarded,
+  as WhatsApp's own apps do, and refuses a message whose file the store has no keys for. A contact card is stored by its
+  name only: the card holds a phone number.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it
   is the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
   `reactions` and `chats mark-read` look the message up in cli-core's store first (`StoredMessages`, opened by
@@ -59,7 +65,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 - **The requests**: `connect`, `link`, `me`, `directory`, `chat`, `send`, `logout` and `close`, and four on a message
   the account already has, each addressed by `chat`, `message` (its id), `fromMe` and `sender`: `edit` (with
   `text`; whatsmeow's `BuildEdit`), `revoke` (`BuildRevoke`; someone else's message only in a group, as its admin),
-  `react` (with `emoji`, `null` to take it off; `BuildReaction`) and `read` (one read receipt; `MarkRead`). In a
+  `react` (with `emoji`, `null` to take it off; `BuildReaction`) and `read` (one read receipt; `MarkRead`). Three
+  carry files: `sendMedia` (`file`: a path on this machine and its kind; uploaded with `UploadReader`, then sent),
+  `download` (`attachment` as stored, and `path`, which the engine creates 0600 in a folder the CLI made 0700 and
+  removes after reading) and `forward` (`attachment` and `text` as stored). No file crosses the JSON line itself. In a
   group still addressed by phone numbers, the engine turns the stored LID sender into the phone JID the group
   expects.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names

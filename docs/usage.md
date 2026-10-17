@@ -57,6 +57,23 @@ WhatsApp names a message by who sent it as well as by its id, so these work on m
 delete a message for yourself alone on the phone. Nothing is marked read unless you ask: `chats mark-read`, or
 `--mark-read` on `messages list`, `inbox` and `review`.
 
+## Send, save and forward files
+
+```sh
+wa personal messages send "Book club" "the agenda" --file agenda.pdf
+wa personal messages send "Book club" "us, last week" --photo photo.jpg
+wa personal messages send "Book club" --voice note.ogg
+wa personal messages download "Book club" 3EB0… --output-dir ~/Downloads
+wa personal messages transcribe "Book club" 3EB0… --local
+wa personal messages forward "Book club" 3EB0… --to "Ann Lee"
+```
+
+A message carries one file; the text becomes its caption, except on a voice note, which goes alone. A `.mp4`, `.m4v`
+or `.mov` goes as a video unless `--as-file`. Photos, videos, voice notes, files and stickers that reach the local store
+can be saved and forwarded later, since the store keeps what WhatsApp needs to fetch them again; WhatsApp keeps a file
+for a limited time, so an old one may be gone. A place or a contact card is shown, not saved. WhatsApp has no speech
+recognition of its own, so `transcribe` uses a model on this machine (`wa models audio list`).
+
 ## Keep wa up to date
 
 `wa upgrade` installs the newest version with the package manager that installed `wa`, and restarts each running
