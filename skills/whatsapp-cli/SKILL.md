@@ -22,8 +22,18 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
 account, one chat's card, sending text (with `--reply-to`) and one file per message, `messages edit`,
 `messages delete --for-everyone`, `messages download`, `messages forward`, `messages transcribe --local`,
-`reactions add|remove`, `chats mark-read`, `serve` and `watch`. Everything that reads the local store works.
-Not built yet: pinning, albums; group members and admins; contact lookup.
+`reactions add|remove`, `chats mark-read`, group admin (`chats create|join|leave|update`, `chats link show|reset`,
+`chats members add|remove`, `chats admins add|remove`, `chats requests list|accept|decline`), `contacts
+profile|block|unblock|lookup|sync`, `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
+Not built yet: pinning, albums; listing a group's members (`chats members list` shows only what is stored, and
+`members fetch` is refused); `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the address
+book on the phone).
+
+**Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
+and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
+strangers; never work round it. `admins add` needs every right in `--can` (`members,admins,info,pin,link,post,delete`):
+a WhatsApp admin has all of them. A command that connects knows a group by its `…@g.us` id, not by its name.
+`contacts lookup` takes one number on stdin, at most one every 10 seconds per profile; never loop it.
 `contacts list`, `contacts show`, `contacts context` and `stats chats show` are marked as reading from WhatsApp: add
 `--offline` to keep them on the store, beside a running `serve`.
 

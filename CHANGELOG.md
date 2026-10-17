@@ -30,6 +30,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   saves a stored message's file; `messages transcribe --local` reads a voice note with a model on this machine
   (`wa models`); `messages forward` sends a stored message again, marked forwarded, file included; `wa images` searches
   pictures by what they show. The engine protocol is now 3.
+- **Groups and people**: `chats create`, `join`, `leave`, `update` (name, description, admin-only adds, join
+  approval), `chats link show|reset`, `chats members add|remove`, `chats admins add|remove`, `chats requests
+  list|accept|decline`, `contacts profile`, `contacts block|unblock`, `contacts lookup` and `contacts sync` (the
+  phone's address book), and `doctor --online` now connects to check the account. Group changes go through the send
+  guard like a send; adding people is refused for anyone not in the address book or written to before, since
+  WhatsApp bans accounts that add strangers. A number lookup is one per call, one every 10 seconds per profile.
+  Engine protocol 4.
 - **`wa <profile> setup`** is the guided first run, as in tg: it checks this computer, links the device or reuses it,
   reads the account and five chats from the local store, and installs the agent skill (`--agent`). Agents use
   `--qr-file`.

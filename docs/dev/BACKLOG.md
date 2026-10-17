@@ -9,8 +9,24 @@ Open work, most important first. The plan in flight is
 2. **Writes, `watch` and MCP while `serve` runs.** cli-core has no shared way to route them through the process that
    holds the connection; decide between adding it to cli-core and a local relay.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
-4. **Feature groups**: polls, groups and admin, contacts, on-demand older history from the phone. Edit,
-   delete for everyone, reactions and mark-read are built; what they left open:
+4. **Feature groups**: polls, on-demand older history from the phone. Edit, delete for everyone, reactions,
+   mark-read, files, group admin, join requests, profiles, blocking and number lookup are built; what they left open:
+   - **Group members are never listed.** cli-core refuses `chats members fetch` and `audit` for a messenger whose
+     history is `"store"` (`fromStore` in its `services/chats`), and `chats members list` reads only the stored roster,
+     so the adapter's `members` is reached by nothing but `chats moderate`. Fix in cli-core: refuse those two only
+     with `--offline`.
+   - **Group switches cli-core has no name for**: announcement mode (only admins send), "only admins edit info"
+     (WhatsApp's `locked`; cli-core's `onlyOwnerEditsInfo` means the owner alone) and disappearing messages. The
+     engine reads them into `providerMetadata`; changing them needs keys in cli-core's `GroupSettings`.
+   - **`chats events`.** WhatsApp's joins and leaves come as live notifications, not as history the engine can
+     read back, so `chatEvents` is not built.
+   - **Admin rights.** A WhatsApp admin has every right; cli-core's `--can` cannot be empty, so `admins add` takes
+     the whole list. A messenger flag for "admins have no separate rights" would let it take none.
+   - **Group names in a one-shot command.** The engine learns the joined groups only once connected, after cli-core
+     resolved the chat, so a connecting command finds a group by its `…@g.us` id, not its name.
+   - **The group photo** (`--photo`, whatsmeow's `SetGroupPhoto`) and **communities** are not built.
+   - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
+     been read, not run, with a LID.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
      `messages delete` without `--for-everyone` is refused rather than built from a guessed patch.
    - **Messages stored before files were.** A photo with a caption stored by an older `wa` has the caption and no
@@ -44,7 +60,10 @@ Open work, most important first. The plan in flight is
     the quoted sender in groups. The contract has no field for it yet.
 11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
     history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
-    decision 3) is not done, so such users stay in phone form.
+    decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup
+    that stores a new mapping (`GetUserInfo`, `IsOnWhatsApp`, `UpdateBlocklist` already do, through `contacts
+    profile`, `lookup` and `block`) turns a person's later chats to the LID form, and a chat stored before in phone
+    form then splits in two (item 3). Build it with item 3, or only before a chat is first emitted.
 12. **cli-core could resolve names from the store for `history: "store"` messengers.** Today it always asks the
     adapter, so the engine keeps its own small chat directory (ARCHITECTURE §4). Raise it in cli-core.
 13. **Edits keep the edit's time as the message time.** A live edit carries no original timestamp; check what
