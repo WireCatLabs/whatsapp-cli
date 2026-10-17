@@ -16,7 +16,7 @@ describe("the test sandbox", () => {
     ]
 
     expect(root).not.toBe(homedir())
-    expect(root).toMatch(/wa-test-/)
+    expect(root).toMatch(/wirecat-test-/)
     for (const path of written) expect(path.startsWith(root), path).toBe(true)
   })
 })

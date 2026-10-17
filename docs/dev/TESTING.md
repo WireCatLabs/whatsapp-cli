@@ -20,9 +20,14 @@ learnt. This page lists what is specific to `wa`.
 
 ## No test touches the owner's account or files
 
-`src/testing/sandbox.ts`, a vitest `setupFiles` entry, points config, state, cache and the shared message store at a
-temporary directory, and clears `WA_ENGINE`, `WA_PROFILE_LOCK` and the model variables for every test file. **A new
-variable that can point at something real goes there.**
+`@wirecat/cli-base/testing/setup` runs first in vitest's `setupFiles`: each test file gets a fresh temporary folder
+and home, a keyring that throws, and no network beyond this machine (WC-TEST-1, WC-TEST-2, WC-TEST-3). A test whose
+subject is the network calls `onTestFinished(allowNetwork())`; none does today. The engine tests spawn a local child,
+not the network.
+
+`src/testing/sandbox.ts` runs next with `wa`'s own part: short config, state and cache paths and the shared message
+store inside that folder, and `WA_ENGINE`, `WA_PROFILE_LOCK` and the model variables cleared. **A new `WA_` variable
+that can point at something real goes there.**
 
 WhatsApp is never contacted. Tests hand the adapter `fakeEngine(seed)` (`src/testing/fake-engine.ts`): the engine in
 memory, filled from cli-core's contract seed, with WhatsApp-shaped ids (`whatsAppIds`). Command tests hand `run()` an

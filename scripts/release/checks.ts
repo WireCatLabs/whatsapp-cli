@@ -29,7 +29,7 @@ export const engineInPackage = (paths: string[]): string[] =>
     .map((path) => `npm pack: ${path} would ship — the GPL-3.0 engine belongs in the engine packages only`)
 
 export const engineOutOfPackage = (root: string) => (): string[] => {
-  const { ok, output } = run(root, "npm", ["pack", "--dry-run", "--json", "--ignore-scripts"])
+  const { ok, output } = run(root, "npm", ["pack", "--dry-run", "--json", "--ignore-scripts", "--no-update-notifier"])
   if (!ok) return [output.trim()]
   const [packed] = JSON.parse(output.slice(output.indexOf("["))) as [{ files?: { path: string }[] }?]
   return engineInPackage((packed?.files ?? []).map(({ path }) => path))
