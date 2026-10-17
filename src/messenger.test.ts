@@ -70,6 +70,14 @@ describe("connecting to WhatsApp", () => {
     expect(JSON.parse(result.stderr).error.message).toContain("session start")
     expect(engine.closed).toBe(true)
   })
+
+  it("names the command to look a chat up with, profile first", async () => {
+    const result = await wa(["named", "messages", "send", "Nobody By This Name", "hi", "--json"], {
+      engine: () => fakeEngine(seed),
+    })
+    expect(result.code).not.toBe(0)
+    expect(JSON.parse(result.stderr).error.message).toContain("`wa named chats list`")
+  })
 })
 
 describe("wa doctor", () => {

@@ -11,10 +11,11 @@ import {
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { whatsAppAdapter } from "./adapter/adapter.js"
+import type { Check, Words } from "./adapter/checks.js"
 import { ADMIN_RIGHTS, GROUP_SETTINGS } from "./adapter/groups.js"
 import { resolveSettings, WA } from "./app.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
-import { EngineError, type LoginCode, type WhatsAppEngine } from "./engine/contract.js"
+import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { startGoEngine } from "./engine/go-engine.js"
 import { privateStore } from "./paths.js"
 
@@ -43,7 +44,21 @@ const holderOf = (command: Command): string => {
   return words.join(" ") || "wa"
 }
 
-const loginHint = (profile: string) => `\`wa ${asFirstWord(profile)}session start\``
+const COMMANDS: Record<Check, string> = { "chats.list": "chats list", serve: "serve", "session.start": "session start" }
+
+/** The commands the adapter's messages send a person to, with this profile named first. */
+const wordsFor =
+  (profile: string): Words =>
+  (check) =>
+    `\`wa ${asFirstWord(profile)}${COMMANDS[check]}\``
+
+const loginHint = (profile: string) => wordsFor(profile)("session.start")
+
+/** A code to show while linking: the engine's, in the terms a command may see. */
+export interface LinkCode {
+  login: "qr" | "pair"
+  code: string
+}
 
 /**
  * Starts the engine for the command's profile, or throws saying how to log in. Only a login (`link`) may start on
@@ -103,7 +118,7 @@ export const linkDevice = async (
   }: {
     method: "qr" | "phone"
     phone: () => Promise<string>
-    onCode: (code: LoginCode) => void
+    onCode: (code: LinkCode) => void
     /** Throws when nobody could answer: a store can exist without a device, after a link that did not finish. */
     beforeLink?: () => void
     /** Closed by the caller's deadline as well. */
@@ -204,7 +219,8 @@ export const WHATSAPP: Messenger = {
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)
-    if (linked) return whatsAppAdapter(linked, options.stored)
+    const words = wordsFor(base.settings.profile)
+    if (linked) return whatsAppAdapter(linked, options.stored, words)
     const engine = await openEngine(command, base, { listen: options.listen === true })
     if (engine.self() === null) {
       await engine.close()
@@ -213,6 +229,6 @@ export const WHATSAPP: Messenger = {
         `profile "${base.settings.profile}" is not linked to WhatsApp — run ${loginHint(base.settings.profile)}`,
       )
     }
-    return whatsAppAdapter(engine, options.stored)
+    return whatsAppAdapter(engine, options.stored, words)
   },
 }
