@@ -10,7 +10,7 @@ import * as v from "valibot"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 1
+export const PROTOCOL = 2
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -127,6 +127,19 @@ export interface WaSend {
 }
 
 /**
+ * A message the account already has, as WhatsApp addresses one: whatsmeow keeps no messages, so whether it is the
+ * account's own and who sent it come from cli-core's store. A wrong key is not refused — WhatsApp drops the reaction
+ * or the deletion silently — so the adapter sends one only for a message the store holds.
+ */
+export interface WaKey {
+  chat: string
+  id: string
+  fromMe: boolean
+  /** Who sent it; in a group, required for someone else's message. */
+  sender: string | null
+}
+
+/**
  * A refusal from the engine, already in the closed list of codes. Its message is fixed wording: it never repeats a
  * chat name, a JID or anything typed, since errors reach logs and run records.
  */
@@ -158,6 +171,14 @@ export interface WhatsAppEngine {
   directory(): Promise<WaChat[]>
   chat(jid: string): Promise<WaChatCard>
   send(request: WaSend): Promise<WaMessage>
+  /** New text for one of the account's own messages; the answer carries the new text and when it changed. */
+  edit(key: WaKey, text: string): Promise<WaMessage>
+  /** Deletes a message for everyone: the account's own, or another's in a group the account administers. */
+  revoke(key: WaKey): Promise<void>
+  /** The account's reaction on a message; `null` takes it off. */
+  react(key: WaKey, emoji: string | null): Promise<void>
+  /** A read receipt for someone else's message; the sender sees it. Only a command that asked for it calls this. */
+  markRead(key: WaKey): Promise<void>
   /**
    * Links this device to the account, showing each code through `onCode` until the phone confirms. Answers the
    * account at once when the device is already linked.

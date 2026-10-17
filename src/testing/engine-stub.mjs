@@ -17,7 +17,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 0 : 1, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 2, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -47,6 +47,26 @@ createInterface({ input: process.stdin }).on("line", (line) => {
           replyTo: null,
         },
       })
+      break
+    case "edit":
+      say({
+        id,
+        ok: {
+          id: fields.message,
+          chat: fields.chat,
+          sender: self,
+          senderName: "Owner",
+          fromMe: fields.fromMe,
+          timestamp: "2026-09-01T10:05:00.000Z",
+          editedAt: "2026-09-01T10:05:00.000Z",
+          text: fields.text,
+          replyTo: null,
+        },
+      })
+      break
+    case "react":
+      if (fields.emoji !== null) say({ id, error: { code: "validation_error", message: "the stub only removes" } })
+      else say({ id, ok: null })
       break
     case "link":
       say({ login: "pair", code: "ABCD-EFGH" })

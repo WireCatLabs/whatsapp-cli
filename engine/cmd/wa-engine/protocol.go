@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 1
+const protocol = 2
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -26,6 +26,11 @@ type request struct {
 	Text    string `json:"text,omitempty"`
 	SendID  string `json:"sendId,omitempty"`
 	ReplyTo string `json:"replyTo,omitempty"`
+	// A message the account already has: edit, revoke, react, read.
+	Message string  `json:"message,omitempty"`
+	FromMe  bool    `json:"fromMe,omitempty"`
+	Sender  string  `json:"sender,omitempty"`
+	Emoji   *string `json:"emoji,omitempty"`
 }
 
 // failure carries a code from the contract's closed list and fixed wording: never a JID, a name or anything typed.

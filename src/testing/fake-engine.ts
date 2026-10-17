@@ -7,6 +7,7 @@ import {
   engineEvent,
   type WaChat,
   type WaContact,
+  type WaKey,
   type WaMessage,
   type WhatsAppEngine,
 } from "../engine/contract.js"
@@ -53,6 +54,8 @@ export interface FakeEngine extends WhatsAppEngine {
   /** Pushes an event as the engine would, checked against the contract first. */
   push(event: EngineEvent): void
   sent: WaMessage[]
+  /** Every edit, deletion, reaction and read receipt, in order, with the key it was addressed by. */
+  actions: { op: "edit" | "revoke" | "react" | "read"; key: WaKey; text?: string; emoji?: string | null }[]
   closed: boolean
   loggedOut: boolean
 }
@@ -85,8 +88,11 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
 
   if (linked) pushHistory()
 
+  const actions: FakeEngine["actions"] = []
+
   const engine: FakeEngine = {
     sent,
+    actions,
     closed: false,
     loggedOut: false,
     push,
@@ -118,6 +124,30 @@ export const fakeEngine = (seed: Seed, { linked = true }: { linked?: boolean } =
       }
       sent.push(message)
       return message
+    },
+    edit: async (key, text) => {
+      actions.push({ op: "edit", key, text })
+      const now = new Date().toISOString()
+      return {
+        id: key.id,
+        chat: key.chat,
+        sender: seed.account?.id ?? null,
+        senderName: seed.account?.name ?? null,
+        fromMe: true,
+        timestamp: now,
+        editedAt: now,
+        text,
+        replyTo: null,
+      }
+    },
+    revoke: async (key) => {
+      actions.push({ op: "revoke", key })
+    },
+    react: async (key, emoji) => {
+      actions.push({ op: "react", key, emoji })
+    },
+    markRead: async (key) => {
+      actions.push({ op: "read", key })
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

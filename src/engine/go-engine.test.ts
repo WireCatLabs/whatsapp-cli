@@ -28,6 +28,14 @@ describe("startGoEngine", () => {
     expect(warnings).toContain("stub engine diagnostic")
   })
 
+  it("addresses an edit and a reaction by the stored message's key", async () => {
+    const engine = await stub("ok")
+    const key = { chat: "120363000000000001@g.us", id: "3EB0AA", fromMe: true, sender: null }
+    expect(await engine.edit(key, "fixed")).toMatchObject({ id: "3EB0AA", chat: key.chat, text: "fixed" })
+    await expect(engine.react(key, null)).resolves.toBeUndefined()
+    await engine.close()
+  })
+
   it("hands the connection event to a listener and resolves ready once connected", async () => {
     const engine = await stub("ok")
     const events: EngineEvent[] = []
@@ -51,7 +59,7 @@ describe("startGoEngine", () => {
   })
 
   it("refuses an engine that speaks another protocol", async () => {
-    await expect(stub("old")).rejects.toMatchObject({ message: expect.stringContaining("protocol 0") })
+    await expect(stub("old")).rejects.toMatchObject({ message: expect.stringContaining("protocol 1") })
   })
 
   it("shows the login code and takes the linked account as self", async () => {

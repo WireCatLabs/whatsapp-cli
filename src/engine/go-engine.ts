@@ -11,6 +11,7 @@ import {
   loginCode,
   PROTOCOL,
   type WaAccount,
+  type WaKey,
   type WhatsAppEngine,
   waAccount,
   waChat,
@@ -192,6 +193,16 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     chat: (jid) => request("chat", { jid }, waChatCard),
     send: ({ chat, text, id, replyTo }) =>
       request("send", { chat, text, sendId: id, ...(replyTo === undefined ? {} : { replyTo }) }, waMessage),
+    edit: (key, text) => request("edit", { ...keyFields(key), text }, waMessage),
+    revoke: async (key) => {
+      await request("revoke", keyFields(key), nothing)
+    },
+    react: async (key, emoji) => {
+      await request("react", { ...keyFields(key), emoji }, nothing)
+    },
+    markRead: async (key) => {
+      await request("read", keyFields(key), nothing)
+    },
     link: async (linking, show): Promise<WaAccount> => {
       onCode = show
       try {
@@ -210,6 +221,13 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     close,
   }
 }
+
+const keyFields = ({ chat, id, fromMe, sender }: WaKey) => ({
+  chat,
+  message: id,
+  fromMe,
+  ...(sender === null ? {} : { sender }),
+})
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms).unref())
 
