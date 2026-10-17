@@ -4,7 +4,7 @@ Your personal WhatsApp in the terminal, searchable on your computer, and ready f
 agent — within limits you set.
 
 > **Early.** `wa` links, reads into its local store, sends text and files, edits, deletes for everyone, reacts and
-> runs groups. It is not on npm yet: see the [roadmap](docs/roadmap.md).
+> runs groups. What comes next is on the [roadmap](docs/roadmap.md).
 
 An example conversation (invented people, illustrative output):
 
@@ -21,7 +21,7 @@ You:    Yes.
 ## Quick start
 
 ```sh
-npm install -g @wirecat/whatsapp-cli   # once it is published; until then, see the installation guide
+npm install -g @wirecat/whatsapp-cli
 wa personal setup --agent claude       # also codex, cursor, gemini, all or none
 wa personal server install             # keep receiving in the background
 wa personal inbox                      # other people's unread messages; nothing is marked read

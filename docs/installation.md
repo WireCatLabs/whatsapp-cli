@@ -1,6 +1,6 @@
 # Installation
 
-Use this page to install `wa` from npm. You need Node.js 22.16 or newer.
+Use this page to install `wa` from npm. You need Node.js 22.16 or a newer 22, or 24 or newer.
 
 ```sh
 npm install --global @wirecat/whatsapp-cli
@@ -11,7 +11,7 @@ npm also installs the engine, the program that speaks WhatsApp's protocol, as a 
 system. It exists for Linux, macOS and Windows, on x64 and arm64. Keep optional packages on: `--omit=optional` leaves
 the engine out.
 
-`wa` is not published to npm yet; until it is, build it from the repository:
+To run `wa` from a checkout of the repository instead:
 
 ```sh
 git clone https://github.com/WireCatLabs/whatsapp-cli.git
