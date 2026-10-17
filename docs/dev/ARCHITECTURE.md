@@ -34,6 +34,11 @@ the socket carries new messages after that. So `WHATSAPP.history` is `"store"`:
 - **`serve` fills the store.** It runs the adapter's `feed` (history pushes) beside `watch` (live messages) on one
   connection, and cli-core saves each batch.
 - **Writes connect.** `messages send` opens the engine, sends, and closes it.
+- **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it
+  is the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
+  `reactions` and `chats mark-read` look the message up in cli-core's store first (`StoredMessages`, opened by
+  `messenger.ts`, since the adapter may not reach the store) and send the engine the full key. A message the store
+  lacks is refused as `not_found`: a guessed key is not refused by WhatsApp, it is dropped without a word.
 
 ## 4. The engine
 
@@ -51,6 +56,12 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `engineEvent`; a login shows `{"login": "qr"|"pair", "code"}`. The phone number for a pairing code travels on stdin,
   never as an argument (`ps` shows arguments). When stdin closes the engine disconnects and exits, so it never
   outlives the CLI; it ignores Ctrl+C and lets the CLI decide.
+- **The requests**: `connect`, `link`, `me`, `directory`, `chat`, `send`, `logout` and `close`, and four on a message
+  the account already has, each addressed by `chat`, `message` (its id), `fromMe` and `sender`: `edit` (with
+  `text`; whatsmeow's `BuildEdit`), `revoke` (`BuildRevoke`; someone else's message only in a group, as its admin),
+  `react` (with `emoji`, `null` to take it off; `BuildReaction`) and `read` (one read receipt; `MarkRead`). In a
+  group still addressed by phone numbers, the engine turns the stored LID sender into the phone JID the group
+  expects.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
   JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a
   file kept like `private.db`. Errors reach the CLI as one of the contract's codes with fixed wording.
@@ -100,4 +111,5 @@ Only the engine writes `private.db`; it holds keys and device state, never messa
 
 The probe (`engine/cmd/wa-probe`) pairs as `Chrome (Linux)` with the desktop platform, so the phone sends full
 history, and names the device after the host system. The Go engine does the same: nothing WhatsApp sees names
-this tool. It sends delivery receipts, as every WhatsApp client does, and never read receipts or presence.
+this tool. It sends delivery receipts, as every WhatsApp client does, and never presence. A read receipt goes only
+when the command typed asked for one: `chats mark-read`, or `--mark-read` on a read.

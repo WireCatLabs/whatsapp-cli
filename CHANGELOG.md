@@ -13,3 +13,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   connects and stopped when it ends. One command at a time may connect a profile; a second is told which one holds it.
 - **`wa <profile> session start [qr|phone]`** links the profile by QR code or pairing code and keeps the history the
   phone sends right after linking. **`session end`** unlinks the device and deletes its keys.
+- **Changing messages**: `messages edit` (your own, within WhatsApp's 20 minutes), `messages delete --for-everyone`
+  (your own, or another's in a group you administer), `reactions add` and `reactions remove`, and `chats mark-read`
+  and `--mark-read`, which send a read receipt only when asked. Each needs the message in the local store, which
+  `serve` keeps filled; WhatsApp addresses a message by its sender. Deleting for you alone and forwarding are not
+  built yet.

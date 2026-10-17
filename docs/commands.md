@@ -1465,6 +1465,41 @@ wa messages sync [chat] [options]
 | `--background` | run as a job that outlives this command; `store jobs show` follows it. |
 | `--dry-run` | only estimate how many messages, requests and minutes a full fetch would still take — from the store, no request. |
 
+## `wa reactions`
+
+react to messages
+
+### `wa reactions add`
+
+put your reaction on a message; it replaces the one you had
+
+**Changes something in WhatsApp.**
+
+```sh
+wa reactions add <chat> <message> <emoji>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+| `emoji` | required | one emoji, for example 👍. |
+
+### `wa reactions remove`
+
+take your reaction off a message
+
+**Changes something in WhatsApp.**
+
+```sh
+wa reactions remove <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+
 ## `wa inbox`
 
 other people's unread messages in every chat; --new for what arrived since the last check

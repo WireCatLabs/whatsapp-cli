@@ -52,6 +52,7 @@ Commands:
   chats                        the account's chats
   contacts                     people this account has a one-to-one chat with
   messages                     read and send messages
+  reactions                    react to messages
   inbox [options] [query...]   other people's unread messages in every chat;
                                --new for what arrived since the last check
   review [options] [query...]  every message, yours too, in chats that changed

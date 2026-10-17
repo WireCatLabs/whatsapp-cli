@@ -11,8 +11,15 @@ Open work, most important first. The plan in flight is
 3. **Writes, `watch` and MCP while `serve` runs.** cli-core has no shared way to route them through the process that
    holds the connection; decide between adding it to cli-core and a local relay.
 4. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
-5. **Feature groups**: media, edit and delete, reactions, read state, polls, groups and admin, contacts, on-demand
-   older history from the phone.
+5. **Feature groups**: media, polls, groups and admin, contacts, on-demand older history from the phone. Edit,
+   delete for everyone, reactions and mark-read are built; what they left open:
+   - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
+     `messages delete` without `--for-everyone` is refused rather than built from a guessed patch.
+   - **Forward.** A copy marked forwarded needs the original content; the store keeps only text, so a photo with a
+     caption would go out as its caption alone. Build it with media, and refuse a message whose content is not held.
+   - **Live checks** (with item 1): a reaction and a revoke in a one-to-one chat stored under a LID, and in a group
+     addressed by phone numbers; whether one read receipt for the newest message clears the phone's unread count, or
+     each unread message needs its own.
 6. **Distribution**: the engine as per-platform npm packages, the release workflow, install tests on three systems.
 7. **Join cli-core's parity manifest** (`pnpm parity:seed --cli wa` in cli-core), then turn on `parity:check` in CI.
 8. **Agent settings like tg's** (`.claude/settings.json`: sandbox on, writes kept inside the project, `bin/wa` excluded so the engine reaches WhatsApp). Left out of the foundation because it changes how agents run here.

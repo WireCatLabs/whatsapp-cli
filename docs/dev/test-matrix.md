@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**26 ✅ · 741 ⛔ · 0 ❌** — 226 commands, 541 options.
+**37 ✅ · 732 ⛔ · 0 ❌** — 228 commands, 541 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -49,8 +49,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats members fetch` | `--max-pages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `chats members add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `chats members remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats mark-read` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `chats mark-read` | `--until-id` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `chats mark-read` |  | ✅ |  |
+| `chats mark-read` | `--until-id` | ✅ |  |
 | `chats tracking list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `chats tracking show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `chats tracking add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -144,12 +144,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages evidence` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages evidence` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages evidence` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages list` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages list` | `--transcribe` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages list` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages list` | `--mark-read` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `messages list` |  | ✅ |  |
+| `messages list` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine |
+| `messages list` | `--cursor` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine |
+| `messages list` | `--transcribe` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine |
+| `messages list` | `--model` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine |
+| `messages list` | `--mark-read` | ✅ |  |
 | `messages send` |  | ✅ |  |
 | `messages send` | `--reply-to` | ✅ |  |
 | `messages send` | `--send-as` | ✅ |  |
@@ -180,11 +180,11 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages transcribe` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages transcribe` | `--local` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages transcribe` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages edit` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages edit` | `--md` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages delete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages delete` | `--for-everyone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `messages delete` | `--allow-dangerous` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `messages edit` |  | ✅ |  |
+| `messages edit` | `--md` | ✅ |  |
+| `messages delete` |  | ✅ |  |
+| `messages delete` | `--for-everyone` | ✅ |  |
+| `messages delete` | `--allow-dangerous` | ✅ |  |
 | `messages forward` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages forward` | `--to` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages forward` | `--silent` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
@@ -213,6 +213,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages sync` | `--catch-up-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages sync` | `--background` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `messages sync` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `reactions add` |  | ✅ |  |
+| `reactions remove` |  | ✅ |  |
 | `inbox` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `inbox` | `--new` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `inbox` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
