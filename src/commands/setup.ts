@@ -1,5 +1,5 @@
 import { accessSync, constants, existsSync, mkdirSync } from "node:fs"
-import { CliError, indent, renderPretty } from "@wirecat/cli-base"
+import { CliError, indent, renderPretty, singleLine } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { installSkill, type SkillTarget } from "@wirecat/cli-base/skill"
 import { readSecret } from "@wirecat/cli-core"
@@ -198,7 +198,7 @@ export const setupCommand = () =>
           cancellation.signal.throwIfAborted()
           return adapter.me()
         })
-        screen.detail(`✓ ${account.name ?? "verified"}`)
+        screen.detail(`✓ ${account.name === null ? "verified" : singleLine(account.name)}`)
 
         screen.step(4, "A few chats")
         // WhatsApp has no chat list to ask for: the store holds what the phone pushed and what serve received.

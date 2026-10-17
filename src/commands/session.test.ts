@@ -77,6 +77,51 @@ describe("wa session start", () => {
     expect(engine.closed).toBe(true)
   })
 
+  const neverScanned = (stop?: AbortController) => {
+    const engine = fakeEngine(seed, { linked: false })
+    engine.link = async (_request, onCode) => {
+      onCode({ login: "qr", code: "FAKECODE" })
+      stop?.abort()
+      return new Promise(() => {})
+    }
+    return engine
+  }
+
+  it("closes the engine and removes the QR image when the login is interrupted", async () => {
+    const stop = new AbortController()
+    const engine = neverScanned(stop)
+    const qrFile = `${process.env.TMPDIR}/interrupted.png`
+    const result = await wa(["interrupted", "session", "start", "--qr-file", qrFile, "--json"], () => engine, {
+      signal: stop.signal,
+    })
+    expect(result.code).toBe(130)
+    expect(engine.closed).toBe(true)
+    expect(existsSync(qrFile)).toBe(false)
+  })
+
+  it("closes the engine and removes the QR image when the login runs past its deadline", async () => {
+    const engine = neverScanned()
+    const qrFile = `${process.env.TMPDIR}/late.png`
+    const result = await wa(
+      ["late", "session", "start", "--qr-file", qrFile, "--timeout", "50ms", "--json"],
+      () => engine,
+    )
+    expect(result.code).toBe(9)
+    expect(engine.closed).toBe(true)
+    expect(existsSync(qrFile)).toBe(false)
+  })
+
+  it("refuses to link under WA_READ_ONLY", async () => {
+    const engine = fakeEngine(seed, { linked: false })
+    const qrFile = `${process.env.TMPDIR}/locked.png`
+    const result = await wa(["unlinked", "session", "start", "--qr-file", qrFile, "--json"], () => engine, {
+      env: { ...process.env, WA_READ_ONLY: "1" },
+    })
+    expect(result.code).toBe(5)
+    expect(engine.self()).toBeNull()
+    expect(engine.closed).toBe(true)
+  })
+
   it("refuses --qr-file with the phone method", async () => {
     const result = await wa(["both", "session", "start", "phone", "--qr-file", "x.png", "--json"])
     expect(result.code).toBe(2)
@@ -163,6 +208,17 @@ describe("wa session end", () => {
     }
     const result = await wa(["offline", "session", "end", "--json"], () => engine)
     expect(result.code).not.toBe(0)
+    expect(existsSync(store)).toBe(true)
+  })
+
+  it("refuses under WA_READ_ONLY and keeps the device", async () => {
+    const store = linkedProfile("locked")
+    const engine = fakeEngine(seed)
+    const result = await wa(["locked", "session", "end", "--json"], () => engine, {
+      env: { ...process.env, WA_READ_ONLY: "1" },
+    })
+    expect(result.code).toBe(5)
+    expect(engine.loggedOut).toBe(false)
     expect(existsSync(store)).toBe(true)
   })
 

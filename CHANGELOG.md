@@ -49,6 +49,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **`WA_READ_ONLY` also stops linking and unlinking the device**: `session start` and `setup` refuse to link a new
+  device, and `session end` refuses to log out, with `permission_error`.
+- **An interrupted or timed-out login closes the engine and removes its QR image**, instead of leaving both behind.
+- **The account name shown after linking is printed as plain text**, never as terminal control codes.
 - **Media keys stay inside the client**: internal attachment references stay out of live-event, JSON and MCP output
   (cli-core 0.315.0).
 - **Invite links must name WhatsApp's exact invite host**; unrelated URL prefixes are refused before connecting.
