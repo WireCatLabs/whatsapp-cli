@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**35 ✅ · 738 ⛔ · 0 ❌** — 228 commands, 545 options.
+**36 ✅ · 737 ⛔ · 0 ❌** — 228 commands, 545 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -775,7 +775,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--debug` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--timeout` | ✅ |  |
 | *global* | `--offline` | ✅ |  |
-| *global* | `--no-input` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
+| *global* | `--no-input` | ✅ |  |
 | *global* | `--max-input-bytes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--max-output-bytes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
 | *global* | `--brief` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
