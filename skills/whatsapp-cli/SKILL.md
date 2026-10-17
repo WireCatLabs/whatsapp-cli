@@ -23,8 +23,8 @@ do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". T
 account, one chat's card, sending text (with `--reply-to`), `messages edit`, `messages delete --for-everyone`,
 `reactions add|remove`, `chats mark-read`, `serve` and `watch`. Everything that reads the local store works.
 Not built yet: files, photos and voice; forwarding, pinning, downloading; group members and admins; contact lookup.
-`contacts list`, `contacts show`, `contacts context` and `stats chats show` ask the messenger first: add
-`--offline` so they answer from the store, beside a running `serve`.
+`contacts list`, `contacts show`, `contacts context` and `stats chats show` are marked as reading from WhatsApp: add
+`--offline` to keep them on the store, beside a running `serve`.
 
 ## How WhatsApp differs from Telegram and MAX
 
@@ -56,7 +56,7 @@ opens no connection, reserves no write and leaves targets unresolved. See the
 
 MCP uses `wa_tools_search`, then `wa_read` or `wa_write` with `{command, arguments}`, the CLI path such as
 `messages list`. There are no forms; the profile's permissions decide access and `ask` permits the requested MCP
-write.
+write. Deleting through MCP is refused: its tool deletes for the owner alone, which wa cannot do yet.
 
 ## Installation readiness
 
