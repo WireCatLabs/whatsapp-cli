@@ -154,7 +154,7 @@ func TestHistoryVotesComeWithTheirPoll(t *testing.T) {
 		evt.Info.ID = web.GetKey().GetID()
 		return evt, nil
 	}
-	votes := testConverter().history(data, parse).votes
+	votes := testConverter().history(data, parse).Votes
 	if len(votes) != 2 {
 		t.Fatalf("got %+v", votes)
 	}

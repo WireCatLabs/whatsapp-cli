@@ -22,10 +22,8 @@ Open work, most important first. The plan in flight is
    would match an answer more surely than its chat.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
    profiles, blocking, number lookup, Markdown and polls are built; what they left open:
-   - **History votes ride on `watch`.** cli-core's `HistoryBatch` has no votes, so the engine sends a history push's
-     votes as `vote` events after it, and only a running `watch` keeps them (`serve` and `session start` run one). Fix
-     in cli-core: votes in `HistoryBatch`, saved by `feed`. A vote whose poll the store does not hold yet (a live vote
-     racing its poll's save) is dropped.
+   - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
+     them (cli-core 0.322.0); a live vote whose poll the store does not hold yet is passed over.
    - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and
      counts once as `chosen` (2026-10-17). Still open: a vote from someone else in a group and in a one-to-one chat,
      and the history votes after a fresh link.

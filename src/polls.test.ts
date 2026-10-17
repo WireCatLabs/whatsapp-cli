@@ -230,36 +230,53 @@ describe("votes from WhatsApp", () => {
     expect(second.items).toMatchObject([{ person_id: base.person }])
   })
 
-  it("keeps the votes a history push carries, right behind the poll they are for", async () => {
-    const pushed = {
-      id: "3EB0000000000000000P03",
-      chat: "120363000000000077@g.us",
-      sender: base.person,
-      senderName: null,
-      fromMe: false,
-      timestamp: "2026-09-01T09:00:00.000Z",
-      editedAt: null,
-      text: whichDay.question,
-      replyTo: null,
-      poll: whichDay,
-    }
-    const chat = {
-      jid: pushed.chat,
-      name: null,
-      kind: "group",
-      unread: 0,
-      lastMessageAt: null,
-      participants: 2,
-    } as const
-    await watching([
-      { event: "history", history: { kind: "recent", chats: [chat], contacts: [], messages: [pushed] } },
-      vote(other, ["Tuesday"], "2026-09-01T09:05:00.000Z", { chat: pushed.chat, message: pushed.id, poll: whichDay }),
-    ])
+  const pushed = {
+    id: "3EB0000000000000000P03",
+    chat: "120363000000000077@g.us",
+    sender: base.person,
+    senderName: null,
+    fromMe: false,
+    timestamp: "2026-09-01T09:00:00.000Z",
+    editedAt: null,
+    text: whichDay.question,
+    replyTo: null,
+    poll: whichDay,
+  }
+  const history = (...votes: WaVote[]): EngineEvent => ({
+    event: "history",
+    history: {
+      kind: "recent",
+      chats: [{ jid: pushed.chat, name: null, kind: "group", unread: 0, lastMessageAt: null, participants: 2 }],
+      contacts: [],
+      messages: [pushed],
+      votes,
+    },
+  })
+  const pushedVote = (answers: string[], votedAt: string): WaVote => ({
+    chat: pushed.chat,
+    message: pushed.id,
+    voter: other,
+    voterName: null,
+    selected: answers.map(hashOf),
+    votedAt,
+    poll: whichDay,
+  })
+  const showPushed = async () => {
     const shown = await polling(["show", pushed.chat, pushed.id])
-    expect(JSON.parse(shown.stdout).item, shown.stderr).toMatchObject({
-      answers: [{ voters: 0 }, { voters: 1 }],
-      voters: 1,
-    })
+    expect(shown.code, shown.stderr).toBe(0)
+    return JSON.parse(shown.stdout).item
+  }
+
+  it("stores the votes a history push carries with their poll, and passes none on as a `watch` vote", async () => {
+    const events = await watching([history(pushedVote(["Tuesday"], "2026-09-01T09:05:00.000Z"))])
+    expect(events.filter((event) => event.event === "vote")).toEqual([])
+    expect(await showPushed()).toMatchObject({ answers: [{ voters: 0 }, { voters: 1 }], voters: 1 })
+  })
+
+  it("keeps a live vote over an older one the history push carries for the same voter", async () => {
+    await watching([vote(other, ["Monday"], "2026-09-01T09:10:00.000Z", { chat: pushed.chat, message: pushed.id })])
+    await watching([history(pushedVote(["Tuesday"], "2026-09-01T09:07:00.000Z"))])
+    expect(await showPushed()).toMatchObject({ answers: [{ voters: 1 }, { voters: 0 }], voters: 1 })
   })
 
   it("counts the account's own vote once, whether this command or the phone cast it", async () => {

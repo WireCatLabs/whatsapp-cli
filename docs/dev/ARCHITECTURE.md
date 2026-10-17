@@ -110,13 +110,15 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   so `polls show`, `polls vote` and `polls voters` read the poll from the store.
 - **Votes** arrive once each, as a message of their own, and nothing on WhatsApp's side counts them. The engine
   decrypts a live one (`DecryptPollVote`, with the poll's secret whatsmeow keeps for every poll this device saw) and
-  takes the ones a history push carries already decrypted (`WebMessageInfo.pollUpdates`); both go out as a `vote`
-  event: the voter (LID first, the account's own vote under `self()`), the full SHA-256 of each chosen answer, and,
-  for a history vote, its poll. History votes are events of their own, after the `history` line, since cli-core's
-  history batch has no votes. `watch` maps the hashes onto answer ids and hands on cli-core's vote event, which the
-  store keeps per voter; `polls show` counts them with cli-core's `countedPoll`, and `polls voters` lists them.
-- **Markdown** (`src/adapter/format-markdown.ts`): `formatMarkdown` is tg's parser with max's headings; `send` and
-  `edit` write cli-core's spans back as WhatsApp's own marks (`toWhatsApp`), so the engine only ever sends text.
+  takes the ones a history push carries already decrypted (`WebMessageInfo.pollUpdates`). Each carries the voter
+  (LID first, the account's own vote under `self()`), the full SHA-256 of each chosen answer, and `votedAt`, when the
+  voter cast it by WhatsApp's clock (the update's sender time). A live vote is a `vote` event, which `watch` hands on
+  as cli-core's vote event. A history vote rides in the `history` line's `votes` with its poll (protocol 9), and
+  `feed` puts it in cli-core's `HistoryBatch.votes`, so the store saves it with the push, with or without a `watch`.
+  Both map the hashes onto answer ids. The store keeps each voter's newest vote by `votedAt`; `polls show` counts
+  them with cli-core's `countedPoll`, and `polls voters` lists them.
+- **Markdown**: `formatMarkdown` is cli-core's shared `parseMarkdownSpans`; `send` and `edit` write its spans back as
+  WhatsApp's own marks (`toWhatsApp` in `src/adapter/format-markdown.ts`), so the engine only ever sends text.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
   JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a
   file kept like `private.db`. Errors reach the CLI as one of the contract's codes with fixed wording.

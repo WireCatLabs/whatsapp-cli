@@ -424,20 +424,16 @@ func (e *engine) handle(raw any) {
 	case *events.HistorySync:
 		history := e.conv.history(evt.Data, e.client.ParseWebMessage)
 		e.remember(history.Chats)
-		votes := history.votes
 		if history.Kind == "on_demand" {
 			history = e.olderAsks.deliver(history)
 		}
 		if history.Kind != "on_demand" || !history.empty() {
 			e.out.event("history", history)
 		}
-		for _, vote := range votes {
-			e.out.event("vote", vote)
-		}
 	case *events.AppStateSyncComplete:
 		// The address book arrives in this patch; until then contacts have no names.
 		if evt.Name == appstate.WAPatchCriticalUnblockLow {
-			e.out.event("history", waHistory{Kind: "other", Chats: []waChat{}, Contacts: e.contacts(), Messages: []waMessage{}})
+			e.out.event("history", waHistory{Kind: "other", Chats: []waChat{}, Contacts: e.contacts(), Messages: []waMessage{}, Votes: []waVote{}})
 		}
 	case *events.Connected:
 		e.refreshSelf()

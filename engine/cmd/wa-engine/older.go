@@ -73,7 +73,8 @@ func (w *olderWaiter) forget(ask *olderAsk) {
 }
 
 // deliver hands the waiting request its chat's messages and returns the rest of the batch, for the history event:
-// the phone may put other chats and push names in the same answer, and those are saved like any history push.
+// the phone may put other chats and push names in the same answer, and those are saved like any history push. The
+// votes stay in the history event: cli-core saves a vote whether or not its poll arrives in the same batch.
 func (w *olderWaiter) deliver(h waHistory) waHistory {
 	w.mu.Lock()
 	ask := w.current
@@ -84,7 +85,7 @@ func (w *olderWaiter) deliver(h waHistory) waHistory {
 	w.forget(ask)
 	oldest, more := h.oldest[ask.chat]
 	batch := olderBatch{Messages: []waMessage{}, More: more, oldest: oldest}
-	rest := waHistory{Kind: h.Kind, Chats: []waChat{}, Contacts: h.Contacts, Messages: []waMessage{}}
+	rest := waHistory{Kind: h.Kind, Chats: []waChat{}, Contacts: h.Contacts, Messages: []waMessage{}, Votes: h.Votes}
 	for _, chat := range h.Chats {
 		if chat.JID != ask.chat {
 			rest.Chats = append(rest.Chats, chat)
@@ -111,7 +112,7 @@ func names(h waHistory, chat string) bool {
 }
 
 func (h waHistory) empty() bool {
-	return len(h.Chats) == 0 && len(h.Contacts) == 0 && len(h.Messages) == 0
+	return len(h.Chats) == 0 && len(h.Contacts) == 0 && len(h.Messages) == 0 && len(h.Votes) == 0
 }
 
 // olderAnchor reads the message the phone counts back from. whatsmeow keeps no messages, so it comes from the CLI's
