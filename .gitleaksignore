@@ -1,0 +1,5 @@
+# The synthetic 71234567890 that tests used before the zero-filled range; keeps the history scan clean.
+f4630e4ea4c180bf9f608a9264297661efd7530e:engine/cmd/wa-engine/redact_test.go:whatsapp-phone-jid:16
+f4630e4ea4c180bf9f608a9264297661efd7530e:engine/cmd/wa-engine/redact_test.go:whatsapp-phone-jid:17
+5a7384f0179e930d933e6b66936bac95aa10697c:engine/cmd/wa-engine/redact_test.go:whatsapp-phone-jid:15
+5a7384f0179e930d933e6b66936bac95aa10697c:engine/cmd/wa-engine/redact_test.go:whatsapp-phone-jid:16

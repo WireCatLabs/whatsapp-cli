@@ -172,7 +172,7 @@ describe("wa session start at a terminal", () => {
     const result = await wa(
       ["paired", "session", "start", "phone"],
       () => fakeEngine(seed, { linked: false }),
-      terminal("+7 123 456 78 90\n"),
+      terminal("+7 000 000 00 01\n"),
     )
     expect(result.code).toBe(0)
     expect(result.stderr).toMatch(/pairing code: \S+/)

@@ -21,7 +21,7 @@ func TestProfileWireShape(t *testing.T) {
 		VerifiedLevel: "high",
 		Details:       &waVnameCert.VerifiedNameCertificate_Details{VerifiedName: proto.String("Synthetic Shop")},
 	}}
-	got := c.profile(bobLID, business, types.ContactInfo{PushName: "+7 123 456 78 92"})
+	got := c.profile(bobLID, business, types.ContactInfo{PushName: "+7 000 000 00 03"})
 	if got.Name == nil || *got.Name != "Synthetic Shop" || !got.Business || !got.Verified || got.Contact {
 		t.Fatalf("got %+v", got)
 	}

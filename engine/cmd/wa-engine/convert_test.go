@@ -15,10 +15,10 @@ import (
 
 var (
 	selfLID  = types.NewJID("100000000000001", types.HiddenUserServer)
-	selfPN   = types.NewJID("71234567890", types.DefaultUserServer)
+	selfPN   = types.NewJID("70000000001", types.DefaultUserServer)
 	annLID   = types.NewJID("100000000000002", types.HiddenUserServer)
-	annPN    = types.NewJID("71234567891", types.DefaultUserServer)
-	bobPN    = types.NewJID("71234567892", types.DefaultUserServer)
+	annPN    = types.NewJID("70000000002", types.DefaultUserServer)
+	bobPN    = types.NewJID("70000000003", types.DefaultUserServer)
 	group    = types.NewJID("120363000000000001", types.GroupServer)
 	sentAt   = time.Date(2026, 9, 1, 10, 0, 0, 0, time.UTC)
 	stored   = map[string]types.JID{} // what whatsmeow's LID store would answer
@@ -75,7 +75,7 @@ func TestCanonicalPrefersTheLID(t *testing.T) {
 }
 
 func TestNameNeverAPhoneNumber(t *testing.T) {
-	if got := name("", "+7 905 123-45-67", "Ann"); got == nil || *got != "Ann" {
+	if got := name("", "+7 000 000-00-01", "Ann"); got == nil || *got != "Ann" {
 		t.Errorf("got %v", got)
 	}
 	if got := name("+1∙∙∙∙∙∙∙∙80"); got != nil {
