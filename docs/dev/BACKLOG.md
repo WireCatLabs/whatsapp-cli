@@ -6,11 +6,13 @@ Open work, most important first. The plan in flight is
 1. **Live checks of the engine on the owner's number** (NEED-1387: reads, sends only to the own chat). Done on
    2026-10-17: `serve` receiving a message from the phone and saving it; send, `--md` send, edit, reaction add and
    remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
-   `session start` keeping the history push, `self()` set right after pairing.
+   `session start` keeping the history push (the owner runs `bin/live-fresh-link`), `self()` set right after
+   pairing.
 9. **A one-shot connection may take messages and drop them.** If WhatsApp hands each queued message to a linked
    device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
-   and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
-   starts.
+   and `watch` save to the store. Unverified: check live — a message queued while nothing is connected, one
+   one-shot connection, then `serve`. The owner runs `bin/live-oneshot-drop` for it; a message arriving during a
+   longer one-shot `messages send` is not covered by it.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
@@ -35,7 +37,8 @@ Open work, most important first. The plan in flight is
      would map to `--close-time`, `--anonymous` and `--quiz`; whatsmeow does not build them and no WhatsApp client has
      been seen to show them, so they are not used.
    - **Live checks** of `polls vote` from `wa` (one-to-one, group, phone-addressed group): `polls create` in the own
-     chat and `--md` sends work (2026-10-17); a vote cast by `wa` has not been run against WhatsApp.
+     chat and `--md` sends work (2026-10-17); a vote cast by `wa` has not been run against WhatsApp
+     (the owner runs `bin/live-poll-vote` for it, in the own chat).
    - **`chats events`.** WhatsApp's joins and leaves come as live notifications, not as history the engine can
      read back. cli-core 0.336.0 answers `chats events` from the store (`HistoryBatch.events`, the `chat_event`
      watch event); the engine does not push them yet, so it always shows nothing.

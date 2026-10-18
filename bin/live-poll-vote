@@ -1,0 +1,69 @@
+#!/usr/bin/env sh
+# Live check of a vote cast by wa (BACKLOG item 5, "Live checks of votes"): a poll in the own chat, a vote on it,
+# the tally read back, then the poll deleted for everyone. The owner runs it from a terminal; an agent never does.
+#
+#   bin/live-poll-vote <profile>
+#
+# It writes only to the own chat, through the running `serve`, and asks before each write. It prints counts and
+# yes/no only: no message text, no id, no number.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+own=$(own_chat "$profile") || exit 1
+serve_running "$profile" ||
+  die "start $wa $profile serve first: the writes go through it, so no one-shot connection takes the device"
+
+run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
+question="wa poll check $run"
+poll=""
+deleted=no
+
+tally() {
+  json '(d.item.poll ?? d.item).answers.map((one, i) =>
+    `answer ${i + 1}: ${one.voters ?? "?"} votes${one.chosen ? ", chosen by you" : ""}`).join("\n")'
+}
+
+leftover() {
+  [ -n "$poll" ] && [ "$deleted" = no ] || return 0
+  echo "the test poll ($question) is still in your own chat — delete it from the phone for everyone" >&2
+}
+trap leftover EXIT
+on_signals
+
+cat <<EOF
+
+Plan, on profile $profile, in your own chat only:
+  1. wa polls create: the poll "$question", answers "yes" and "no"; wa polls show reads its answer ids
+  2. wa polls vote: your vote for "yes"
+  3. wa polls show: the tally, read back from the store
+  4. wa messages delete --for-everyone: the poll goes
+EOF
+
+confirm "Step 1 sends the poll to your own chat."
+poll=$(wa_json "$profile" polls create "$own" "$question" yes no --yes --timeout 60s | json 'd.item.message.id') ||
+  die "polls create failed — look in your own chat for \"$question\" and delete it from the phone if it is there"
+[ -n "$poll" ] || die "polls create gave no message id — look in your own chat for \"$question\""
+echo "poll created"
+
+answer=$(wa_json "$profile" polls show "$own" "$poll" --timeout 30s | json 'd.item.answers[0].id')
+[ -n "$answer" ] || die "polls show gave no answer ids"
+
+confirm "Step 2 votes \"yes\" in it."
+echo "as the vote's answer has it:"
+wa_json "$profile" polls vote "$own" "$poll" "$answer" --yes --timeout 60s | tally
+
+echo "waiting 10 s for serve to see the vote come back"
+sleep 10
+echo "as polls show reads it now:"
+wa_json "$profile" polls show "$own" "$poll" --timeout 30s | tally
+
+confirm "Step 4 deletes the poll for everyone."
+wa_json "$profile" messages delete "$own" "$poll" --for-everyone --allow-dangerous --yes --timeout 60s >/dev/null
+deleted=yes
+echo "poll deleted for everyone"
+echo "Expect 1 vote for answer 1, chosen by you, and 0 for answer 2, in both tallies."
