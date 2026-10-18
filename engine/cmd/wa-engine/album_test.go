@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"testing"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 )
@@ -123,6 +124,15 @@ func TestTheThumbnailGoesInTheMessageAndNeverOnTheWire(t *testing.T) {
 	}
 	if bytes.Contains(line, []byte("thumb")) || bytes.Contains(line, []byte("/9j/")) {
 		t.Fatalf("the thumbnail reached the JSON line: %s", line)
+	}
+}
+
+func TestAFailureMidAlbumIsUnknownButKeepsWhatsAppsReason(t *testing.T) {
+	if got := classify(partly(&whatsmeow.IQError{Code: 429})); got.Reason != "account.rate-limited" {
+		t.Errorf("a rate limit mid-album became %+v", got)
+	}
+	if got := classify(partly(whatsmeow.ErrNotConnected)); got.Code != "outcome_unknown" || got.Reason != "" {
+		t.Errorf("a lost connection mid-album became %+v", got)
 	}
 }
 

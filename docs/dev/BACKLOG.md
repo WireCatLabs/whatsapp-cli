@@ -81,12 +81,15 @@ Open work, most important first. The plan in flight is
      it. The fix is in cli-core (a send that answers several messages). cli-core also passes at most one `--photo`
      and one `--file`, so an album has two files. Receiving: an album's announcement is dropped, and each file is
      stored as its own message if the apps send it unwrapped; one wrapped in `associatedChildMessage` would be dropped.
-   - **Live check of an album**: whether WhatsApp accepts the album and its apps group the files has not been run;
-     the shape of the files is taken from the proto (no sender-side example in whatsmeow or mautrix-whatsapp), and
-     whatsmeow sends the `AlbumMessage` with stanza type `text`.
+   - **Live check of an album**: whether WhatsApp accepts the album and its apps group the files has not been run.
+     The shape matches Baileys 7.0.0-rc14, the one open-source sender found (`lib/Utils/messages.js`, `album` and
+     `albumParentKey`): each file is a plain photo or video whose `messageContextInfo.messageAssociation` is
+     `MEDIA_ALBUM` with the parent key `{remoteJid, fromMe: true, id}`. Baileys, like whatsmeow, sends the
+     `AlbumMessage` with stanza type `text`. whatsmeow and mautrix-whatsapp only read albums.
    - **No preview on a sent video.** A photo carries a 72-pixel JPEG preview; a video needs a frame decoder, and the
      engine has no pure-Go one (no cgo, no ffmpeg), so a video goes without one. A WEBP photo too: the standard
-     library does not decode WEBP.
+     library does not decode WEBP. The preview ignores a JPEG's EXIF orientation, so a phone photo taken on its side
+     may show a turned preview until the photo downloads.
    - **Message pins**: a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned.
      Over MCP, an `expire_time` WhatsApp does not offer is refused only after the engine started (cli-core checks it
      inside the tool's online step). Live check open: a pin and an unpin in the own chat and in a group addressed by
