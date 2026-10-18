@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"slices"
 	"sync"
 	"time"
@@ -232,7 +233,7 @@ func (e *engine) older(req request) (*olderBatch, error) {
 	defer e.olderOne.Unlock()
 	chat := e.conv.canonical(info.Chat, nil).String()
 	until := time.Now().Add(olderWait)
-	return collectOlder(info, count, func(info types.MessageInfo, count int) (*olderBatch, error) {
+	return collectOlder(e.ctx, info, count, func(info types.MessageInfo, count int) (*olderBatch, error) {
 		return e.askOlder(chat, info, count, until)
 	})
 }
@@ -243,12 +244,16 @@ type olderAsker func(info types.MessageInfo, count int) (*olderBatch, error)
 // out; each ask counts back from the oldest message the last one brought. What arrived before a failure is answered,
 // not lost: it was taken out of the history event. An empty page tells cli-core the chat's start is held, so a batch
 // of only skipped messages is asked past.
-func collectOlder(info types.MessageInfo, count int, ask olderAsker) (*olderBatch, error) {
+func collectOlder(ctx context.Context, info types.MessageInfo, count int, ask olderAsker) (*olderBatch, error) {
 	out := &olderBatch{Messages: []waMessage{}}
 	sent := 0
 	for round := range olderRounds {
+		// A stop ends the gap; the ask after it then fails and answers what already arrived.
 		if round > 0 {
-			time.Sleep(olderGap)
+			select {
+			case <-time.After(olderGap):
+			case <-ctx.Done():
+			}
 		}
 		want := count - sent
 		if len(out.Messages) == 0 || want <= 0 {

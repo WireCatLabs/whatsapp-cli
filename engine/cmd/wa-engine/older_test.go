@@ -253,7 +253,7 @@ func phone(t *testing.T, answers ...any) (olderAsker, *[]asked) {
 
 func TestAShortAnswerIsAskedOnFromItsOldestUntilTheCountArrives(t *testing.T) {
 	ask, log := phone(t, page("3EB0B", 20, "3EB0A", "3EB0B"), page("3EB0D", 30, "3EB0C", "3EB0D"))
-	batch, err := collectOlder(types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
+	batch, err := collectOlder(t.Context(), types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
 	if err != nil || len(batch.Messages) != 4 || !batch.More {
 		t.Fatalf("got %+v, %v", batch, err)
 	}
@@ -264,7 +264,7 @@ func TestAShortAnswerIsAskedOnFromItsOldestUntilTheCountArrives(t *testing.T) {
 
 func TestTheChatsStartEndsTheAsksAndKeepsWhatArrived(t *testing.T) {
 	ask, log := phone(t, page("3EB0B", 2, "3EB0A", "3EB0B"), page("", 0))
-	batch, err := collectOlder(types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
+	batch, err := collectOlder(t.Context(), types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
 	if err != nil || len(batch.Messages) != 2 || batch.More || len(*log) != 2 {
 		t.Errorf("got %+v, %v after %d asks", batch, err, len(*log))
 	}
@@ -272,7 +272,7 @@ func TestTheChatsStartEndsTheAsksAndKeepsWhatArrived(t *testing.T) {
 
 func TestAFailureAfterAChunkAnswersTheChunk(t *testing.T) {
 	ask, _ := phone(t, page("3EB0B", 2, "3EB0A", "3EB0B"), olderTimeout())
-	batch, err := collectOlder(types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
+	batch, err := collectOlder(t.Context(), types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
 	if err != nil || len(batch.Messages) != 2 || !batch.More {
 		t.Errorf("got %+v, %v", batch, err)
 	}
@@ -280,14 +280,14 @@ func TestAFailureAfterAChunkAnswersTheChunk(t *testing.T) {
 
 func TestAFailureBeforeAnyMessagePassesOn(t *testing.T) {
 	ask, _ := phone(t, olderTimeout())
-	if _, err := collectOlder(types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask); err == nil {
+	if _, err := collectOlder(t.Context(), types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask); err == nil {
 		t.Fatal("want the timeout")
 	}
 }
 
 func TestTheAsksStopAtTheRoundsCap(t *testing.T) {
 	ask, log := phone(t, page("3EB0A", 1, "3EB0A"), page("3EB0B", 1, "3EB0B"), page("3EB0C", 1, "3EB0C"))
-	batch, err := collectOlder(types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
+	batch, err := collectOlder(t.Context(), types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
 	if err != nil || len(batch.Messages) != olderRounds || len(*log) != olderRounds || !batch.More {
 		t.Errorf("got %+v, %v after %d asks", batch, err, len(*log))
 	}
@@ -295,7 +295,7 @@ func TestTheAsksStopAtTheRoundsCap(t *testing.T) {
 
 func TestOnlySkippedMessagesAreAskedPastForTheWholeCount(t *testing.T) {
 	ask, log := phone(t, page("3EB0R", 50), page("3EB0S", 50), page("3EB0T", 50))
-	_, err := collectOlder(types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
+	_, err := collectOlder(t.Context(), types.MessageInfo{ID: "3EB0ANCHOR"}, 50, ask)
 	if f, ok := err.(*failure); !ok || f.Code != "provider_error" {
 		t.Fatalf("got %v", err)
 	}
