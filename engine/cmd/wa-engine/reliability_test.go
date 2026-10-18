@@ -5,9 +5,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"maps"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -52,12 +56,22 @@ func TestAWriteCutOffOnItsWayIsOutcomeUnknownAndAReadStaysRetryable(t *testing.T
 	}
 }
 
-func TestEveryWriteTheClientKnowsIsAWriteHere(t *testing.T) {
-	for _, op := range []string{"send", "sendMedia", "forward", "edit", "revoke", "react", "read", "createPoll", "vote",
-		"createGroup", "join", "leave", "updateGroup", "resetLink", "participants", "answerRequest", "block", "logout"} {
-		if !writes[op] {
-			t.Errorf("%s is missing", op)
-		}
+func TestTheWritesHereAreTheClientsWrites(t *testing.T) {
+	source, err := os.ReadFile(filepath.Join("..", "..", "..", "src", "engine", "go-engine.ts"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	list := regexp.MustCompile(`(?s)const WRITES = new Set\(\[(.*?)\]\)`).FindSubmatch(source)
+	if list == nil {
+		t.Fatal("go-engine.ts has no WRITES set")
+	}
+	client := map[string]bool{}
+	for _, op := range regexp.MustCompile(`"(\w+)"`).FindAllSubmatch(list[1], -1) {
+		client[string(op[1])] = true
+	}
+	if !maps.Equal(client, writes) {
+		t.Errorf("the client's WRITES %v and the engine's writes %v differ", slices.Sorted(maps.Keys(client)),
+			slices.Sorted(maps.Keys(writes)))
 	}
 }
 
