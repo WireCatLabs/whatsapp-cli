@@ -122,7 +122,8 @@ The message id `3EB0A1B2C3D4E5F6A7B8` is made up; take a real one from `messages
   machine, downloaded only when you ask.
 - **People.** A person's profile, blocking, whether a number has WhatsApp, the phone's address book into the store,
   and your own names and notes for people.
-- **Privacy.** Who may add you to groups, whose calls ring and who sees you online (`wa personal account privacy`).
+- **Privacy.** Who sees your last seen, online, profile photo and about line, whether you send read receipts, who
+  may add you to groups and whose calls ring (`wa personal account privacy`).
 
 Pinning, several files in one message and deleting for yourself alone are not built yet:
 [not in wa yet](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md#not-in-wa-yet).
