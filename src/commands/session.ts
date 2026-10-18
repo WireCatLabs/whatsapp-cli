@@ -139,11 +139,18 @@ export const startSession = async (
           throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`, {
             reason: "input.required",
           })
-        return readSecret(`${" ".repeat(pad)}phone number, international format: `, {
+        const number = await readSecret(`${" ".repeat(pad)}phone number, international format: `, {
           ...secretInputOf(command),
           echo: true,
           ...(signal === undefined ? {} : { signal }),
         })
+        // WhatsApp reads the leading digits as the country code, so a number typed without one pairs someone else's.
+        if (!number.trim().startsWith("+"))
+          throw new CliError("validation_error", "write the phone number with + and the country code, such as +34", {
+            param: "phone",
+            reason: "input.invalid",
+          })
+        return number
       },
       onCode: ({ login, code }) => {
         if (login === "pair") {
@@ -229,7 +236,8 @@ export const sessionCommand = () => {
       "after",
       "\nFirst time? Use `wa personal setup` for linking, a check of five chats and an agent skill.\n" +
         "\nqr: scan the code in WhatsApp > Settings > Linked devices > Link a device.\n" +
-        "phone: type your number here, then type the code WhatsApp shows here into the phone.\n" +
+        "phone: type your number here with + and the country code, then type the code WhatsApp shows here into\n" +
+        "the phone.\n" +
         "\nRight after linking, the phone pushes your history once; this command keeps it in the local store\n" +
         "until the phone goes quiet. Then run `wa <profile> server install` to keep receiving.\n" +
         "Agents: --qr-file writes the QR as a PNG (mode 600) and removes it after the login.\n",

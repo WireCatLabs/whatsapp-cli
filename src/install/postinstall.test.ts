@@ -15,10 +15,18 @@ const sandbox = () => {
 }
 
 describe("global installation", () => {
+  it("writes no agent skill unless WA_INSTALL_AGENT asks for one", () => {
+    const install = sandbox()
+    completeGlobalInstall({ ...install, platform: "linux" })
+    expect(existsSync(join(install.home, ".claude"))).toBe(false)
+    expect(existsSync(join(install.home, ".agents"))).toBe(false)
+    expect(install.note.mock.calls.flat().join("\n")).toContain("wa skill install")
+  })
+
   it("repairs Windows PATH and installs the versioned skill before login", () => {
     const install = sandbox()
     const repair = vi.fn()
-    completeGlobalInstall({ ...install, platform: "win32", repair })
+    completeGlobalInstall({ ...install, env: { ...install.env, WA_INSTALL_AGENT: "all" }, platform: "win32", repair })
     expect(repair).toHaveBeenCalledWith(install.env.npm_config_prefix)
     for (const directory of [".claude", ".agents"]) {
       const file = join(install.home, directory, "skills/whatsapp-cli/SKILL.md")
