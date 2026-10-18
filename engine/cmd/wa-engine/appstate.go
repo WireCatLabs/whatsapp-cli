@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"strings"
 	"time"
 
-	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/appstate"
 	"go.mau.fi/whatsmeow/types"
 )
@@ -57,13 +55,6 @@ func appStateFailure(err error) error {
 		return unconfirmed
 	}
 	return err
-}
-
-// unanswered: the request left and no answer came, so WhatsApp may have acted on it (WC-LIFE-9).
-func unanswered(err error) bool {
-	var disconnected *whatsmeow.DisconnectedError
-	return errors.Is(err, whatsmeow.ErrIQTimedOut) || errors.Is(err, context.DeadlineExceeded) ||
-		errors.Is(err, context.Canceled) || errors.As(err, &disconnected)
 }
 
 func (e *engine) dispatchSettings(req request) (any, bool, error) {
