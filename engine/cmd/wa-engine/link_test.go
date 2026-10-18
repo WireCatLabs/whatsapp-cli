@@ -39,7 +39,7 @@ func (r *restarting) wait(time.Duration) bool {
 func TestLinkWaitsOutTheRestartAfterPairing(t *testing.T) {
 	e := &engine{ctx: context.Background()}
 	r := &restarting{falses: 3}
-	if err := e.awaitLogin(r.wait, time.Millisecond, time.Minute); err != nil {
+	if err := e.awaitLogin(r.wait, time.Millisecond, time.Minute, "late"); err != nil {
 		t.Fatalf("the restart ended the wait: %v", err)
 	}
 	if r.calls != 4 {
@@ -50,7 +50,7 @@ func TestLinkWaitsOutTheRestartAfterPairing(t *testing.T) {
 func TestLinkGivesUpAtTheDeadline(t *testing.T) {
 	e := &engine{ctx: context.Background()}
 	r := &restarting{falses: 1 << 30}
-	if err := e.awaitLogin(r.wait, time.Millisecond, 20*time.Millisecond); !isFailure(err, "network_error") {
+	if err := e.awaitLogin(r.wait, time.Millisecond, 20*time.Millisecond, "late"); !isFailure(err, "network_error") {
 		t.Fatalf("got %v", err)
 	}
 	if r.calls > 25 {
@@ -60,7 +60,16 @@ func TestLinkGivesUpAtTheDeadline(t *testing.T) {
 
 func TestLinkStopsAtARefusalWhatsAppSent(t *testing.T) {
 	e := &engine{ctx: context.Background(), ended: loggedOut}
-	if err := e.awaitLogin((&restarting{falses: 1 << 30}).wait, time.Millisecond, time.Minute); err != loggedOut {
+	if err := e.awaitLogin((&restarting{falses: 1 << 30}).wait, time.Millisecond, time.Minute, "late"); err != loggedOut {
+		t.Fatalf("got %v", err)
+	}
+}
+
+func TestLinkStopsWhenTheEngineIsClosed(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	e := &engine{ctx: ctx}
+	if err := e.awaitLogin((&restarting{falses: 1 << 30}).wait, time.Hour, time.Hour, "late"); err != context.Canceled {
 		t.Fatalf("got %v", err)
 	}
 }

@@ -41,7 +41,8 @@ func (e *engine) link(method, phone string) (*waAccount, error) {
 		case item.Event == whatsmeow.QRChannelEventCode:
 			e.out.loginCode("qr", item.Code)
 		case item == whatsmeow.QRChannelSuccess:
-			if err := e.awaitLogin(e.client.WaitForConnection, 250*time.Millisecond, 2*connectWait); err != nil {
+			late := "linked, but could not reconnect to WhatsApp in time"
+			if err := e.awaitLogin(e.client.WaitForConnection, waitSlice, 2*connectWait, late); err != nil {
 				return nil, err
 			}
 			e.refreshSelf()
@@ -55,10 +56,13 @@ func (e *engine) link(method, phone string) (*waAccount, error) {
 	return nil, &failure{"timeout", "the login ended before the phone confirmed it"}
 }
 
-// awaitLogin waits out the stream restart (code 515) WhatsApp sends right after pairing. whatsmeow answers it by
-// disconnecting and connecting again on its own, and WaitForConnection returns false at once while that disconnect is
-// under way, so only the deadline means the link could not reconnect.
-func (e *engine) awaitLogin(wait func(time.Duration) bool, slice, within time.Duration) error {
+const waitSlice = 250 * time.Millisecond
+
+// awaitLogin waits in slices, so a refusal WhatsApp sends while connecting answers at once rather than after the
+// whole wait. WaitForConnection returns false at once while a disconnect whatsmeow expects is under way, as on the
+// stream restart (code 515) WhatsApp sends right after pairing, which whatsmeow answers by connecting again on its own.
+// A slice that ends early is padded to its length, so the loop does not spin, and only the deadline means it failed.
+func (e *engine) awaitLogin(wait func(time.Duration) bool, slice, within time.Duration, late string) error {
 	deadline := time.Now().Add(within)
 	for {
 		started := time.Now()
@@ -72,7 +76,7 @@ func (e *engine) awaitLogin(wait func(time.Duration) bool, slice, within time.Du
 			return err
 		}
 		if time.Now().After(deadline) {
-			return &failure{"network_error", "linked, but could not reconnect to WhatsApp in time"}
+			return &failure{"network_error", late}
 		}
 		select {
 		case <-time.After(time.Until(started.Add(slice))):
