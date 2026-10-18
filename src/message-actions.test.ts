@@ -298,3 +298,29 @@ describe("replies and live edits", () => {
     expect(JSON.parse(result.stdout).item.message).toMatchObject({ timestamp: fresh.timestamp, text: "fixed again" })
   })
 })
+
+describe("wa stats messages counters refresh", () => {
+  it("answers that WhatsApp keeps no view, reaction or comment counts, and never starts the engine", async () => {
+    const neverStarted = () => {
+      throw new Error("a counter refresh on WhatsApp must never start the engine")
+    }
+    const argv = ["actions", "stats", "messages", "counters", "refresh", "--chat", seed.busy, "--limit", "2"]
+    const refreshed = await wa([...argv, "--json"], neverStarted)
+    expect(refreshed.code, refreshed.stderr).toBe(0)
+    const item = JSON.parse(refreshed.stdout).item
+    expect(item).toMatchObject({ dry_run: false, supported: [], unsupported: ["views", "reactions", "comments"] })
+    expect(item.results).toHaveLength(2)
+    expect(item.results.every((one: { status: string }) => one.status === "unsupported")).toBe(true)
+
+    const preview = await wa(
+      [...argv, "--counters", "views", "--max-messages", "1", "--dry-run", "--json"],
+      neverStarted,
+    )
+    expect(JSON.parse(preview.stdout).item).toMatchObject({
+      dry_run: true,
+      counters: ["views"],
+      supported: [],
+      max_messages: 1,
+    })
+  })
+})

@@ -140,6 +140,14 @@ export const UNTESTED: Untested[] = [
     ["messages links"],
   ]),
   ...cliCore("src/services/messages-link.test.ts", [["messages link"]]),
+  ...["--source", "--exact", "--timezone", "--selection", "--sync-time"].map((option) => ({
+    command: "stats messages counters refresh",
+    option,
+    reason:
+      "which stored messages to refresh, and the time for it; cli-core's shared command, tested in cli-core " +
+      "(src/services/counters.test.ts and src/cli/messenger/stats-command.test.ts); src/message-actions.test.ts " +
+      "drives the refresh, which on WhatsApp has no counter to read and never starts the engine",
+  })),
   ...["--limit", "--dry-run"].map((option) => ({
     command: "tags auto",
     option,
