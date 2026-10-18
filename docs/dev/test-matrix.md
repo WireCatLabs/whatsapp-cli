@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**210 ✅ · 524 ⛔ · 0 ❌** — 229 commands, 505 options.
+**209 ✅ · 525 ⛔ · 0 ❌** — 229 commands, 505 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -193,7 +193,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages forward` | `--to` | ✅ |  |
 | `messages forward` | `--operation-id` | ✅ |  |
 | `messages pin` |  | ✅ |  |
-| `messages pin` | `--notify` | ✅ |  |
+| `messages pin` | `--notify` | ⛔ | every WhatsApp pin notifies, so the flag changes nothing and wa never passes it; cli-core drops it for messengers without quiet pins (cli-core #1541), and this entry goes with that bump |
 | `messages pin` | `--expire-time` | ✅ |  |
 | `messages unpin` |  | ✅ |  |
 | `messages link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/messages-link.test.ts |

@@ -59,8 +59,8 @@ wa personal chats mark-read "Book club"
 
 WhatsApp names a message by who sent it as well as by its id, so these work on messages the local store holds; keep
 `serve` running. An edit works on your own message within 20 minutes of sending. A deletion here is for everyone;
-delete a message for yourself alone on the phone. Every pin tells the chat's members: WhatsApp has no quiet pin, so
-`--notify` changes nothing. A pin lasts 24 hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`); without
+delete a message for yourself alone on the phone. Every pin tells the chat's members: WhatsApp has no quiet pin, so no
+flag is needed. A pin lasts 24 hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`); without
 `--expire-time`, `wa` pins for 7 days. Nothing is marked read unless you ask: `chats mark-read`, or `--mark-read` on
 `messages list`, `inbox` and `review`.
 

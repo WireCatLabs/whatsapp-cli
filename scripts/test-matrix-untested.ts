@@ -1,3 +1,5 @@
+import type { Command } from "commander"
+
 /**
  * What `wa` cannot test offline, each with the reason and where it is checked instead. An entry
  * that names a command or option the program no longer has fails `pnpm test:matrix`.
@@ -40,7 +42,26 @@ const cliCore = (tests: string, rows: string[][]): Untested[] =>
     reason: `cli-core's shared command over the local store, tested in cli-core ${tests}`,
   }))
 
+// The waiver must exist exactly while cli-core offers the flag: 0.338.0 does, the release after #1541 drops it.
+const program: Command = (await import(new URL("../dist/program.js", import.meta.url).href)).createProgram()
+const pinTakesNotify =
+  program.commands
+    .find((command) => command.name() === "messages")
+    ?.commands.find((command) => command.name() === "pin")
+    ?.options.some((option) => option.long === "--notify") ?? false
+
 export const UNTESTED: Untested[] = [
+  ...(pinTakesNotify
+    ? [
+        {
+          command: "messages pin",
+          option: "--notify",
+          reason:
+            "every WhatsApp pin notifies, so the flag changes nothing and wa never passes it; cli-core drops it for " +
+            "messengers without quiet pins (cli-core #1541), and this entry goes with that bump",
+        },
+      ]
+    : []),
   // wa's own tests replace these one command at a time, as each is found to reach the engine.
   ...Object.entries(SHARED).map(([command, tests]) => ({
     command,

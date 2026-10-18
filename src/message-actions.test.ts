@@ -165,15 +165,12 @@ describe("wa messages pin", () => {
     expect(starts).toBe(0)
   })
 
-  it.each([["pin", "--notify"], ["unpin"]])(
-    "refuses to %s a message the store does not hold, and sends nothing",
-    async (verb, ...options) => {
-      const result = await acting(["messages", verb, seed.busy, "3EB0000000000000000DEAD", ...options])
-      expect(result.code).toBe(6)
-      expect(errorCode(result.stderr)).toBe("not_found")
-      expect(result.actions).toEqual([])
-    },
-  )
+  it.each(["pin", "unpin"])("refuses to %s a message the store does not hold, and sends nothing", async (verb) => {
+    const result = await acting(["messages", verb, seed.busy, "3EB0000000000000000DEAD"])
+    expect(result.code).toBe(6)
+    expect(errorCode(result.stderr)).toBe("not_found")
+    expect(result.actions).toEqual([])
+  })
 })
 
 describe("wa messages edit", () => {

@@ -153,7 +153,7 @@ never printed. After each step it asks the owner what the phone shows and record
    `contacts`, `true`, `false`: no person's data) and the phone screen to compare it with, under Settings >
    Privacy.
 2. `chats mute --until 1h`, then `chats unmute`: muted on the phone, then not.
-3. `messages send` of a marker with a fresh run number, `messages pin --notify` on it, then `messages unpin`.
+3. `messages send` of a marker with a fresh run number, `messages pin` on it, then `messages unpin`.
 4. `messages delete` of the marker without `--for-everyone`, scenario W6: gone from the owner's devices.
 
 A step whose command the build lacks is skipped with "not built in this checkout yet". `chats mute`, `chats unmute`

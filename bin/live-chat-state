@@ -92,7 +92,7 @@ cat <<EOF
 Plan, on profile $profile, in your own chat only:
   1. wa account privacy show: read only; you compare it with the phone's Settings > Privacy
   2. wa chats mute --until 1h, then wa chats unmute
-  3. wa messages send: the marker "$marker"; wa messages pin --notify on it, then wa messages unpin
+  3. wa messages send: the marker "$marker"; wa messages pin on it, then wa messages unpin
   4. wa messages delete, for you only (no --for-everyone): the marker goes from your devices
 After each step it asks what the phone shows. A step this build has no command for is skipped.
 EOF
@@ -155,7 +155,7 @@ marker_id=$(printf '%s' "$out" | json 'd.item.message.id') || marker_id=""
 if has "messages pin" && has "messages unpin"; then
   confirm "Next it pins the marker, telling the chat (your own chat: only you)."
   pinned=yes
-  attempt "$profile" messages pin "$own" "$marker_id" --notify --yes --timeout 60s
+  attempt "$profile" messages pin "$own" "$marker_id" --yes --timeout 60s
   if not_built; then
     pinned=no
     echo "messages pin: not built in this checkout yet"
@@ -207,7 +207,7 @@ Step                     Phone    BACKLOG item 5 line it settles
 1 privacy show           $(printf '%-8s' "$privacy") "Live checks of account privacy": the show half, and what calladd known is
 2 chats mute             $(printf '%-8s' "$mute") "Live checks of chats mute": a one-to-one chat addressed by its LID
 2 chats unmute           $(printf '%-8s' "$unmute") the same line, the unmute
-3 messages pin --notify  $(printf '%-8s' "$pin") "Message pins": a pin in the own chat (a group stays open)
+3 messages pin           $(printf '%-8s' "$pin") "Message pins": a pin in the own chat (a group stays open)
 3 messages unpin         $(printf '%-8s' "$unpin") the same line, the unpin in the own chat
 4 delete for you only    $(printf '%-8s' "$forme") "Live check of delete for the owner alone": the own message (W6)
 
