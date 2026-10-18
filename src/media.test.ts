@@ -53,7 +53,7 @@ const elsewhere: Message = {
   chatId: base.dialog,
 }
 const SYNTHETIC_VCARD = "BEGIN:VCARD\nVERSION:3.0\nFN:Ann Lee\nTEL:+00 000 000 0001\nEND:VCARD"
-const placed = theirs(8, "", [
+const placed = theirs(10, "", [
   {
     kind: "location",
     url: "geo:39.470000,-0.376000",
@@ -61,10 +61,13 @@ const placed = theirs(8, "", [
     providerRef: { place: { latitude: 39.47, longitude: -0.376, name: "Synthetic Square" } },
   },
 ])
-const card = theirs(9, "", [
+const card = theirs(11, "", [
   { kind: "contact", name: "Ann Lee", providerRef: { card: { name: "Ann Lee", vcard: SYNTHETIC_VCARD } } },
 ])
-const seed = { ...base, messages: [...base.messages, photo, voice, place, keyless, plain, notes, elsewhere, placed, card] }
+const seed = {
+  ...base,
+  messages: [...base.messages, photo, voice, place, keyless, plain, notes, elsewhere, placed, card],
+}
 
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
@@ -509,7 +512,7 @@ describe("hearing voice notes with a model on this machine", () => {
   it.each([
     ["messages list", ["messages", "list", base.dialog], [8]],
     ["inbox", ["inbox", "--all"], [8]],
-    ["review", ["review", "--all", "date>2026-09-30"], [8, 2]],
+    ["review", ["review", "--all", "date>2026-09-30"], [2, 8]],
   ])("downloads and hears the voice notes %s shows with --transcribe --model", async (_, argv, notes) => {
     const hearing = await listener()
     const plain = await hearing(...argv)
