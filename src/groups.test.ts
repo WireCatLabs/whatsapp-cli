@@ -200,6 +200,24 @@ describe("wa chats create, join, leave, update, link", () => {
     expect(long.done).toEqual([])
   })
 
+  it("removes a group's photo with no file, before the rest of the change, and never beside a new one", async () => {
+    const alone = await acting("chats", "update", seed.busy, "--remove-photo")
+    expect(alone.code).toBe(0)
+    expect(alone.done).toEqual([{ op: "removeGroupPhoto", jid: seed.busy }])
+
+    const titled = await acting("chats", "update", seed.busy, "--remove-photo", "--title", "Synthetic club")
+    expect(titled.done).toEqual([
+      { op: "removeGroupPhoto", jid: seed.busy },
+      { op: "updateGroup", jid: seed.busy, change: { title: "Synthetic club" } },
+    ])
+
+    const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
+    writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))
+    const both = await acting("chats", "update", seed.busy, "--photo", photo, "--remove-photo")
+    expect(both.code).toBe(2)
+    expect(both.done).toEqual([])
+  })
+
   it("says the photo was set when the rest of the change then fails", async () => {
     const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
     writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))
@@ -239,7 +257,10 @@ describe("wa chats create, join, leave, update, link", () => {
     writeFileSync(photo, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
     const result = await acting("chats", "update", seed.busy, "--photo", photo, "--title", "Synthetic club")
     expect(result.code).toBe(2)
-    expect(errorOf(result.stderr)).toMatchObject({ code: "validation_error", message: expect.stringContaining("JPEG") })
+    expect(errorOf(result.stderr)).toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("is not a .jpg or .jpeg image"),
+    })
     expect(result.done).toEqual([])
   })
 

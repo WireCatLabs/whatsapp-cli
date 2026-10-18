@@ -201,7 +201,7 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: G
 
     group: async (chat) => toGroupCard(await translated(engine.group(await groupId(chat), { withLink: true }))),
 
-    updateGroup: async (chatId, { title, description, settings = {}, photo }) => {
+    updateGroup: async (chatId, { title, description, settings = {}, photo, removePhoto }) => {
       if (photo !== undefined && !(await isJpeg(photo.source)))
         throw new CliError("validation_error", `${photo.name} is not a JPEG — WhatsApp takes a group photo only as one`)
       const missing = Object.keys(settings).filter((key) => !(GROUP_SETTINGS as readonly string[]).includes(key))
@@ -225,9 +225,11 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: G
       const jid = await groupId(chatId)
       // The photo goes first: the engine refuses one WhatsApp would not take, and then nothing else has changed.
       const pictured =
-        photo === undefined
-          ? undefined
-          : await translated(onDisk(photo.source, (path) => engine.setGroupPhoto(jid, path)))
+        removePhoto === true
+          ? await translated(engine.removeGroupPhoto(jid))
+          : photo === undefined
+            ? undefined
+            : await translated(onDisk(photo.source, (path) => engine.setGroupPhoto(jid, path)))
       if (pictured === undefined) return toGroupCard(await translated(engine.updateGroup(jid, change)))
       if (Object.keys(change).length === 0) return toGroupCard(pictured)
       try {
@@ -236,7 +238,7 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: G
         if (!isCliError(error)) throw error
         throw new CliError(
           error.code,
-          `the photo was set, the rest of the change was not: ${error.message}`,
+          `the photo was ${removePhoto === true ? "removed" : "set"}, the rest of the change was not: ${error.message}`,
           error.details,
         )
       }

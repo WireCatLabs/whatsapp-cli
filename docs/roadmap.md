@@ -18,7 +18,6 @@ What is not: [not in wa yet](usage.md#not-in-wa-yet).
 
 ## Next
 
-- **Removing a group's photo**: `chats update --photo` sets one; taking it away is done on the phone for now.
 - **Files in channels**: saving one from a post, and an album to a channel you run.
 
 ## Later

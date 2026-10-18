@@ -16,6 +16,7 @@ export interface GroupAction {
     | "leave"
     | "updateGroup"
     | "setGroupPhoto"
+    | "removeGroupPhoto"
     | "resetLink"
     | WaParticipantAction
     | "answerRequest"
@@ -111,6 +112,10 @@ export const fakeGroups = (seed: Seed, chats: WaChat[]): FakeGroups => {
     // The photo's path is a temporary one, different on every run, so it is left out.
     setGroupPhoto: async (jid) => {
       groupActions.push({ op: "setGroupPhoto", jid })
+      return groupOf(jid, true)
+    },
+    removeGroupPhoto: async (jid) => {
+      groupActions.push({ op: "removeGroupPhoto", jid })
       return groupOf(jid, true)
     },
     resetInviteLink: async (jid) => {

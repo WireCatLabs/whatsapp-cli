@@ -26,7 +26,7 @@ Some words on this page:
 | Delete a message for everyone, as the group's admin | `wa personal messages delete --for-everyone` |
 | Make a group, join one by its link, or leave | `wa personal chats create`, `chats join`, `chats leave` |
 | Add or remove people, make someone an admin | `wa personal chats members add`, `chats admins add` |
-| Rename a group, set its photo, or change who may add people | `wa personal chats update` |
+| Rename a group, set or remove its photo, or change who may add people | `wa personal chats update` |
 | Show or replace the invite link | `wa personal chats link show`, `chats link reset` |
 | Let in or turn away people who asked to join | `wa personal chats requests list`, `chats requests accept` |
 | Follow a channel, read its posts, or unfollow it | `wa personal chats join`, `messages sync`, `chats leave` ([channels](usage.md#channels)) |
@@ -206,6 +206,7 @@ wa personal chats admins add 120363000000000001@g.us 100000000000002@lid
 wa personal chats update 120363000000000001@g.us --title "Hiking club" --only-admins-add on --join-approval on
 wa personal chats update 120363000000000001@g.us --only-admins-send on --disappear-time 7d
 wa personal chats update 120363000000000001@g.us --photo club.jpg
+wa personal chats update 120363000000000001@g.us --remove-photo
 wa personal chats link show 120363000000000001@g.us
 wa personal chats link reset 120363000000000001@g.us
 wa personal chats requests list 120363000000000001@g.us
@@ -225,9 +226,10 @@ wa personal chats leave 120363000000000001@g.us
   `--only-admins-send`, `--only-admins-edit-info` and `--disappear-time`. Messages disappear after 24h, 7d or 90d,
   the times WhatsApp offers; any other is refused, and `off` keeps them.
 - **The photo.** `update --photo` takes a square JPEG of 190 to 720 pixels a side, the only kind WhatsApp takes as a
-  group photo. `wa` does not convert or crop one: export it as a JPEG first. A PNG or WebP is refused by its content,
-  whatever its name. The photo is set first: if the title, description or a setting given with it then fails, the
-  error says the photo was set. Removing the photo is done on the phone.
+  group photo. `wa` does not convert or crop one: export it as a JPEG first. A file not named `.jpg` or `.jpeg`, or a
+  PNG or WebP renamed to one, is refused before connecting. `update --remove-photo` takes the photo away, and is
+  refused beside `--photo`. The photo is set or removed first: if the title, description or a setting given with it
+  then fails, the error says so.
 - **A group's name works too**, as in every command that names a chat: `wa` looks it up in the local store first,
   where part of the name is enough, and asks WhatsApp's chat list only for a name the store does not hold. A name
   that matches several stored chats is refused; name one by its `…@g.us` id. A group the store does not hold yet

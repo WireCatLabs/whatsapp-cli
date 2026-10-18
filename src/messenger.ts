@@ -185,6 +185,8 @@ export const WHATSAPP: Messenger = {
   mediaOptions: ["fileName"],
   groupSettings: GROUP_SETTINGS,
   groupPhoto: true,
+  groupPhotoRemoval: true,
+  profilePhotoTypes: [".jpg", ".jpeg"],
   adminRights: ADMIN_RIGHTS,
   pickAdminRights: false,
   // A WhatsApp poll stays open, and any vote in it can be changed; everyone sees who voted for what.

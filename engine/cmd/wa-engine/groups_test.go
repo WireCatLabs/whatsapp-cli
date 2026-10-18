@@ -204,3 +204,15 @@ func TestGroupPhotoTakesOnlyASquareJPEGWhatsAppAccepts(t *testing.T) {
 		}
 	}
 }
+
+func TestRemovingAGroupPhotoSendsNoBytesAndReadsNoFile(t *testing.T) {
+	got, err := newGroupPhoto("", true)
+	if err != nil || got != nil {
+		t.Fatalf("got %v, %v, want no bytes and no error", got, err)
+	}
+	var known *failure
+	_, err = newGroupPhoto(filepath.Join(t.TempDir(), "good.jpg"), true)
+	if !errors.As(err, &known) || known.Code != "validation_error" {
+		t.Fatalf("a path beside the removal: got %v, want a validation_error", err)
+	}
+}
