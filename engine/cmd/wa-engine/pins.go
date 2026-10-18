@@ -10,9 +10,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// pinDurations are the lengths WhatsApp's apps offer, in seconds (Baileys lists the same three). cli-core always sends
-// one: its pinDefaultDuration fills a pin asked without a length.
+// pinDurations are the lengths WhatsApp's apps offer, in seconds (Baileys lists the same three). cli-core sends one
+// since 0.339.0, but a wa built on an older cli-core can still drive this engine (a checkout's JS and engine are built
+// apart, and the protocol did not change), so a pin without one keeps lasting 7 days, the default it meant.
 var pinDurations = []uint32{86400, 604800, 2592000}
+
+const defaultPinFor = uint32(604800)
 
 func (e *engine) dispatchPins(req request) (any, bool, error) {
 	switch req.Op {
@@ -50,6 +53,9 @@ func (e *engine) pin(req request, pinned bool) error {
 func pinLength(asked uint32, pinned bool) (uint32, error) {
 	if !pinned {
 		return 0, nil
+	}
+	if asked == 0 {
+		return defaultPinFor, nil
 	}
 	if !slices.Contains(pinDurations, asked) {
 		return 0, &failure{"validation_error", "a pin lasts 24 hours, 7 days or 30 days"}

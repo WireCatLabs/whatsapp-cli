@@ -366,6 +366,19 @@ describe("wa messages star", () => {
     expect(result.closed).toBe(true)
   })
 
+  it("keeps a star in the store, so starred:true lists the message until it is unstarred", async () => {
+    const starredIds = async () => {
+      const listed = await wa(["actions", "--offline", "messages", "list", seed.busy, "starred:true", "--json"])
+      expect(listed.code, listed.stderr).toBe(0)
+      return JSON.parse(listed.stdout).items.map((item: { id: string }) => item.id)
+    }
+    expect(await starredIds()).not.toContain(oldOwn.id)
+    expect((await acting(["messages", "star", seed.busy, oldOwn.id])).code).toBe(0)
+    expect(await starredIds()).toContain(oldOwn.id)
+    expect((await acting(["messages", "unstar", seed.busy, oldOwn.id])).code).toBe(0)
+    expect(await starredIds()).not.toContain(oldOwn.id)
+  })
+
   it("takes the star off the account's own message", async () => {
     const result = await acting(["messages", "unstar", seed.busy, fresh.id])
     expect(result.code).toBe(0)
