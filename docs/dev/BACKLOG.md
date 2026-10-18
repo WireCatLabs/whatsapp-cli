@@ -7,6 +7,10 @@ Open work, most important first. The plan in flight is
    2026-10-17: `serve` receiving a message from the phone and saving it; send, `--md` send, edit, reaction add and
    remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
    `session start` keeping the history push, `self()` set right after pairing.
+9. **A one-shot connection may take messages and drop them.** If WhatsApp hands each queued message to a linked
+   device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
+   and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
+   starts.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
@@ -48,28 +52,20 @@ Open work, most important first. The plan in flight is
    - **Files WhatsApp no longer keeps.** A download of an expired file is `not_found`; WhatsApp's apps ask the sender's
      phone to upload it again (whatsmeow's `SendMediaRetryReceipt`), which is not built. A forward of one reaches the
      recipient as a file that will not open.
-   - **`watch --jsonl` prints a file's keys.** cli-core's watch writes the message as the adapter gave it, `providerRef`
-     included, while every other answer leaves it out (`messageItem`). The keys are needed for the store, so the fix
-     is in cli-core's watch output, not here.
    - **Media leftovers**: albums (one file per message here), thumbnails on sent photos and videos, files to
      channels, forwarding a place or a contact card, `metadata` (needs the group read).
    - **Live checks** (with item 1): a reaction and a revoke in a group addressed by phone numbers (the own LID chat
      works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.
-6. **Distribution — first publish.** The engine packages, the release steps and the install tests on three systems are
-   built (`scripts/engine-packages.mjs`, `release.yml`, `install-windows.yml`) but have not run in CI or published.
-   npm's trusted publishing is set per package, and I think a package must exist on npm before it can trust a
-   workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
-   (`bin/release --local`) before `release.yml` can publish them.
+6. **Distribution — releases from CI.** 0.1.0 of `@wirecat/whatsapp-cli` and the six `@wirecat/whatsapp-engine-*`
+   packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). Next, the owner
+   sets npm's trusted publishing on each of the seven packages, so later releases go through `release.yml`, which has
+   not published yet. The install tests on three systems (`install-windows.yml`) have run once, by hand.
 8. **Replace the test-matrix waivers with tests.** On 2026-10-18, 132 commands and options have a wa test and 591 are
    waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
    goes.
-9. **A one-shot connection may take messages and drop them.** If WhatsApp hands each queued message to a linked
-   device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
-   and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
-   starts — before one-shot connections ship.
 11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
     history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
     decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup
@@ -79,11 +75,6 @@ Open work, most important first. The plan in flight is
 12. **cli-core could resolve names from the store for `history: "store"` messengers.** Today it always asks the
     adapter, so the engine keeps its own small chat directory (ARCHITECTURE §4). Raise it in cli-core.
 13. **Standards gaps left by the 2026-10-17 audit** (the handbook's areas, where a fix needs design):
-    - **The engine links `go.mau.fi/libsignal`, which is GPL-3.0**, through whatsmeow (`engine/THIRD_PARTY_NOTICES`),
-      while the engine packages declare Apache-2.0. What licence the shipped binary carries, and what source offer it
-      needs, is the owner's decision.
-    - **Two `setup` tests wait for real** (`--timeout 100ms` in `src/commands/setup.test.ts`); a wait goes through an
-      injected sleep (cli-base TESTING).
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so
       both name their entry points the same way.
