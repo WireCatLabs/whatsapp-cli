@@ -55,6 +55,25 @@ func TestAMarkUnreadIsTheReadPatchWithReadFalse(t *testing.T) {
 	}
 }
 
+func TestAMarkReadIsTheReadPatchWithReadTrue(t *testing.T) {
+	patch := chatListPatch("markChatRead", group, sentAt, lastInGroup)
+	if patch.Type != appstate.WAPatchRegularLow || len(patch.Mutations) != 1 {
+		t.Fatalf("got a %s patch of %d mutations", patch.Type, len(patch.Mutations))
+	}
+	mutation := patch.Mutations[0]
+	if want := []string{"markChatAsRead", group.String()}; !slices.Equal(mutation.Index, want) || mutation.Version != 3 {
+		t.Errorf("index %v version %d, want %v version 3", mutation.Index, mutation.Version, want)
+	}
+	action := mutation.Value.GetMarkChatAsReadAction()
+	if !action.GetRead() {
+		t.Errorf("read %v, want true", action.Read)
+	}
+	messageRange := action.GetMessageRange()
+	if messageRange.GetLastMessageTimestamp() != sentAt.Unix() || !proto.Equal(messageRange.GetMessages()[0].GetKey(), lastInGroup) {
+		t.Errorf("range %v, want up to the named message", messageRange)
+	}
+}
+
 func TestChannelsAreNotArrangedInTheChatList(t *testing.T) {
 	e := &engine{}
 	for _, jid := range []string{"120363000000000002@newsletter", "status@broadcast", "not a jid"} {
@@ -65,5 +84,9 @@ func TestChannelsAreNotArrangedInTheChatList(t *testing.T) {
 	archive := request{Op: "archiveChat", Chat: "120363000000000002@newsletter", Message: "3EB0LAST", Timestamp: "2026-09-01T10:00:00Z"}
 	if err := e.arrangeChat(archive); !isFailure(err, "validation_error") {
 		t.Errorf("archiving a channel gave %v, want a validation_error", err)
+	}
+	archive.Op = "markChatRead"
+	if err := e.arrangeChat(archive); !isFailure(err, "validation_error") {
+		t.Errorf("marking a channel read in the chat list gave %v, want a validation_error", err)
 	}
 }

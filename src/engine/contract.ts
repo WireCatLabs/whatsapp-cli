@@ -55,6 +55,7 @@ export const ENGINE_OPS = {
   unarchiveChat: "write",
   pinChat: "write",
   unpinChat: "write",
+  markChatRead: "write",
   markChatUnread: "write",
   followChannel: "write",
   unfollowChannel: "write",

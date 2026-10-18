@@ -49,7 +49,7 @@ import { isFile, sameFile, toAccount, toChat, toChatEvent, toMember, toMessage, 
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
-import { type SettingsAdapter, settingsAdapter, settingsWrite } from "./settings.js"
+import { AFTER_EVERY_MESSAGE, type SettingsAdapter, settingsAdapter, settingsWrite } from "./settings.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
@@ -242,7 +242,7 @@ export const whatsAppAdapter = (
       }),
     }
   }
-  // A deletion for the account alone and a star are changes to its synced settings, not messages.
+  // A deletion for the account alone, a star and a chat marked read are changes to its synced settings, not messages.
   const synced = settingsWrite(translated, words)
 
   // The phone's new upload replaces the whole stored ref on `file`, so cli-core saves it and a later download or a
@@ -456,10 +456,16 @@ export const whatsAppAdapter = (
       await synced(engine.star(keyOf(chatId, message), starred))
     },
 
-    // One receipt, for the newest message from someone else up to `until`: the account's own messages have none.
+    // The read patch takes a mark-unread off the owner's devices, which a receipt does not; it is bounded by `until`
+    // or the newest stored message, either side's, so a message newer than that stays unread. It goes first, so a
+    // refusal for missing settings keys leaves nothing sent. Then one receipt, for the newest message from someone
+    // else up to `until`: the account's own messages have none. A chat the store holds nothing of has neither.
     markRead: async (chatId, until) => {
-      const anchor = until === undefined ? undefined : await held(chatId, until)
-      const target = anchor && !anchor.outgoing ? anchor : await stored.newestIncoming(chatId, until)
+      const anchor = until === undefined ? await stored.anchor(chatId, AFTER_EVERY_MESSAGE) : await held(chatId, until)
+      if (!anchor) return
+      if (!isChannel(chatId) && !chatId.endsWith("@broadcast"))
+        await synced(engine.markChatRead({ ...keyOf(chatId, anchor), timestamp: anchor.timestamp }))
+      const target = until !== undefined && !anchor.outgoing ? anchor : await stored.newestIncoming(chatId, until)
       if (target) await translated(engine.markRead(keyOf(chatId, target)))
     },
 

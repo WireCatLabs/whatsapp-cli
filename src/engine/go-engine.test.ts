@@ -201,6 +201,7 @@ describe("startGoEngine", () => {
     const engine = await stub("ok")
     await expect(engine.archiveChat(last, true)).resolves.toBeUndefined()
     await expect(engine.archiveChat(last, false)).resolves.toBeUndefined()
+    await expect(engine.markChatRead(last)).resolves.toBeUndefined()
     await expect(engine.markChatUnread(last)).resolves.toBeUndefined()
     await expect(engine.pinChat(last.chat, true)).resolves.toBeUndefined()
     await expect(engine.pinChat(last.chat, false)).resolves.toBeUndefined()

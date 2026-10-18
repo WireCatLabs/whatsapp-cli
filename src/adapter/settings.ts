@@ -27,7 +27,7 @@ export interface SettingsDeps {
 }
 
 // `anchor` gives the newest message sent at a time or before; this one is later than any message's.
-const AFTER_EVERY_MESSAGE = "9999-12-31T23:59:59.999Z"
+export const AFTER_EVERY_MESSAGE = "9999-12-31T23:59:59.999Z"
 
 /** Translates a write to the synced settings, which needs the settings keys WhatsApp sends after linking. */
 export const settingsWrite =

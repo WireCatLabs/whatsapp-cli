@@ -214,9 +214,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   WhatsApp gives a live change no id, so the event's id is a hash of the chat, the time in seconds, the action and the
   sorted people in `canonical` form: the same change from both paths is stored once. A service message becomes no
   message.
-  `archiveChat`, `unarchiveChat` and `markChatUnread` (`engine/cmd/wa-engine/chatlist.go`; the same newest-message
-  key and `timestamp`) send `BuildArchive`, whose archive also unpins the chat, and `BuildMarkChatAsRead` with read
-  false. `pinChat` and `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server
+  `archiveChat`, `unarchiveChat`, `markChatRead` and `markChatUnread` (`engine/cmd/wa-engine/chatlist.go`; the same
+  newest-message key and `timestamp`, or for `markChatRead` the `--until-id` message's) send `BuildArchive`, whose
+  archive also unpins the chat, and `BuildMarkChatAsRead` with read true or false. The adapter's `markRead` sends
+  `markChatRead` before the `read` receipt, since a receipt does not take a mark-unread off. `pinChat` and `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server
   cannot read.
 - **Channel requests** (`engine/cmd/wa-engine/newsletters.go`; the contract in
   [`src/engine/channels.ts`](../../src/engine/channels.ts)): `channel` (`GetNewsletterInfo`, with the account's

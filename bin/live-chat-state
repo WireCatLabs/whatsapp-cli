@@ -299,7 +299,7 @@ if has "chats mark-unread"; then
   report "chats mark-unread"
   if [ "$rc" = 0 ]; then
     markunread=$(phone "In the chat list, without opening the chat: does your own chat show the unread dot?")
-    confirm "Next it runs chats mark-read on your own chat; it has no message from someone else, so nothing is sent."
+    confirm "Next it runs chats mark-read on your own chat: it marks the chat read on your devices; no receipt goes out."
     attempt "$profile" chats mark-read "$own" --yes --timeout 60s
     report "chats mark-read"
     if [ "$rc" = 0 ]; then
@@ -380,7 +380,7 @@ Step                     Phone    BACKLOG item 5 line it settles
 6 chats archive          $(printf '%-8s' "$archive") the same line, the archive
 6 chats unarchive        $(printf '%-8s' "$unarchive") the same line, the unarchive
 7 chats mark-unread      $(printf '%-8s' "$markunread") the same line, the mark-unread
-7 chats mark-read        $(printf '%-8s' "$markread") "chats mark-read after a mark-unread": the own chat, no receipt
+7 chats mark-read        $(printf '%-8s' "$markread") "chats mark-read sends the read patch": the own chat, the patch
 8 delete for you only    $(printf '%-8s' "$forme") "Live check of delete for the owner alone": the own message (W6)
 9 sticker, not a photo   $(printf '%-8s' "$stickerkind") "Stickers from a file: live check and the limits": the send
 9 sticker size           $(printf '%-8s' "$stickersize") the same line, the size on the phone
@@ -389,6 +389,4 @@ Step                     Phone    BACKLOG item 5 line it settles
 A yes settles that part of the line; no or failed is a bug to file; skipped waits for that feature's build,
 or for step 9 a --sticker file;
 kept is a step left out so as not to change a pin the phone already had.
-For 7 chats mark-read, no is the expected answer: without the read patch, wa cannot undo a mark-unread in the own
-chat. Whether a receipt in another chat clears it stays open.
 EOF

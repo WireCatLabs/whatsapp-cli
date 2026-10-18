@@ -200,6 +200,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "deleteForMe":
     case "archiveChat":
     case "unarchiveChat":
+    case "markChatRead":
     case "markChatUnread":
       if (fields.chat === "crash@stub") process.exit(3)
       if (!fields.chat || !fields.message || !fields.timestamp || typeof fields.fromMe !== "boolean")

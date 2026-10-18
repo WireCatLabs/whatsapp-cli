@@ -70,7 +70,7 @@ func (e *engine) dispatchSettings(req request) (any, bool, error) {
 		return nil, true, e.deleteForMe(req)
 	case "star":
 		return nil, true, e.star(req)
-	case "archiveChat", "unarchiveChat", "markChatUnread":
+	case "archiveChat", "unarchiveChat", "markChatRead", "markChatUnread":
 		return nil, true, e.arrangeChat(req)
 	case "pinChat", "unpinChat":
 		return nil, true, e.pinChat(req)
