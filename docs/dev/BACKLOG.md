@@ -145,7 +145,7 @@ Open work, most important first. The plan in flight is
    - **Media leftovers**: `metadata refresh` for a channel (`group` reads groups only).
    - **Files to channels: built, one file per post, not checked live.** A photo, video, voice note or document goes
      to a channel the owner runs, uploaded unencrypted (`UploadNewsletterReader`) and posted with its media handle.
-     An album to a channel is refused: whatsmeow shows no album in a newsletter. The fields follow whatsmeow's
+     An album to a channel is refused: whatsmeow's newsletter send has no album handling. The fields follow whatsmeow's
      `UploadNewsletter` example (URL, direct path, the plain file's SHA-256, no media key); mautrix-whatsapp posts no
      files to channels, so nothing else confirms them. A channel file's stored ref has no media key, so forwarding
      it into an encrypted chat would send a file that does not open (forwards from a channel are not refused yet).

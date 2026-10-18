@@ -62,7 +62,7 @@ export const channelHistory = async (
 
 /**
  * Only a channel's owner and admins post, and WhatsApp says the account's role only when asked, so a post asks first.
- * The role is asked before anything is uploaded. One file per post: whatsmeow sends no album to a channel.
+ * The role is asked before anything is uploaded. One file per post: whatsmeow's newsletter send has no album handling.
  */
 export const refuseChannelPost = async (
   engine: WhatsAppEngine,
