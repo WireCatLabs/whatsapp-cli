@@ -105,6 +105,43 @@ describe("wa reactions", () => {
   })
 })
 
+describe("wa messages pin", () => {
+  it("pins someone else's message for the chat with --notify, addressed by its stored sender", async () => {
+    const result = await acting(["messages", "pin", seed.busy, theirs.id, "--notify"])
+    expect(result.code).toBe(0)
+    expect(result.actions).toEqual([
+      { op: "pin", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId } },
+    ])
+    expect(JSON.parse(result.stdout).item).toMatchObject({ chat_id: seed.busy, message_id: theirs.id, pinned: true })
+    expect(result.closed).toBe(true)
+  })
+
+  it("unpins the account's own message", async () => {
+    const result = await acting(["messages", "unpin", seed.busy, fresh.id])
+    expect(result.code).toBe(0)
+    expect(result.actions).toEqual([
+      { op: "unpin", key: { chat: seed.busy, id: fresh.id, fromMe: true, sender: fresh.senderId } },
+    ])
+  })
+
+  it("refuses a quiet pin, which WhatsApp does not have, and sends nothing", async () => {
+    const result = await acting(["messages", "pin", seed.busy, theirs.id])
+    expect(result.code).toBe(2)
+    expect(result.stderr).toContain("--notify")
+    expect(result.actions).toEqual([])
+  })
+
+  it.each([["pin", "--notify"], ["unpin"]])(
+    "refuses to %s a message the store does not hold, and sends nothing",
+    async (verb, ...options) => {
+      const result = await acting(["messages", verb, seed.busy, "3EB0000000000000000DEAD", ...options])
+      expect(result.code).toBe(6)
+      expect(errorCode(result.stderr)).toBe("not_found")
+      expect(result.actions).toEqual([])
+    },
+  )
+})
+
 describe("wa messages edit", () => {
   it("changes the text of the account's own recent message", async () => {
     const result = await acting(["messages", "edit", seed.busy, fresh.id, "fixed text"])
