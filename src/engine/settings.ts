@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { type WaAccount, waAccount } from "./contract.js"
+import { keyFields, type WaAccount, type WaAnchor, waAccount } from "./contract.js"
 import type { EngineRequest } from "./groups.js"
 
 /** The account's own name and "about" line; a field left out stays. */
@@ -14,6 +14,13 @@ export interface SettingsEngine {
   mute(jid: string, until: string | null): Promise<void>
   /** The name goes to the owner's devices as a setting, the about to WhatsApp; answers the account as it now is. */
   updateProfile(change: WaProfileChange): Promise<WaAccount>
+  /**
+   * Deletes `last`'s chat from the account's devices, up to `last`, the chat's newest stored message: WhatsApp needs
+   * it to know what the deletion covers. The photos and files the phone saved from it stay. Nobody else is told.
+   */
+  deleteChat(last: WaAnchor): Promise<void>
+  /** Deletes every message of `last`'s chat up to `last`, starred ones too, and keeps the chat; as `deleteChat`. */
+  clearChat(last: WaAnchor): Promise<void>
 }
 
 const nothing = v.nullable(v.unknown())
@@ -23,4 +30,10 @@ export const goSettings = (request: EngineRequest): SettingsEngine => ({
     await request("mute", { jid, until }, nothing)
   },
   updateProfile: (change) => request("updateProfile", { ...change }, waAccount),
+  deleteChat: async (last) => {
+    await request("deleteChat", { ...keyFields(last), timestamp: last.timestamp }, nothing)
+  },
+  clearChat: async (last) => {
+    await request("clearChat", { ...keyFields(last), timestamp: last.timestamp }, nothing)
+  },
 })

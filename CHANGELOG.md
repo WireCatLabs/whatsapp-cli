@@ -158,6 +158,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   photo yet. A device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does; an
   about WhatsApp refuses after the name changed says the name did. The permission key is `account.update`. Engine
   protocol 19, op `updateProfile`.
+- **`wa <profile> chats delete` and `chats clear`** (cli-core's, as in max): delete a chat, or every message in it, from
+  this account's devices; the others in it keep theirs. WhatsApp deletes up to a message it is told of, so `wa` names
+  the chat's newest message in the local store, the owner's own or not, and refuses a chat the store holds nothing of
+  (exit 6) rather than guess. A message that arrived after the store last heard should stay. `chats clear` deletes
+  starred messages too; neither asks WhatsApp to delete the photos and files the phone saved from the chat. Both ask
+  first at the default permission level (`chats.delete`, `chats.clear`; `--allow-dangerous` skips the question), are
+  not offered over MCP, and answer `settings.keys-missing` as `chats mute` does. The local store keeps the chat's
+  messages (cli-core's command leaves it as it is). Not yet checked live on the phone. Engine protocol 20, ops
+  `deleteChat` and `clearChat`.
 
 ## 0.1.0 — 17.10.2026
 

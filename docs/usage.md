@@ -80,6 +80,19 @@ A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local
 and its sender on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's
 apps may then show the quote as unavailable.
 
+## Delete or clear a chat
+
+```sh
+wa personal chats clear "Book club" --allow-dangerous    # every message, starred ones too; the chat stays
+wa personal chats delete "Book club" --allow-dangerous   # the chat itself
+```
+
+Both are for your devices alone: the others in the chat keep it and its messages. Without `--allow-dangerous` they ask
+first in a terminal and refuse in a script. WhatsApp deletes up to a message `wa` names: the chat's newest one in the
+local store, so keep `serve` running for it to be current, and a chat the store holds nothing of is refused. `wa`
+asks WhatsApp to leave the photos and files the phone saved from the chat. `wa`'s local store still holds the
+messages afterwards. None of this has been checked on a phone yet.
+
 ## Format a message
 
 ```sh

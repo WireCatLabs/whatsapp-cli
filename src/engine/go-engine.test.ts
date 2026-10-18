@@ -134,6 +134,16 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("bounds a chat deletion by its newest message, and counts one cut off as a write that may have happened", async () => {
+    const last = { chat: "120363000000000001@g.us", id: "3EB0LAST", fromMe: false, sender: "100000000000002@lid" }
+    const engine = await stub("ok")
+    await expect(engine.deleteChat({ ...last, timestamp: "2026-09-01T10:00:00.000Z" })).resolves.toBeUndefined()
+    await expect(engine.clearChat({ ...last, timestamp: "2026-09-01T10:00:00.000Z" })).resolves.toBeUndefined()
+    await expect(
+      engine.clearChat({ ...last, chat: "crash@stub", timestamp: "2026-09-01T10:00:00.000Z" }),
+    ).rejects.toMatchObject({ code: "outcome_unknown", reason: "engine.stopped-mid-write" })
+  })
+
   it("rejects at start when the lock is held, naming the holder", async () => {
     await expect(stub("refuse")).rejects.toMatchObject({
       code: "provider_unavailable",

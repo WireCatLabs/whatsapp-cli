@@ -162,6 +162,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   as `BuildSettingPushName` through `sendAppState` first, fills it into whatsmeow's store for `me` when the read-back did not, then the about with
   `SetStatusMessage`, which is not app state; it answers the account, and sends no presence. The adapter joins
   cli-core's first and last name into the one name.
+  `deleteChat` and `clearChat` (`engine/cmd/wa-engine/chatdeletion.go`; the chat's newest stored message as
+  a key and its `timestamp`, which bound what WhatsApp deletes) send `BuildDeleteChat` and a clear-chat patch whatsmeow
+  has no builder for, built the same way (`buildClearChat`: index `clearChat`, chat, deleteStarred `1`, deleteMedia
+  `0`; regular_high, version 6 — as Baileys and whatsapp-rust write it). Neither deletes the phone's saved files.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

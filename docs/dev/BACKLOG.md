@@ -32,8 +32,8 @@ Open work, most important first. The plan in flight is
    the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
    reported to the lead for cli-core to decide.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
-   profiles, blocking, number lookup, Markdown, polls, message pins, chat mute and the own name and about are built;
-   what they left open:
+   profiles, blocking, number lookup, Markdown, polls, message pins, chat mute, chat delete/clear and the own name
+   and about are built; what they left open:
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
      them (cli-core 0.322.0); a live vote whose poll the store does not hold yet is passed over.
    - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and
@@ -82,6 +82,12 @@ Open work, most important first. The plan in flight is
      sends no presence and WhatsApp learns a name from one; whether `SetStatusMessage` with no duration keeps the
      about for good (whatsmeow sends `ephemeral_duration_sec: 0`, and none of its callers sets one); whether the
      phone refuses an empty about (the engine refuses it first).
+   - **Live checks of `chats delete` and `chats clear`**: not run against WhatsApp. Open, as for mute: a one-to-one
+     chat addressed by its LID; and whether the phone deletes up to the named message when newer ones arrived
+     that the store has not heard of yet (the patch should leave those).
+   - **The store keeps a deleted chat.** cli-core's `chats delete` and `chats clear` leave the local store as it is,
+     so `messages list` and `search` still show what was deleted (queued to cli-core); the engine also ignores
+     whatsmeow's `DeleteChat` and `ClearChat` events, so a deletion made on the phone does not reach the store either.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
      `messages delete` without `--for-everyone` is refused rather than built from a guessed patch. Until it is built,
      `WHATSAPP.deleteForMe` is `false`, so an agent's MCP delete is refused; building it means setting that to `true`.

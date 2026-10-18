@@ -102,6 +102,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   mutes: { jid: string; until: string | null }[]
   /** Each change of the own name or about, in order. */
   profileChanges: WaProfileChange[]
+  /** Each chat deletion and clear, in order, with the newest message it was bounded by. */
+  chatDeletions: { op: "deleteChat" | "clearChat"; last: WaAnchor }[]
   closed: boolean
   loggedOut: boolean
 }
@@ -153,6 +155,13 @@ export const fakeEngine = (
   const mutes: FakeEngine["mutes"] = []
   const profileChanges: WaProfileChange[] = []
   let ownName = seed.account?.name ?? null
+  const chatDeletions: FakeEngine["chatDeletions"] = []
+  const keysMissing = () =>
+    new EngineError(
+      "provider_unavailable",
+      "WhatsApp has not sent the settings keys yet; keep serve running a few minutes and try again",
+      "settings.keys-missing",
+    )
 
   const post = (chat: string, id: string, text: string, attachments: WaAttachment[], replyTo?: string): WaMessage => {
     const message: WaMessage = {
@@ -183,6 +192,7 @@ export const fakeEngine = (
     olderAsked,
     mutes,
     profileChanges,
+    chatDeletions,
     closed: false,
     loggedOut: false,
     push,
@@ -325,6 +335,14 @@ export const fakeEngine = (
       profileChanges.push(change)
       if (change.pushName !== undefined) ownName = change.pushName
       return { jid: seed.account.id, name: ownName }
+    },
+    deleteChat: async (last) => {
+      if (!settingsKeys) throw keysMissing()
+      chatDeletions.push({ op: "deleteChat", last })
+    },
+    clearChat: async (last) => {
+      if (!settingsKeys) throw keysMissing()
+      chatDeletions.push({ op: "clearChat", last })
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

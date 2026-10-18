@@ -13,7 +13,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 19
+export const PROTOCOL = 20
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -282,6 +282,14 @@ export interface WaKey {
   /** Who sent it; in a group, required for someone else's message. */
   sender: string | null
 }
+
+/** A message key as the engine reads it from a request. */
+export const keyFields = ({ chat, id, fromMe, sender }: WaKey) => ({
+  chat,
+  message: id,
+  fromMe,
+  ...(sender === null ? {} : { sender }),
+})
 
 /** The most messages one `older` request asks the phone for, as WhatsApp's own clients ask. */
 export const OLDER_MAX = 50

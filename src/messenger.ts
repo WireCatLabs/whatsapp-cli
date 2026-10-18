@@ -202,6 +202,7 @@ export const WHATSAPP: Messenger = {
   // Nothing sends unless a typed command asked: WhatsApp bans accounts that answer like a bot.
   autoReplies: false,
   chatMute: true,
+  chatDeletion: true,
   lacks: [
     "sessions",
     "endOtherSessions",

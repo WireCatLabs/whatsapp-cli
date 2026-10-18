@@ -47,7 +47,8 @@ This controls messages. Other actions have their own keys: `reactions` for react
 `chats.mark-read` for read receipts. The other side sees all three, so give them the same care as sending.
 `chats.mute` and `chats.unmute` cover `chats mute` and `chats unmute`, which nobody else sees; a setting for
 `chats.mute` alone still covers both. `account.update` covers `account update`: other people can see the new name
-and about.
+and about. `chats.delete` and `chats.clear` cover deleting a chat or its messages from your own devices; they ask
+by default, since nothing brings the messages back.
 
 ## Questions in scripts
 
