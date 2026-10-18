@@ -48,6 +48,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`chats rules set` refuses a `newAccount` rule** (cli-core's `knowsAccountAge`): WhatsApp does not say when an
+  account was made, so the rule was saved and could never match. It now fails with `validation_error` (exit 2) and
+  saves nothing.
 - **A command cut off when WhatsApp ended the connection says why**: a command relayed through `serve` while another
   process took the login over answered `network_error`, which invites a retry; it now answers `device.replaced`, and
   after a ban or a logout `account.banned` or `device.logged-out`.
