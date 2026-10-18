@@ -12,7 +12,7 @@ var writes = map[string]bool{
 	"send": true, "sendMedia": true, "sendAlbum": true, "forward": true, "edit": true, "revoke": true, "react": true,
 	"read": true, "createPoll": true, "vote": true, "pin": true, "unpin": true, "createGroup": true, "join": true,
 	"leave": true, "updateGroup": true, "resetLink": true, "setGroupPhoto": true, "participants": true,
-	"answerRequest": true, "block": true, "logout": true,
+	"answerRequest": true, "block": true, "setPrivacy": true, "logout": true,
 }
 
 var cutWrite = &refusal{failure: failure{"outcome_unknown",

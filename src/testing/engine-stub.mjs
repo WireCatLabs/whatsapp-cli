@@ -159,6 +159,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       break
     case "privacy":
     case "setPrivacy":
+      if (fields.privacy?.some((change) => change.value === "crash@stub")) process.exit(3)
       if (op === "setPrivacy" && !fields.privacy?.every((change) => change.name && change.value)) {
         say({ id, error: { code: "validation_error", message: "no privacy setting to change" } })
         break

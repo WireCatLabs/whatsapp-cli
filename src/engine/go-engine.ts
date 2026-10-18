@@ -67,6 +67,7 @@ const WRITES = new Set([
   "participants",
   "answerRequest",
   "block",
+  "setPrivacy",
   "logout",
 ])
 

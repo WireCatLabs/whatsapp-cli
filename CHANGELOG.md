@@ -73,6 +73,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A privacy change cut by a dropped connection or an engine crash answers `outcome_unknown`** (WC-LIFE-9): exit
+  14, `retry.safe: false`. `setPrivacy` was missing from both lists of writes, so the caller was told the engine
+  stopped or the network failed, and could think nothing changed.
+
 - **`images embed` runs inside `serve` when `serve` holds the connection** (cli-core 0.337.0, WC-LIFE-11): it
   downloads pictures through WhatsApp, so it is a read from WhatsApp, and its MCP tool has no `offline` input.
 
