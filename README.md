@@ -42,6 +42,9 @@ You:    Yes.
 > write when WhatsApp says to slow down or restricts the account. Do not send in bulk, and do not write to strangers.
 > You use `wa` at your own risk. More: [limits](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/limits.md)
 
+**Early.** `wa` is new, and some of what it does has not yet been checked against real WhatsApp. The
+[backlog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/dev/BACKLOG.md) lists the checks still to run.
+
 ## Quick start
 
 ```sh
