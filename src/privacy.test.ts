@@ -80,6 +80,9 @@ describe("wa account privacy", () => {
     const again = await wa(["privacy", "account", "privacy", "set", "--hide-online", "off", "--calls", "everyone"])
     expect(again.code).toBe(0)
     expect(again.sent).toEqual([])
+
+    const onlineShown = { groupadd: "all", last: "none", online: "all", calladd: "all" }
+    expect((await wa(["privacy", "account", "privacy", "set", "--hide-online", "off"], onlineShown)).sent).toEqual([])
   })
 
   it("refuses what WhatsApp has no setting for before sending anything", async () => {
@@ -96,8 +99,16 @@ describe("wa account privacy", () => {
   })
 
   it("changes nothing when the profile denies it", async () => {
-    expect((await wa(["denying", "config", "set", "permissions.account.privacy.set", "deny"])).code).toBe(0)
-    const { code, error, sent } = await wa(["denying", "account", "privacy", "set", "--calls", "contacts", "--json"])
+    expect((await wa(["privacy-denying", "config", "set", "permissions.account.privacy.set", "deny"])).code).toBe(0)
+    const { code, error, sent } = await wa([
+      "privacy-denying",
+      "account",
+      "privacy",
+      "set",
+      "--calls",
+      "contacts",
+      "--json",
+    ])
     expect(code).toBe(5)
     expect(error.code).toBe("permission_error")
     expect(sent).toEqual([])

@@ -47,7 +47,8 @@ const changesFor = (change: PrivacySettings, now: WaPrivacy): WaPrivacyChange[] 
   if (change.calls !== undefined) wanted.push({ name: "calladd", value: CALL_ADD[change.calls] as string })
   if (change.hideOnline === true)
     wanted.push({ name: "last", value: "none" }, { name: "online", value: "match_last_seen" })
-  if (change.hideOnline === false && now.last === "none") wanted.push({ name: "last", value: "contacts" })
+  if (change.hideOnline === false && toPrivacy(now).hideOnline === true)
+    wanted.push({ name: "last", value: "contacts" })
   return wanted.filter(({ name, value }) => now[name] !== value)
 }
 
