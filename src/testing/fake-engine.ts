@@ -68,11 +68,15 @@ const waMessageOf = (message: Message): WaMessage => ({
   ...(message.providerMetadata?.poll === undefined ? {} : { poll: v.parse(waPoll, message.providerMetadata.poll) }),
 })
 
-const UPLOADED: Record<string, { kind: WaAttachment["kind"]; media: "image" | "video" | "audio" | "document" }> = {
+const UPLOADED: Record<
+  string,
+  { kind: WaAttachment["kind"]; media: "image" | "video" | "audio" | "document" | "sticker" }
+> = {
   photo: { kind: "photo", media: "image" },
   video: { kind: "video", media: "video" },
   voice: { kind: "voice", media: "audio" },
   document: { kind: "document", media: "document" },
+  sticker: { kind: "sticker", media: "sticker" },
 }
 
 /** The bytes the fake engine "downloads": synthetic, named after the file's kind. */

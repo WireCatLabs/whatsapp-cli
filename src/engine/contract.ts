@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 31
+export const PROTOCOL = 32
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -363,9 +363,9 @@ export interface WaQuote {
   text: string
 }
 
-/** One file from this machine, sent with `text` as its caption. `kind` is decided as tg decides it. */
+/** One file from this machine, sent with `text` as its caption. `kind` is decided as tg decides it; a sticker goes alone. */
 export interface WaSendMedia extends WaSend {
-  file: { kind: "photo" | "video" | "voice" | "document"; path: string; name: string }
+  file: { kind: "photo" | "video" | "voice" | "document" | "sticker"; path: string; name: string }
 }
 
 /** Photos and videos sent as one album, `text` as the first one's caption. */

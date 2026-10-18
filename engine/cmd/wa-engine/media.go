@@ -278,6 +278,9 @@ func (e *engine) sendMedia(req request) (*waMessage, error) {
 	if to.Server == types.NewsletterServer && req.ReplyTo != "" {
 		return nil, &failure{"validation_error", "a channel post cannot be a reply"}
 	}
+	if to.Server == types.NewsletterServer && req.File != nil && req.File.Kind == "sticker" {
+		return nil, &failure{"validation_error", "wa does not post stickers to a WhatsApp channel yet"}
+	}
 	s, err := stage(req.File)
 	if err != nil {
 		return nil, err
@@ -341,6 +344,7 @@ var uploadKinds = map[string]struct{ kind, media string }{
 	"video":    {"video", "video"},
 	"voice":    {"voice", "audio"},
 	"document": {"document", "document"},
+	"sticker":  {"sticker", "sticker"},
 }
 
 // describe reads what the recipient's app shows before the download: the type, a picture's size, a voice's length.
@@ -369,8 +373,35 @@ func describe(file *os.File, upload waUpload) (waAttachment, string, error) {
 		}
 	case "document":
 		a.Name = upload.Name
+	case "sticker":
+		a.Mime = "image/webp"
+		a.Width, a.Height = webpSize(head[:n])
 	}
 	return a, kind.media, nil
+}
+
+// webpSize reads a WebP's canvas from its first chunk (VP8X, VP8L or VP8), and 0, 0 from anything else.
+func webpSize(head []byte) (uint32, uint32) {
+	if len(head) < 30 || string(head[0:4]) != "RIFF" || string(head[8:12]) != "WEBP" {
+		return 0, 0
+	}
+	le24 := func(b []byte) uint32 { return uint32(b[0]) | uint32(b[1])<<8 | uint32(b[2])<<16 }
+	switch string(head[12:16]) {
+	case "VP8X":
+		return le24(head[24:27]) + 1, le24(head[27:30]) + 1
+	case "VP8L":
+		if head[20] != 0x2f {
+			return 0, 0
+		}
+		bits := binary.LittleEndian.Uint32(head[21:25])
+		return bits&0x3fff + 1, (bits>>14)&0x3fff + 1
+	case "VP8 ":
+		if head[23] != 0x9d || head[24] != 0x01 || head[25] != 0x2a {
+			return 0, 0
+		}
+		return uint32(binary.LittleEndian.Uint16(head[26:28]) & 0x3fff), uint32(binary.LittleEndian.Uint16(head[28:30]) & 0x3fff)
+	}
+	return 0, 0
 }
 
 func mimeOf(name string, head []byte) string {

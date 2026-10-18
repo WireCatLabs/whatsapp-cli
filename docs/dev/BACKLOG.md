@@ -56,6 +56,13 @@ Open work, most important first. The plan in flight is
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
    - ~~**Removing a group's photo**~~ — built: `chats update --remove-photo` (cli-core 0.340.0).
+   - **Stickers from a file: live check and the limits.** `messages send --sticker-file` (cli-core 0.340.0) uploads
+     the `.webp` as an image and sends a `StickerMessage`, with the canvas read from the file's first chunk; not run
+     against WhatsApp yet (own chat only). One cap, 500 KiB, lets an animated sticker through: Meta's Cloud API caps a
+     still one at 100 KB, and whether a phone shows a larger still sticker is unknown. `isAnimated` is not set.
+     The `.webp` goes as it is: mautrix-whatsapp pads a non-square one to a square and adds a PNG thumbnail before
+     sending, and whether a phone shows a non-square sticker well is unknown.
+     A sticker to a channel is refused until a channel post's sticker (URL, no key) is seen working.
    - **Communities: only the read of one group.** A group read from WhatsApp carries its community as cli-core's
      `parentChatId` and a community carries `providerMetadata.community` (engine protocol 15). Still open: the store
      gets chats only from history pushes, and `convert.go` does not read the pushed conversation's

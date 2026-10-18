@@ -162,6 +162,15 @@ describe("wa channels", () => {
     expect(result.engine?.uploads).toEqual([])
   })
 
+  it("refuses a sticker to a channel, and uploads nothing", async () => {
+    const path = join(mkdtempSync(join(tmpdir(), "wa-channel-file-")), "synthetic.webp")
+    writeFileSync(path, Buffer.concat([Buffer.from("RIFF\0\0\0\0WEBPVP8X"), Buffer.alloc(32)]))
+    const result = await acting(["messages", "send", CHANNEL, "--sticker-file", path], "owner")
+    expect(result.code).toBe(2)
+    expect(result.stderr).toContain("stickers")
+    expect(result.engine?.uploads ?? []).toEqual([])
+  })
+
   it("refuses a reply posted to a channel, and sends nothing", async () => {
     const post = CHANNEL_POSTS.at(-1)?.id ?? ""
     const reply = await acting(["messages", "send", CHANNEL, "synthetic post", "--reply-to", post], "admin")

@@ -190,6 +190,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> messages send <chat> --sticker-file <file.webp>`** sends a `.webp` as a WhatsApp sticker, alone,
+  with no text; agents send `sticker_file` to `messages_send` through `wa_write`. It is a message like any other: the
+  profile's permissions, the send journal and `--operation-id` apply, and so does the file guard (`--allow-any-file`
+  for a file in `wa`'s own folders). A file that is not a WebP, or is larger than 500 KiB, is refused before
+  connecting. A sticker to a channel is refused for now.
 - **`wa <profile> chats update <group> --remove-photo`** takes a group's photo away; agents send `remove_photo` to
   `chats_update` through `wa_write`. The members see it. It goes through the profile's permissions under
   `chats.update`, as `--photo` does, and is refused beside `--photo` before connecting. The photo goes first: if a
