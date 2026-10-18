@@ -1,7 +1,5 @@
 [
   "account list",
-  "account privacy set",
-  "account privacy show",
   "account sessions end",
   "account sessions list",
   "account show",

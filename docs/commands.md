@@ -188,7 +188,7 @@ wa account privacy set [options]
 |---|---|
 | `--find-by-phone <who>` | who finds the account by its number: everyone, contacts or nobody. |
 | `--phone-number <who>` | who sees the number: everyone, contacts or nobody. |
-| `--calls <who>` | who may call: everyone, contacts or nobody. |
+| `--calls <who>` | whose calls ring: everyone, contacts or nobody. |
 | `--chat-invites <who>` | who may add the account to groups and channels: everyone, contacts or nobody. |
 | `--hide-online <on\|off>` | hide online status and last seen. |
 

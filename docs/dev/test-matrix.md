@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**199 ✅ · 525 ⛔ · 0 ❌** — 227 commands, 497 options.
+**206 ✅ · 525 ⛔ · 0 ❌** — 229 commands, 502 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
