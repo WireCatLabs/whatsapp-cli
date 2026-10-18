@@ -1,21 +1,21 @@
 ---
 name: release
-description: Prepare and check a whatsapp-cli release for the owner to publish — run release:check, draft the changelog in the handbook's headings, audit the docs against what changed, review the change against the handbook and CLAUDE.md, run the live scenarios with the owner's yes, write the release report for the owner to sign, raise the version in a pull request; the owner merges it and runs bin/release, never an agent. Use when asked to release, prepare a release, cut a version, «выпуск», «выпустить версию».
+description: Prepare and check a whatsapp-cli release for the owner to publish — run release:check, draft the changelog in the handbook's headings, audit the docs against what changed, review the change against the handbook and CLAUDE.md, run the live scenarios with the owner's yes, raise the version in a pull request, write the release report for that tree; the owner merges it, signs with bin/sign-release and publishes with bin/release, never an agent. Use when asked to release, prepare a release, cut a version, «выпуск», «выпустить версию».
 ---
 
 # Release whatsapp-cli
 
-**An agent never releases `wa` on its own.** The owner releases `wa`. Two of the owner's decisions are open: the first
-publish to npm is done by hand (NEED-1407), and the engine's licence is not settled — it links libsignal, which is
-GPL-3.0 (NEED-1429). An agent may do steps 0 to 6 and open the `chore(release)` pull request of step 7. It never
-merges that pull request, runs `bin/release` or starts `release.yml`, even when the owner has closed both decisions:
-the owner does those.
+**An agent never releases `wa`.** It runs on the owner's real WhatsApp account, and a release carries the owner's
+signed report (`WC-REL-10`). An agent does steps 0 to 6: it opens the `chore(release)` pull request and writes the
+report. It never merges that pull request, signs the report, runs `bin/sign-release` or `bin/release`, or starts
+`release.yml`. The owner does those, in step 7.
 
 The rules are the handbook's
 [Releases page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/releases.md) (`WC-REL-<n>`), which
 wins over this skill. The steps tg, max and wa share are in cli-core's
 [RELEASING.md](https://github.com/WireCatLabs/cli-core/blob/main/docs/dev/RELEASING.md). Read both first. This skill
-orders them for `wa` and adds what is `wa`'s: the six engine packages and the owner's real WhatsApp account.
+orders them for `wa` and adds what is `wa`'s: the six engine packages, the signed report and the owner's real
+WhatsApp account.
 
 ## 0. What changed
 
@@ -33,8 +33,9 @@ A cli-core release can add or change commands without any code here. The `docs/c
 pnpm release:check
 ```
 
-On the release branch, before the version is raised, only "changelog" (an `## Unreleased` section left) may fail.
-Anything else: report it, then fix it in the release pull request. Fix nothing on your own judgement.
+On the release branch, before the version is raised, only "version not on npm" and "changelog" (an `## Unreleased`
+section left) may fail. Anything else: report it, then fix it in the release pull request. Fix nothing on your own
+judgement.
 
 ## 2. The changelog
 
@@ -66,20 +67,7 @@ a document) and rule 7 (nothing on the wire says "whatsapp-cli") are read in the
 - **A command only a live run checks** (the ⛔ rows of `docs/dev/test-matrix.md`) changed: the same skill.
 - **Neither**: say so in the release pull request. No live run.
 
-## 6. The release report
-
-A messenger CLI is released only with a report the owner signed for that commit (`WC-REL-10`). Write
-`docs_ai/releases/whatsapp-cli/<version>.md` in the main checkout's `docs_ai/` (cli-private): headed `# <version>`, what
-changed for a user, the results of steps 1 to 5, and `Commit: <sha>`, the full SHA of `main` after the release pull
-request merged. When the release pull request is not merged yet, write `Commit: TO-FILL (tree must be <tree sha>)` with
-the tree of the up-to-date branch. Leave out the `Signed off:` line: the owner adds it, with the date. **Never write it
-yourself.** Commit and push `docs_ai/`, then tell the owner the path. The owner signs with `bin/sign-release`, which
-pulls `main`, checks its tree against the report, writes the commit and the dated sign-off, and pushes `docs_ai/`.
-`bin/release` refuses to publish unless the report has the line
-`Commit: <HEAD>` and a dated `Signed off: YYYY-MM-DD`; when it only folds the changelog or takes the next free number,
-it carries the report to the new commit itself.
-
-## 7. Raise the version; the owner publishes
+## 6. Raise the version, then write the report
 
 ```sh
 npm view @wirecat/whatsapp-cli version         # what is really published
@@ -89,15 +77,47 @@ pnpm version:sync                              # src/version.ts and the six engi
 pnpm release:check                             # now every check passes
 ```
 
-Commit `chore(release): <version>`, open the pull request and tell the owner. The owner merges it once CI is green,
-then runs, in the main checkout on a clean `main`:
+Commit `chore(release): <version>`, rebase onto `origin/main`, push and open the pull request.
 
-```sh
-gh run list --workflow release.yml --limit 1   # nothing in progress — two releases at once race
-bin/release
+Then write the report: `docs_ai/releases/whatsapp-cli/<version>.md` in the main checkout's `docs_ai/` (cli-private),
+in the shape of the template in `docs_ai/releases/README.md`. It is headed `# <version>` and holds what changed for a
+user and the results of steps 1 to 5. The report is written after the version is raised: `bin/sign-release` compares
+the tree of the merged `main` with the tree the report names, and that tree must already hold the new version. An
+agent never merges, so the commit line is always
+
+```text
+Commit: TO-FILL (tree must be <tree sha>)
 ```
 
-`bin/release` takes the release lock (`WC-REL-3`), refuses within two hours of the last version on npm (`WC-REL-8`),
-runs `release:check` again, takes the next free version if another session published first, and starts
-`release.yml`, which publishes the six engine packages before the CLI ([CONVENTIONS.md](../../CONVENTIONS.md#releases)).
+with `git rev-parse HEAD^{tree}` of the pushed, up-to-date release branch; a squash merge of it keeps that tree.
+Leave out the `Signed off:` line. **Never write it yourself.** Commit and push `docs_ai/`, then tell the owner the
+pull request and the report's path. Anything merged into `main` before the owner signs changes the tree: rebase,
+run `pnpm release:check` again and rewrite the report.
+
+## 7. The owner publishes
+
+The owner merges the pull request once CI is green, then, in the main checkout on a clean `main`:
+
+```sh
+bin/sign-release      # pulls main, checks its tree against the report, writes the commit and the dated sign-off
+bin/release --local   # publishes from this machine
+```
+
+`bin/release` refuses unless the report has `Commit: <HEAD>` and a dated `Signed off:` line (`WC-REL-10`). It takes
+the release lock (`WC-REL-3`), refuses within two hours of the last version on npm (`WC-REL-8`), folds a late
+`## Unreleased` into the dated version (`WC-REL-15`), takes the next free version if another session published first
+(`WC-REL-5`) and runs `release:check` again. When it only folds the changelog or renumbers, it carries the report to
+the new commit itself.
+
+`--local` stays the way to publish until npm's trusted publishing is set on all seven packages (BACKLOG item 6). It
+takes the npm token from `NPM_TOKEN` or the keyring without printing it (`WC-REL-14`), builds the six engine
+packages on this machine, publishes them before the CLI ([CONVENTIONS.md](../../CONVENTIONS.md#releases)), waits
+for npm and pushes the tag. Once trusted publishing is set, the owner runs plain `bin/release` instead: it starts
+`release.yml`, which publishes the validated packages with provenance (`WC-REL-11`, `WC-REL-12`). Before that,
+check that no run is in progress, since two releases at once race:
+
+```sh
+gh run list --workflow release.yml --limit 1
+```
+
 Report the pull request, the report's path and what the live step did.

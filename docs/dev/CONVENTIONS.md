@@ -54,7 +54,9 @@ from developer pages (`WC-DOC-1`), current facts only (`WC-DOC-2`, `WC-DOC-3`), 
 
 ## Releases
 
-`bin/release` publishes; its header says how. The engine adds three things to tg's process:
+`bin/release` publishes; its header says how. Until npm's trusted publishing is set on all seven packages
+(BACKLOG item 6), the owner publishes with `bin/release --local`; `release.yml` has not published yet. The engine
+adds these to tg's process:
 
 - **Seven packages, one version.** `package.json` pins the six engine packages in `optionalDependencies` to its own
   version. `pnpm version:check` (also in CI and `pnpm release:check`) fails when they differ; `pnpm version:sync` and
@@ -64,10 +66,11 @@ from developer pages (`WC-DOC-1`), current facts only (`WC-DOC-2`, `WC-DOC-3`), 
   linux-x64 one and, in a release, packs all six and records their SHA-256 (WC-REL-12). The release's `build` job
   checks the tarballs against that record and builds nothing; `publish` uploads them, skipping any npm already has,
   then the CLI. A CLI published ahead of its engines would install without one: npm skips an optional dependency
-  it cannot find. `bin/release --local` does the same from this machine.
-- **Each engine package ships `THIRD_PARTY_NOTICES`** beside wa's `LICENSE`, copied from `engine/` by
-  `node scripts/engine-packages.mjs build`.
-- **Install tests use packed engines.** Before a release the engine is on no registry, so the install jobs
+  it cannot find. `bin/release --local` keeps the order, engines first, but builds them on this machine: no
+  recorded SHA-256, no `release-checks.yml`, no provenance.
+- **Each engine package ships `THIRD_PARTY_NOTICES`** beside the engine's GPL-3.0-only `LICENSE`, both copied from
+  `engine/` by `node scripts/engine-packages.mjs build`.
+- **Install tests use packed engines.** Before a version is released its engine is on no registry, so the install jobs
   (`install-windows.yml`: Linux, macOS, Windows) build the engine package for their system, install it together with
   the packed CLI, and check that `engineBinary()` finds it and that it prints the version.
   `pnpm engine:packages linux-x64` and `npm pack ./packages/engine-linux-x64` give the same pair locally.
