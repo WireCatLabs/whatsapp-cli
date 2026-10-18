@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 13, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 14, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -155,7 +155,8 @@ createInterface({ input: process.stdin }).on("line", (line) => {
         break
       }
       process.stdout.write(
-        `{"id":${id},"ok":{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known"}}\n`,
+        `{"id":${id},"ok":{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known",` +
+          `"profile":"contact_blacklist","status":"","readreceipts":"none"}}\n`,
       )
       break
     case "participants":

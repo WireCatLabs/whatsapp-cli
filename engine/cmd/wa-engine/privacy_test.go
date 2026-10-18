@@ -13,14 +13,18 @@ func TestPrivacyWireShape(t *testing.T) {
 		Online:       types.PrivacySettingMatchLastSeen,
 		CallAdd:      types.PrivacySettingKnown,
 		ReadReceipts: types.PrivacySettingAll,
+		Profile:      types.PrivacySettingContactBlacklist,
 	})
-	assertJSON(t, got, `{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known"}`)
+	assertJSON(t, got, `{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known",`+
+		`"profile":"contact_blacklist","status":"","readreceipts":"all"}`)
 }
 
 func TestCheckPrivacyRefusesBeforeAnythingIsSent(t *testing.T) {
 	for _, changes := range [][]waPrivacyChange{
 		nil,
-		{{Name: "readreceipts", Value: "none"}},
+		{{Name: "readreceipts", Value: "contacts"}},
+		{{Name: "messages", Value: "all"}},
+		{{Name: "profile", Value: "contact_blacklist"}},
 		{{Name: "last", Value: "none"}, {Name: "calladd", Value: "none"}},
 		{{Name: "online", Value: "contacts"}},
 		{{Name: "groupadd", Value: "none"}},
@@ -30,7 +34,8 @@ func TestCheckPrivacyRefusesBeforeAnythingIsSent(t *testing.T) {
 		}
 	}
 	if err := checkPrivacy([]waPrivacyChange{{Name: "last", Value: "none"}, {Name: "online", Value: "match_last_seen"},
-		{Name: "groupadd", Value: "contacts"}, {Name: "calladd", Value: "known"}}); err != nil {
+		{Name: "groupadd", Value: "contacts"}, {Name: "calladd", Value: "known"}, {Name: "profile", Value: "contacts"},
+		{Name: "status", Value: "none"}, {Name: "readreceipts", Value: "none"}}); err != nil {
 		t.Fatal(err)
 	}
 }

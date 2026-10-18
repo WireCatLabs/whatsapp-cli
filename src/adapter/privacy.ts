@@ -1,42 +1,74 @@
 import { CliError } from "@wirecat/cli-base"
-import type { Audience, PrivacySettings } from "@wirecat/cli-core"
+import type { Audience, PrivacyKey, PrivacySettings, ShownAudience } from "@wirecat/cli-core"
 import type { MessengerAdapter } from "@wirecat/cli-core/cli"
 import type { WhatsAppEngine } from "../engine/contract.js"
 import type { WaPrivacy, WaPrivacyChange } from "../engine/privacy.js"
 
 export type PrivacyAdapter = Required<Pick<MessengerAdapter, "privacy" | "updatePrivacy">>
 
-// whatsmeow lists groupadd none, but Baileys dropped it as refused by WhatsApp (WhiskeySockets/Baileys#966).
-const GROUP_ADD: Partial<Record<Audience, string>> = { everyone: "all", contacts: "contacts" }
-// Baileys' "mute unknown calls" (WhiskeySockets/Baileys#872), the phone's "silence unknown callers"; not checked live.
-const CALL_ADD: Partial<Record<Audience, string>> = { everyone: "all", contacts: "known" }
+/** WhatsApp's settings, in the order its phone app lists them; `findByPhone` and `phoneNumber` it has not. */
+export const PRIVACY_SETTINGS: readonly PrivacyKey[] = [
+  "lastSeen",
+  "hideOnline",
+  "profilePhoto",
+  "about",
+  "readReceipts",
+  "chatInvites",
+  "calls",
+]
 
-const audienceOf = (values: Partial<Record<Audience, string>>, value: string): Audience | undefined =>
-  (Object.keys(values) as Audience[]).find((audience) => values[audience] === value)
+type Values<A extends string> = Partial<Record<A, string>>
+
+const SHOWN: Values<ShownAudience> = {
+  everyone: "all",
+  contacts: "contacts",
+  contacts_except: "contact_blacklist",
+  nobody: "none",
+}
+// whatsmeow lists groupadd none, but Baileys dropped it as refused by WhatsApp (WhiskeySockets/Baileys#966).
+const GROUP_ADD: Values<Audience> = { everyone: "all", contacts: "contacts" }
+// Baileys' "mute unknown calls" (WhiskeySockets/Baileys#872), the phone's "silence unknown callers"; not checked live.
+const CALL_ADD: Values<Audience> = { everyone: "all", contacts: "known" }
+
+const AUDIENCES = [
+  ["lastSeen", "last"],
+  ["profilePhoto", "profile"],
+  ["about", "status"],
+] as const
+
+const audienceOf = <A extends string>(values: Values<A>, value: string): A | undefined =>
+  (Object.keys(values) as A[]).find((audience) => values[audience] === value)
+
+const hidden = (privacy: WaPrivacy) => privacy.last === "none" && privacy.online === "match_last_seen"
 
 /**
- * What WhatsApp has of cli-core's settings. A value cli-core cannot name ("my contacts except…") is left out, never
- * rounded to the nearest. Hidden online means last seen to nobody and online only to those who see last seen.
+ * What WhatsApp has of cli-core's settings. Who may add the account has no "contacts except" in cli-core, so such a
+ * value is left out there, never rounded to the nearest; calls have none in WhatsApp. Hidden online means last seen
+ * to nobody and online only to those who see last seen.
  */
 export const toPrivacy = (privacy: WaPrivacy): PrivacySettings => {
-  const chatInvites = audienceOf(GROUP_ADD, privacy.groupadd)
-  const calls = audienceOf(CALL_ADD, privacy.calladd)
-  return {
-    ...(calls === undefined ? {} : { calls }),
-    ...(chatInvites === undefined ? {} : { chatInvites }),
-    ...(privacy.last === "" || privacy.online === ""
-      ? {}
-      : { hideOnline: privacy.last === "none" && privacy.online === "match_last_seen" }),
+  const settings: PrivacySettings = {
+    calls: audienceOf(CALL_ADD, privacy.calladd),
+    chatInvites: audienceOf(GROUP_ADD, privacy.groupadd),
+    hideOnline: privacy.last === "" || privacy.online === "" ? undefined : hidden(privacy),
+    readReceipts: privacy.readreceipts === "" ? undefined : privacy.readreceipts === "all",
   }
+  for (const [key, name] of AUDIENCES) settings[key] = audienceOf(SHOWN, privacy[name])
+  return Object.fromEntries(Object.entries(settings).filter(([, value]) => value !== undefined))
 }
 
 const refusedUpFront = (change: PrivacySettings): string | undefined => {
-  if (change.findByPhone !== undefined) return "WhatsApp has no setting for who finds the account by its number"
-  if (change.phoneNumber !== undefined) return "WhatsApp has no setting for who sees the account's number"
+  const missing = (Object.keys(change) as PrivacyKey[]).find((key) => !PRIVACY_SETTINGS.includes(key))
+  if (missing) return `WhatsApp has no ${missing} privacy setting`
   if (change.chatInvites === "nobody")
     return "WhatsApp lets everyone or only contacts add the account to groups, not nobody"
   if (change.calls === "nobody")
     return "WhatsApp lets everyone call, or silences callers the account does not know (contacts), not nobody"
+  if (change.hideOnline !== undefined && change.lastSeen !== undefined)
+    return "--hide-online sets who sees last seen too; give --hide-online or --last-seen, not both"
+  for (const [key] of AUDIENCES)
+    if (change[key] === "contacts_except")
+      return "contacts_except is kept on the phone with its list of exceptions; wa only shows it"
   return undefined
 }
 
@@ -46,13 +78,18 @@ const refusedUpFront = (change: PrivacySettings): string | undefined => {
  */
 const changesFor = (change: PrivacySettings, now: WaPrivacy): WaPrivacyChange[] => {
   const wanted: WaPrivacyChange[] = []
+  for (const [key, name] of AUDIENCES) {
+    const audience = change[key]
+    if (audience !== undefined) wanted.push({ name, value: SHOWN[audience] as string })
+  }
+  if (change.readReceipts !== undefined)
+    wanted.push({ name: "readreceipts", value: change.readReceipts ? "all" : "none" })
   if (change.chatInvites !== undefined)
     wanted.push({ name: "groupadd", value: GROUP_ADD[change.chatInvites] as string })
   if (change.calls !== undefined) wanted.push({ name: "calladd", value: CALL_ADD[change.calls] as string })
   if (change.hideOnline === true)
     wanted.push({ name: "last", value: "none" }, { name: "online", value: "match_last_seen" })
-  if (change.hideOnline === false && toPrivacy(now).hideOnline === true)
-    wanted.push({ name: "last", value: "contacts" })
+  if (change.hideOnline === false && hidden(now)) wanted.push({ name: "last", value: "contacts" })
   return wanted.filter(({ name, value }) => now[name] !== value)
 }
 

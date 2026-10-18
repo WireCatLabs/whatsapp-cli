@@ -27,6 +27,8 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
+`account privacy set` has WhatsApp's settings only (last seen, online, photo, about, read receipts, groups, calls);
+`--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.
 Not built yet: `messages pin|unpin`, several files in one message, deleting for the owner alone,
 `chats inspect`, removing a group's photo (`chats update --photo` sets one, a square JPEG of 190 to
 720 pixels a side), `account update`, `account sessions`, `chats create --channel`. WhatsApp has no

@@ -4,17 +4,18 @@ import { describe, expect, it } from "vitest"
 import type { WaPrivacy } from "./engine/privacy.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { DEFAULT_PRIVACY } from "./testing/fake-privacy.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 
-const wa = async (argv: string[], privacy?: WaPrivacy) => {
+const wa = async (argv: string[], privacy: Partial<WaPrivacy> = {}) => {
   let engine: FakeEngine | undefined
   const streams = captureStreams()
   const code = await run(argv, {
     streams,
     tty: false,
     engine: () => {
-      engine = fakeEngine(seed, privacy ? { privacy } : {})
+      engine = fakeEngine(seed, { privacy: { ...DEFAULT_PRIVACY, ...privacy } })
       return engine
     },
   })
@@ -23,31 +24,47 @@ const wa = async (argv: string[], privacy?: WaPrivacy) => {
   return {
     code,
     item: code === 0 ? JSON.parse(stdout).item : undefined,
-    error: code === 0 ? undefined : JSON.parse(stderr.slice(stderr.indexOf('{"error"'))).error,
+    error: stderr.includes('{"error"') ? JSON.parse(stderr.slice(stderr.indexOf('{"error"'))).error : undefined,
     sent: engine?.privacyChanges ?? [],
   }
 }
 
 describe("wa account privacy", () => {
-  it("`show` reads WhatsApp's settings under cli-core's names, and leaves out what WhatsApp has no setting for", async () => {
+  it("`show` reads WhatsApp's settings under cli-core's names", async () => {
     const { code, item } = await wa(["privacy", "account", "privacy", "show", "--json"], {
       groupadd: "contacts",
       last: "none",
       online: "match_last_seen",
       calladd: "known",
+      profile: "contact_blacklist",
+      status: "contacts",
+      readreceipts: "none",
     })
     expect(code).toBe(0)
-    expect(item).toEqual({ calls: "contacts", chat_invites: "contacts", hide_online: true })
+    expect(item).toEqual({
+      calls: "contacts",
+      chat_invites: "contacts",
+      hide_online: true,
+      read_receipts: false,
+      last_seen: "nobody",
+      profile_photo: "contacts_except",
+      about: "contacts",
+    })
   })
 
-  it("`show` leaves out a setting kept with exceptions, rather than rounding it", async () => {
+  it("`show` leaves out who may add the account when kept with exceptions, and what WhatsApp did not send", async () => {
     const { item } = await wa(["privacy", "account", "privacy", "show", "--json"], {
       groupadd: "contact_blacklist",
       last: "contact_blacklist",
-      online: "all",
-      calladd: "all",
+      status: "",
+      readreceipts: "",
     })
-    expect(item).toEqual({ calls: "everyone", hide_online: false })
+    expect(item).toEqual({
+      calls: "everyone",
+      hide_online: false,
+      last_seen: "contacts_except",
+      profile_photo: "everyone",
+    })
   })
 
   it("`set` sends only the settings named, under WhatsApp's names, and answers them all", async () => {
@@ -60,19 +77,46 @@ describe("wa account privacy", () => {
       "contacts",
       "--hide-online",
       "on",
+      "--profile-photo",
+      "nobody",
+      "--about-text",
+      "contacts",
+      "--read-receipts",
+      "off",
       "--json",
     ])
     expect(code).toBe(0)
     expect(sent).toEqual([
+      { name: "profile", value: "none" },
+      { name: "status", value: "contacts" },
+      { name: "readreceipts", value: "none" },
       { name: "groupadd", value: "contacts" },
       { name: "last", value: "none" },
       { name: "online", value: "match_last_seen" },
     ])
-    expect(item.privacy).toEqual({ calls: "everyone", chat_invites: "contacts", hide_online: true })
+    expect(item.privacy).toEqual({
+      calls: "everyone",
+      chat_invites: "contacts",
+      hide_online: true,
+      read_receipts: false,
+      last_seen: "nobody",
+      profile_photo: "nobody",
+      about: "contacts",
+    })
+  })
+
+  it("`set --last-seen` changes last seen alone, which also ends a hidden online", async () => {
+    const hidden = { last: "none", online: "match_last_seen" }
+    const { item, sent } = await wa(
+      ["privacy", "account", "privacy", "set", "--last-seen", "everyone", "--json"],
+      hidden,
+    )
+    expect(sent).toEqual([{ name: "last", value: "all" }])
+    expect(item.privacy).toMatchObject({ last_seen: "everyone", hide_online: false })
   })
 
   it("`set --hide-online off` shows last seen to contacts, and changes nothing already so", async () => {
-    const hidden = { groupadd: "all", last: "none", online: "match_last_seen", calladd: "all" }
+    const hidden = { last: "none", online: "match_last_seen" }
     const shown = await wa(["privacy", "account", "privacy", "set", "--hide-online", "off", "--json"], hidden)
     expect(shown.sent).toEqual([{ name: "last", value: "contacts" }])
     expect(shown.item.privacy.hide_online).toBe(false)
@@ -81,20 +125,25 @@ describe("wa account privacy", () => {
     expect(again.code).toBe(0)
     expect(again.sent).toEqual([])
 
-    const onlineShown = { groupadd: "all", last: "none", online: "all", calladd: "all" }
+    const onlineShown = { last: "none", online: "all" }
     expect((await wa(["privacy", "account", "privacy", "set", "--hide-online", "off"], onlineShown)).sent).toEqual([])
   })
 
   it("refuses what WhatsApp has no setting for before sending anything", async () => {
     for (const option of [
-      ["--find-by-phone", "contacts"],
-      ["--phone-number", "nobody"],
       ["--calls", "nobody"],
       ["--chat-invites", "nobody"],
+      ["--hide-online", "on", "--last-seen", "contacts"],
+      ["--profile-photo", "contacts_except"],
     ]) {
       const { code, error, sent } = await wa(["privacy", "account", "privacy", "set", ...option, "--json"])
       expect(code).toBe(2)
       expect(error.code).toBe("validation_error")
+      expect(sent).toEqual([])
+    }
+    for (const option of ["--find-by-phone", "--phone-number"]) {
+      const { code, sent } = await wa(["privacy", "account", "privacy", "set", option, "contacts", "--json"])
+      expect(code).toBe(2)
       expect(sent).toEqual([])
     }
   })

@@ -105,21 +105,34 @@ missed until that person votes again.
 ## Privacy
 
 ```sh
-wa personal account privacy show                         # who may add you to groups, whose calls ring, online hidden
-wa personal account privacy set --chat-invites contacts  # only contacts add you to groups; the rest stays
+wa personal account privacy show                         # who sees last seen, the photo, about; receipts, groups, calls
+wa personal account privacy set --last-seen contacts     # only contacts see when you were last online; the rest stays
 wa personal account privacy set --hide-online on         # last seen to nobody, online only to those who see it
+wa personal account privacy set --read-receipts off      # no read receipts sent, and none shown to you
 ```
 
 `show` asks WhatsApp each time, not a copy kept on this computer. `set` changes only what you name and
 answers every setting as it now is; it changes your account on every device, and goes through the profile's
 permissions like a send (`permissions.account.privacy.set`). It sends one request per setting: if WhatsApp fails
 one, the settings sent before it stay changed and the error says so; run `show` to see where things are.
-`--calls contacts` is meant as the phone's "silence unknown callers" (calls from people you do not know arrive
-without ringing); this is not yet checked on a real account. WhatsApp has no `--calls nobody`, and is reported to
-refuse `--chat-invites nobody`, so `wa` refuses both. `--hide-online off` shows last seen to your contacts, since
-`wa` does not know the setting from before it was hidden. WhatsApp has no setting for who finds you by your number
-or who sees it, so `--find-by-phone` and `--phone-number` are refused. A setting kept with exceptions on the phone ("my contacts except…") is left out of
-`show`, and `set` replaces it. Who sees read receipts, the profile photo and the about text is not in `wa` yet; set it on the phone.
+
+- **`--last-seen`, `--profile-photo` and `--about-text`** take everyone, contacts or nobody. A setting kept on the
+  phone as "my contacts except…" shows as `contacts_except`; `set` cannot choose it, since the list of exceptions
+  stays on the phone, and setting another value replaces it.
+- **`--hide-online on`** sets last seen to nobody and online to "same as last seen", so nobody sees either.
+  `--hide-online off` shows last seen to your contacts, since `wa` does not know the setting from before it was
+  hidden; `--last-seen everyone` instead chooses who. Give one of the two, not both.
+- **`--read-receipts off`** works both ways, as on the phone: others no longer see when you read their messages,
+  and you no longer see when they read yours. `chats mark-read` then marks a chat read on your own devices only
+  (whatsmeow sends a read receipt only to your devices while receipts are off; read in its code, not checked on a
+  real account).
+- **`--chat-invites`** takes everyone or contacts: WhatsApp is reported to refuse nobody, so `wa` refuses it. A
+  setting kept with exceptions on the phone is left out of `show`.
+- **`--calls contacts`** is meant as the phone's "silence unknown callers" (calls from people you do not know arrive
+  without ringing); this is not yet checked on a real account. WhatsApp has no `--calls nobody`, so `wa` refuses it.
+
+WhatsApp has no setting for who finds you by your number or who sees it, so `wa` does not offer `--find-by-phone` or
+`--phone-number`.
 
 ## Send, save and forward files
 

@@ -196,7 +196,15 @@ describe("privacy wire contracts", () => {
   it("validates the privacy answer the Go engine writes, for a read and a change", async () => {
     const engine = await stub("ok")
     try {
-      const written = { groupadd: "contacts", last: "none", online: "match_last_seen", calladd: "known" }
+      const written = {
+        groupadd: "contacts",
+        last: "none",
+        online: "match_last_seen",
+        calladd: "known",
+        profile: "contact_blacklist",
+        status: "",
+        readreceipts: "none",
+      }
       expect(await engine.privacy()).toEqual(written)
       expect(await engine.setPrivacy([{ name: "calladd", value: "known" }])).toEqual(written)
     } finally {

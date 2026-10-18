@@ -186,11 +186,13 @@ wa account privacy set [options]
 
 | Option | What it does |
 |---|---|
-| `--find-by-phone <who>` | who finds the account by its number: everyone, contacts or nobody. |
-| `--phone-number <who>` | who sees the number: everyone, contacts or nobody. |
-| `--calls <who>` | whose calls ring: everyone, contacts or nobody. |
-| `--chat-invites <who>` | who may add the account to groups and channels: everyone, contacts or nobody. |
+| `--last-seen <who>` | who sees when the account was last online: everyone, contacts or nobody. |
 | `--hide-online <on\|off>` | hide online status and last seen. |
+| `--profile-photo <who>` | who sees the profile photo: everyone, contacts or nobody. |
+| `--about-text <who>` | who sees the about text: everyone, contacts or nobody. |
+| `--read-receipts <on\|off>` | send read receipts. |
+| `--chat-invites <who>` | who may add the account to groups and channels: everyone, contacts or nobody. |
+| `--calls <who>` | whose calls ring: everyone, contacts or nobody. |
 
 ## `wa chats`
 
