@@ -19,6 +19,8 @@ session.db*
 
 # Plans, research, rulings and live results: the private repository WireCatLabs/cli-private, linked or cloned here.
 /docs_ai
+/CLEANUP.md
+/HANDOFF.md
 .claude/settings.local.json
 .claude/worktrees/
 /.worktrees/
