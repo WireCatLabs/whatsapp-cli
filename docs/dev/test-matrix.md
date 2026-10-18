@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**215 ✅ · 522 ⛔ · 0 ❌** — 231 commands, 506 options.
+**219 ✅ · 522 ⛔ · 0 ❌** — 233 commands, 508 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -109,6 +109,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats mute` |  | ✅ |  |
 | `chats mute` | `--until` | ✅ |  |
 | `chats unmute` |  | ✅ |  |
+| `chats delete` |  | ✅ |  |
+| `chats delete` | `--allow-dangerous` | ✅ |  |
+| `chats clear` |  | ✅ |  |
+| `chats clear` | `--allow-dangerous` | ✅ |  |
 | `contacts list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts list` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts list` | `--page` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |

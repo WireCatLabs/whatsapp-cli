@@ -71,6 +71,8 @@ func (e *engine) dispatchSettings(req request) (any, bool, error) {
 	case "updateProfile":
 		value, err := e.updateProfile(req)
 		return value, true, err
+	case "deleteChat", "clearChat":
+		return nil, true, e.deleteChat(req)
 	}
 	return nil, false, nil
 }

@@ -1,20 +1,26 @@
 import { CliError } from "@wirecat/cli-base"
-import type { MessengerAdapter, ProfileChange } from "@wirecat/cli-core/cli"
-import { EngineError, type WhatsAppEngine } from "../engine/contract.js"
+import type { Message } from "@wirecat/cli-core"
+import type { MessengerAdapter, ProfileChange, StoredMessages } from "@wirecat/cli-core/cli"
+import { EngineError, type WaAnchor, type WaKey, type WhatsAppEngine } from "../engine/contract.js"
 import type { WaProfileChange } from "../engine/settings.js"
 import type { Words } from "./checks.js"
 import { toAccount } from "./map.js"
 
 /** The account's own settings, which WhatsApp syncs to its other devices, and the profile everyone sees. */
-export type SettingsAdapter = Required<Pick<MessengerAdapter, "mute" | "updateProfile">>
+export type SettingsAdapter = Required<Pick<MessengerAdapter, "mute" | "updateProfile" | "deleteChat" | "clearHistory">>
 
 export interface SettingsDeps {
   engine: WhatsAppEngine
   translated: <T>(work: Promise<T>) => Promise<T>
   words: Words
+  stored: StoredMessages
+  keyOf: (chatId: string, message: Message) => WaKey
 }
 
-export const settingsAdapter = ({ engine, translated, words }: SettingsDeps): SettingsAdapter => {
+// `anchor` gives the newest message sent at a time or before; this one is later than any message's.
+const AFTER_EVERY_MESSAGE = "9999-12-31T23:59:59.999Z"
+
+export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: SettingsDeps): SettingsAdapter => {
   // The engine cannot name the profile, so the command that brings the keys is named here. whatsmeow refuses before
   // anything leaves, so a retry is safe (WC-OUT-20).
   const keyed = <T>(work: Promise<T>): Promise<T> =>
@@ -29,9 +35,28 @@ export const settingsAdapter = ({ engine, translated, words }: SettingsDeps): Se
       }),
     )
 
+  // WhatsApp deletes up to a message the patch names, either side's; a guessed one makes the phone drop the patch
+  // without a word, so a chat the store holds nothing of is refused.
+  const newest = async (chatId: string): Promise<WaAnchor> => {
+    const last = await stored.anchor(chatId, AFTER_EVERY_MESSAGE)
+    if (!last)
+      throw new CliError(
+        "not_found",
+        "nothing of this chat is in the local store, and WhatsApp needs its newest message to know what to delete; " +
+          `${words("serve")} keeps the store filled`,
+      )
+    return { ...keyOf(chatId, last), timestamp: last.timestamp }
+  }
+
   return {
     mute: async (chatId, until) => {
       await keyed(engine.mute(chatId, until))
+    },
+    deleteChat: async (chatId) => {
+      await keyed(engine.deleteChat(await newest(chatId)))
+    },
+    clearHistory: async (chatId) => {
+      await keyed(engine.clearChat(await newest(chatId)))
     },
     updateProfile: async (change) => toAccount(await keyed(engine.updateProfile(toWaProfile(change)))),
   }

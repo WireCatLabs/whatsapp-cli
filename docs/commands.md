@@ -815,6 +815,42 @@ wa chats unmute <chat>
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 
+### `wa chats delete`
+
+delete a chat from this account; the others in it keep it and its messages
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats delete <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--allow-dangerous` | go ahead without the question an ask level puts before a deletion. |
+
+### `wa chats clear`
+
+delete every message in a chat for this account; the others in it keep theirs
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats clear <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--allow-dangerous` | go ahead without the question an ask level puts before a deletion. |
+
 ## `wa contacts`
 
 people this account has a one-to-one chat with

@@ -13,7 +13,7 @@ var writes = map[string]bool{
 	"read": true, "createPoll": true, "vote": true, "pin": true, "unpin": true, "createGroup": true, "join": true,
 	"leave": true, "updateGroup": true, "resetLink": true, "setGroupPhoto": true, "participants": true,
 	"answerRequest": true, "block": true, "setPrivacy": true, "logout": true, "mute": true,
-	"updateProfile": true,
+	"updateProfile": true, "deleteChat": true, "clearChat": true,
 }
 
 var cutWrite = &refusal{failure: failure{"outcome_unknown",

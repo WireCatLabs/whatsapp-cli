@@ -7,11 +7,11 @@ import {
   engineError,
   engineEvent,
   hello,
+  keyFields,
   type LoginCode,
   loginCode,
   PROTOCOL,
   type WaAccount,
-  type WaKey,
   type WaQuote,
   type WhatsAppEngine,
   waAccount,
@@ -71,6 +71,8 @@ const WRITES = new Set([
   "setPrivacy",
   "mute",
   "updateProfile",
+  "deleteChat",
+  "clearChat",
   "logout",
 ])
 
@@ -297,13 +299,6 @@ const replyFields = (replyTo: string | undefined, quoted: WaQuote | undefined) =
           ...(quoted.sender === null ? {} : { sender: quoted.sender }),
         },
       }),
-})
-
-const keyFields = ({ chat, id, fromMe, sender }: WaKey) => ({
-  chat,
-  message: id,
-  fromMe,
-  ...(sender === null ? {} : { sender }),
 })
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms).unref())

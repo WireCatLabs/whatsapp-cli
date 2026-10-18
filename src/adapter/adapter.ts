@@ -476,6 +476,6 @@ export const whatsAppAdapter = (
     ...pollAdapter({ engine, stored, held, keyOf, translated }),
     ...privacyAdapter({ engine, translated }),
     ...pinAdapter({ engine, held, keyOf, translated }),
-    ...settingsAdapter({ engine, translated, words }),
+    ...settingsAdapter({ engine, translated, words, stored, keyOf }),
   }
 }
