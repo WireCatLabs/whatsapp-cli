@@ -32,6 +32,16 @@ func TestALiveReadOfAGroupInNoCommunitySaysItHasNoParent(t *testing.T) {
 		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"parent":null}`)
 }
 
+func TestTheJoinedGroupsListLeavesAMissingParentUnsaid(t *testing.T) {
+	assertJSON(t, listedLinked(testConverter().group(groupInfo(), nil).Chat), `{"jid":"120363000000000001@g.us",`+
+		`"name":"Book club","kind":"group","unread":null,"lastMessageAt":null,"participants":3}`)
+	info := groupInfo()
+	info.LinkedParentJID = community
+	if got := listedLinked(testConverter().group(info, nil).Chat).Parent; got.jid != community.String() {
+		t.Errorf("listed parent = %v, want %v", got, community)
+	}
+}
+
 func TestAPushedGroupInNoCommunityLeavesTheParentUnsaid(t *testing.T) {
 	assertJSON(t, pushedChats(&waHistorySync.Conversation{ID: proto.String(group.String())})[0],
 		`{"jid":"120363000000000001@g.us","name":null,"kind":"group","unread":0,`+

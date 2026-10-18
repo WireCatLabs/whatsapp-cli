@@ -10,7 +10,8 @@ import (
 // linked says where a group stands in a WhatsApp community: a group in one names it as its parent, and the community
 // itself is marked. mautrix-whatsapp reads the same two fields to make a space and its rooms
 // (pkg/connector/chatinfo.go, wrapGroupInfo).
-// A live read is the one source that says a group is in no community, so only it sends the parent as null.
+// A live read of one group is the one source that says a group is in no community, so only it sends the parent as
+// null.
 func linked(chat waChat, info *types.GroupInfo) waChat {
 	chat.Parent = parentField{said: true}
 	return inCommunity(chat, info.LinkedParentJID, info.IsParent)
@@ -27,6 +28,16 @@ func pushedLinked(chat waChat, raw types.JID, conv *waHistorySync.Conversation) 
 		parent = id
 	}
 	return inCommunity(chat, parent, conv.GetIsParentGroup())
+}
+
+// listedLinked leaves out a parent the joined-groups list does not name: that list asks WhatsApp for members and
+// descriptions only, so its silence is no proof, and mautrix-whatsapp too clears a parent only on an unlink
+// notification (pkg/connector/chatinfo.go, wrapGroupInfoChange).
+func listedLinked(chat waChat) waChat {
+	if chat.Parent.jid == "" {
+		chat.Parent = parentField{}
+	}
+	return chat
 }
 
 func inCommunity(chat waChat, parent types.JID, isParent bool) waChat {
