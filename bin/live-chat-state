@@ -19,14 +19,18 @@ set -eu
 profile=${1:-}
 need_profile "$profile"
 shift
+usage="usage: $(basename -- "$0") <profile> [--sticker <file.webp>]"
+[ $# -le 2 ] || die "too many arguments — $usage"
 sticker_file=""
 case "${1:-}" in
   "") ;;
   --sticker) sticker_file=${2:-} && [ -n "$sticker_file" ] || die "--sticker needs a .webp file" ;;
-  *) die "unknown argument — usage: $(basename -- "$0") <profile> [--sticker <file.webp>]" ;;
+  *) die "unknown argument — $usage" ;;
 esac
 if [ -n "$sticker_file" ]; then
   [ -f "$sticker_file" ] || die "no file at $sticker_file"
+  # A name that starts with a dash would be read by wa as an option.
+  case "$sticker_file" in -*) sticker_file=./$sticker_file ;; esac
   case "$sticker_file" in
     *.webp | *.WEBP) ;;
     *) die "the sticker must be a .webp file" ;;
