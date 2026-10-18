@@ -139,7 +139,7 @@ Not built yet:
 - who joined and left a group, as WhatsApp records it: `chats events` reads the local store, which does not keep
   them yet, so its empty list does not mean nobody joined (`chats members history` shows the changes between member
   fetches);
-- a group's photo, and communities;
+- removing a group's photo (`chats update --photo` sets one), and communities;
 - where an invite link leads, without joining (`chats inspect`);
 - your own name, about line or photo (`account update`);
 - the list of linked devices, and ending the others (`account sessions`);
