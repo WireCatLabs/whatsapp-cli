@@ -44,6 +44,10 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
 - **`serve` fills the store.** It runs the adapter's `feed` (history pushes) beside `watch` (live messages) on one
   connection, and cli-core saves each batch.
 - **Writes connect.** `messages send` opens the engine, sends, and closes it.
+- **Every connection saves what arrives.** WhatsApp hands a message queued while nothing was connected to the next
+  connection once, so a one-shot command keeps it too: the adapter's `listen` (cli-core's `PassiveUpdates`) hands on
+  what `watch` would, without connecting, and cli-core saves it before the command exits. A history push such a
+  command receives is not saved; whatsmeow has already acknowledged it.
 - **Older history is asked of the phone.** The adapter's `history` (cli-core's `ServerReads.history`, what
   `messages sync` pages through) sends the engine's `older` request, counting back from a stored message: the oldest
   one of the chat on the first page, then the newest stored at or before the time the last page reached. Its

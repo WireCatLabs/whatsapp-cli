@@ -214,6 +214,39 @@ describe("whatsAppAdapter", () => {
     await expect(feeding).rejects.toMatchObject({ code: "provider_unavailable", details: { reason: "engine.stopped" } })
   })
 
+  it("hands on what a one-shot connection received while it was away, without connecting", async () => {
+    const engine = fakeEngine(seed)
+    let connects = 0
+    engine.ready = async () => {
+      connects += 1
+    }
+    engine.push({ event: "message", message: incoming() })
+    const controller = new AbortController()
+    const events: MessageEvent[] = []
+    const listened = whatsAppAdapter(engine).listen((event) => events.push(event), controller.signal)
+    engine.push({ event: "delete", chat: seed.busy, id: "3EB0000000000000000ABD" })
+    controller.abort()
+    await listened
+    expect(connects).toBe(0)
+    expect(events.map((event) => event.event)).toEqual(["message", "delete"])
+  })
+
+  it("ends listen quietly when this process logged the device out", async () => {
+    const engine = fakeEngine(seed)
+    const adapter = whatsAppAdapter(engine)
+    const listened = adapter.listen(() => {}, new AbortController().signal)
+    await adapter.logout()
+    engine.push({ event: "connection", state: "logged_out" })
+    await expect(listened).resolves.toBeUndefined()
+  })
+
+  it("ends listen with why when the phone logged the device out", async () => {
+    const engine = fakeEngine(seed)
+    const listened = whatsAppAdapter(engine).listen(() => {}, new AbortController().signal)
+    engine.push({ event: "connection", state: "logged_out" })
+    await expect(listened).rejects.toMatchObject({ code: "authentication_error" })
+  })
+
   it("maps archived and muted chats, and leaves them out when WhatsApp does not say", () => {
     const chat = {
       jid: seed.busy,

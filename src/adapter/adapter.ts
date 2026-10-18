@@ -21,6 +21,7 @@ import type {
   MessageReactions,
   MessageStars,
   MessengerCore,
+  PassiveUpdates,
   PushedHistory,
   ReadState,
   RemoteFile,
@@ -53,6 +54,7 @@ import { AFTER_EVERY_MESSAGE, type SettingsAdapter, settingsAdapter, settingsWri
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
+  PassiveUpdates &
   PushedHistory &
   Pick<MessageEditing, "edit" | "delete" | "forward"> &
   Pick<MessageMedia, "download"> &
@@ -143,10 +145,11 @@ const ends = (error: unknown) =>
   (error instanceof CliError && ENDING.has(error.details.reason))
 
 /**
- * Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why. Events are handled one at
- * a time in arrival order. One whose handling fails is skipped and the next still runs: a stalled queue would keep every
- * later push out of the store until a restart. The first skip is said on `warn` at once, kind and code only, never its
- * content; `drained` settles when the handling caught up and then says how many were skipped if there were more.
+ * Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why, unless `expected` says this
+ * process asked for that end. Events are handled one at a time in arrival order. One whose handling fails is skipped
+ * and the next still runs: a stalled queue would keep every later push out of the store until a restart. The first skip
+ * is said on `warn` at once, kind and code only, never its content; `drained` settles when the handling caught up and
+ * then says how many were skipped if there were more.
  */
 const listening = (
   engine: WhatsAppEngine,
@@ -155,6 +158,7 @@ const listening = (
   words: Words,
   warn: (message: string) => void,
   handle: (event: EngineEvent) => void | Promise<void>,
+  expected: (state: ConnectionState) => boolean = () => false,
 ): { done: Promise<void>; stop: () => void; drained: () => Promise<void> } => {
   let stop = () => {}
   let queue = Promise.resolve()
@@ -171,6 +175,7 @@ const listening = (
       )
     }
     const unlisten = engine.listen(kinds, (event) => {
+      if (event.event === "connection" && expected(event.state)) return resolve()
       const ended = event.event === "connection" ? ENDED[event.state]?.(words, event.until) : undefined
       if (ended) reject(ended)
       else queue = queue.then(() => handle(event)).catch((error: unknown) => failed(event.event, error))
@@ -260,6 +265,60 @@ export const whatsAppAdapter = (
         `that message is not in the local store, and WhatsApp needs its sender to address it; ${words("serve")} keeps the store filled`,
       )
     return message
+  }
+  // Set by `session end`: WhatsApp then ends the connection as logged out, which is the answer, not a failure.
+  let loggingOut = false
+  const handingOn = (
+    onEvent: (event: MessageEvent) => void,
+    signal: AbortSignal,
+    expected?: (state: ConnectionState) => boolean,
+  ) => {
+    const handed = async (event: EngineEvent) => {
+      if (event.event === "message") onEvent({ event: "message", message: hit(toMessage(event.message)) })
+      else if (event.event === "edit") onEvent({ event: "edit", message: hit(toMessage(event.message)) })
+      else if (event.event === "delete")
+        onEvent({
+          event: "delete",
+          chatId: event.chat,
+          chatTitle: null,
+          messageId: event.id,
+        })
+      else if (event.event === "star")
+        onEvent({
+          event: "star",
+          chatId: event.chat,
+          chatTitle: null,
+          messageId: event.id,
+          starred: event.starred,
+        })
+      else if (event.event === "vote") {
+        const vote = await toVoteEvent(event.vote, stored)
+        if (vote) onEvent(vote)
+      } else if (event.event === "chat_event")
+        onEvent({
+          event: "chat_event",
+          chatId: event.change.chat,
+          chatTitle: null,
+          change: toChatEvent(event.change),
+        })
+    }
+    // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
+    const live = listening(
+      engine,
+      ["message", "edit", "delete", "vote", "star", "chat_event", "connection"],
+      signal,
+      words,
+      warn,
+      handed,
+      expected,
+    )
+    return {
+      done: live.done,
+      stop: async () => {
+        live.stop()
+        await live.drained()
+      },
+    }
   }
   // A push after a re-link carries the path the file had then, and the store may hold the one the phone uploaded
   // again. cli-core keeps a stored ref only when the pushed file has none, so the pushed one is left off when it names
@@ -528,56 +587,32 @@ export const whatsAppAdapter = (
       return { items, hasMore: older.more }
     },
 
-    logout: () => translated(engine.logout()),
+    logout: () => {
+      loggingOut = true
+      return translated(engine.logout())
+    },
 
     close: () => engine.close(),
 
     watch: async (onEvent: (event: MessageEvent) => void, signal: AbortSignal, onReady?: () => void) => {
-      const handed = async (event: EngineEvent) => {
-        if (event.event === "message") onEvent({ event: "message", message: hit(toMessage(event.message)) })
-        else if (event.event === "edit") onEvent({ event: "edit", message: hit(toMessage(event.message)) })
-        else if (event.event === "delete")
-          onEvent({
-            event: "delete",
-            chatId: event.chat,
-            chatTitle: null,
-            messageId: event.id,
-          })
-        else if (event.event === "star")
-          onEvent({
-            event: "star",
-            chatId: event.chat,
-            chatTitle: null,
-            messageId: event.id,
-            starred: event.starred,
-          })
-        else if (event.event === "vote") {
-          const vote = await toVoteEvent(event.vote, stored)
-          if (vote) onEvent(vote)
-        } else if (event.event === "chat_event")
-          onEvent({
-            event: "chat_event",
-            chatId: event.change.chat,
-            chatTitle: null,
-            change: toChatEvent(event.change),
-          })
-      }
-      // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
-      const live = listening(
-        engine,
-        ["message", "edit", "delete", "vote", "star", "chat_event", "connection"],
-        signal,
-        words,
-        warn,
-        handed,
-      )
+      const live = handingOn(onEvent, signal)
       try {
         await translated(engine.ready(signal))
         if (!signal.aborted) onReady?.()
         await live.done
       } finally {
-        live.stop()
-        await live.drained()
+        await live.stop()
+      }
+    },
+
+    // What a one-shot connection receives: WhatsApp hands a queued message to a linked device once, so it is saved
+    // here or lost. Never connects; the command's own request does that.
+    listen: async (onEvent, signal) => {
+      const live = handingOn(onEvent, signal, (state) => state === "logged_out" && loggingOut)
+      try {
+        await live.done
+      } finally {
+        await live.stop()
       }
     },
 
