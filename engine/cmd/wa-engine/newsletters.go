@@ -310,3 +310,15 @@ func (e *engine) unfollowChannel(raw string) error {
 	e.mu.Unlock()
 	return nil
 }
+
+// asChannelPost makes a post the account sent read as the posts read back from the channel: the channel is the sender,
+// and no post is the account's own, since a read cannot tell and would turn the stored copy back.
+func (e *engine) asChannelPost(message *waMessage, jid types.JID, serverID types.MessageServerID) {
+	message.FromMe = false
+	message.Sender = str(jid.String())
+	message.SenderName = e.channelName(jid)
+	if serverID != 0 {
+		id := int64(serverID)
+		message.ServerID = &id
+	}
+}

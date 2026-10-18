@@ -261,6 +261,9 @@ func (e *engine) send(req request) (*waMessage, error) {
 		message.Sender = &me.JID
 		message.SenderName = me.Name
 	}
+	if to.Server == types.NewsletterServer {
+		e.asChannelPost(message, to, sent.ServerID)
+	}
 	e.phones.note(e.ctx, message.Chat)
 	return message, nil
 }

@@ -1,10 +1,11 @@
 import { CliError } from "@wirecat/cli-base"
 import type { Chat, GroupCard, Message, Page } from "@wirecat/cli-core"
-import type { StoredMessages } from "@wirecat/cli-core/cli"
+import type { MessageEditing, StoredMessages } from "@wirecat/cli-core/cli"
 import { CHANNEL_PAGE_MAX, type WaChannel } from "../engine/channels.js"
 import type { WhatsAppEngine } from "../engine/contract.js"
 import type { GroupAdapter } from "./groups.js"
 import { toChat, toMessage } from "./map.js"
+import type { PollAdapter } from "./polls.js"
 
 /** WhatsApp channels are whatsmeow's newsletters, and their ids end so. */
 export const isChannel = (id: string) => id.endsWith("@newsletter")
@@ -59,6 +60,23 @@ export const channelHistory = async (
   return { items, hasMore: page.more }
 }
 
+/**
+ * Only a channel's owner and admins post, and WhatsApp says the account's role only when asked, so a post asks first.
+ * Text only so far: a channel's files are uploaded unencrypted, which the engine does not do yet.
+ */
+export const refuseChannelPost = async (
+  engine: WhatsAppEngine,
+  translated: <T>(work: Promise<T>) => Promise<T>,
+  chatId: string,
+  { file, reply }: { file: boolean; reply: boolean },
+): Promise<void> => {
+  if (file) throw new CliError("validation_error", "wa posts text only to a WhatsApp channel so far")
+  if (reply) throw new CliError("validation_error", "a WhatsApp channel post cannot be a reply")
+  const { role } = await translated(engine.channel(chatId))
+  if (role !== "owner" && role !== "admin")
+    throw new CliError("permission_error", "only a channel's owner and admins may post in it")
+}
+
 export interface ChannelDeps {
   engine: WhatsAppEngine
   resolve: (reference: string) => Promise<Chat>
@@ -81,5 +99,37 @@ export const channelAdapter = ({
     if (!isChannel(id)) return groups.leave(chat)
     await translated(engine.unfollowChannel(id))
     return { chatId: id }
+  },
+})
+
+type ChannelWrites = Pick<MessageEditing, "edit" | "delete" | "forward"> & Pick<PollAdapter, "createPoll" | "vote">
+
+const NOT_IN_CHANNELS = () =>
+  new CliError("validation_error", "wa does not do that in a WhatsApp channel yet; it posts text only")
+
+/**
+ * The writes wa has not built for a channel are refused before anything is sent: whatsmeow would send each of them
+ * to a channel as a post, and WhatsApp addresses a post's edit, deletion and votes by its server id.
+ */
+export const channelWrites = ({ edit, delete: remove, forward, createPoll, vote }: ChannelWrites): ChannelWrites => ({
+  edit: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return edit(chatId, ...rest)
+  },
+  delete: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return remove(chatId, ...rest)
+  },
+  forward: async (fromChatId, messageId, toChatId, options) => {
+    if (isChannel(toChatId)) throw NOT_IN_CHANNELS()
+    return forward(fromChatId, messageId, toChatId, options)
+  },
+  createPoll: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return createPoll(chatId, ...rest)
+  },
+  vote: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return vote(chatId, ...rest)
   },
 })

@@ -209,7 +209,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `feed` stores as chats of kind `channel`; `watch` itself titles chats from the store. A live post comes
   through the same conversion with its server id; a live edit or deletion of a post is passed over. In the adapter,
   `chats join` and `chats leave` branch on a channel link or id (`src/adapter/channels.ts`) and hand the rest to the
-  group requests.
+  group requests. A `send` to a channel first reads it with `channel` and goes only for its owner or an admin; the
+  engine's `send` answers it with the channel as the sender and the post's server id (`SendResponse.ServerID`).
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

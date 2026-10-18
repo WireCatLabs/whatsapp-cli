@@ -111,6 +111,45 @@ describe("wa channels", () => {
     expect(result.engine?.channelActions ?? []).toEqual([])
   })
 
+  it("posts text to a channel the account runs", async () => {
+    const result = await acting(["messages", "send", CHANNEL, "synthetic post"], "admin")
+    expect(result.code).toBe(0)
+    expect(result.engine?.sends).toEqual([expect.objectContaining({ chat: CHANNEL, text: "synthetic post" })])
+  })
+
+  it("refuses a post where the account only follows, and sends nothing", async () => {
+    const result = await acting(["messages", "send", CHANNEL, "synthetic post"], "subscriber")
+    expect(result.code).toBe(5)
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.sends).toEqual([])
+  })
+
+  it("refuses a poll or a forward to a channel, even one the account runs, and sends nothing", async () => {
+    const poll = await acting(["polls", "create", CHANNEL, "Synthetic?", "yes", "no"], "admin")
+    expect(poll.code).toBe(2)
+    expect(poll.stderr).toContain("in a WhatsApp channel")
+    expect(poll.engine?.sent).toEqual([])
+
+    const post = CHANNEL_POSTS.at(-1)?.id ?? ""
+    const forward = await acting(["messages", "forward", CHANNEL, post, "--to", CHANNEL], "admin")
+    expect(forward.code).toBe(2)
+    expect(forward.stderr).toContain("in a WhatsApp channel")
+    expect(forward.engine?.forwards).toEqual([])
+  })
+
+  it("refuses an edit or a deletion in a channel, and sends nothing", async () => {
+    const post = CHANNEL_POSTS.at(-1)?.id ?? ""
+    const edit = await acting(["messages", "edit", CHANNEL, post, "fixed text"], "admin")
+    expect(edit.code).toBe(2)
+    expect(edit.stderr).toContain("in a WhatsApp channel")
+    expect(edit.engine?.actions).toEqual([])
+
+    const remove = await acting(["messages", "delete", CHANNEL, post, "--for-everyone", "--allow-dangerous"], "admin")
+    expect(remove.code).toBe(2)
+    expect(remove.stderr).toContain("in a WhatsApp channel")
+    expect(remove.engine?.actions).toEqual([])
+  })
+
   it("unfollows a channel with chats leave", async () => {
     const result = await acting(["chats", "leave", CHANNEL], "subscriber")
     expect(result.code).toBe(0)

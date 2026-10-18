@@ -251,6 +251,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   store from WhatsApp's servers, not from your phone: newest first, 50 at a time. Each post keeps its message id, and
   WhatsApp's number for it is in `provider_metadata.serverId`. Every post's sender is the channel, so a post you
   made shows `outgoing: false`. See [channels](docs/usage.md#channels).
+- **`wa` posts to a WhatsApp channel you run**: `messages send <channel> <text>` asks WhatsApp for your role in the
+  channel first and refuses anyone but its owner and admins with `permission_error` (exit 5) before anything is sent.
+  The channel's followers see the post at once. Text only, and not a reply; a file, a poll, a forward, an edit or a
+  deletion in a channel is refused before anything is sent. A refused post still passes the profile's send
+  permissions first, so under `ask` it asks before it is refused. Not yet checked live.
 
 ## 0.1.0 — 17.10.2026
 
