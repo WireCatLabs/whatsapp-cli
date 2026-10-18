@@ -35,6 +35,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   the phone-number id (`…@s.whatsapp.net`). A script that saved that id must take the new one from `chats list`. The
   move is repeated at each start for 30 days, so one that came while only a one-shot command ran still lands. A
   send typed to the old id stores a chat under it again, which a later repeat of the move merges.
+- **`serve` asks WhatsApp for the LID of a chat still in phone form**, so that chat moves too. It asks a minute after
+  history stops coming, for chats the account already has only: five people per request, one request every 10
+  seconds, at most 20 people per run, and each person at most once a week. The owner's own `lookup` keeps its own
+  pace. If WhatsApp asks to slow down, the lookups stop for a week and the next write is refused with
+  `account.rate-limited`, which holds the profile's writes for 15 minutes. Not yet run against WhatsApp.
 - **A command cut off by a dropped or ended connection no longer answers `network_error`** (exit 10), which invited
   a retry and a double send. A send, edit, reaction, group change or other write whose request left before the
   network dropped, and could not be sent again, now answers `outcome_unknown`: exit 14, `retry.safe: false`, also

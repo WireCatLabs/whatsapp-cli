@@ -177,12 +177,10 @@ Open work, most important first. The plan in flight is
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
    goes.
-11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
-    history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
-    decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup
-    that stores a new mapping (`GetUserInfo`, `IsOnWhatsApp`, `UpdateBlocklist` already do, through `contacts
-    profile`, `lookup` and `block`) turns a person's later chats to the LID form; the engine then re-keys the chat
-    stored before in phone form (item 3).
+11. **The LID lookups: live check.** The engine asks WhatsApp for the LIDs of its phone-form chats in small paced
+    batches (ARCHITECTURE §5), built and tested with a fake clock only. Unverified: that a batched `GetUserInfo` on
+    phone JIDs answers with their LIDs, and that WhatsApp says nothing about five at a time, 20 a run. Check it on the
+    owner's number with one phone-form chat.
 13. **Standards gaps left by the 2026-10-17 audit** (the handbook's areas, where a fix needs design):
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so

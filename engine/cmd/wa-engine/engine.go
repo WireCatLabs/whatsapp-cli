@@ -33,6 +33,7 @@ type engine struct {
 	addressing map[types.JID]types.AddressingMode // per group, asked once
 
 	phones *phoneChats // nil when private.db could not hold the table: chats are then never re-keyed
+	asks   *lidAsker   // nil while linking, and without the phone-form chats
 
 	olderOne  sync.Mutex // one request for older history at a time, so its answer is known by its chat
 	olderAsks olderWaiter

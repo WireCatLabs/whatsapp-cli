@@ -189,6 +189,10 @@ func (e *engine) historyRekeys(h waHistory) []waRekey {
 	for _, chat := range h.Chats {
 		e.phones.note(e.ctx, chat.JID)
 	}
+	// An on-demand push answers `messages sync`, a one-shot command: lookups wait for the pushes `serve` gets.
+	if h.Kind != "on_demand" {
+		e.lookLater()
+	}
 	return rekeys
 }
 
