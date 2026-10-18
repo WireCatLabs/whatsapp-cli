@@ -18,6 +18,8 @@ type settingsFields struct {
 	// updateProfile: the name everyone sees and the "about" line; either may be left out.
 	PushName *string `json:"pushName,omitempty"`
 	About    *string `json:"about,omitempty"`
+	// star: true stars the message, false takes the star off. Never left out, so a dropped field is not an unstar.
+	Starred *bool `json:"starred"`
 }
 
 var keysMissing = because("settings.keys-missing", "provider_unavailable",
@@ -75,6 +77,8 @@ func (e *engine) dispatchSettings(req request) (any, bool, error) {
 		return nil, true, e.deleteChat(req)
 	case "deleteForMe":
 		return nil, true, e.deleteForMe(req)
+	case "star":
+		return nil, true, e.star(req)
 	}
 	return nil, false, nil
 }

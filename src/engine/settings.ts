@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { keyFields, type WaAccount, type WaAnchor, waAccount } from "./contract.js"
+import { keyFields, type WaAccount, type WaAnchor, type WaKey, waAccount } from "./contract.js"
 import type { EngineRequest } from "./groups.js"
 
 /** The account's own name and "about" line; a field left out stays. */
@@ -26,6 +26,8 @@ export interface SettingsEngine {
    * its key and the time it was sent, both from the store. The photos and files the phone saved from it stay.
    */
   deleteForMe(message: WaAnchor): Promise<void>
+  /** Stars `message`, or takes the star off, on the account's devices alone; nobody in the chat is told. */
+  star(message: WaKey, starred: boolean): Promise<void>
 }
 
 const nothing = v.nullable(v.unknown())
@@ -43,5 +45,8 @@ export const goSettings = (request: EngineRequest): SettingsEngine => ({
   },
   deleteForMe: async (message) => {
     await request("deleteForMe", { ...keyFields(message), timestamp: message.timestamp }, nothing)
+  },
+  star: async (message, starred) => {
+    await request("star", { ...keyFields(message), starred }, nothing)
   },
 })

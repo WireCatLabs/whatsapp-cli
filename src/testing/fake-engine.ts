@@ -89,15 +89,16 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   forwards: WaForward[]
   /** Each request for older history, by the anchor and count it was asked with. */
   olderAsked: { anchor: WaAnchor; count: number }[]
-  /** Every edit, deletion, reaction, read receipt, vote and pin, in order, with the key it was addressed by. */
+  /** Every edit, deletion, reaction, star, read receipt, vote and pin, in order, with the key it was addressed by. */
   actions: {
-    op: "edit" | "revoke" | "deleteForMe" | "react" | "read" | "vote" | "pin" | "unpin"
+    op: "edit" | "revoke" | "deleteForMe" | "react" | "read" | "vote" | "pin" | "unpin" | "star"
     /** A deletion for the account alone also carries the message's time. */
     key: WaKey | WaAnchor
     text?: string
     emoji?: string | null
     answers?: string[]
     duration?: number
+    starred?: boolean
   }[]
   /** Each mute and unmute, in order. */
   mutes: { jid: string; until: string | null }[]
@@ -348,6 +349,10 @@ export const fakeEngine = (
     deleteForMe: async (message) => {
       if (!settingsKeys) throw keysMissing()
       actions.push({ op: "deleteForMe", key: message })
+    },
+    star: async (message, starred) => {
+      if (!settingsKeys) throw keysMissing()
+      actions.push({ op: "star", key: message, starred })
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

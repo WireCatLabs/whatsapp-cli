@@ -56,6 +56,7 @@ Every command runs with `--json` and a timeout.
 | W4 | delete for everyone | `messages delete <Own> <id> --for-everyone` | gone |
 | W5 | a read receipt, only with the yes | `chats mark-read <Own>` | cannot be unread; harmless in the own chat |
 | W6 | delete for the owner only | a second send to Own, then `messages delete <Own> <id>`; the phone no longer shows it | gone from the owner's devices |
+| W7 | a star on and off | `messages star <Own> <id>`; the phone shows the star; `messages unstar <Own> <id>` | unstarred |
 
 ### C — the one connection
 
