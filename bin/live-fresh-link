@@ -4,10 +4,15 @@
 # terminal; an agent never does.
 #
 #   bin/live-fresh-link <new-profile>
+#   bin/live-fresh-link <profile> --finish
 #
 # The device keys go to the main checkout's .wa/state, as for any profile there; the pushed history goes to a
 # throwaway store, removed at the end, so the owner's store is not written. wa draws the QR code in the terminal; the
 # result block holds counts only. It leaves the device linked and says how to unlink it.
+#
+# --finish is for a profile this script linked whose session start ended before the history came: it connects that
+# device once, listens with `watch`, and counts what arrived. The messages WhatsApp queued for that device land in the
+# throwaway store too, so it is never for a profile in use.
 # shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
 set -eu
 
@@ -15,26 +20,49 @@ set -eu
 . "$(dirname -- "$0")/lib/live.sh"
 
 profile=${1:-}
+mode=${2:-}
+case "$mode" in
+  "" | --finish) ;;
+  *) die "usage: $(basename -- "$0") <new-profile>, or $(basename -- "$0") <profile> --finish" ;;
+esac
 known=$(profiles) || die "wa account list failed"
 [ -n "$profile" ] || die "name a new profile: $(basename -- "$0") <new-profile> — taken already: ${known:-none}"
-case " $known " in
-  *" $profile "*) die "profile $profile exists already — name a new one; taken: $known" ;;
-esac
 has_device() {
   wa_json "$profile" doctor --timeout 30s | json 'd.item.whatsapp.device.exists'
 }
-device=$(has_device)
-[ "$device" = false ] || die "profile $profile has device keys already — name a new one"
+if [ "$mode" = --finish ]; then
+  case " $known " in
+    *" $profile "*) ;;
+    *) die "no profile $profile here — profiles here: ${known:-none}" ;;
+  esac
+  [ "$(has_device)" = true ] || die "profile $profile has no device keys — run $(basename -- "$0") $profile to link it"
+  ! lock_held "$profile" || die "something holds profile $profile's device, serve perhaps — --finish is not for one in use"
+  cat <<EOF
 
-cat <<EOF
+This connects profile $profile once and listens for up to 5 minutes, keeping what the phone pushes in a throwaway
+store that is removed at the end. Use it only for a profile this script linked: the messages WhatsApp queued for
+that device are kept in the throwaway store too, and are gone with it.
+EOF
+  printf '\nType yes to connect it: '
+  read -r answer || exit 130
+  [ "$answer" = yes ] || die "nothing connected"
+else
+  case " $known " in
+    *" $profile "*) die "profile $profile exists already — name a new one; taken: $known" ;;
+  esac
+  device=$(has_device)
+  [ "$device" = false ] || die "profile $profile has device keys already — name a new one"
+
+  cat <<EOF
 
 This links a SECOND device to your WhatsApp account, as profile $profile.
 WhatsApp shows it under Settings > Linked devices, and the phone pushes your recent history to it once.
 Your serve and its device are not touched. The new device stays linked until you unlink it.
 EOF
-printf '\nType yes to link it: '
-read -r answer || exit 130
-[ "$answer" = yes ] || die "nothing linked"
+  printf '\nType yes to link it: '
+  read -r answer || exit 130
+  [ "$answer" = yes ] || die "nothing linked"
+fi
 
 store=$(mktemp -d "${TMPDIR:-/tmp}/wa-fresh-link.XXXXXX")
 finish() {
@@ -55,24 +83,47 @@ fresh() {
     MESSAGING_STORE="$store/messages.db" node "$main/dist/bin/wa.js" "$@"
 }
 
-cat <<EOF
+if [ "$mode" = --finish ]; then
+  cat <<EOF
+
+Keep WhatsApp open on the phone. Ctrl+C ends the wait and keeps what came.
+Paste only the result block at the end.
+EOF
+  trap ':' INT
+  set +e
+  # watch prints every message it receives; only the counts below leave this script.
+  fresh "$profile" watch --timeout 5m >/dev/null
+  code=$?
+  set -e
+  on_signals
+  ran=watch
+else
+  cat <<EOF
 
 wa draws the QR code below. Scan it in WhatsApp > Settings > Linked devices > Link a device, then keep WhatsApp
 open while the history arrives. Ctrl+C during that wait ends it and keeps what came.
 Paste only the result block at the end: the lines above it name your account.
 EOF
-# Human mode with the terminal attached is what draws the QR code, as for tg and max. Ctrl+C is wa's to handle here;
-# a trap that does nothing, unlike an ignored signal, is not passed on to node.
-trap ':' INT
-set +e
-fresh "$profile" session start qr --timeout 15m
-code=$?
-set -e
-on_signals
+  # Human mode with the terminal attached is what draws the QR code, as for tg and max. Ctrl+C is wa's to handle here;
+  # a trap that does nothing, unlike an ignored signal, is not passed on to node.
+  trap ':' INT
+  set +e
+  fresh "$profile" session start qr --timeout 15m
+  code=$?
+  set -e
+  on_signals
+  ran="session start"
+fi
 
 echo
 echo "── result ──"
-echo "session start exited $code"
+echo "$ran exited $code"
+# doctor reports a store that was never created without counts: nothing was kept, which "?" used to hide.
 fresh "$profile" doctor --json --no-input --timeout 30s 2>/dev/null |
-  json '`history kept: ${d.item.store.chats ?? "?"} chats, ${d.item.store.messages ?? "?"} messages`' ||
+  json 'd.item.store.exists
+    ? `history kept: ${d.item.store.chats ?? "?"} chats, ${d.item.store.messages ?? "?"} messages`
+    : "history kept: nothing, the throwaway store was never written"' ||
   echo "doctor could not read the throwaway store"
+if [ "$code" -ne 0 ] && [ "$mode" != --finish ] && [ "$(has_device 2>/dev/null)" = true ]; then
+  echo "the device is linked; to collect the history owed to it: bin/live-fresh-link $profile --finish"
+fi

@@ -96,7 +96,7 @@ closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The sha
 | `bin/live-oneshot-drop <profile>` | [BACKLOG](BACKLOG.md) item 9: does a one-shot connection take a queued message that then never reaches the store? | stops `serve`; two messages from the phone to the own chat | starts `serve` again on every exit path; the owner deletes the two messages from the phone |
 | `bin/live-poll-vote <profile>` | BACKLOG item 5, a vote cast by `wa`; W-style, own chat only | a poll and a vote in the own chat, through the running `serve` | the poll is deleted for everyone at the end; if the script stops early, it says to delete it from the phone |
 | `bin/live-older-history <profile>` | H1: one 50-message page as one `ON_DEMAND` notification or several, and whether it names the request by its id | restarts `serve` with the engine's log on; one history request from this device to the own phone | starts `serve` again as it was on every exit path; deletes the log |
-| `bin/live-fresh-link <new-profile>` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes` | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
+| `bin/live-fresh-link <new-profile>`, or `<profile> --finish` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes`; `--finish` connects that device once more | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
 | `bin/live-chat-state <profile> [--sticker <file.webp>]` | BACKLOG item 5, the chat-state writes: privacy read back, mute, message pin, star (W7), chat pin, archive, mark-unread and mark-read, delete for the owner alone (W6), and a sticker from the owner's `.webp` file; own chat only | a 1-hour mute of the own chat, a marker message pinned for 24 hours and starred, the own chat pinned, archived and marked unread, and with `--sticker` one sticker, through the running `serve` | each undone in the script; the marker and the sticker deleted for the owner (the marker for everyone where that is not built); if it stops early, it says what to undo from the phone |
 | `bin/live-album <profile> [--video <file.mp4>]` | BACKLOG item 5, an album and a photo's preview; own chat only | one album of a test photo and a short video in the own chat, through the running `serve` | not undone by the script, which keeps only the photo's message: the owner deletes the album from the phone |
 | `bin/live-expired-file <profile> [<message-id>]` | BACKLOG item 5, a download of a file WhatsApp no longer keeps, through the phone's new upload; own chat only | one download into a throwaway folder, and a second one after the phone's new upload; if the file is gone from WhatsApp, a receipt from this device to the own phone | the folder is deleted at the end |
@@ -183,7 +183,13 @@ store, removed at the end, because the store keys an account by its WhatsApp id 
 otherwise land in the owner's store. The result block holds `session start`'s exit code and the chats and messages in
 that store, read afterwards with `doctor --json`: distinct rows, which can be fewer than the pushed batches held. On
 every exit, Ctrl-C included, it removes the throwaway store and, while the new profile has device keys, says how to
-unlink it.
+unlink it. A store that was never created reads "nothing", not a count.
+
+When `session start` fails but the device is linked, the result block says to run `--finish`. That refuses a profile
+`account list` does not show, one without device keys, and one whose lock is held, and goes on only after `yes`. It
+runs `watch --timeout 5m` with stdout to `/dev/null` and the same throwaway store, so whatever the phone still pushes,
+and whatever WhatsApp queued for that device, lands there and is counted the same way. It is only for a profile this
+script linked: the queued messages are gone with the throwaway store.
 
 **`live-chat-state`** needs `serve` running, and works in the own chat only, by its LID id from `account list`,
 never printed. After each step it asks the owner what the phone shows and records yes or no:

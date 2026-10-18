@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 )
@@ -40,8 +41,8 @@ func (e *engine) link(method, phone string) (*waAccount, error) {
 		case item.Event == whatsmeow.QRChannelEventCode:
 			e.out.loginCode("qr", item.Code)
 		case item == whatsmeow.QRChannelSuccess:
-			if !e.client.WaitForConnection(2 * connectWait) {
-				return nil, &failure{"network_error", "linked, but could not reconnect to WhatsApp in time"}
+			if err := e.awaitLogin(e.client.WaitForConnection, 250*time.Millisecond, 2*connectWait); err != nil {
+				return nil, err
 			}
 			e.refreshSelf()
 			return e.me()
@@ -52,6 +53,32 @@ func (e *engine) link(method, phone string) (*waAccount, error) {
 		}
 	}
 	return nil, &failure{"timeout", "the login ended before the phone confirmed it"}
+}
+
+// awaitLogin waits out the stream restart (code 515) WhatsApp sends right after pairing. whatsmeow answers it by
+// disconnecting and connecting again on its own, and WaitForConnection returns false at once while that disconnect is
+// under way, so only the deadline means the link could not reconnect.
+func (e *engine) awaitLogin(wait func(time.Duration) bool, slice, within time.Duration) error {
+	deadline := time.Now().Add(within)
+	for {
+		started := time.Now()
+		if wait(slice) {
+			return nil
+		}
+		if ended := e.endedBy(); ended != nil {
+			return ended
+		}
+		if err := e.ctx.Err(); err != nil {
+			return err
+		}
+		if time.Now().After(deadline) {
+			return &failure{"network_error", "linked, but could not reconnect to WhatsApp in time"}
+		}
+		select {
+		case <-time.After(time.Until(started.Add(slice))):
+		case <-e.ctx.Done():
+		}
+	}
 }
 
 func pairingFailure(err error) error {
