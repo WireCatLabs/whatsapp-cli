@@ -184,7 +184,7 @@ func TestGroupPhotoTakesOnlyASquareJPEGWhatsAppAccepts(t *testing.T) {
 	asPNG := func(b *bytes.Buffer, m image.Image) error { return png.Encode(b, m) }
 
 	for _, side := range []int{190, 640, 720} {
-		got, err := squareJPEG(write("good.jpg", asJPEG, side, side), "group photo")
+		got, err := groupPhoto(write("good.jpg", asJPEG, side, side))
 		if err != nil || len(got) < 2 || got[0] != 0xFF || got[1] != 0xD8 {
 			t.Fatalf("a %dpx JPEG: %v", side, err)
 		}
@@ -199,7 +199,7 @@ func TestGroupPhotoTakesOnlyASquareJPEGWhatsAppAccepts(t *testing.T) {
 	}
 	for what, path := range refused {
 		var known *failure
-		if _, err := squareJPEG(path, "group photo"); !errors.As(err, &known) || known.Code != "validation_error" {
+		if _, err := groupPhoto(path); !errors.As(err, &known) || known.Code != "validation_error" {
 			t.Errorf("%s: got %v, want a validation_error", what, err)
 		}
 	}

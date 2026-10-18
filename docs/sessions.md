@@ -78,8 +78,9 @@ The name goes to the phone and your other devices at once. Other people probably
 comes online: a device tells WhatsApp its name when it says it is online, and `wa` never does (not checked yet). A
 device linked a few minutes ago may not have WhatsApp's settings keys yet; keep `serve` running a while and try again.
 
-The photo is a square JPEG of 190 to 720 pixels a side, as for a group: `wa` does not convert or crop one, and a PNG or
-WebP is refused by its content, before anything changes. Given together, the name goes first, then the about, then the
+`wa` takes the photo as a square JPEG of 190 to 720 pixels a side, the sides it takes for a group; whether WhatsApp
+takes other sides for your own photo is not checked. `wa` does not convert or crop one, and a PNG or WebP is refused by
+its content, before anything changes. Given together, the name goes first, then the about, then the
 photo; if a later one fails, the error says which changed. Removing the photo is done on the phone.
 
 `wa personal session end` removes the device **on WhatsApp's side too**: it disappears from the phone's list of linked

@@ -25,7 +25,7 @@ func (e *engine) updateProfile(req request) (*waAccount, error) {
 	}
 	var photo []byte
 	if req.Path != "" {
-		read, err := squareJPEG(req.Path, "profile photo")
+		read, err := squareJPEG(req.Path, "profile photo", "wa")
 		if err != nil {
 			return nil, err
 		}

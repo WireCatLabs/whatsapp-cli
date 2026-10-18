@@ -162,8 +162,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `--last-name` joined to it after a space (WhatsApp keeps one name, so a last name alone is refused), and
   `--description` the "about" line. The name is a setting WhatsApp syncs to the other devices; others probably see it
   only once the phone next comes online, since a device tells WhatsApp its name when it says it is online and `wa`
-  never does (not checked live). `--photo` sets the profile photo: a square JPEG of 190 to 720 pixels a side, as for
-  a group's, checked before anything changes (not checked live). The answer is the account with the new name. A
+  never does (not checked live). `--photo` sets the profile photo (not checked live): `wa` takes a square JPEG of 190 to
+  720 pixels a side, the sides it takes for a group's, checked before anything changes. The answer is the account with the new name. A
   device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does; the name goes
   first, then the about, then the photo, and a step WhatsApp refuses after another changed says which did. The
   permission key is `account.update`. Engine protocol 26, op `updateProfile` (`path` for the photo).

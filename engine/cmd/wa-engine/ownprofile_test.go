@@ -1,6 +1,9 @@
 package main
 
 import (
+	"errors"
+	"image"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,6 +29,21 @@ func TestUpdateProfileRefusesBeforeConnecting(t *testing.T) {
 		if _, err := (&engine{}).updateProfile(req); !isFailure(err, "validation_error") {
 			t.Errorf("%s gave %v, want a validation_error", label, err)
 		}
+	}
+}
+
+func TestAnOwnPhotoOutsideTheSidesIsRefusedAsWasCheck(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "wide.jpg")
+	file, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = jpeg.Encode(file, image.NewRGBA(image.Rect(0, 0, 640, 480)), nil)
+	_ = file.Close()
+	var known *failure
+	_, err = (&engine{}).updateProfile(request{Path: path})
+	if !errors.As(err, &known) || known.Message != "wa takes a profile photo as a square of 190 to 720 pixels a side" {
+		t.Errorf("got %v", err)
 	}
 }
 
