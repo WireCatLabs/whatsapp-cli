@@ -232,21 +232,28 @@ half of "No preview on a sent video".
 **`live-expired-file`** needs `serve` running, since the phone's answer reaches the connected engine. It downloads
 one file of the own chat into a throwaway folder: the message id given as the second argument, or else the oldest
 stored photo there (the oldest file when there is no photo), found with `attachments list "chat:<own>" --all`.
-It prints the message's age in days, the number of files and bytes saved, the error code and the time taken, then
-whether the retry asked the phone, and the outcome. A download that fails per file still exits 0 with the failure in
-`batch.failures`, so it reads the answer and the error stream for the engine's fixed words, without printing them:
+It prints the message's age in days, the number of files and bytes saved, the error code and reason and the time
+taken, then whether the retry asked the phone, and the outcome. A download that fails per file still exits 0 with the
+failure in `batch.failures`, so it reads the failure's registered reason (WC-OUT-15), never its words:
 
-| Engine's words | The retry asked the phone | Outcome |
+| Reason | The retry asked the phone | Outcome |
 |---|---|---|
-| a file saved | unknown | saved; the engine logs nothing on this path, so a file WhatsApp still kept looks the same |
-| "did not upload this file again in time" | yes | the phone did not answer within 20 s |
-| "neither WhatsApp nor the phone keeps this file" | yes | the phone no longer has it either |
-| "could not upload this file again", "answer about this file could not be read" | yes | the phone answered with an error |
-| "stopped before the phone answered" | yes | the engine stopped while it waited |
-| "has no file to download" | no | no verdict: the store holds no keys for that message |
+| none, a file saved, the engine's log gained a `media.reuploaded` line | yes | saved from the phone's new upload |
+| none, a file saved, no new `media.reuploaded` line | no | WhatsApp still kept the file |
+| none, a file saved, `serve` runs without `WA_ENGINE_LOG` | unknown | saved; nothing tells the two apart |
+| `media.phone-timeout` | yes | the phone did not answer within 20 s |
+| `media.not-on-phone` | yes | the phone no longer has it either |
+| `media.phone-cannot-decrypt` | yes | the phone could not read the request |
+| `media.phone-failed`, `media.phone-answer-unreadable` | yes | the phone answered with an error |
+| `media.retry-failed` | yes | the phone uploaded it again, and the new copy did not download |
+| `engine.stopped` | unknown | the engine stopped, while it waited or before |
+| none, exit 6, `not_found` | no | no verdict: the message has no file to download |
+| none, `validation_error` | no | no verdict: the store holds no keys for that file |
 
-A saved file of an old message is the likely retry, not a proven one: telling the two apart needs a line in the
-engine's log.
+The `media.reuploaded` line is the engine's only sign that a saved file came from the phone's new upload: cli-core's
+download answer has no field for it. The script reads `WA_ENGINE_LOG` from the running engine and counts those lines
+before and after the download, never the log's other lines. To see it, start `serve` with `WA_ENGINE_LOG` set to a
+file kept like `private.db`.
 
 **`live-forward-card`** needs `serve` running, which stores what the phone sends. It notes the newest place and
 the newest single contact card in the own chat (`messages list --offline --limit 20`), then asks the owner to send

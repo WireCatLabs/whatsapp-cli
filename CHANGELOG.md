@@ -25,8 +25,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   answering `not_found` (exit 6) at once. It waits up to 20 seconds for the phone to upload it again and fetches the
   new copy. A phone that does not answer ends the download with `timeout` (exit 9); exit 6 now means the phone no
   longer has the file either. A script that read exit 6 as "expired" must also expect exit 9, and give a slow phone a
-  longer `--timeout`. The new copy's address is not kept, so each later download asks again, and a forward of such
-  a file may still reach the recipient as one that will not open. Not yet run against WhatsApp.
+  longer `--timeout`. A new copy that then fails to download is `provider_error` (exit 11, `media.retry-failed`),
+  whatever the first failure's code was. The new copy's address is not kept, so each later download asks again, and a
+  forward of such a file may still reach the recipient as one that will not open. Not yet run against WhatsApp.
 - **`messages forward` sends a stored place or contact card, where it used to refuse it.** The store now keeps a
   place's coordinates, name and address, and a contact card itself, next to a file's keys, where no answer shows
   them. A place or card stored before this, a live location and several cards in one message are still refused.
@@ -118,6 +119,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A download your phone could not give back says why, in its `reason`**, not only in its words. A file
+  WhatsApp no longer keeps fails, per file in `batch.failures`, with `media.not-on-phone` (the phone has it no more),
+  `media.phone-cannot-decrypt` (the phone could not read the request), `media.phone-failed` or
+  `media.phone-answer-unreadable` (the phone answered an error), `media.phone-timeout` (no answer in 20 s),
+  `media.retry-failed` (the new copy did not download) or `engine.stopped`; branch on those, never on the message.
+  A download the phone's new upload served writes one line, `media.reuploaded`, to the engine's log when
+  `WA_ENGINE_LOG` is set: the download's answer has no field for it.
 - **A chat muted for good on the phone is stored as muted**, so `inbox` leaves it out. The history the phone sends
   marks such a mute with an end no clock can read (WhatsApp writes -1 into an unsigned field), and `wa` took that for
   a mute that had already ended. Any end past the year 9999 now reads as muted with no end, as whatsmeow reads it in

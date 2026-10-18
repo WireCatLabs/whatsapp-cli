@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 28, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 29, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -113,6 +113,10 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "download":
       if (!fields.chat || !fields.message) {
         say({ id, error: { code: "validation_error", message: "a message id is needed" } })
+        break
+      }
+      if (fields.chat === "expired@stub") {
+        say({ id, error: { code: "timeout", message: "the phone did not answer", reason: "media.phone-timeout" } })
         break
       }
       writeFileSync(fields.path, `synthetic ${fields.attachment.kind} bytes`, { mode: 0o600, flag: "wx" })
