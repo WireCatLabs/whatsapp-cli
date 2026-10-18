@@ -32,8 +32,9 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 Not built yet: `messages pin|unpin`, several files in one message, deleting for the owner alone,
 `chats inspect`, removing a group's photo (`chats update --photo` sets one, a square JPEG of 190 to
 720 pixels a side), `account update`, `account sessions`, `chats create --channel`. WhatsApp has no
-`chats folders`, no `messages comments`, no second invite link and no partial admin rights, and keeps the address
-book on the phone, so `contacts add|remove|rename|import` are refused. `chats show` answers from the store;
+`chats folders`, no `messages comments`, no second invite link, no partial admin rights and no account age (a
+`newAccount` rule in `chats rules set` is refused), and keeps the address book on the phone, so
+`contacts add|remove|rename|import` are refused. `chats show` answers from the store;
 `chats members list` asks WhatsApp, and with `--offline` shows the stored members. `chats events` answers from the
 store, which holds no joins or leaves yet: its empty list does not mean nobody joined, and `stats chats show` leaves
 `members` out and says in `missing` that joins and leaves are not recorded yet; `chats members history` shows who

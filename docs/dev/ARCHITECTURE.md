@@ -93,7 +93,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `engineEvent`; a login shows `{"login": "qr"|"pair", "code"}`. The phone number for a pairing code travels on stdin,
   never as an argument (`ps` shows arguments). When stdin closes the engine disconnects and exits, so it never
   outlives the CLI; it ignores Ctrl+C and lets the CLI decide.
-- **The requests**: `connect`, `link`, `me`, `directory`, `chat`, `send`, `logout` and `close`. A reply (`send` or
+- **The requests**: `connect`, `link`, `me`, `directory`, `chat`, `send`, `logout` and `close`. In
+  `engine/cmd/wa-engine/`, `engine.go` reads and dispatches them and holds `connect` and `send`; `link.go` holds
+  `link` and `me`, `directory.go` `directory` and `chat`; `events.go` turns whatsmeow's events into the contract's, and
+  `errors.go` sorts its errors into the contract's codes. A reply (`send` or
   `sendMedia` with `replyTo`) also carries `quote` — `fromMe`, `sender` and `text` of the quoted message as the store
   holds it — so the engine names the quoted sender in the form the chat addresses people by and adds the quoted
   text, as mautrix-whatsapp does; without `quote` (a message the store lacks) the reply carries the id alone. Four

@@ -50,9 +50,8 @@ Open work, most important first. The plan in flight is
    - **Names of groups the store lacks, in a one-shot command.** cli-core finds a stored group by name (0.337.0);
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
-   - ~~**The group photo** (`--photo`, whatsmeow's `SetGroupPhoto`)~~ — built: `chats update --photo` (op
-     `setGroupPhoto`). Removing it (`SetGroupPhoto` with no bytes) waits for a cli-core option. **Communities** are
-     not built.
+   - **Removing a group's photo** (whatsmeow's `SetGroupPhoto` with no bytes) waits for a cli-core option;
+     `chats update --photo` sets one. **Communities** are not built.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
