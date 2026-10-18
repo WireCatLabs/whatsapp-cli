@@ -395,7 +395,7 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngi
   vote(key: WaKey, answers: string[]): Promise<void>
   /**
    * Pins the message for everyone in the chat: WhatsApp has no pin only the account sees. `duration` is 86400,
-   * 604800 or 2592000 seconds; the engine pins for 7 days without one.
+   * 604800 or 2592000 seconds; the engine refuses a pin without one (cli-core always sends it).
    */
   pin(key: WaKey, duration?: number): Promise<void>
   unpin(key: WaKey): Promise<void>

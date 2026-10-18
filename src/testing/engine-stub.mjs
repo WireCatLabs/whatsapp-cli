@@ -102,7 +102,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       })
       break
     case "pin":
-      if (fields.duration !== undefined && ![86400, 604800, 2592000].includes(fields.duration))
+      if (![86400, 604800, 2592000].includes(fields.duration))
         say({ id, error: { code: "validation_error", message: "a pin lasts 24 hours, 7 days or 30 days" } })
       else say({ id, ok: null })
       break

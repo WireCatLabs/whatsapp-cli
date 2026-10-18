@@ -20,7 +20,6 @@ func TestAPinCarriesTheTargetItsTimeAndHowLongItLasts(t *testing.T) {
 		kind   waE2E.PinInChatMessage_Type
 		lasts  uint32
 	}{
-		{"a pin without a length", true, 0, waE2E.PinInChatMessage_PIN_FOR_ALL, 604800},
 		{"a pin for 24 hours", true, 86400, waE2E.PinInChatMessage_PIN_FOR_ALL, 86400},
 		{"a pin for 7 days", true, 604800, waE2E.PinInChatMessage_PIN_FOR_ALL, 604800},
 		{"a pin for 30 days", true, 2592000, waE2E.PinInChatMessage_PIN_FOR_ALL, 2592000},
@@ -44,12 +43,14 @@ func TestAPinCarriesTheTargetItsTimeAndHowLongItLasts(t *testing.T) {
 	}
 }
 
-func TestAPinForAnotherLengthIsRefusedBeforeConnecting(t *testing.T) {
-	e := &engine{}
-	_, handled, err := e.dispatchPins(request{Op: "pin", Chat: group.String(), Message: "3EB0A1", FromMe: true, Duration: 3600})
-	var f *failure
-	if !handled || !errors.As(err, &f) || f.Code != "validation_error" {
-		t.Fatalf("got handled %v, error %v", handled, err)
+func TestAPinForAnotherLengthOrNoneIsRefusedBeforeConnecting(t *testing.T) {
+	for _, asked := range []uint32{3600, 0} {
+		e := &engine{}
+		_, handled, err := e.dispatchPins(request{Op: "pin", Chat: group.String(), Message: "3EB0A1", FromMe: true, Duration: asked})
+		var f *failure
+		if !handled || !errors.As(err, &f) || f.Code != "validation_error" {
+			t.Fatalf("%d: got handled %v, error %v", asked, handled, err)
+		}
 	}
 }
 

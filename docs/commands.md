@@ -1311,7 +1311,7 @@ wa messages list <chat> [query] [options]
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
-| `query` | optional | where to start: id<42, date>2026-10-01. |
+| `query` | optional | where to start: id<42, date>2026-10-01; starred:true keeps the ones you starred. |
 
 | Option | What it does |
 |---|---|
@@ -1502,8 +1502,7 @@ wa messages pin <chat> <message> [options]
 
 | Option | What it does |
 |---|---|
-| `--notify` | tell the chat's members; every pin here does. |
-| `--expire-time <time>` | the pin ends by itself then: 24h, 7d or 30d from now. |
+| `--expire-time <time>` | how long the pin lasts: 24h, 7d or 30d; 7d by default. |
 
 ### `wa messages unpin`
 
@@ -2862,7 +2861,7 @@ cached group/channel descriptions for local automatic tags
 
 ### `wa metadata get`
 
-
+a stored chat's cached description, as automatic tags read it
 
 ```sh
 wa metadata get [options]
@@ -2874,7 +2873,7 @@ wa metadata get [options]
 
 ### `wa metadata refresh`
 
-
+fetch group and channel descriptions again and cache them
 
 **Changes something on this computer only.**
 

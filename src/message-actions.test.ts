@@ -117,11 +117,11 @@ describe("wa reactions", () => {
 })
 
 describe("wa messages pin", () => {
-  it("pins someone else's message for the chat, addressed by its stored sender, for the engine's default length", async () => {
+  it("pins someone else's message for the chat, addressed by its stored sender, for 7 days without a length", async () => {
     const result = await acting(["messages", "pin", seed.busy, theirs.id])
     expect(result.code).toBe(0)
     expect(result.actions).toEqual([
-      { op: "pin", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId } },
+      { op: "pin", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId }, duration: 604_800 },
     ])
     expect(JSON.parse(result.stdout).item).toMatchObject({ chat_id: seed.busy, message_id: theirs.id, pinned: true })
     expect(result.closed).toBe(true)
