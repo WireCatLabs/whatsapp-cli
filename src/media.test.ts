@@ -135,7 +135,7 @@ describe("wa messages send with a file", () => {
     expect(result.engine.uploads).toEqual([{ kind: "voice", name: "note.ogg", size: 14 }])
   })
 
-  it("refuses a file from wa's own folder, where the device keys live, unless the owner adds --allow-any-file", async () => {
+  it("refuses a file from wa's own folder, where the device keys live, without --allow-any-file", async () => {
     const path = join(dirname(privateStore("media")), "synthetic-export.txt")
     mkdirSync(dirname(path), { recursive: true })
     writeFileSync(path, "synthetic bytes")
@@ -201,7 +201,7 @@ describe("wa messages download", () => {
     })
   })
 
-  it("downloads the chat's files no download saved yet through the engine, for attachments extract --download", async () => {
+  it("fetches the files no download saved yet through the engine, for attachments extract --download", async () => {
     const engines: FakeEngine[] = []
     const argv = ["media", "attachments", "extract", "--chat", base.dialog, "--download", "--output-dir", folder()]
     const result = await wa([...argv, "--json"], () => {

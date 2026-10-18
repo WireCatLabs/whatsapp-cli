@@ -216,12 +216,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `polls create` | `--multiple` | ✅ |  |
 | `polls create` | `--operation-id` | ✅ |  |
 | `models audio list` |  | ✅ |  |
-| `models audio download` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `models text list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `models text download` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `models text download` | `--accept-terms` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `models text key set` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `models text key remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `models audio download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models text list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models text download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models text download` | `--accept-terms` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models text key set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models text key remove` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `inbox` |  | ✅ |  |
 | `inbox` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives --mark-read, the option that reaches the engine |
 | `inbox` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives --mark-read, the option that reaches the engine |
@@ -243,125 +243,125 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `watch` |  | ✅ |  |
 | `watch` | `--events` | ✅ |  |
 | `serve` |  | ✅ |  |
-| `server start` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `server stop` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `server restart` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `server status` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `server logs` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `server logs` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `server install` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `server uninstall` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store status` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps plan` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--max-gaps` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--repair-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--page-size` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--pause` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--fingerprint` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--catch-up` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--no-catch-up` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--catch-up-chunks` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--catch-up-messages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--catch-up-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store gaps repair` | `--background` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs list` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs cancel` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs retry` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs retry` | `--failed` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store jobs clear` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` | `--format` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` | `--output` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` | `--output-dir` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` | `--include` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store export` | `--encrypt` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store clear` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store clear` | `--left` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store clear` | `--allow-dangerous` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store info` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store check` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store migrate` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store reindex` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store backup` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store backup` | `--encrypt` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store restore` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store decrypt` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store decrypt` | `--output` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store repair` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store repair` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store reset` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store reset` | `--no-backup` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `store copies delete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--analyze` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--size` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--max-tokens` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations build` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations related` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations related` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations related` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations related` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations related` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations related` | `--dims` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations status` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations status` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations status` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations status` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations status` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations status` | `--dims` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations batches status` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations batches status` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations batches status` | `--size` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations batches next` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations batches next` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations batches next` | `--size` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations links add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations links add` | `--batch` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations links clear` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations links clear` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations links clear` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations consents list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations consents revoke` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations consents revoke` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations consents revoke` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--dims` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--threads` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--concurrency` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--max-tokens` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed` | `--max-chunks` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed status` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed status` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed status` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed status` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed status` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed status` | `--dims` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed clear` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed clear` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed clear` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed clear` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed clear` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `conversations embed clear` | `--dims` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `server start` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server stop` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server restart` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server logs` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server logs` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server uninstall` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `store status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps plan` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--max-gaps` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--repair-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--page-size` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--pause` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--fingerprint` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--catch-up` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--no-catch-up` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--catch-up-chunks` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--catch-up-messages` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--catch-up-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store gaps repair` | `--background` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs list` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs cancel` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs retry` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs retry` | `--failed` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` | `--format` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` | `--output` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` | `--output-dir` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` | `--include` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store export` | `--encrypt` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store clear` | `--left` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store clear` | `--allow-dangerous` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store info` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store check` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store migrate` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store reindex` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store backup` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store backup` | `--encrypt` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store restore` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store decrypt` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store decrypt` | `--output` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store repair` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store repair` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store reset` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store reset` | `--no-backup` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store copies delete` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `conversations build` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--analyze` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--size` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--max-tokens` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations build` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations related` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations related` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations related` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations related` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations related` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations related` | `--dims` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations status` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations status` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations status` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations status` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations status` | `--dims` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations batches status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations batches status` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations batches status` | `--size` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations batches next` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations batches next` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations batches next` | `--size` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations links add` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations links add` | `--batch` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations links clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations links clear` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations links clear` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations consents list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations consents revoke` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations consents revoke` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations consents revoke` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--dims` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--threads` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--concurrency` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--max-tokens` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--max-chunks` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed status` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed status` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed status` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed status` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed status` | `--dims` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed clear` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed clear` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed clear` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed clear` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed clear` | `--dims` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `attachments extract` |  | ✅ |  |
 | `attachments extract` | `--chat` | ✅ |  |
 | `attachments extract` | `--from-dir` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
@@ -371,324 +371,324 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `attachments extract` | `--limit` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
 | `attachments extract` | `--ocr` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
 | `attachments extract` | `--concurrency` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
-| `attachments list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments list` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments show` | `--attachment` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments show` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments show` | `--offset-bytes` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments show` | `--chunk-bytes` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments show` | `--expected-fingerprint` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments text set` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments text set` | `--attachment` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments text set` | `--text-file` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags auto` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags auto` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags auto` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags auto` | `--sync-first` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags auto` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags add` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags add` | `--contact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags add` | `--message` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags add` | `--task` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags remove` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags remove` | `--contact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags remove` | `--message` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags remove` | `--task` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags remove` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tags list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions list` | `--new` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions domains` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions domains` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions domains` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions places` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions places` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions places` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions confirm` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions confirm` | `--all-in-chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions confirm` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions reject` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions reject` | `--all-in-chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions reject` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mentions rebuild` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `images embed` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `images embed` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `images embed` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `images models list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `images models download` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` | `--by` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages show` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--selection` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--counters` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters show` | `--max-age` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--selection` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--counters` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--max-messages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--sync-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages counters refresh` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--answerer` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages unanswered` | `--older-than` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--min-views` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages discussion` | `--max-replies` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--measure` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--score` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--weights` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--message-kind` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages top` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages evidence` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages evidence` | `--selection` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages evidence` | `--component` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages evidence` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats messages evidence` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts responses` | `--answerer` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--measure` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--score` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--weights` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--message-kind` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts top` | `--min-messages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts evidence` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts evidence` | `--selection` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts evidence` | `--component` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts evidence` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats contacts evidence` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats show` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats show` | `--by` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats show` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` | `--until-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` | `--within` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats newcomers` | `--answerer` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` | `--until-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` | `--checkpoints` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` | `--within` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` | `--by` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats chats retention` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats tasks show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats tasks show` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats tasks show` | `--type` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats charts` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats charts` | `--chart-kind` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats charts` | `--by` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats charts` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats charts` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `stats charts` | `--output` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--type` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--category` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--into` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--new` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--title` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--description` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--due` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--remind-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks add` | `--assignee` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks plan` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks plan` | `--category` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks plan` | `--title` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks plan` | `--description` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks plan` | `--due` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks plan` | `--remind-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks plan` | `--assignee` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks link` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks link` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks link` | `--kind` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks related` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks related` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks duplicates` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks duplicates` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks duplicates reject` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks duplicates defer` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks merge` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks merge` | `--into` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks unmerge` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks agenda` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks agenda` | `--due-within` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks agenda` | `--unanswered` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks agenda` | `--waiting` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks agenda` | `--within` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks agenda` | `--holder` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks categories` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks scan` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks scan` | `--last` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks claim` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks claim` | `--lease` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks claim` | `--holder` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks release` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks release` | `--holder` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks close` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks close` | `--as` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks close` | `--reason` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks close` | `--certainty` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks close` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks reject` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `tasks reject` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` | `--only` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` | `--max-meetings` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search all` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--thread` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--thread-hops` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--thread-messages` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--thread-bytes` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--thread-within` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--newest` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--context` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--discover` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search messages` | `--saved` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search notes` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search notes` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search notes` | `--filter` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search notes` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search notes` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search notes` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search notes` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--dims` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--max-chunks` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--filter` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `search conversations` | `--catch-up` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--source` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--newest` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--exact` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--context` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--timezone` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--by` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--selection` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches create` | `--replace` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches history` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches history` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches history` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches history` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches delete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `searches clear` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `attachments list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments list` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments show` | `--attachment` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments show` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments show` | `--offset-bytes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments show` | `--chunk-bytes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments show` | `--expected-fingerprint` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments text set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments text set` | `--attachment` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments text set` | `--text-file` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `tags auto` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags auto` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags auto` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags auto` | `--sync-first` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags auto` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags add` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags add` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags add` | `--contact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags add` | `--message` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags add` | `--task` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags remove` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags remove` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags remove` | `--contact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags remove` | `--message` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags remove` | `--task` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags remove` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `tags list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tags.test.ts) |
+| `mentions list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions list` | `--new` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions domains` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions domains` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions domains` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions places` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions places` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions places` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions confirm` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions confirm` | `--all-in-chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions confirm` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions reject` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions reject` | `--all-in-chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions reject` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `mentions rebuild` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mentions.test.ts) |
+| `images embed` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `images embed` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `images embed` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `images models list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `images models download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `stats messages show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages show` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages show` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages show` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages show` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages show` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages show` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages show` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--selection` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--counters` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters show` | `--max-age` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--selection` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--counters` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--max-messages` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--sync-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages counters refresh` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--answerer` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages unanswered` | `--older-than` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--min-views` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages discussion` | `--max-replies` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--measure` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--score` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--weights` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--message-kind` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages top` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages evidence` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages evidence` | `--selection` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages evidence` | `--component` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages evidence` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages evidence` | `--cursor` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts responses` | `--answerer` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--measure` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--score` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--weights` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--message-kind` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts top` | `--min-messages` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts evidence` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts evidence` | `--selection` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts evidence` | `--component` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts evidence` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats contacts evidence` | `--cursor` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats show` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats show` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats show` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` | `--until-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` | `--within` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats newcomers` | `--answerer` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` | `--until-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` | `--checkpoints` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` | `--within` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats chats retention` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats tasks show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats tasks show` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats tasks show` | `--type` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats charts` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats charts` | `--chart-kind` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats charts` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats charts` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats charts` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats charts` | `--output` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `tasks list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--type` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--category` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--into` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--new` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--title` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--description` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--due` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--remind-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--assignee` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks plan` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks plan` | `--category` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks plan` | `--title` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks plan` | `--description` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks plan` | `--due` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks plan` | `--remind-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks plan` | `--assignee` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks link` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks link` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks link` | `--kind` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks related` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks related` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks duplicates` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks duplicates` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks duplicates reject` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks duplicates defer` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks merge` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks merge` | `--into` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks unmerge` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks agenda` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks agenda` | `--due-within` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks agenda` | `--unanswered` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks agenda` | `--waiting` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks agenda` | `--within` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks agenda` | `--holder` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks categories` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks scan` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks scan` | `--last` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks claim` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks claim` | `--lease` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks claim` | `--holder` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks release` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks release` | `--holder` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks close` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks close` | `--as` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks close` | `--reason` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks close` | `--certainty` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks close` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks reject` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks reject` | `--as-owner` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `search all` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search all` | `--only` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search all` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search all` | `--max-meetings` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search all` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search all` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search all` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search all` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--thread` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--thread-hops` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--thread-messages` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--thread-bytes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--thread-within` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--newest` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--context` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--discover` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search messages` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search notes` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search notes` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search notes` | `--filter` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search notes` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search notes` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search notes` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search notes` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--dims` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--max-chunks` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--filter` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `search conversations` | `--catch-up` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
+| `searches create` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--newest` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--context` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--selection` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches create` | `--replace` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches history` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches history` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches history` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches history` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches delete` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
+| `searches clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
 | `flood clear` |  | ✅ |  |
-| `recipients list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `recipients add` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `recipients remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `recipients clear` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `sends list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `sends list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `sends list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `sends list` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs show` | `--problems` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` | `--status` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` | `--error-code` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` | `--operation` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` | `--profile` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` | `--since-time` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs search` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `runs path` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `recipients list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts («recipients»)) |
+| `recipients add` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts («recipients»)) |
+| `recipients remove` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts («recipients»)) |
+| `recipients clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts («recipients»)) |
+| `sends list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts and src/sends/journal.test.ts) |
+| `sends list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts and src/sends/journal.test.ts) |
+| `sends list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts and src/sends/journal.test.ts) |
+| `sends list` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/messenger.test.ts and src/sends/journal.test.ts) |
+| `runs list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs show` | `--problems` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` | `--status` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` | `--error-code` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` | `--operation` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` | `--profile` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs search` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
+| `runs path` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/runs/command.test.ts and search.test.ts) |
 | `config show` |  | ✅ |  |
 | `config show` | `--bot` | ⛔ | a shared cli-core option; src/update.test.ts runs `config show` only to see the update notice after a command |
 | `config set` |  | ✅ |  |
 | `config set` | `--defaults` | ⛔ | cli-core's shared config command, tested in cli-core; src/groups.test.ts uses `config set` only to deny a permission |
 | `config set` | `--personal` | ⛔ | cli-core's shared config command, tested in cli-core; src/groups.test.ts uses `config set` only to deny a permission |
 | `config set` | `--bot` | ⛔ | cli-core's shared config command, tested in cli-core; src/groups.test.ts uses `config set` only to deny a permission |
-| `config unset` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `config unset` | `--defaults` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `config unset` | `--personal` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `config unset` | `--bot` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `config unset` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
+| `config unset` | `--defaults` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
+| `config unset` | `--personal` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
+| `config unset` | `--bot` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
 | `doctor` |  | ✅ |  |
 | `doctor` | `--online` | ✅ |  |
 | `doctor report` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
@@ -696,41 +696,41 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `doctor report create` | `--run` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
 | `doctor report create` | `--output` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
 | `commands` |  | ✅ |  |
-| `commands schema` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `complete` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `commands schema` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/commands-command.test.ts) |
+| `complete` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/complete-command.test.ts) |
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
 | `mcp` |  | ✅ |  |
-| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--port` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--revoke` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp config` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp config` | `--permission` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp setup` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp setup` | `--allow-writes` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp setup` | `--permission` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp doctor` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `mcp doctor` | `--permission` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `skill show` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `skill install` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `skill install` | `--for` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--port` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--revoke` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp config` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
+| `mcp config` | `--permission` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
+| `mcp setup` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
+| `mcp setup` | `--allow-writes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
+| `mcp setup` | `--permission` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
+| `mcp doctor` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
+| `mcp doctor` | `--permission` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
+| `skill show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
+| `skill install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
+| `skill install` | `--for` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | *global* | `--version` | ✅ |  |
-| *global* | `--verbose` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
+| *global* | `--verbose` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/messenger.test.ts (-v) |
 | *global* | `--json` | ✅ |  |
 | *global* | `--jsonl` | ✅ |  |
-| *global* | `--quiet` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--trace` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--debug` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
+| *global* | `--quiet` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/program.test.ts |
+| *global* | `--trace` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/messenger.test.ts |
+| *global* | `--debug` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/errors/reasons.test.ts |
 | *global* | `--timeout` | ✅ |  |
 | *global* | `--offline` | ✅ |  |
 | *global* | `--no-input` | ✅ |  |
-| *global* | `--max-input-bytes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--max-output-bytes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--brief` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--full` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
+| *global* | `--max-input-bytes` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: no test of its own yet |
+| *global* | `--max-output-bytes` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/agent-contract.test.ts |
+| *global* | `--brief` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/output-detail.test.ts |
+| *global* | `--full` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/output-detail.test.ts |
 | *global* | `--dry-run` | ✅ |  |
-| *global* | `--yes` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--record` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
-| *global* | `--no-record` | ⛔ | a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it |
+| *global* | `--yes` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/admin-commands.test.ts |
+| *global* | `--record` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/messenger.test.ts |
+| *global* | `--no-record` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/json-fields.test.ts |

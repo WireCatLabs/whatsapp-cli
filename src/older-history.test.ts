@@ -175,7 +175,7 @@ describe("when messages sync stops", () => {
     expect(item).toMatchObject({ fetched: 4, reached_last: true })
   })
 
-  it("refuses --dry-run without starting the engine: the phone pushes history, so there is nothing to estimate", async () => {
+  it("refuses --dry-run without starting the engine: the phone pushes history, there is no count", async () => {
     const result = await wa(["older", "messages", "sync", seed.busy, "--dry-run", "--json"], () => {
       throw new Error("a dry run must never start the engine")
     })

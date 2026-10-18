@@ -115,7 +115,7 @@ describe("wa chats members", () => {
     ).toEqual(everyone)
   })
 
-  it("audits a group's members against the store, asking for a sync while the store lacks the chat's start", async () => {
+  it("audits a group's members, asking for a sync while the store lacks the chat's start", async () => {
     const result = await acting("chats", "members", "audit", seed.busy, "--deep", "1", "--max-pages", "1")
     expect(result.code).toBe(0)
     expect(result.closed).toBe(true)
@@ -276,7 +276,7 @@ describe("wa contacts", () => {
     expect(result.body.phone ?? null).toBeNull()
   })
 
-  it("checks a person from their WhatsApp profile; the ban lists, Telegram's only, answer unknown or are not asked", async () => {
+  it("checks a person by their WhatsApp profile; Telegram's ban lists answer unknown", async () => {
     const checked = await acting("contacts", "check", seed.person)
     expect(checked.code).toBe(0)
     expect(checked.body.reasons.map((one: { reason: string }) => one.reason)).toEqual(["no_username", "no_bio"])
