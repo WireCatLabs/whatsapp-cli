@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**226 ✅ · 522 ⛔ · 0 ❌** — 240 commands, 508 options.
+**233 ✅ · 521 ⛔ · 0 ❌** — 242 commands, 512 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -449,6 +449,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `images embed` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
 | `images models list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
 | `images models download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `metadata get` |  | ✅ |  |
+| `metadata get` | `--chat` | ✅ |  |
+| `metadata refresh` |  | ✅ |  |
+| `metadata refresh` | `--chat` | ✅ |  |
+| `metadata refresh` | `--only-missing` | ✅ |  |
+| `metadata refresh` | `--limit` | ✅ |  |
 | `stats messages show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats messages show` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats messages show` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
@@ -742,7 +748,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `skill install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | `skill install` | `--for` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | *global* | `--version` | ✅ |  |
-| *global* | `--verbose` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/messenger.test.ts (-v) |
+| *global* | `--verbose` | ✅ |  |
 | *global* | `--json` | ✅ |  |
 | *global* | `--jsonl` | ✅ |  |
 | *global* | `--quiet` | ✅ |  |

@@ -740,3 +740,30 @@ describe("wa tags auto", () => {
     expect(JSON.parse(result.stdout).item.items).toMatchObject([{ source: "stored-chat", tags: [] }])
   })
 })
+
+// Last: its --only-missing refresh stores every group's metadata, which tags auto's store-only read must not see.
+describe("wa metadata", () => {
+  it("keeps a group's title and description from WhatsApp's group read, and answers them from the store", async () => {
+    const refreshed = await acting("metadata", "refresh", "--chat", seed.busy)
+    expect(refreshed.code, refreshed.stderr).toBe(0)
+    expect(refreshed.body.chats).toEqual([expect.objectContaining({ chat_id: seed.busy, description: null })])
+
+    const kept = await wa([PROFILE, "metadata", "get", "--chat", seed.busy, "--json"], () => {
+      throw new Error("a stored read must not start the engine")
+    })
+    expect(kept.code, kept.stderr).toBe(0)
+    expect(JSON.parse(kept.stdout).item).toMatchObject({ chat_id: seed.busy, metadata: { title: expect.any(String) } })
+
+    const missing = await acting("metadata", "refresh", "--only-missing", "--limit", "50")
+    expect(missing.code, missing.stderr).toBe(0)
+    expect(missing.body.chats.map((chat: { chat_id: string }) => chat.chat_id)).not.toContain(seed.busy)
+  })
+
+  it("refuses a one-to-one chat without asking WhatsApp", async () => {
+    const result = await acting("metadata", "refresh", "--chat", seed.dialog)
+    expect(result.code).toBe(0)
+    expect(result.body.chats).toEqual([
+      expect.objectContaining({ chat_id: seed.dialog, error: expect.objectContaining({ code: "validation_error" }) }),
+    ])
+  })
+})

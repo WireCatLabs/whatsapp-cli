@@ -193,6 +193,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   (`chats.archive`, `chats.unarchive`, `chats.pin`, `chats.unpin`, `chats.mark-unread`), allowed by default. Not yet
   checked live on the phone. Engine protocol 23, ops `archiveChat`, `unarchiveChat`, `pinChat`, `unpinChat` and
   `markChatUnread`.
+- **A file WhatsApp no longer keeps is asked of your phone again** (`messages download`): as WhatsApp's apps do, `wa`
+  asks the phone to upload it again, waits up to 20 seconds, and fetches the new copy. Without an answer the download
+  ends with `timeout`; a file the phone no longer has either is `not_found`. Engine protocol 24 (`download` carries the
+  message's key). Not yet run against WhatsApp.
+- **`messages forward` sends a stored place or contact card again**: the store now keeps a place's coordinates, name
+  and address, and a contact card itself, next to a file's keys, where no answer shows them. A place or card stored
+  before this, a live location and several cards in one message are still refused.
+- **`metadata get` and `metadata refresh`** read a group's title and description into the store for `tags auto`, as in
+  `tg`. A channel in the list answers with an error of its own.
 
 ## 0.1.0 — 17.10.2026
 

@@ -3,7 +3,7 @@ import { statSync, writeFileSync } from "node:fs"
 import type { Chat, Message } from "@wirecat/cli-core"
 import type { IdMaker, Seed } from "@wirecat/cli-core/testing"
 import * as v from "valibot"
-import { toWaAttachment } from "../adapter/map.js"
+import { isFile, toWaAttachment } from "../adapter/map.js"
 import {
   EngineError,
   type EngineEvent,
@@ -86,6 +86,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   uploads: { kind: string; name: string; size: number }[]
   /** Each file written for a download, by the attachment it was asked for. */
   downloads: WaAttachment[]
+  /** The message each download named, for the engine to ask the phone about a file WhatsApp no longer keeps. */
+  downloadKeys: WaKey[]
   forwards: WaForward[]
   /** Each request for older history, by the anchor and count it was asked with. */
   olderAsked: { anchor: WaAnchor; count: number }[]
@@ -158,6 +160,7 @@ export const fakeEngine = (
   const actions: FakeEngine["actions"] = []
   const uploads: FakeEngine["uploads"] = []
   const downloads: WaAttachment[] = []
+  const downloadKeys: WaKey[] = []
   const forwards: WaForward[] = []
   const olderAsked: FakeEngine["olderAsked"] = []
   const mutes: FakeEngine["mutes"] = []
@@ -199,6 +202,7 @@ export const fakeEngine = (
     actions,
     uploads,
     downloads,
+    downloadKeys,
     forwards,
     olderAsked,
     mutes,
@@ -289,9 +293,10 @@ export const fakeEngine = (
       })
       return post(chat, id, text, attachments.slice(0, 1), replyTo)
     },
-    download: async (attachment, path) => {
-      if (!attachment.ref) throw new EngineError("validation_error", "the store does not hold this file's keys")
+    download: async (attachment, path, key) => {
+      if (!isFile(attachment)) throw new EngineError("validation_error", "the store does not hold this file's keys")
       downloads.push(attachment)
+      downloadKeys.push(key)
       writeFileSync(path, syntheticBytes(attachment), { mode: 0o600, flag: "wx" })
     },
     forward: async (request) => {

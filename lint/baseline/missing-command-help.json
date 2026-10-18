@@ -7,5 +7,7 @@
   "contacts notes remove",
   "contacts notes show",
   "conversations consents list",
-  "conversations consents revoke"
+  "conversations consents revoke",
+  "metadata get",
+  "metadata refresh"
 ]

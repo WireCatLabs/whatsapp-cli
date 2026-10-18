@@ -207,7 +207,8 @@ A message carries one file; the text becomes its caption, except on a voice note
 or `.mov` goes as a video unless `--as-file`. A `--photo` and a video `--file` together go as one album, the text as
 the photo's caption. Photos, videos, voice notes, files and stickers that reach the local store
 can be saved and forwarded later, since the store keeps what WhatsApp needs to fetch them again; WhatsApp keeps a file
-for a limited time, so an old one may be gone. A place or a contact card is shown, not saved. WhatsApp has no speech
+for a limited time, and a download of one it no longer keeps asks your phone to upload it again. A place or a
+contact card is kept too, so it can be forwarded; neither is a file to save. WhatsApp has no speech
 recognition of its own, so `transcribe` uses a model on this machine (`wa models audio list`). What is kept, what
 can be fetched again and how to search the text inside files: [file attachments](attachments.md).
 

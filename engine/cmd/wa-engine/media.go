@@ -25,11 +25,29 @@ import (
 // waMediaRef is what whatsmeow needs to fetch and decrypt a file again. It is stored with the message as the
 // attachment's opaque provider reference, so a download, a transcript or a forward needs no copy of the message.
 type waMediaRef struct {
-	Media         string `json:"media"` // image, video, audio, document, sticker
-	DirectPath    string `json:"directPath"`
+	Media         string `json:"media,omitempty"` // image, video, audio, document, sticker
+	DirectPath    string `json:"directPath,omitempty"`
 	MediaKey      []byte `json:"mediaKey,omitempty"`
 	FileSHA256    []byte `json:"fileSha256,omitempty"`
 	FileEncSHA256 []byte `json:"fileEncSha256,omitempty"`
+
+	// A place or a contact card has no file; what a forward sends again is kept here instead. cli-core never prints
+	// a providerRef, so a vCard's phone number stays in the store.
+	Place *waPlace `json:"place,omitempty"`
+	Card  *waCard  `json:"card,omitempty"`
+}
+
+type waPlace struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Name      string  `json:"name,omitempty"`
+	Address   string  `json:"address,omitempty"`
+	URL       string  `json:"url,omitempty"`
+}
+
+type waCard struct {
+	Name  string `json:"name"`
+	VCard string `json:"vcard"`
 }
 
 // waAttachment follows cli-core's Attachment field for field and in its order, so a stored answer prints the same.
@@ -72,8 +90,7 @@ func refOf(media string, d whatsmeow.DownloadableMessage) *waMediaRef {
 		FileSHA256: d.GetFileSHA256(), FileEncSHA256: d.GetFileEncSHA256()}
 }
 
-// attachmentsOf lists what a message carries besides its text. A contact card keeps only its name: the vCard holds
-// a phone number, and nothing here stores one.
+// attachmentsOf lists what a message carries besides its text. A live location keeps no ref: it is not sent again.
 func attachmentsOf(m *waE2E.Message) []waAttachment {
 	switch {
 	case m == nil:
@@ -107,20 +124,31 @@ func attachmentsOf(m *waE2E.Message) []waAttachment {
 			Mime: x.GetMimetype(), Ref: refOf("sticker", x)}}
 	case m.LocationMessage != nil:
 		x := m.GetLocationMessage()
-		return []waAttachment{location(x.GetDegreesLatitude(), x.GetDegreesLongitude(), x.GetName(), x.GetAddress())}
+		place := location(x.GetDegreesLatitude(), x.GetDegreesLongitude(), x.GetName(), x.GetAddress())
+		place.Ref = &waMediaRef{Place: &waPlace{Latitude: x.GetDegreesLatitude(), Longitude: x.GetDegreesLongitude(),
+			Name: x.GetName(), Address: x.GetAddress(), URL: x.GetURL()}}
+		return []waAttachment{place}
 	case m.LiveLocationMessage != nil:
 		x := m.GetLiveLocationMessage()
 		return []waAttachment{location(x.GetDegreesLatitude(), x.GetDegreesLongitude(), "", "")}
 	case m.ContactMessage != nil:
-		return []waAttachment{{Kind: "contact", Name: m.GetContactMessage().GetDisplayName()}}
+		return []waAttachment{card(m.GetContactMessage())}
 	case m.ContactsArrayMessage != nil:
 		list := []waAttachment{}
 		for _, contact := range m.GetContactsArrayMessage().GetContacts() {
-			list = append(list, waAttachment{Kind: "contact", Name: contact.GetDisplayName()})
+			list = append(list, card(contact))
 		}
 		return list
 	}
 	return nil
+}
+
+func card(x *waE2E.ContactMessage) waAttachment {
+	a := waAttachment{Kind: "contact", Name: x.GetDisplayName()}
+	if x.GetVcard() != "" {
+		a.Ref = &waMediaRef{Card: &waCard{Name: x.GetDisplayName(), VCard: x.GetVcard()}}
+	}
+	return a
 }
 
 func location(lat, lng float64, name, address string) waAttachment {
@@ -135,6 +163,9 @@ func location(lat, lng float64, name, address string) waAttachment {
 // forwarded. WhatsApp clients forward by sending the same keys again; nothing is uploaded twice.
 func contentOf(a waAttachment, caption string, info *waE2E.ContextInfo) (*waE2E.Message, error) {
 	ref := a.Ref
+	if ref != nil && (ref.Place != nil || ref.Card != nil) {
+		return cardOrPlace(a, caption, info)
+	}
 	if ref == nil || ref.DirectPath == "" {
 		return nil, &failure{"validation_error", "the store does not hold this file's keys, so it cannot be sent again"}
 	}
@@ -181,6 +212,31 @@ func contentOf(a waAttachment, caption string, info *waE2E.ContextInfo) (*waE2E.
 			DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, FileSHA256: ref.FileSHA256,
 			FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
 			Width: nonZero(a.Width), Height: nonZero(a.Height), ContextInfo: info,
+		}}, nil
+	}
+	return nil, &failure{"validation_error", "this kind of attachment cannot be sent again"}
+}
+
+// cardOrPlace rebuilds a place or a contact card from what the store kept, as the phone sent it.
+func cardOrPlace(a waAttachment, caption string, info *waE2E.ContextInfo) (*waE2E.Message, error) {
+	if caption != "" {
+		return nil, &failure{"validation_error", "WhatsApp sends a place or a contact card without text"}
+	}
+	optional := func(s string) *string {
+		if s == "" {
+			return nil
+		}
+		return proto.String(s)
+	}
+	switch place, card := a.Ref.Place, a.Ref.Card; {
+	case a.Kind == "location" && place != nil:
+		return &waE2E.Message{LocationMessage: &waE2E.LocationMessage{
+			DegreesLatitude: proto.Float64(place.Latitude), DegreesLongitude: proto.Float64(place.Longitude),
+			Name: optional(place.Name), Address: optional(place.Address), URL: optional(place.URL), ContextInfo: info,
+		}}, nil
+	case a.Kind == "contact" && card != nil && card.VCard != "":
+		return &waE2E.Message{ContactMessage: &waE2E.ContactMessage{
+			DisplayName: optional(card.Name), Vcard: proto.String(card.VCard), ContextInfo: info,
 		}}, nil
 	}
 	return nil, &failure{"validation_error", "this kind of attachment cannot be sent again"}
@@ -390,12 +446,11 @@ func (e *engine) download(req request) error {
 	if err != nil {
 		return &failure{"validation_error", "the download could not create its file"}
 	}
-	mediaKey := ref.MediaKey
-	if ref.FileEncSHA256 == nil {
-		mediaKey = nil
+	err = e.fetch(ref, media, file)
+	// A channel's files have no key, and the phone is asked by the message's key; without both, the expiry stands.
+	if _, keyErr := targetOf(req); expired(err) && len(ref.MediaKey) > 0 && keyErr == nil {
+		err = e.fetchAgain(req, ref, media, file)
 	}
-	err = e.client.DownloadMediaWithPathToFile(e.ctx, ref.DirectPath, ref.FileEncSHA256, ref.FileSHA256, mediaKey,
-		media, "", false, file)
 	closeErr := file.Close()
 	if err == nil {
 		err = closeErr
@@ -405,6 +460,15 @@ func (e *engine) download(req request) error {
 		return mediaFailure(err)
 	}
 	return nil
+}
+
+func (e *engine) fetch(ref *waMediaRef, media whatsmeow.MediaType, file *os.File) error {
+	mediaKey := ref.MediaKey
+	if ref.FileEncSHA256 == nil {
+		mediaKey = nil
+	}
+	return e.client.DownloadMediaWithPathToFile(e.ctx, ref.DirectPath, ref.FileEncSHA256, ref.FileSHA256, mediaKey,
+		media, "", false, file)
 }
 
 func mediaFailure(err error) error {
