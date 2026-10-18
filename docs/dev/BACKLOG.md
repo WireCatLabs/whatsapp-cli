@@ -13,8 +13,10 @@ Open work, most important first. The plan in flight is
    086622f):** the owner ran `bin/live-oneshot-drop`. The message queued while nothing was connected was 0 by search
    and 0 among the own chat's newest 50, after one `doctor --online` and a restarted `serve`; the control sent while
    `serve` ran was found (1 and 1). So a one-shot connection takes queued messages and they never reach the store.
-   Cause: the engine emits them, the TS side keeps them in memory (`src/engine/events.ts`), a one-shot command never
-   reads them, and whatsmeow has already acknowledged them. Fix: a gap in cli-core — a one-shot connection of a
+   Cause: the engine emits them, `wa` keeps an event nobody listens for in memory (`src/engine/events.ts:17`), a
+   one-shot command never reads it, and whatsmeow has already sent the receipt that tells WhatsApp it arrived
+   ([`message.go:489-496`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L489-L496), the version
+   in `engine/go.mod`). Fix: a gap in cli-core — a one-shot connection of a
    messenger whose history lives in the store needs a passive listener that saves what arrives (queued for
    cli-core); `wa` then implements that port over `engine.listen`. Until then, keep `serve` running: commands then go
    through it and nothing is lost. A message arriving during a longer one-shot `messages send` is not covered by the
