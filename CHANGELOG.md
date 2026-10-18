@@ -184,8 +184,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   callers" (not yet checked on a real account). `--hide-online off` shows last seen to contacts. `set` sends one
   request per setting: if WhatsApp fails one, those sent before it stay changed, and the error says so; a change cut
   by a dropped connection answers `outcome_unknown` (exit 14), since it may have gone through.
-- **`wa <profile> account update` sets the owner's WhatsApp name, about line and profile photo**: `--first-name` sets the name
-  people see, with `--last-name` joined to it after a space (WhatsApp keeps one name, so a last name alone is
+- **`wa <profile> account update` sets the owner's WhatsApp name, about line and profile photo**: `--first-name` sets
+  the name people see, with `--last-name` joined to it after a space (WhatsApp keeps one name, so a last name alone is
   refused), and `--description` the "about" line. The name is a setting WhatsApp syncs to the other devices; others
   probably see it only once the phone next comes online, since a device tells WhatsApp its name when it says it is
   online and `wa` never does (not checked live). `--photo` sets the profile photo (not checked live): `wa` takes
