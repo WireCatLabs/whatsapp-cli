@@ -27,9 +27,10 @@ type engine struct {
 	out    *wire
 	conv   *converter
 
-	mu     sync.Mutex
-	chats  map[string]waChat // seen in this process, for resolving a name
-	groups []waChat          // fetched once, on the first directory request
+	mu       sync.Mutex
+	chats    map[string]waChat // seen in this process, for resolving a name
+	groups   []waChat          // fetched once, on the first directory request
+	channels []waChat          // the followed channels, likewise
 
 	addressing map[types.JID]types.AddressingMode // per group, asked once
 
@@ -187,6 +188,9 @@ func (e *engine) dispatch(req request) (any, error) {
 		return value, err
 	}
 	if value, handled, err := e.dispatchSettings(req); handled {
+		return value, err
+	}
+	if value, handled, err := e.dispatchChannels(req); handled {
 		return value, err
 	}
 	return nil, &failure{"validation_error", "the engine has no such request"}

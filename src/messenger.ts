@@ -158,7 +158,7 @@ export const WHATSAPP: Messenger = {
   // Ids are WhatsApp's own strings, so held stretches are keyed by time. A page is one request to the phone for older
   // messages (the adapter's `history`), and WhatsApp's own clients ask 50 at a time.
   fetching: { page: 50, maxPageSize: 50, pause: "2s", jitter: true, maxPages: 20, orderBy: "time" },
-  chatArgument: "a chat: its name, or its WhatsApp id (…@lid, …@g.us)",
+  chatArgument: "a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter)",
   inviteLinks: /chat\.whatsapp\.com\/[A-Za-z0-9]+/i,
   // The chat with yourself has your own id.
   savedChatId: (account) => account.account,

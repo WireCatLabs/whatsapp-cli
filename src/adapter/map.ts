@@ -66,8 +66,16 @@ export const toMessage = (message: WaMessage): Message => ({
   ...(message.replyTo === null ? {} : { replyToId: message.replyTo }),
   forwardedFrom: null,
   reactions: null,
-  // Kept with the message in the store: a vote names answers by text, and only the poll's message has them.
-  ...(message.poll === undefined ? {} : { providerMetadata: { poll: message.poll } }),
+  // Kept with the message in the store: a vote names answers by text, and only the poll's message has them; a
+  // channel's history is read back from a post's server id.
+  ...(message.poll === undefined && message.serverId === undefined
+    ? {}
+    : {
+        providerMetadata: {
+          ...(message.poll === undefined ? {} : { poll: message.poll }),
+          ...(message.serverId === undefined ? {} : { serverId: message.serverId }),
+        },
+      }),
   ...(message.starred ? { starred: true } : {}),
 })
 

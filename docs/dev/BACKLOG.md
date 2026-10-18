@@ -140,6 +140,18 @@ Open work, most important first. The plan in flight is
    - **Forwarding several contact cards** (`ContactsArrayMessage`) and a live location is refused; a place or a card
      stored before `wa` kept their content too.
    - **Media leftovers**: files to channels; `metadata refresh` for a channel (`group` reads groups only).
+   - **Channels: what following and reading left open.** Files to a channel (whatsmeow's `UploadNewsletter`, not
+     encrypted; `media.go` refuses them), and downloading a channel post's file (no media key). Mentions in channel
+     posts. A live edit or deletion of a post is passed over: WhatsApp addresses it by the server id, which the
+     store keeps only in `providerMetadata`. Reactions and view counts (`NewsletterSendReaction`,
+     `NewsletterMarkViewed`) are not built. The owner's own posts read back as the channel's (`outgoing: false`):
+     whatsmeow does not say. A channel's settings (`chats show`, `chats update`) are refused as "not a group". A
+     one-shot `chats join` stores no chat row: the push has no `feed` to land in. A history push that
+     carries a channel stores its posts without a server id, so `messages sync` cannot count back from one of them.
+     The 50 posts per read is wa's choice: whatsmeow sets no limit and WhatsApp's own is not known. **Live checks**
+     (read-only, then the owner's own channel): `GetSubscribedNewsletters` and `GetNewsletterMessages` on a linked
+     web device, whether a followed channel's new posts arrive live without `NewsletterSubscribeLiveUpdates`, and
+     whether a post's message id from a read equals the one a live post carries.
    - **Albums: only the first file is stored.** An album goes as an `AlbumMessage`, then each file as a plain photo
      or video tied to it by `MessageAssociation` (`MEDIA_ALBUM`), but cli-core's `Sent` holds one message, so the
      store keeps the photo's message and not the others; WhatsApp is not seen to echo a device's own sends back to

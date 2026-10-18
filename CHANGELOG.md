@@ -113,6 +113,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   caller that matched the old "N chats share that name" must match the new text. Only a name the store does not hold
   is asked of WhatsApp's chat list, so a one-shot command now finds a stored group by its name. `watch` titles a
   chat from the store and follows its renames; a chat the store has never held has no title in `watch`.
+- **A live edit or deletion of a channel post is no longer passed on**: `watch` and `serve` used to hand it on under
+  an id the store does not file the post by. A channel's posts are now read with `messages sync <channel>`.
 
 ### Fixed
 
@@ -229,6 +231,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   you" section hold the open tasks someone else does, oldest first, each with its `assignees`.
 - **`wa commands --json` has two new keys** (cli-base 0.44.0): `runnable: true` on a group that runs on its own, and
   `offline: false` on a command that cannot answer offline. A reader that rejects unknown keys must accept them.
+- **WhatsApp channels** (whatsmeow's newsletters): `chats join https://whatsapp.com/channel/<code>` follows one and
+  `chats leave <channel>` unfollows it, both through the profile's permissions; the followed channels reach the chat
+  list as `kind: "channel"` when `serve` or `watch` connects; `messages sync <channel>` reads its posts from
+  WhatsApp's servers into the local store, newest first, 50 at a time. A post keeps its message id, and its server
+  id rides in `providerMetadata.serverId`. Engine protocol 28, ops `channel`, `channelMessages`, `followChannel` and
+  `unfollowChannel`.
 
 ## 0.1.0 — 17.10.2026
 

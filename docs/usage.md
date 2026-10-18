@@ -222,6 +222,30 @@ WhatsApp keeps no history on its servers, so older messages can only come from y
 WhatsApp is open on it: `wa personal messages sync "Book club"` asks for them, one chat at a time
 ([how](archive.md#older-history-from-your-phone)).
 
+## Channels
+
+A WhatsApp channel is a one-way chat: its admins post, everyone else follows and reads. A channel id ends in
+`@newsletter` (`120363000000000001@newsletter`).
+
+```sh
+wa personal chats join https://whatsapp.com/channel/AAAAAAAAAAAAAAAAAAAAAA   # follow a channel by its link
+wa personal chats list 'kind:channel' --offline                            # the channels you follow
+wa personal messages sync 120363000000000001@newsletter --limit 100         # read its posts into the local store
+wa personal messages list 120363000000000001@newsletter
+wa personal chats leave 120363000000000001@newsletter                     # unfollow it
+```
+
+- **The channels you follow reach the chat list** when `wa serve` or `wa watch` connects: `wa` asks WhatsApp for
+  them once per connection. While `serve` runs, `chats join` adds the one it follows at once.
+- **A channel's posts are kept on WhatsApp's servers**, unlike a chat's messages, so `messages sync` reads them from
+  there and not from your phone: the newest first, then further back, 50 at a time. `messages list` then shows them
+  from the local store.
+- **The channel is the sender** of every post, and a post you made reads as the channel's, not as yours
+  (`outgoing: false`): WhatsApp does not say which posts are your own.
+- `chats join` and `chats leave` go through the profile's [permissions](permissions.md) like a group's: the
+  channel's admins see that you followed. A follower count stands in for the member list, which WhatsApp does not
+  show.
+
 ## Not in wa yet
 
 `wa` shares its command tree with tg and max, so some commands are there that WhatsApp cannot run. Each one stops
