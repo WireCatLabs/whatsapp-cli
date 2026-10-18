@@ -167,7 +167,9 @@ wa personal stats chats show 120363000000000001@g.us --offline --since-time 30d 
 
 Messages, active members, replies, reactions and questions answered, counted from the local store for a period,
 7 days unless `--since-time` says otherwise. A count covers only what the store holds; a stretch before `wa` linked
-is not there, so a number is a minimum, never a proof of silence.
+is not there, so a number is a minimum, never a proof of silence. `wa` does not record joins and leaves yet, so the
+JSON's `members.joined` and `members.left` read `0` whatever happened; `chats members history` shows who joined or
+left between member fetches.
 
 ## One group and who is in it
 
@@ -224,7 +226,7 @@ With `--offline`, `chats members list` shows the members stored before instead o
 `chats members fetch` keeps the member list in the local store. `chats members history` shows what the fetches
 recorded: everyone present at the first fetch, then who joined or left at each later one. `chats events` answers from
 the local store and never connects, but `wa` does not record WhatsApp's joins and leaves there yet, so it shows
-nothing. `wa` cannot set a group's photo.
+nothing. An empty list does not mean nobody joined. `wa` cannot set a group's photo.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's
 [permissions](permissions.md) allow.

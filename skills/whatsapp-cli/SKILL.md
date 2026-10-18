@@ -27,11 +27,13 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
-Not built yet: `messages pin|unpin`, several files in one message, deleting for the owner alone, `chats events`,
+Not built yet: `messages pin|unpin`, several files in one message, deleting for the owner alone,
 `chats inspect`, the group photo, `account update`, `account sessions`, `chats create --channel`. WhatsApp has no
 `chats folders`, no `messages comments`, no second invite link and no partial admin rights, and keeps the address
 book on the phone, so `contacts add|remove|rename|import` are refused. `chats show` answers from the store;
-`chats members list` asks WhatsApp, and with `--offline` shows the stored members.
+`chats members list` asks WhatsApp, and with `--offline` shows the stored members. `chats events` answers from the
+store, which holds no joins or leaves yet: its empty list and the `0` joins in `stats chats show` do not mean nobody
+joined; `chats members history` shows who joined or left between member fetches.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
