@@ -62,6 +62,9 @@ Open work, most important first. The plan in flight is
      and a store upsert that can clear a parent once a group is unlinked.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
+   - **Live checks of the chat-state writes** in the own chat: `account privacy show`, `chats mute` and `unmute`,
+     `messages pin` and `unpin`, and delete for the owner alone (W6). The owner runs `bin/live-chat-state` for them;
+     its last table names the line of this item each answer settles, and it skips what is not built yet.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
      `messages delete` without `--for-everyone` is refused rather than built from a guessed patch. Until it is built,
      `WHATSAPP.deleteForMe` is `false`, so an agent's MCP delete is refused; building it means setting that to `true`.

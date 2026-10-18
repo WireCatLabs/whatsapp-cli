@@ -1,0 +1,210 @@
+#!/usr/bin/env sh
+# Live checks of the chat-state writes (BACKLOG item 5): privacy read back, a mute and an unmute, a pin and an
+# unpin, a delete for the owner alone (scenario W6). Each step ends with a question to the owner at the phone.
+# The owner runs it from a terminal; an agent never does.
+#
+#   bin/live-chat-state <profile>
+#
+# It writes only to the own chat, through the running `serve`, and asks before each write. A step whose command
+# this build does not have yet is skipped. It prints exit codes, error codes and yes/no only: no message text, no
+# id, no number.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+own=$(own_chat "$profile") || exit 1
+serve_running "$profile" ||
+  die "start $wa $profile serve first: the writes go through it, so no one-shot connection takes the device"
+
+paths=$(wa_json "$profile" commands --timeout 30s |
+  json 'd.commands.flatMap(function walk(one) {
+    return [one.path.join(" "), ...one.commands.flatMap(walk)]
+  }).join("\n")') ||
+  die "wa commands failed"
+
+run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
+marker="wa state check $run"
+errs=$(mktemp)
+muted=no
+pinned=no
+sent=no
+marker_id=""
+privacy=skipped mute=skipped unmute=skipped pin=skipped unpin=skipped forme=skipped
+
+leftover() {
+  rm -f "$errs"
+  [ "$muted" = no ] || echo "your own chat may still be muted (for 1 h at most) — unmute it from the phone" >&2
+  [ "$pinned" = no ] || echo "the marker \"$marker\" may still be pinned in your own chat — unpin it on the phone" >&2
+  [ "$sent" = no ] || echo "the marker \"$marker\" is still in your own chat — delete it from the phone" >&2
+}
+trap leftover EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+has() {
+  printf '%s\n' "$paths" | grep -qx "$1"
+}
+
+# One wa call: its stdout in $out, its exit code in $rc. Its stderr stays in $errs and is never printed whole,
+# since a refusal can quote the chat.
+attempt() {
+  out=$(wa_json "$@" 2>"$errs") && rc=0 || rc=$?
+}
+
+# The error's code ("validation_error", "settings.keys-missing"), the one part of a refusal that is safe to print.
+error_code() {
+  grep -o '"code": *"[A-Za-z_.-]*"' "$errs" | head -n 1 | sed 's/.*"\([^"]*\)"$/\1/'
+}
+
+report() {
+  if [ "$rc" = 0 ]; then
+    echo "$1: exit 0"
+  else
+    echo "$1: exit $rc, error ${2:-$(error_code)}"
+  fi
+}
+
+# A command listed but refused before anything is sent: cli-core's refusal of a method wa lacks, or wa's own of a
+# delete that is not for everyone.
+not_built() {
+  [ "$rc" = 2 ] && grep -q -e "this messenger cannot" -e "deletes only for everyone so far" "$errs"
+}
+
+# Asks until the answer is y or n; prints yes or no.
+phone() {
+  while :; do
+    printf '%s [y/n] ' "$1" >&2
+    read -r reply || exit 130
+    case "$reply" in
+      y | Y | yes) echo yes && return ;;
+      n | N | no) echo no && return ;;
+    esac
+  done
+}
+
+cat <<EOF
+
+Plan, on profile $profile, in your own chat only:
+  1. wa account privacy show: read only; you compare it with the phone's Settings > Privacy
+  2. wa chats mute --until 1h, then wa chats unmute
+  3. wa messages send: the marker "$marker"; wa messages pin --notify on it, then wa messages unpin
+  4. wa messages delete, for you only (no --for-everyone): the marker goes from your devices
+After each step it asks what the phone shows. A step this build has no command for is skipped.
+EOF
+
+echo
+echo "Step 1: account privacy show (reads, changes nothing)"
+if has "account privacy show"; then
+  attempt "$profile" account privacy show --timeout 60s
+  report "privacy show"
+  if [ "$rc" = 0 ]; then
+    printf '%s' "$out" | json 'Object.entries(d.item).map(([name, value]) => `  ${name}: ${value}`).join("\n")'
+    echo "  (a setting left out is one WhatsApp keeps with exceptions, which wa does not name)"
+    echo "  on the phone: calls = Calls > Silence unknown callers (contacts when on); chat_invites = Groups;"
+    echo "  hide_online = Last seen and online set to Nobody and Same as last seen"
+    privacy=$(phone "Do these match the phone's Settings > Privacy?")
+  else
+    privacy=failed
+  fi
+else
+  echo "not built in this checkout yet"
+fi
+
+echo
+echo "Step 2: chats mute and unmute"
+if has "chats mute" && has "chats unmute"; then
+  confirm "Step 2 mutes your own chat for 1 hour."
+  attempt "$profile" chats mute "$own" --until 1h --yes --timeout 60s
+  report "chats mute"
+  if [ "$rc" = 0 ]; then
+    muted=yes
+    mute=$(phone "Does the phone show your own chat muted (the crossed-out speaker)?")
+    confirm "Next it unmutes your own chat."
+    attempt "$profile" chats unmute "$own" --yes --timeout 60s
+    report "chats unmute"
+    if [ "$rc" = 0 ]; then
+      muted=no
+      unmute=$(phone "Does the phone show your own chat unmuted again?")
+    else
+      unmute=failed
+    fi
+  else
+    mute=failed
+  fi
+else
+  echo "not built in this checkout yet"
+fi
+
+echo
+echo "Step 3: a marker message, pinned and unpinned"
+confirm "Step 3 sends the marker \"$marker\" to your own chat."
+attempt "$profile" messages send "$own" "$marker" --yes --timeout 60s
+report "messages send"
+[ "$rc" = 0 ] || die "the send failed — if \"$marker\" is in your own chat, delete it from the phone"
+sent=yes
+marker_id=$(printf '%s' "$out" | json 'd.item.message.id') && [ -n "$marker_id" ] ||
+  die "messages send gave no message id"
+
+if has "messages pin" && has "messages unpin"; then
+  confirm "Next it pins the marker, telling the chat (your own chat: only you)."
+  attempt "$profile" messages pin "$own" "$marker_id" --notify --yes --timeout 60s
+  if not_built; then
+    echo "messages pin: not built in this checkout yet"
+  else
+    report "messages pin"
+    if [ "$rc" = 0 ]; then
+      pinned=yes
+      pin=$(phone "Does the phone show the marker pinned at the top of your own chat?")
+      confirm "Next it unpins the marker."
+      attempt "$profile" messages unpin "$own" "$marker_id" --yes --timeout 60s
+      report "messages unpin"
+      if [ "$rc" = 0 ]; then
+        pinned=no
+        unpin=$(phone "Is the pin gone from the top of your own chat?")
+      else
+        unpin=failed
+      fi
+    else
+      pin=failed
+    fi
+  fi
+else
+  echo "not built in this checkout yet"
+fi
+
+echo
+echo "Step 4: delete the marker for you only (W6)"
+confirm "Step 4 deletes the marker for you only: it goes from your devices, not from the chat."
+attempt "$profile" messages delete "$own" "$marker_id" --allow-dangerous --yes --timeout 60s
+if not_built; then
+  echo "messages delete for you only: not built in this checkout yet"
+  confirm "So it deletes the marker for everyone instead, to leave your own chat as it was."
+  attempt "$profile" messages delete "$own" "$marker_id" --for-everyone --allow-dangerous --yes --timeout 60s
+  report "messages delete --for-everyone"
+  [ "$rc" != 0 ] || sent=no
+else
+  report "messages delete"
+  if [ "$rc" = 0 ]; then
+    sent=no
+    forme=$(phone "Is the marker gone from your own chat on the phone?")
+  else
+    forme=failed
+  fi
+fi
+
+cat <<EOF
+
+Step                     Phone    BACKLOG item 5 line it settles
+1 privacy show           $(printf '%-8s' "$privacy") "Live checks of account privacy": show, and calladd known
+2 chats mute             $(printf '%-8s' "$mute") "Live checks of chats mute": a one-to-one chat addressed by its LID
+2 chats unmute           $(printf '%-8s' "$unmute") the same line, the unmute
+3 messages pin --notify  $(printf '%-8s' "$pin") "Message pins": a pin in the own chat (a group stays open)
+3 messages unpin         $(printf '%-8s' "$unpin") the same line, the unpin in the own chat
+4 delete for you only    $(printf '%-8s' "$forme") "Live check of delete for the owner alone": the own message (W6)
+
+A yes settles that part of the line; no or failed is a bug to file; skipped waits for that feature's build.
+EOF

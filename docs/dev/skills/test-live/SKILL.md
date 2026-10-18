@@ -50,8 +50,8 @@ never stops the owner's `serve`, and never kills a process it did not start.
 
 Sends go only to the own chat. Keep reads small (`--limit 3`).
 
-Three checks are scripts the owner runs, never the agent: `bin/live-oneshot-drop`, `bin/live-poll-vote` and
-`bin/live-fresh-link` ([live-scenarios.md, "Scripts the owner runs"](../../live-scenarios.md#scripts-the-owner-runs)).
+Four checks are scripts the owner runs, never the agent: `bin/live-oneshot-drop`, `bin/live-poll-vote`,
+`bin/live-fresh-link` and `bin/live-chat-state` ([live-scenarios.md, "Scripts the owner runs"](../../live-scenarios.md#scripts-the-owner-runs)).
 When a change touches what one covers, name the script and its profile argument to the owner, and record the lines
 it prints.
 
