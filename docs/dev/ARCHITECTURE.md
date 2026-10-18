@@ -217,8 +217,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `archiveChat`, `unarchiveChat`, `markChatRead` and `markChatUnread` (`engine/cmd/wa-engine/chatlist.go`; the same
   newest-message key and `timestamp`, or for `markChatRead` the `--until-id` message's) send `BuildArchive`, whose
   archive also unpins the chat, and `BuildMarkChatAsRead` with read true or false. The adapter's `markRead` sends
-  `markChatRead` before the `read` receipt, since a receipt does not take a mark-unread off. `pinChat` and `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server
-  cannot read.
+  `markChatRead` before the `read` receipt, since a receipt does not take a mark-unread off. `pinChat` and
+  `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server cannot read.
 - **Channel requests** (`engine/cmd/wa-engine/newsletters.go`; the contract in
   [`src/engine/channels.ts`](../../src/engine/channels.ts)): `channel` (`GetNewsletterInfo`, with the account's
   role), `channelMessages` (`jid`, `count` up to 50, `before` a server id; `GetNewsletterMessages`, asked past a page

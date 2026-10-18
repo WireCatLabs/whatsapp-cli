@@ -10,8 +10,8 @@ import (
 
 const notInTheChatList = "wa archives, pins and marks unread chats and groups, not channels"
 
-// arrangeChat archives, unarchives or marks read or unread a chat, up to its newest stored message: WhatsApp's apps read the
-// range to tell what came after. Nobody in the chat is told.
+// arrangeChat archives, unarchives or marks read or unread a chat, up to the message the request names: WhatsApp's
+// apps read the range to tell what came after. Nobody in the chat is told.
 func (e *engine) arrangeChat(req request) error {
 	return e.sendUpTo(req, notInTheChatList, func(chat types.JID, at time.Time, last *waCommon.MessageKey) appstate.PatchInfo {
 		return chatListPatch(req.Op, chat, at, last)

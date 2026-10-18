@@ -85,8 +85,8 @@ Open work, most important first. The plan in flight is
      a live re-check (step 7) is open.
    - **Live checks of `chats mute`**: the own chat, addressed by its LID, mutes and unmutes (2026-10-18). Open:
      whether the phone applies a mute addressed to a one-to-one chat with someone else by its LID when it keys that
-     chat by phone number (whatsmeow maps neither way), and how soon after a fresh link the settings keys arrive. Channels are refused; whatsmeow's `NewsletterToggleMute`
-     would mute one, without an end time.
+     chat by phone number (whatsmeow maps neither way), and how soon after a fresh link the settings keys arrive.
+     Channels are refused; whatsmeow's `NewsletterToggleMute` would mute one, without an end time.
    - **The store does not learn of a mute.** Nothing updates a chat's `muted` after `chats mute`, and the engine
      reads no live mute events, so `inbox` leaves the chat in until the next history push. That push now reads any
      end past the year 9999 (a -1 in the unsigned field) as a mute for good; whether the phone writes it as all ones,
@@ -125,10 +125,10 @@ Open work, most important first. The plan in flight is
    - **Live check of delete for the owner alone.** `messages delete` without `--for-everyone` sends a hand-built
      `deleteMessageForMe` patch, pinned against WhatsApp Web's own module, Cobalt and whatsapp-rust. The phone drops
      the owner's own message in the own chat (2026-10-18). Open: that it drops a message from someone else in a group
-     (the participant field) and one in a one-to-one chat; and that it keeps the saved files. wa sends the chat id the store holds as
-     it is. WhatsApp Web, once the account's one-to-one chats moved to LIDs, writes a chat stored by phone number as
-     its LID instead (`WAWebSyncdGetChat.getChatJidMutationIndexForChat`), so a chat the store holds by phone number
-     may be dropped; one held by its LID matches.
+     (the participant field) and one in a one-to-one chat; and that it keeps the saved files. wa sends the chat id
+     the store holds as it is. WhatsApp Web, once the account's one-to-one chats moved to LIDs, writes a chat stored
+     by phone number as its LID instead (`WAWebSyncdGetChat.getChatJidMutationIndexForChat`), so a chat the store
+     holds by phone number may be dropped; one held by its LID matches.
    - **Live check of starring.** `messages star` and `unstar` send a hand-built `star` patch, pinned against WhatsApp
      Web's `WAWebStarMessageSync`, Cobalt and whatsapp-rust. The phone shows and drops the star on the owner's own
      message in the own chat (2026-10-18). Open: someone else's message in a group (the participant field) and one in
