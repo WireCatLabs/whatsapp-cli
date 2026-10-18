@@ -158,7 +158,10 @@ describe("wa messages pin", () => {
       arguments: { chat: seed.busy, message: theirs.id, notify: false },
     })
     await mcp.close()
-    expect((answer.body as { error: { code: string } }).error.code).toBe("validation_error")
+    expect((answer.body as { error: unknown }).error).toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("notify"),
+    })
     expect(starts).toBe(0)
   })
 
