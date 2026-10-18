@@ -52,6 +52,9 @@ removes it.
 | `analysis_base_url` | provider default | analysis API endpoint | `build --base-url` |
 | `models` | none | external models by purpose | `WA_MODELS_*` variables |
 
+The settings for search stemming, phone countries, tasks and account groups (`search_stemmers.*`, `phone_countries`,
+`task_*`, `account_groups.*`) are listed under [`wa config set`](commands.md#wa-config-set).
+
 The file is written `0600` when first created. It holds no secret.
 
 ## Environment variables
@@ -65,6 +68,9 @@ The file is written `0600` when first created. It holds no secret.
 | `WA_CONFIG_DIR`, `WA_STATE_DIR`, `WA_CACHE_DIR` | move the three directories |
 | `MESSAGING_STORE` | the path of the local store file |
 | `WIRECAT_STATE_DIR` | the WireCat folder every CLI shares: the local store and the speech models |
+| `WA_READ_ONLY` | `1` makes this process read-only: every change, linking and unlinking the device included, is refused |
+| `WA_ENGINE` | the path of an engine program to run instead of the installed one |
+| `WA_ENGINE_LOG` | a file the engine appends its warnings to, phone numbers masked; unset, it logs nothing |
 | `WA_NO_UPDATE_CHECK` | `1` turns off the daily "a newer version exists" line |
 | `NO_COLOR` | no colour in the table view |
 | `WA_EMBEDDING_*`, `WA_ANALYSIS_*`, `WA_MODELS_*` | model settings |
