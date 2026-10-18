@@ -35,11 +35,13 @@ sent=no
 marker_id=""
 privacy=skipped mute=skipped unmute=skipped pin=skipped unpin=skipped forme=skipped
 
+# Each flag is set before its write: a write cut by the timeout or a Ctrl-C may still reach WhatsApp. Exit 2 is a
+# refusal before anything is sent, so it clears the flag again.
 leftover() {
   rm -f "$errs"
   [ "$muted" = no ] || echo "your own chat may still be muted (for 1 h at most) — unmute it from the phone" >&2
   [ "$pinned" = no ] || echo "the marker \"$marker\" may still be pinned in your own chat — unpin it on the phone" >&2
-  [ "$sent" = no ] || echo "the marker \"$marker\" is still in your own chat — delete it from the phone" >&2
+  [ "$sent" = no ] || echo "the marker \"$marker\" may still be in your own chat — delete it from the phone" >&2
 }
 trap leftover EXIT
 trap 'exit 130' INT
@@ -118,10 +120,10 @@ echo
 echo "Step 2: chats mute and unmute"
 if has "chats mute" && has "chats unmute"; then
   confirm "Step 2 mutes your own chat for 1 hour."
+  muted=yes
   attempt "$profile" chats mute "$own" --until 1h --yes --timeout 60s
   report "chats mute"
   if [ "$rc" = 0 ]; then
-    muted=yes
     mute=$(phone "Does the phone show your own chat muted (the crossed-out speaker)?")
     confirm "Next it unmutes your own chat."
     attempt "$profile" chats unmute "$own" --yes --timeout 60s
@@ -134,6 +136,7 @@ if has "chats mute" && has "chats unmute"; then
     fi
   else
     mute=failed
+    [ "$rc" != 2 ] || muted=no
   fi
 else
   echo "not built in this checkout yet"
@@ -142,22 +145,24 @@ fi
 echo
 echo "Step 3: a marker message, pinned and unpinned"
 confirm "Step 3 sends the marker \"$marker\" to your own chat."
+sent=yes
 attempt "$profile" messages send "$own" "$marker" --yes --timeout 60s
 report "messages send"
-[ "$rc" = 0 ] || die "the send failed — if \"$marker\" is in your own chat, delete it from the phone"
-sent=yes
+[ "$rc" != 2 ] || sent=no
+[ "$rc" = 0 ] || die "the send failed"
 marker_id=$(printf '%s' "$out" | json 'd.item.message.id') && [ -n "$marker_id" ] ||
   die "messages send gave no message id"
 
 if has "messages pin" && has "messages unpin"; then
   confirm "Next it pins the marker, telling the chat (your own chat: only you)."
+  pinned=yes
   attempt "$profile" messages pin "$own" "$marker_id" --notify --yes --timeout 60s
   if not_built; then
+    pinned=no
     echo "messages pin: not built in this checkout yet"
   else
     report "messages pin"
     if [ "$rc" = 0 ]; then
-      pinned=yes
       pin=$(phone "Does the phone show the marker pinned at the top of your own chat?")
       confirm "Next it unpins the marker."
       attempt "$profile" messages unpin "$own" "$marker_id" --yes --timeout 60s
@@ -170,6 +175,7 @@ if has "messages pin" && has "messages unpin"; then
       fi
     else
       pin=failed
+      [ "$rc" != 2 ] || pinned=no
     fi
   fi
 else
@@ -199,7 +205,7 @@ fi
 cat <<EOF
 
 Step                     Phone    BACKLOG item 5 line it settles
-1 privacy show           $(printf '%-8s' "$privacy") "Live checks of account privacy": show, and calladd known
+1 privacy show           $(printf '%-8s' "$privacy") "Live checks of account privacy": the show half, and what calladd known is
 2 chats mute             $(printf '%-8s' "$mute") "Live checks of chats mute": a one-to-one chat addressed by its LID
 2 chats unmute           $(printf '%-8s' "$unmute") the same line, the unmute
 3 messages pin --notify  $(printf '%-8s' "$pin") "Message pins": a pin in the own chat (a group stays open)
