@@ -15,6 +15,69 @@ import type { SettingsEngine } from "./settings.js"
  */
 export const PROTOCOL = 25
 
+/**
+ * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
+ * connection or the engine's end, it may have gone through, so it answers `outcome_unknown`, never a retryable error
+ * (WC-LIFE-9). The engine's `writes` (engine/cmd/wa-engine/errors.go) must name the same writes; its tests check
+ * that and that it dispatches exactly these ops.
+ */
+export const ENGINE_OPS = {
+  send: "write",
+  sendMedia: "write",
+  sendAlbum: "write",
+  forward: "write",
+  edit: "write",
+  revoke: "write",
+  react: "write",
+  read: "write",
+  createPoll: "write",
+  vote: "write",
+  pin: "write",
+  unpin: "write",
+  createGroup: "write",
+  join: "write",
+  leave: "write",
+  updateGroup: "write",
+  setGroupPhoto: "write",
+  resetLink: "write",
+  participants: "write",
+  answerRequest: "write",
+  block: "write",
+  setPrivacy: "write",
+  mute: "write",
+  updateProfile: "write",
+  deleteChat: "write",
+  clearChat: "write",
+  deleteForMe: "write",
+  star: "write",
+  archiveChat: "write",
+  unarchiveChat: "write",
+  pinChat: "write",
+  unpinChat: "write",
+  markChatUnread: "write",
+  logout: "write",
+  connect: "read",
+  close: "read",
+  // A cut pairing is abandoned: a retry asks WhatsApp for a new code, and nobody else sees either.
+  link: "read",
+  me: "read",
+  directory: "read",
+  chat: "read",
+  download: "read",
+  // Asks the owner's own phone for older messages; asking twice only sends the same history again.
+  older: "read",
+  group: "read",
+  requests: "read",
+  profile: "read",
+  lookup: "read",
+  contacts: "read",
+  privacy: "read",
+} as const
+
+export type EngineOp = keyof typeof ENGINE_OPS
+
+export const isWrite = (op: EngineOp): boolean => ENGINE_OPS[op] === "write"
+
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
 

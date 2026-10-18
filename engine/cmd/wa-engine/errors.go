@@ -7,7 +7,7 @@ import (
 	"go.mau.fi/whatsmeow"
 )
 
-// writes are the requests that change something on WhatsApp; WRITES in src/engine/go-engine.ts is the same list.
+// writes are the requests that change something on WhatsApp: the "write" ops of ENGINE_OPS in src/engine/contract.ts.
 var writes = map[string]bool{
 	"send": true, "sendMedia": true, "sendAlbum": true, "forward": true, "edit": true, "revoke": true, "react": true,
 	"read": true, "createPoll": true, "vote": true, "pin": true, "unpin": true, "createGroup": true, "join": true,

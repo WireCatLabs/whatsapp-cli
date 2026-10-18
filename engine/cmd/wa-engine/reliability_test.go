@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io"
 	"maps"
 	"net"
@@ -12,6 +15,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -56,23 +60,92 @@ func TestAWriteCutOffOnItsWayIsOutcomeUnknownAndAReadStaysRetryable(t *testing.T
 	}
 }
 
-func TestTheWritesHereAreTheClientsWrites(t *testing.T) {
-	source, err := os.ReadFile(filepath.Join("..", "..", "..", "src", "engine", "go-engine.ts"))
+// A new op must be classified in ENGINE_OPS before it ships, or a write cut on its way answers "safe to retry".
+func TestEveryDispatchedOpIsClassifiedAndTheWritesMatchTheClients(t *testing.T) {
+	source, err := os.ReadFile(filepath.Join("..", "..", "..", "src", "engine", "contract.ts"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	list := regexp.MustCompile(`(?s)const WRITES = new Set\(\[(.*?)\]\)`).FindSubmatch(source)
-	if list == nil {
-		t.Fatal("go-engine.ts has no WRITES set")
+	table := regexp.MustCompile(`(?s)export const ENGINE_OPS = \{(.*?)\} as const`).FindSubmatch(source)
+	if table == nil {
+		t.Fatal("contract.ts has no ENGINE_OPS")
 	}
-	client := map[string]bool{}
-	for _, op := range regexp.MustCompile(`"(\w+)"`).FindAllSubmatch(list[1], -1) {
-		client[string(op[1])] = true
+	classified, clientWrites := map[string]bool{}, map[string]bool{}
+	for _, entry := range regexp.MustCompile(`(?m)^\s*(\w+): "(read|write)",$`).FindAllSubmatch(table[1], -1) {
+		classified[string(entry[1])] = true
+		if string(entry[2]) == "write" {
+			clientWrites[string(entry[1])] = true
+		}
 	}
-	if !maps.Equal(client, writes) {
-		t.Errorf("the client's WRITES %v and the engine's writes %v differ", slices.Sorted(maps.Keys(client)),
+	if !maps.Equal(clientWrites, writes) {
+		t.Errorf("the client's writes %v and the engine's writes %v differ", slices.Sorted(maps.Keys(clientWrites)),
 			slices.Sorted(maps.Keys(writes)))
 	}
+	dispatched := dispatchedOps(t)
+	for op := range dispatched {
+		if !classified[op] {
+			t.Errorf("the engine answers %q, which ENGINE_OPS does not classify as a read or a write", op)
+		}
+	}
+	for op := range classified {
+		if !dispatched[op] {
+			t.Errorf("ENGINE_OPS names %q, which the engine does not answer", op)
+		}
+	}
+}
+
+// dispatchedOps reads the ops off the engine's own source: every case of a switch on req.Op, and every req.Op == "…".
+func dispatchedOps(t *testing.T) map[string]bool {
+	t.Helper()
+	files, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ops := map[string]bool{}
+	isOp := func(expr ast.Expr) bool {
+		selector, ok := expr.(*ast.SelectorExpr)
+		if !ok || selector.Sel.Name != "Op" {
+			return false
+		}
+		receiver, ok := selector.X.(*ast.Ident)
+		return ok && receiver.Name == "req"
+	}
+	literal := func(expr ast.Expr) {
+		if lit, ok := expr.(*ast.BasicLit); ok && lit.Kind == token.STRING {
+			op, _ := strconv.Unquote(lit.Value)
+			ops[op] = true
+		}
+	}
+	for _, name := range files {
+		if strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		file, err := parser.ParseFile(token.NewFileSet(), name, nil, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ast.Inspect(file, func(node ast.Node) bool {
+			switch n := node.(type) {
+			case *ast.SwitchStmt:
+				if n.Tag != nil && isOp(n.Tag) {
+					for _, clause := range n.Body.List {
+						for _, expr := range clause.(*ast.CaseClause).List {
+							literal(expr)
+						}
+					}
+				}
+			case *ast.BinaryExpr:
+				if n.Op == token.EQL && isOp(n.X) {
+					literal(n.Y)
+				}
+			}
+			return true
+		})
+	}
+	if len(ops) < len(writes) {
+		t.Fatalf("found only %d ops in the engine's source", len(ops))
+	}
+	return ops
 }
 
 func TestAKeepaliveThatRecoversSaysConnectedAgain(t *testing.T) {
