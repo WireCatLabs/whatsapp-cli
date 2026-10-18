@@ -338,6 +338,35 @@ describe("wa chats create, join, leave, update, link", () => {
   })
 })
 
+/** `wa watch` while the engine pushes `events` once it is ready. */
+const watching = async (events: EngineEvent[]) => {
+  const controller = new AbortController()
+  const result = await wa(
+    [PROFILE, "watch", "--events", "--jsonl"],
+    () => {
+      const engine = fakeEngine(seed)
+      engine.ready = async () => {
+        setImmediate(() => {
+          for (const event of events) engine.push(event)
+          setImmediate(() => controller.abort())
+        })
+      }
+      return engine
+    },
+    controller.signal,
+  )
+  expect(result.code, result.stderr).toBe(0)
+  return result.stdout
+}
+
+const offline = async (...argv: string[]) => {
+  const result = await wa([PROFILE, ...argv, "--offline", "--json"], () => {
+    throw new Error("a stored read must never start the engine")
+  })
+  expect(result.code, result.stderr).toBe(0)
+  return JSON.parse(result.stdout)
+}
+
 describe("wa communities", () => {
   const community = "120363000000000009@g.us"
   const neighbours = {
@@ -372,6 +401,36 @@ describe("wa communities", () => {
     expect(parent.kind).toBe("group")
     expect(parent.provider_metadata).toEqual({ community: true })
     expect(parent.parent_chat_id).toBeUndefined()
+  })
+
+  it("keeps a pushed group's community in the store, and the community whole though it came after", async () => {
+    const pushed = (jid: string, name: string, more: Partial<WaChat>): WaChat => ({
+      jid,
+      name,
+      kind: "group",
+      unread: 0,
+      lastMessageAt: null,
+      participants: null,
+      ...more,
+    })
+    const chats = [
+      pushed(seed.busy, "Book club", { parent: community }),
+      pushed(community, "Synthetic neighbours", { community: true }),
+    ]
+    await watching([{ event: "history", history: { kind: "recent", chats, contacts: [], messages: [], votes: [] } }])
+
+    const group = (await offline("chats", "show", seed.busy)).item
+    expect(group.parent_chat_id).toBe(community)
+    expect(group.provider_metadata).toBeUndefined()
+    const parent = (await offline("chats", "show", community)).item
+    expect(parent).toMatchObject({
+      title: "Synthetic neighbours",
+      kind: "group",
+      provider_metadata: { community: true },
+    })
+    expect(parent.parent_chat_id).toBeUndefined()
+    const listed = (await offline("chats", "list")).items.find((chat: { id: string }) => chat.id === seed.busy)
+    expect(listed.parent_chat_id).toBe(community)
   })
 })
 
@@ -647,35 +706,6 @@ describe("wa chats events", () => {
     by: seed.person,
     byName: "Ann Lee",
     people: [{ jid: stranger, name: null }],
-  }
-
-  /** `wa watch` while the engine pushes `events` once it is ready. */
-  const watching = async (events: EngineEvent[]) => {
-    const controller = new AbortController()
-    const result = await wa(
-      [PROFILE, "watch", "--events", "--jsonl"],
-      () => {
-        const engine = fakeEngine(seed)
-        engine.ready = async () => {
-          setImmediate(() => {
-            for (const event of events) engine.push(event)
-            setImmediate(() => controller.abort())
-          })
-        }
-        return engine
-      },
-      controller.signal,
-    )
-    expect(result.code, result.stderr).toBe(0)
-    return result.stdout
-  }
-
-  const offline = async (...argv: string[]) => {
-    const result = await wa([PROFILE, ...argv, "--offline", "--json"], () => {
-      throw new Error("a stored read must never start the engine")
-    })
-    expect(result.code, result.stderr).toBe(0)
-    return JSON.parse(result.stdout)
   }
 
   it("keeps an add seen under watch, lists it once offline though a history push repeats it, and counts it", async () => {

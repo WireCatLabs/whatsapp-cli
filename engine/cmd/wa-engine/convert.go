@@ -275,6 +275,7 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 		chat.Archived = &archived
 		muted := mutedAt(conv.GetMuteEndTime(), now)
 		chat.Muted = &muted
+		chat = pushedLinked(chat, raw, conv)
 		out.Chats = append(out.Chats, chat)
 
 		for _, item := range conv.GetMessages() {

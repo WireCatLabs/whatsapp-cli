@@ -83,9 +83,9 @@ Open work, most important first. The plan in flight is
      sending, and whether a phone shows a non-square sticker well is unknown.
      A sticker to a channel is refused until a channel post's sticker (URL, no key) is seen working.
    - **Communities: only the read of one group.** A group read from WhatsApp carries its community as cli-core's
-     `parentChatId` and a community carries `providerMetadata.community` (engine protocol 15). Still open: the store
-     gets chats only from history pushes, and `convert.go` does not read the pushed conversation's
-     `GetParentGroupID`, `GetIsParentGroup` and `GetIsDefaultSubgroup` yet, so `chats list` and `chats show` lack them. Listing a community's
+     `parentChatId` and a community carries `providerMetadata.community` (engine protocol 15); a history push carries
+     the same two from the conversation's `ParentGroupID` and `IsParentGroup`, so the store has them. Not seen on a
+     live push yet; `IsDefaultSubgroup` (the announcement group) is not carried, as no live read carries it. Listing a community's
      groups (`GetSubGroups`, which also names groups the owner is not in), linking and unlinking (`LinkGroup`,
      `UnlinkGroup`) and creating a group in a community (`ReqCreateGroup.LinkedParentJID`) wait for cli-core: a
      `parent_chat_id` field in the chat-list query, a `GroupAdmin` method for link and unlink behind the send guard,
