@@ -1,10 +1,28 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/WireCatLabs/whatsapp-cli/main/docs/images/social-preview.png" alt="WhatsApp CLI for AI agents" width="100%">
+</p>
+
 # wa — WhatsApp CLI for AI agents
 
-Your personal WhatsApp in the terminal, searchable on your computer, and ready for Claude Code, Codex, Cursor or any
-agent — within limits you set.
+<p align="center">
+  Your personal WhatsApp in the terminal, searchable on your computer, and ready for Claude Code,
+  Codex, Cursor or any agent — within limits you set.
+</p>
 
-> **Early.** `wa` links, reads into its local store, sends text and files, edits, deletes, reacts and
-> runs groups. What comes next is on the [roadmap](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/roadmap.md).
+<p align="center">
+  <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/README.md">Docs</a> ·
+  <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/recipes.md">Examples</a> ·
+  <a href="https://wirecat.dev">WireCat</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@wirecat/whatsapp-cli"><img src="https://img.shields.io/npm/v/@wirecat/whatsapp-cli" alt="npm"></a>
+  <a href="https://github.com/WireCatLabs/whatsapp-cli/actions/workflows/main.yml"><img src="https://github.com/WireCatLabs/whatsapp-cli/actions/workflows/main.yml/badge.svg" alt="CI"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/node/v/@wirecat/whatsapp-cli" alt="Node"></a>
+  <a href="https://bun.sh/"><img src="https://img.shields.io/badge/bun-tested-f9f1e1" alt="Bun"></a>
+  <a href="https://www.npmjs.com/package/@wirecat/whatsapp-cli"><img src="https://img.shields.io/npm/dm/@wirecat/whatsapp-cli" alt="npm downloads"></a>
+  <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache 2.0"></a>
+</p>
 
 An example conversation (invented people, illustrative output):
 
@@ -65,6 +83,13 @@ wa personal review --new                  # what changed since the last review -
 wa personal tasks list state:open
 ```
 
+**Run your groups.** *"Use wa CLI. Which questions in Hiking has nobody answered?"*
+
+```sh
+wa personal review chat:Hiking --unanswered
+wa personal chats events Hiking 'time>=7d'   # who joined, left, was added or removed
+```
+
 **Answer, when you say so.**
 
 ```sh
@@ -79,16 +104,22 @@ More: [recipes, with a schedule for each](https://github.com/WireCatLabs/whatsap
 
 ## Built for AI agents
 
+Your agent. Your WhatsApp. Your rules.
+
 - **Agents with a terminal** (Claude Code, Codex, Gemini CLI) run `wa` commands themselves. The bundled
   [skill](https://github.com/WireCatLabs/whatsapp-cli/blob/main/skills/whatsapp-cli/SKILL.md) tells them how: `wa personal setup --agent …` or `wa skill install` puts it in
   place, and `wa skill show` prints it before linking. An agent links with `--qr-file` and shows you the picture; it
   never asks for your phone number or a code.
-- **Apps without a terminal** (Claude Desktop, Cursor and other MCP clients) connect to `wa personal mcp`.
+- **Apps without a terminal** (Claude Desktop, Cursor and other MCP clients) connect to `wa personal mcp`. It
+  comes with ready prompts: `/catch-up`, `/review`, `/reply`, `/find` and more.
 
 ```sh
 wa personal mcp setup claude-code   # or: wa personal mcp setup codex
 wa personal mcp config              # the entry for Claude Desktop, Cursor and others
 ```
+
+The profile can send by default, so `mcp setup` stops first. Check the profile's permissions, then run it again with
+`--allow-writes`.
 
 More: [the MCP server](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md) · [from the browser](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/remote.md)
 
@@ -189,6 +220,8 @@ More: [search](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/search
 ```sh
 wa personal review chat:Hiking --unanswered          # questions nobody answered
 wa personal review 'chat:Hiking date>7d'             # the week: decisions, promises, open questions
+wa personal chats events Hiking 'time>=7d'           # who joined, left, was added or removed, and by whom
+wa personal chats inspect https://chat.whatsapp.com/AAAAAAAAAAAAAAAAAAAAAA  # where an invite leads, without joining
 wa personal stats chats show Hiking --offline        # the group's activity, from the local store
 wa personal chats create "Hiking 2027" 100000000000002@lid   # a new group, with people you know
 wa personal chats members add 120363000000000001@g.us 100000000000002@lid
@@ -248,6 +281,7 @@ wa personal config set permissions.messages.send ask   # a question in the termi
 wa personal config set sends_per_hour 10               # at most 10 sends an hour (30 by default)
 wa personal recipients add "Book club"                 # the first add turns the recipient list on
 wa personal sends list                                 # every attempt: sent, refused, failed or not known
+wa personal config show                                # what is set, and where it came from
 ```
 
 More: [permissions](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/permissions.md) · [profiles](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/profiles.md) · [configuration](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/configuration.md) ·
