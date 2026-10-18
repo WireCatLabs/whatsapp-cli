@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**208 ✅ · 525 ⛔ · 0 ❌** — 229 commands, 504 options.
+**210 ✅ · 524 ⛔ · 0 ❌** — 229 commands, 505 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -193,7 +193,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages forward` | `--to` | ✅ |  |
 | `messages forward` | `--operation-id` | ✅ |  |
 | `messages pin` |  | ✅ |  |
-| `messages pin` | `--notify` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `messages pin` | `--notify` | ✅ |  |
+| `messages pin` | `--expire-time` | ✅ |  |
 | `messages unpin` |  | ✅ |  |
 | `messages link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/messages-link.test.ts |
 | `messages comments` |  | ✅ |  |

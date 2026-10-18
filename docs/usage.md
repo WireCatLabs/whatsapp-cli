@@ -169,7 +169,6 @@ with exit code `2` and says why. Nothing reaches WhatsApp.
 
 Not built yet:
 
-- pinning a message (`messages pin`, `messages unpin`);
 - several files in one message: a message carries one file;
 - deleting a message for yourself alone: delete it on the phone;
 - who joined and left a group, as WhatsApp records it: `chats events` reads the local store, which does not keep
