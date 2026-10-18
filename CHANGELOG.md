@@ -12,6 +12,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   fields. The agent is offered every command the profile's permissions allow, including some it was not offered
   before; marking read, `--as-owner` and `--allow-any-file` stay off MCP. An agent's runs are named `mcp <command>`
   in run history and the send journal. `conversations rebuild` replaces the agent-only `conversations_refresh`.
+- **`session start phone` and `setup --method phone` refuse a number without `+` and the country code** (exit 2,
+  `input.invalid`). WhatsApp reads the first digits of the number as the country code, so a number typed the way it
+  is dialled at home asked for a pairing code on someone else's account. Nothing reaches WhatsApp until the number
+  starts with `+`.
 - **`messages delete` without `--for-everyone` deletes the message for you only, where it used to be refused** (exit
   2). `wa` asks WhatsApp to take the messages from this account's devices, to leave them with the
   others in the chat, and to keep the photos and files the phone saved from them. Each message must be in the local

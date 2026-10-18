@@ -186,6 +186,22 @@ describe("wa session start at a terminal", () => {
     expect(result.stderr).toContain("Link with phone number instead")
   })
 
+  it("refuses a number without + and the country code before it reaches WhatsApp", async () => {
+    let engine: FakeEngine | undefined
+    const result = await wa(
+      ["guessed", "session", "start", "phone"],
+      () => {
+        engine = fakeEngine(seed, { linked: false })
+        vi.spyOn(engine, "link")
+        return engine
+      },
+      terminal("000 000 00 01\n"),
+    )
+    expect(result.code).toBe(2)
+    expect(result.stderr).toContain("write the phone number with + and the country code")
+    expect(engine?.link).not.toHaveBeenCalled()
+  })
+
   it("draws the QR code in the terminal", async () => {
     const result = await wa(["scanned", "session", "start"], () => fakeEngine(seed, { linked: false }), terminal())
     expect(result.code).toBe(0)
