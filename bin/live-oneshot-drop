@@ -1,0 +1,119 @@
+#!/usr/bin/env sh
+# Live check for BACKLOG item 9: does a one-shot connection take a queued message that then never reaches the
+# store? The owner runs it from a terminal; an agent never does.
+#
+#   bin/live-oneshot-drop <profile>
+#
+# It stops the owner's `serve` (by its PID, after checking it is the main checkout's `bin/wa <profile> serve`),
+# asks for a message from the phone to the own chat while nothing is connected, runs one `doctor --online` (it
+# connects and sends nothing), starts `serve` again exactly so, and counts whether the message reached the store.
+# It prints counts and yes/no only: no message text, no id, no number.
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+serve_running "$profile" || die "no serve holds profile $profile's device — this check needs one running to stop"
+
+lock=$(lock_of "$profile")
+engine=$(echo "$lock" | cut -d'|' -f2)
+engine_args=$(ps -o args= -p "$engine") || die "cannot read process $engine"
+case "$engine_args" in
+  *wa-engine*" --holder serve"*) ;;
+  *) die "process $engine holds the lock but is not wa's engine for serve — stopping nothing" ;;
+esac
+serve=$(ps -o ppid= -p "$engine" | tr -d ' ')
+serve_args=$(ps -o args= -p "$serve") || die "cannot read process $serve"
+case "$serve_args" in
+  *" $main/dist/bin/wa.js $profile serve") ;;
+  *) die "serve (pid $serve) was not started as $wa $profile serve; this script could not start it again the same way" ;;
+esac
+
+run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
+marker="wacheck$run"
+control="wacontrol$run"
+log="$main/.wa/serve.log"
+
+count() {
+  found=$(wa_json "$profile" search messages "$1" --offline --limit 5 --timeout 30s | json 'd.items.length') ||
+    found="?"
+  own=$(wa_json "$profile" messages list me --offline --limit 50 --timeout 30s |
+    json 'd.items.filter((one) => (one.text ?? "").includes(a)).length' "$1") || own="?"
+  echo "$found by search, $own among the own chat's newest 50"
+}
+
+[ "$(count "$marker")" = "0 by search, 0 among the own chat's newest 50" ] ||
+  die "the store reads failed or already hold the marker — stopping nothing"
+
+stopped=no
+restart() {
+  [ "$stopped" = yes ] || return 0
+  stopped=no
+  if kill -0 "$serve" 2>/dev/null; then
+    echo "serve (pid $serve) is still running — not starting a second one" >&2
+    return 0
+  fi
+  umask 077
+  nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$log" &
+  echo "started serve again (pid $!), its diagnostics in $log"
+  tries=0
+  until serve_running "$profile"; do
+    tries=$((tries + 1))
+    [ "$tries" -le 60 ] || { echo "serve does not hold the lock after 60 s — check $log" >&2; return 1; }
+    sleep 1
+  done
+  echo "serve holds the lock again"
+}
+trap restart EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+cat <<EOF
+
+Plan, on profile $profile:
+  1. stop serve (pid $serve, its engine pid $engine) with kill, and wait for the lock to clear
+  2. you send yourself a message from the phone containing the word: $marker
+  3. one one-shot connection: wa $profile doctor --online (connects, reads the account, sends nothing)
+  4. serve starts again as before: $wa $profile serve, detached, output to /dev/null, diagnostics to $log
+  5. you send yourself a second message, the control: $control
+  6. both words are counted in the store — counts only
+
+While serve is stopped, messages other people send you reach the store only if WhatsApp delivers them again;
+that is the question this check answers. Delete the two test messages from the phone afterwards.
+EOF
+confirm "Step 1 stops serve."
+
+kill "$serve"
+stopped=yes
+tries=0
+while kill -0 "$serve" 2>/dev/null || kill -0 "$engine" 2>/dev/null; do
+  tries=$((tries + 1))
+  [ "$tries" -le 30 ] || die "serve (pid $serve) or its engine has not ended after 30 s"
+  sleep 1
+done
+case "$(lock_of "$profile")" in
+  *"|true") die "something holds the lock again — a service manager may have restarted serve" ;;
+esac
+echo "serve stopped, lock free"
+
+confirm "Step 2: on the phone, send yourself (Message yourself) a message containing $marker, wait for its tick."
+
+set +e
+wa_json "$profile" doctor --online --timeout 60s >/dev/null
+code=$?
+set -e
+echo "doctor --online exited $code"
+
+restart
+
+confirm "Step 5: on the phone, send yourself a message containing $control."
+echo "waiting 20 s for serve to save it"
+sleep 20
+
+echo
+echo "── result ──"
+echo "marker, sent while nothing was connected: $(count "$marker")"
+echo "control, sent while serve ran:            $(count "$control")"
+echo "A control found and a marker missing means the one-shot connection took the message (BACKLOG 9 holds)."

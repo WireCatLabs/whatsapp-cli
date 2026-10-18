@@ -1,0 +1,63 @@
+#!/usr/bin/env sh
+# Live check for BACKLOG item 1, "a fresh session start keeping the history push": links a NEW profile as a
+# second linked device of the owner's account and counts what the phone pushes. The owner runs it from a
+# terminal; an agent never does.
+#
+#   bin/live-fresh-link <new-profile>
+#
+# The device keys go to the main checkout's .wa/state, as for any profile there; the pushed history goes to a
+# throwaway store, removed at the end, so the owner's store is not written. It prints counts only, and leaves the
+# device linked: it says how to unlink it.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+known=$(profiles) || die "wa account list failed"
+[ -n "$profile" ] || die "name a new profile: $(basename -- "$0") <new-profile> — taken already: ${known:-none}"
+case " $known " in
+  *" $profile "*) die "profile $profile exists already — name a new one; taken: $known" ;;
+esac
+device=$(wa_json "$profile" doctor --timeout 30s | json 'd.item.whatsapp.device.exists')
+[ "$device" = false ] || die "profile $profile has device keys already — name a new one"
+
+cat <<EOF
+
+This links a SECOND device to your WhatsApp account, as profile $profile.
+WhatsApp shows it under Settings > Linked devices, and the phone pushes your recent history to it once.
+Your serve and its device are not touched. The new device stays linked until you unlink it.
+EOF
+printf '\nType yes to link it: '
+read -r answer || exit 130
+[ "$answer" = yes ] || die "nothing linked"
+
+store=$(mktemp -d "${TMPDIR:-/tmp}/wa-fresh-link.XXXXXX")
+trap 'rm -rf "$store"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+echo "Scan the QR code below in WhatsApp > Settings > Linked devices > Link a device, then keep WhatsApp open."
+set +e
+WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACHE_DIR="$main/.wa/cache" \
+  MESSAGING_STORE="$store/messages.db" \
+  node "$main/dist/bin/wa.js" "$profile" session start qr --json --timeout 15m >"$store/answer.json"
+code=$?
+set -e
+
+echo
+echo "── result ──"
+echo "session start exited $code"
+if [ "$code" -eq 0 ]; then
+  json '[
+    `already linked: ${d.item.already_linked}`,
+    `history pushed: ${d.item.received?.chats ?? "?"} chats, ${d.item.received?.messages ?? "?"} messages, ` +
+      `${d.item.received?.people ?? "?"} people`,
+  ].join("\n")' <"$store/answer.json"
+fi
+cat <<EOF
+
+To unlink the new device: $wa $profile session end
+(it unlinks on WhatsApp's side and deletes its keys here), or on the phone: Settings > Linked devices.
+EOF
