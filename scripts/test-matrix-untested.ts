@@ -10,10 +10,6 @@ export interface Untested {
 }
 
 const SHARED = [
-  "inbox",
-  "review",
-  "watch",
-  "serve",
   "server *",
   "store *",
   "conversations *",
@@ -238,13 +234,23 @@ export const UNTESTED: Untested[] = [
       "wa's profile never carries a phone number (the engine leaves it out), so there is nothing to unmask; " +
       "cli-core tests the masking",
   },
-  ...["--kind", "--all", "--transcribe", "--model", "--new", "--mark-read", "--no-mark-read"].map((option) => ({
+  ...["--new", "--limit", "--kind", "--transcribe", "--model"].map((option) => ({
+    command: "inbox",
+    option,
+    reason:
+      "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in " +
+      "src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives " +
+      "--mark-read, the option that reaches the engine",
+  })),
+  ...["--kind", "--transcribe", "--model", "--new"].map((option) => ({
     command: "review",
     option,
     reason:
-      "a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, " +
-      "the one option that could reach the engine (for group admins)",
+      "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); " +
+      "src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach " +
+      "the engine",
   })),
+
   ...["--permission", "--http", "--port", "--public-url", "--revoke"].map((option) => ({
     command: "mcp",
     option,

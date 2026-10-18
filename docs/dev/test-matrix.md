@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**132 ✅ · 591 ⛔ · 0 ❌** — 227 commands, 496 options.
+**139 ✅ · 584 ⛔ · 0 ❌** — 227 commands, 496 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -222,24 +222,24 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models text download` | `--accept-terms` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `models text key set` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `models text key remove` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--new` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--all` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--kind` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--transcribe` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--model` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--mark-read` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `inbox` | `--no-mark-read` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `inbox` |  | ✅ |  |
+| `inbox` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives --mark-read, the option that reaches the engine |
+| `inbox` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives --mark-read, the option that reaches the engine |
+| `inbox` | `--all` | ✅ |  |
+| `inbox` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives --mark-read, the option that reaches the engine |
+| `inbox` | `--transcribe` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives --mark-read, the option that reaches the engine |
+| `inbox` | `--model` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives --mark-read, the option that reaches the engine |
+| `inbox` | `--mark-read` | ✅ |  |
+| `inbox` | `--no-mark-read` | ✅ |  |
 | `review` |  | ✅ |  |
-| `review` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, the one option that could reach the engine (for group admins) |
+| `review` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach the engine |
 | `review` | `--unanswered` | ✅ |  |
-| `review` | `--all` | ⛔ | a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, the one option that could reach the engine (for group admins) |
-| `review` | `--transcribe` | ⛔ | a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, the one option that could reach the engine (for group admins) |
-| `review` | `--model` | ⛔ | a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, the one option that could reach the engine (for group admins) |
-| `review` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, the one option that could reach the engine (for group admins) |
-| `review` | `--mark-read` | ⛔ | a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, the one option that could reach the engine (for group admins) |
-| `review` | `--no-mark-read` | ⛔ | a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, the one option that could reach the engine (for group admins) |
+| `review` | `--all` | ✅ |  |
+| `review` | `--transcribe` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach the engine |
+| `review` | `--model` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach the engine |
+| `review` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach the engine |
+| `review` | `--mark-read` | ✅ |  |
+| `review` | `--no-mark-read` | ✅ |  |
 | `watch` |  | ✅ |  |
 | `watch` | `--events` | ✅ |  |
 | `serve` |  | ✅ |  |

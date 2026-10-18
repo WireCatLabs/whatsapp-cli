@@ -63,10 +63,11 @@ const acting = async (argv: string[]) => {
 // A command that reads the store may first warn that no `wa serve` keeps it up to date.
 const errorCode = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf("{"))).error.code
 
-beforeAll(async () => {
+// Fills the store as the phone's first history push does, then stops watching.
+const filled = async (profile: string, from: typeof seed) => {
   const controller = new AbortController()
   const filling = () => {
-    const engine = fakeEngine(seed)
+    const engine = fakeEngine(from)
     const listen = engine.listen
     engine.listen = (kinds, onEvent) => {
       const stop = listen(kinds, onEvent)
@@ -75,8 +76,10 @@ beforeAll(async () => {
     }
     return engine
   }
-  expect((await wa(["actions", "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
-})
+  expect((await wa([profile, "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
+}
+
+beforeAll(() => filled("actions", seed))
 
 describe("wa reactions", () => {
   it("puts a reaction on someone else's message, addressed by its stored sender", async () => {
@@ -195,6 +198,38 @@ describe("marking read", () => {
     const marked = await acting(["messages", "list", seed.busy, "--mark-read"])
     expect(marked.code).toBe(0)
     expect(marked.actions).toEqual([newestTheirs])
+  })
+
+  it("marks read from review only with --mark-read", async () => {
+    expect((await acting(["review", "--all"])).actions).toEqual([])
+    expect((await acting(["review", "--all", "--no-mark-read"])).actions).toEqual([])
+    const marked = await acting(["review", "--all", "--mark-read"])
+    expect(marked.code).toBe(0)
+    expect(marked.actions).toEqual([newestTheirs])
+  })
+
+  // On an account of its own: the shared store holds this file's own answers, which leave no chat waiting.
+  it("marks read from inbox only with --mark-read, at the message the inbox shows", async () => {
+    const other = { ...base, account: { id: "100000000000099@lid", name: "Other owner", username: null } }
+    await filled("unread", other)
+    const inbox = async (...options: string[]) => {
+      let engine: FakeEngine | undefined
+      const result = await wa(["unread", "inbox", "--all", ...options, "--json"], () => {
+        engine = fakeEngine(other)
+        return engine
+      })
+      return { ...result, actions: engine?.actions ?? [] }
+    }
+
+    expect((await inbox()).actions).toEqual([])
+    expect((await inbox("--no-mark-read")).actions).toEqual([])
+    const marked = await inbox("--mark-read")
+    expect(marked.code).toBe(0)
+    const [shown] = JSON.parse(marked.stdout).items
+    expect(marked.actions).toEqual([
+      { op: "read", key: { chat: shown.chat_id, id: expect.any(String), fromMe: false, sender: expect.any(String) } },
+    ])
+    expect(marked.actions[0]?.key.id).toBe(shown.ref.split("/").at(-1))
   })
 })
 
