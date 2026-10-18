@@ -78,9 +78,6 @@ Open work, most important first. The plan in flight is
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so
       both name their entry points the same way.
-    - **`engine/cmd/wa-engine/engine.go` holds six jobs in 573 lines** (WC-LAY-8): request dispatch, linking, the chat
-      directory, sends, event handling and error sorting. Split linking, the directory and events into their own files
-      when the next change touches one of them. Nothing caps a Go file's length, as Biome caps a TypeScript file.
 14. **How long WhatsApp's rate limit and a ban hold writes is the owner's to set** (WC-PERM-18). WhatsApp's 429 says
     neither how long to wait nor whether reads count, and a ban says nothing about the account's standing. The lead's
     default, under the owner's autonomy mandate: after a 429, every write is held 15 minutes and reads go on; after a

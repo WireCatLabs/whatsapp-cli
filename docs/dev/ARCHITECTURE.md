@@ -148,7 +148,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   wording, and a reason where the recovery differs (`src/reasons.ts`).
 - **Names without the phone.** WhatsApp has no "list chats" request, but cli-core resolves a chat name through the
   adapter. The engine answers from what it can see without asking the phone: chats pushed in this process, the address
-  book in `private.db`, and the joined groups (one request per process, then kept).
+  book in `private.db`, and the joined groups (one request per process, then kept;
+  `engine/cmd/wa-engine/directory.go`).
 - **One npm package per platform.** The engine ships as `@wirecat/whatsapp-engine-<platform>-<arch>`, named by
   Node's `process.platform` and `process.arch` (`linux-x64`, `darwin-arm64`, `win32-x64`, and the arm64/x64 rest), each
   holding one static binary built without cgo by
@@ -161,9 +162,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   packages (`ignoredOptionalDependencies` in `pnpm-workspace.yaml`): a version's packages reach npm only when it is
   released, and pnpm cannot lock a package npm does not have.
 - **Why the connection ended is kept, and a cut write is never "stopped".** When WhatsApp ends the connection (logged
-  out, replaced by another connection, banned, outdated), the engine keeps why and answers every later request with
-  it, with its reason, instead of connecting again: after "replaced" a reconnect would take the login back. A request
-  already on the way that fails as "not connected" answers that reason too (`refusalFor` in `engine.go`): a relayed
+  out, replaced by another connection, banned, outdated), the engine keeps why (`engine/cmd/wa-engine/events.go`) and
+  answers every later request with it, with its reason, instead of connecting again: after "replaced" a reconnect
+  would take the login back. A request already on the way that fails as "not connected" answers that reason too
+  (`refusalFor` in `engine/cmd/wa-engine/errors.go`): a relayed
   command on `serve`'s connection never asks to connect, so it would otherwise read `network_error` and retry. The
   client rejects a write still waiting when the engine process ends with `outcome_unknown`, a read with
   `provider_unavailable` (`WRITES` in [`go-engine.ts`](../../src/engine/go-engine.ts)).
