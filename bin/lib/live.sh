@@ -207,14 +207,17 @@ start_serve() {
   echo "serve holds the lock again"
 }
 
-# Puts back the serve stop_serve stopped, once, and never as a second serve while the stopped one still lives. The
-# caller holds signals around it (hold_signals).
+# Puts back the serve stop_serve stopped, and never as a second serve while the stopped one, or one an earlier try
+# started, still lives. Done only once serve holds the lock, so a failed try is retried by the EXIT trap. The caller
+# holds signals around it (hold_signals).
 restore_serve() {
   [ "$stopped" = yes ] || return 0
-  if kill -0 "$serve" 2>/dev/null; then
-    echo "serve (pid $serve) is still running — not starting a second one" >&2
-    return 0
-  fi
+  for pid in "$serve" "$started"; do
+    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+      echo "serve (pid $pid) is still running — not starting a second one" >&2
+      return 0
+    fi
+  done
+  start_serve "$1" || return 1
   stopped=no
-  start_serve "$1"
 }
