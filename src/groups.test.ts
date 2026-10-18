@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { beforeAll, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it } from "vitest"
 import { EngineError, type WaChat, type WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
@@ -13,11 +13,15 @@ import { REQUESTER } from "./testing/fake-groups.js"
 const seed = contractSeed({ ids: whatsAppIds })
 const stranger = "100000000000077@lid"
 
+// Each test gets a store of its own, filled by a `watch`: what one test stores would otherwise change the next one's answer.
+let store = ""
+
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal, stdin?: string) => {
   const streams = captureStreams()
   const code = await run(argv, {
     streams,
     tty: false,
+    env: { ...process.env, MESSAGING_STORE: store },
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
     ...(stdin === undefined ? {} : { stdin: Readable.from([stdin]) }),
@@ -50,7 +54,8 @@ const acting = (...argv: string[]) => actingWith(undefined, argv)
 const errorOf = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf('{"error"'))).error
 const errorCode = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf("{"))).error.code
 
-beforeAll(async () => {
+beforeEach(async () => {
+  store = join(mkdtempSync(join(tmpdir(), "wa-groups-")), "messages.db")
   const controller = new AbortController()
   const filling = () => {
     const engine = fakeEngine(seed)
@@ -741,7 +746,6 @@ describe("wa tags auto", () => {
   })
 })
 
-// Last: its --only-missing refresh stores every group's metadata, which tags auto's store-only read must not see.
 describe("wa metadata", () => {
   it("keeps a group's title and description from WhatsApp's group read, and answers them from the store", async () => {
     const refreshed = await acting("metadata", "refresh", "--chat", seed.busy)
