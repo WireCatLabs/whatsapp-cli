@@ -11,6 +11,12 @@ export const REASONS: ErrorReason[] = defineReasons(
       ["account.banned", "permission_error", "WhatsApp has banned or restricted this account"],
       ["account.rate-limited", "rate_limited", "WhatsApp asked this account to slow down"],
       ["settings.keys-missing", "provider_unavailable", "WhatsApp has not sent the keys a settings change needs yet"],
+      ["media.not-on-phone", "not_found", "neither WhatsApp nor the phone keeps this file any more"],
+      ["media.phone-cannot-decrypt", "not_found", "the phone could not read the request to upload this file again"],
+      ["media.phone-answer-unreadable", "provider_error", "the phone's answer about this file could not be read"],
+      ["media.phone-failed", "provider_error", "the phone could not upload this file again"],
+      ["media.phone-timeout", "timeout", "the phone did not upload this file again in time"],
+      ["media.retry-failed", "provider_error", "the phone uploaded this file again, but the new copy did not download"],
       ["engine.stopped", "provider_unavailable", "the WhatsApp engine stopped unexpectedly"],
       ["engine.stopped-mid-write", "outcome_unknown", "the WhatsApp engine stopped before WhatsApp confirmed a change"],
     ] satisfies [string, ErrorReason["code"], string][]

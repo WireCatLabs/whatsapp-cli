@@ -72,6 +72,18 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("keeps the reason a download the phone could not give back is refused with", async () => {
+    const engine = await stub("ok")
+    const attachment: WaAttachment = { kind: "photo", ref: { media: "image", directPath: "/v/stub" } }
+    const path = join(mkdtempSync(join(tmpdir(), "wa-stub-")), "file")
+    const key = { chat: "expired@stub", id: "3EB0AD", fromMe: true, sender: "100000000000001@lid" }
+    await expect(engine.download(attachment, path, key)).rejects.toMatchObject({
+      code: "timeout",
+      reason: "media.phone-timeout",
+    })
+    await engine.close()
+  })
+
   it("asks for older history by the anchor's key, time and count, and reads the phone's answer", async () => {
     const engine = await stub("ok")
     const anchor = {

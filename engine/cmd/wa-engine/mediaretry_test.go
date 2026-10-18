@@ -33,27 +33,31 @@ func phoneAnswer(t *testing.T, id string, notice *waMmsRetry.MediaRetryNotificat
 func TestThePhonesAnswerGivesTheNewPathOrSaysWhy(t *testing.T) {
 	success := waMmsRetry.MediaRetryNotification_SUCCESS.Enum()
 	cases := []struct {
-		name     string
-		evt      *events.MediaRetry
-		wantPath string
-		wantCode string
+		name       string
+		evt        *events.MediaRetry
+		wantPath   string
+		wantCode   string
+		wantReason string
 	}{
 		{"a new upload", phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{
-			DirectPath: proto.String("/v/t62/again"), Result: success}), "/v/t62/again", ""},
+			DirectPath: proto.String("/v/t62/again"), Result: success}), "/v/t62/again", "", ""},
 		{"an error that still carries a path", phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{
 			DirectPath: proto.String("/v/t62/again"), Result: waMmsRetry.MediaRetryNotification_GENERAL_ERROR.Enum()}),
-			"/v/t62/again", ""},
+			"/v/t62/again", "", ""},
 		{"the phone lost it", phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{
-			Result: waMmsRetry.MediaRetryNotification_NOT_FOUND.Enum()}), "", "not_found"},
+			Result: waMmsRetry.MediaRetryNotification_NOT_FOUND.Enum()}), "", "not_found", "media.not-on-phone"},
+		{"the phone could not read the request", phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{
+			Result: waMmsRetry.MediaRetryNotification_DECRYPTION_ERROR.Enum()}),
+			"", "not_found", "media.phone-cannot-decrypt"},
 		{"the phone failed", phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{
-			Result: waMmsRetry.MediaRetryNotification_GENERAL_ERROR.Enum()}), "", "provider_error"},
+			Result: waMmsRetry.MediaRetryNotification_GENERAL_ERROR.Enum()}), "", "provider_error", "media.phone-failed"},
 		{"the server says the phone has none", &events.MediaRetry{MessageID: "3EB0A1",
-			Error: &events.MediaRetryError{Code: 2}}, "", "not_found"},
+			Error: &events.MediaRetryError{Code: 2}}, "", "not_found", "media.not-on-phone"},
 		{"an answer sealed for another message", func() *events.MediaRetry {
 			evt := phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{Result: success})
 			evt.MessageID = "3EB0B2"
 			return evt
-		}(), "", "provider_error"},
+		}(), "", "provider_error", "media.phone-answer-unreadable"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -61,10 +65,33 @@ func TestThePhonesAnswerGivesTheNewPathOrSaysWhy(t *testing.T) {
 			if path != tc.wantPath {
 				t.Errorf("path %q, want %q", path, tc.wantPath)
 			}
-			if code := classify(err).Code; err != nil && code != tc.wantCode || err == nil && tc.wantCode != "" {
-				t.Errorf("error %v, want code %q", err, tc.wantCode)
+			if err == nil {
+				if tc.wantCode != "" {
+					t.Errorf("no error, want %s", tc.wantReason)
+				}
+				return
+			}
+			if refused := classify(err); refused.Code != tc.wantCode || refused.Reason != tc.wantReason {
+				t.Errorf("%s (%s), want %s (%s)", refused.Code, refused.Reason, tc.wantCode, tc.wantReason)
 			}
 		})
+	}
+}
+
+// The outcomes reupload and fetchAgain answer once the phone was asked; only a live check reaches them in place.
+func TestEveryRetryOutcomeAfterTheAskCarriesItsReason(t *testing.T) {
+	for _, tc := range []struct {
+		err          error
+		code, reason string
+	}{
+		{phoneTimeout, "timeout", "media.phone-timeout"},
+		{retryStopped, "provider_unavailable", "engine.stopped"},
+		{againFailed, "provider_error", "media.retry-failed"},
+	} {
+		refused := classify(mediaFailure(tc.err))
+		if refused.Code != tc.code || refused.Reason != tc.reason {
+			t.Errorf("%s (%s), want %s (%s)", refused.Code, refused.Reason, tc.code, tc.reason)
+		}
 	}
 }
 

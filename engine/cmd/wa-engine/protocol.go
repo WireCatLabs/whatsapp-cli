@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 28
+const protocol = 29
 
 type hello struct {
 	Protocol int     `json:"protocol"`

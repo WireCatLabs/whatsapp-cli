@@ -67,7 +67,9 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   that fails with 403, 404 or 410 sends whatsmeow's `SendMediaRetryReceipt` to the account's own phone, waits up to
   20 s for the matching `events.MediaRetry`, decrypts the new path and downloads again, all inside the one `download`
   request, so a one-shot command and one relayed through `serve` behave the same. The CLI sends the message's key with
-  the attachment, from the store. The new path is not kept: cli-core's store has no write for an attachment's ref.
+  the attachment, from the store. Each way the retry fails has its reason (`media.*`, registered in
+  `src/reasons.ts`); a download the new upload served logs `media.reuploaded` to `WA_ENGINE_LOG`, the only sign of
+  it. The new path is not kept: the `download` request answers nothing, so the adapter sets no `providerRef`.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
   the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete`,
   `messages star`, `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store

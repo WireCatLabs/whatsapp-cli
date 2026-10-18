@@ -40,6 +40,11 @@ error_code() {
   grep -m 1 '^{' -- "$errs" | json 'd.error.code' 2>/dev/null
 }
 
+# The error's reason ("media.phone-timeout"), registered and fixed, so safe to print and to branch on (WC-OUT-15).
+error_reason() {
+  grep -m 1 '^{' -- "$errs" | json 'd.error.reason' 2>/dev/null
+}
+
 # The leading lowercase words of a call: its command. The arguments after them may be ids.
 command_words() {
   shown=""

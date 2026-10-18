@@ -80,23 +80,43 @@ func retryInfo(t target, sender types.JID) *types.MessageInfo {
 	}}
 }
 
+// What the retry can answer, each with a reason, so a caller tells the outcomes apart without reading the words
+// (WC-OUT-15).
+var (
+	notOnPhone = because("media.not-on-phone", "not_found",
+		"neither WhatsApp nor the phone keeps this file any more; ask the sender to send it again")
+	phoneCannotDecrypt = because("media.phone-cannot-decrypt", "not_found",
+		"the phone could not read the request for this file; ask the sender to send it again")
+	phoneAnswerUnreadable = because("media.phone-answer-unreadable", "provider_error",
+		"the phone's answer about this file could not be read")
+	phoneFailed = because("media.phone-failed", "provider_error",
+		"the phone could not upload this file again; it must be online, with WhatsApp able to connect")
+	phoneTimeout = because("media.phone-timeout", "timeout",
+		"the phone did not upload this file again in time; it must be online, with WhatsApp able to connect")
+	retryStopped = because("engine.stopped", "provider_unavailable", "the engine stopped before the phone answered")
+	againFailed  = because("media.retry-failed", "provider_error",
+		"the phone uploaded this file again, but the new copy did not download")
+)
+
 // reuploadedPath reads the phone's answer. A new path counts even with an error result, as mautrix-whatsapp takes it
 // (connector/directmedia.go, receiveDirectMediaRetry).
 func reuploadedPath(evt *events.MediaRetry, mediaKey []byte) (string, error) {
 	notice, err := whatsmeow.DecryptMediaRetryNotification(evt, mediaKey)
 	switch {
 	case errors.Is(err, whatsmeow.ErrMediaNotAvailableOnPhone):
-		return "", &failure{"not_found", "neither WhatsApp nor the phone keeps this file any more; ask the sender to send it again"}
+		return "", notOnPhone
 	case err != nil:
-		return "", &failure{"provider_error", "the phone's answer about this file could not be read"}
+		return "", phoneAnswerUnreadable
 	case notice.GetDirectPath() != "":
 		return notice.GetDirectPath(), nil
 	}
 	switch notice.GetResult() {
-	case waMmsRetry.MediaRetryNotification_NOT_FOUND, waMmsRetry.MediaRetryNotification_DECRYPTION_ERROR:
-		return "", &failure{"not_found", "neither WhatsApp nor the phone keeps this file any more; ask the sender to send it again"}
+	case waMmsRetry.MediaRetryNotification_NOT_FOUND:
+		return "", notOnPhone
+	case waMmsRetry.MediaRetryNotification_DECRYPTION_ERROR:
+		return "", phoneCannotDecrypt
 	}
-	return "", &failure{"provider_error", "the phone could not upload this file again; it must be online, with WhatsApp able to connect"}
+	return "", phoneFailed
 }
 
 // reupload asks the account's own phone to upload a file WhatsApp no longer keeps, and answers its new path. The
@@ -117,14 +137,15 @@ func (e *engine) reupload(req request, ref *waMediaRef) (string, error) {
 	case evt := <-answer:
 		return reuploadedPath(evt, ref.MediaKey)
 	case <-time.After(retryWait):
-		return "", &failure{"timeout", "the phone did not upload this file again in time; it must be online, with WhatsApp able to connect"}
+		return "", phoneTimeout
 	case <-e.ctx.Done():
-		return "", &failure{"provider_unavailable", "the engine stopped before the phone answered"}
+		return "", retryStopped
 	}
 }
 
 // fetchAgain downloads a file WhatsApp no longer keeps once more, from the path the phone's new upload has. The new
-// path is not kept: cli-core's store has no way to update a stored attachment, so the next download asks again.
+// path is not kept: the download answers nothing, so the next download asks again. A success is the one sign the
+// retry ran, so it goes to WA_ENGINE_LOG, in fixed words.
 func (e *engine) fetchAgain(req request, ref *waMediaRef, media whatsmeow.MediaType, file *os.File) error {
 	path, err := e.reupload(req, ref)
 	if err != nil {
@@ -138,5 +159,9 @@ func (e *engine) fetchAgain(req request, ref *waMediaRef, media whatsmeow.MediaT
 	}
 	again := *ref
 	again.DirectPath = path
-	return e.fetch(&again, media, file)
+	if err := e.fetch(&again, media, file); err != nil {
+		return againFailed
+	}
+	e.client.Log.Warnf("media.reuploaded: the phone uploaded a file WhatsApp no longer kept, and the new copy downloaded")
+	return nil
 }

@@ -7,7 +7,8 @@
 #
 # The message is one in the own chat: the id given, or else the oldest stored photo there (the oldest file, when
 # there is no photo). The download goes through the running `serve` into a throwaway folder, removed at the end. It
-# prints exit codes, error codes, sizes, ages and yes/no only: no message text, no id, no file name, no content.
+# prints exit codes, error codes and reasons, sizes, ages and yes/no only: no message text, no id, no file name, no
+# content. A saved file shows whether the phone uploaded it again only when serve runs with WA_ENGINE_LOG set.
 # shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
 set -eu
 
@@ -61,45 +62,74 @@ Keep WhatsApp open on the phone, online. A file deleted from the phone cannot co
 EOF
 confirm "Step 1 downloads the file."
 
+# The engine writes media.reuploaded to its log after a download the phone's new upload served. Only the variable and
+# the count of those lines are read; the log's other lines stay where they are.
+engine_pid=$(lock_of "$profile" | cut -d'|' -f2)
+log=""
+if [ -r "/proc/$engine_pid/environ" ]; then
+  log=$(tr '\0' '\n' <"/proc/$engine_pid/environ" | sed -n 's/^WA_ENGINE_LOG=//p')
+fi
+reuploads() {
+  [ -n "$log" ] && [ -r "$log" ] || return 0
+  grep -c -F -e "media.reuploaded" -- "$log" || true
+}
+before=$(reuploads)
+
 started=$(date +%s)
 attempt "$profile" messages download "$own" "$message" --output-dir "$dir/files" --timeout 120s
 took=$(($(date +%s) - started))
 
-# A file that failed still exits 0, named in the answer's batch.failures; a message with no keys exits 6. Both carry
-# the engine's fixed words, matched here and never printed.
-said() {
-  printf '%s' "$out" | grep -q -F -e "$1" || grep -q -F -e "$1" -- "$errs"
-}
-
+# A file that failed still exits 0, named in the answer's batch.failures; a message with no file exits 6. Both are
+# read by their code and reason, never by their words.
+after=$(reuploads)
 saved=$(printf '%s' "$out" | json 'd.item.files.length' 2>/dev/null) || saved=0
 bytes=$(printf '%s' "$out" | json 'd.item.files.reduce((sum, one) => sum + (one.bytes ?? 0), 0)' 2>/dev/null) || bytes=0
 failed=$(printf '%s' "$out" | json 'd.item.batch?.failures?.map((one) => one.error.code).join(", ")' 2>/dev/null) ||
   failed=""
+reason=$(printf '%s' "$out" | json 'd.item.batch?.failures?.[0]?.error.reason ?? ""' 2>/dev/null) || reason=""
 [ -n "$failed" ] || failed=$(error_code || true)
+[ -n "$reason" ] || reason=$(error_reason || true)
 
 echo
 echo "── result ──"
-echo "messages download: exit $rc, $saved file(s) saved, $bytes bytes, error ${failed:-none}, took $took s"
+echo "messages download: exit $rc, $saved file(s) saved, $bytes bytes, error ${failed:-none} (${reason:-no reason}),"
+echo "took $took s"
 echo "the message is $age days old"
 retry=yes
 if [ "$saved" != 0 ]; then
-  retry=unknown
-  outcome="saved. The engine logs nothing on this path, so this does not show whether WhatsApp still kept the file
-or the phone uploaded it again; the older the message, the likelier the second"
-elif said "did not upload this file again in time"; then
-  outcome="the phone did not answer within 20 s — is it online? run again"
-elif said "neither WhatsApp nor the phone keeps this file"; then
-  outcome="the phone no longer has the file either"
-elif said "could not upload this file again" || said "answer about this file could not be read"; then
-  outcome="the phone answered with an error"
-elif said "stopped before the phone answered"; then
-  outcome="the engine stopped while it waited"
-elif said "has no file to download"; then
-  retry=no
-  outcome="no verdict: the store holds no keys for this file — name another message"
+  if [ -z "$log" ]; then
+    retry=unknown
+    outcome="saved. serve runs without WA_ENGINE_LOG, so this does not show whether WhatsApp still kept the file or
+the phone uploaded it again; start serve with WA_ENGINE_LOG set to a file to tell"
+  elif [ "${after:-0}" -gt "${before:-0}" ]; then
+    outcome="saved from the phone's new upload"
+  else
+    retry=no
+    outcome="saved: WhatsApp still kept the file"
+  fi
 else
-  retry=unknown
-  outcome="no verdict: the download failed before or outside the retry"
+  case "$reason" in
+    media.phone-timeout) outcome="the phone did not answer within 20 s — is it online? run again" ;;
+    media.not-on-phone) outcome="the phone no longer has the file either" ;;
+    media.phone-cannot-decrypt) outcome="the phone could not read the request for the file" ;;
+    media.phone-failed | media.phone-answer-unreadable) outcome="the phone answered with an error" ;;
+    media.retry-failed) outcome="the phone uploaded the file again, but its new copy did not download" ;;
+    engine.stopped)
+      retry=unknown
+      outcome="the engine stopped, while it waited for the phone or before"
+      ;;
+    *)
+      retry=no
+      if [ "$rc" = 6 ] && [ "$failed" = not_found ]; then
+        outcome="no verdict: the message has no file to download — name another message"
+      elif [ "$failed" = validation_error ]; then
+        outcome="no verdict: the store holds no keys for this file — name another message"
+      else
+        retry=unknown
+        outcome="no verdict: the download failed before or outside the retry"
+      fi
+      ;;
+  esac
 fi
 
 cat <<EOF

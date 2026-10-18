@@ -6,7 +6,7 @@ import type { Attachment, Message } from "@wirecat/cli-core"
 import { MODELS, modelPath, modelsDirectory, VAD, vadPath } from "@wirecat/cli-core/speech"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
-import type { WhatsAppEngine } from "./engine/contract.js"
+import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { privateStore } from "./paths.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
@@ -277,6 +277,21 @@ describe("wa messages download", () => {
     expect(result.code).toBe(6)
     expect(errorCode(result.stderr)).toBe("not_found")
     expect(result.engine.downloads).toEqual([])
+  })
+
+  it("names why the phone could not give back a file WhatsApp no longer keeps, by its reason", async () => {
+    const engine = fakeEngine(seed)
+    engine.download = async () => {
+      throw new EngineError("timeout", "synthetic refusal", "media.phone-timeout")
+    }
+    const result = await wa(
+      ["media", "messages", "download", base.busy, photo.id, "--output-dir", folder(), "--json"],
+      () => engine,
+    )
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item.batch.failures).toEqual([
+      expect.objectContaining({ error: expect.objectContaining({ code: "timeout", reason: "media.phone-timeout" }) }),
+    ])
   })
 
   it("refuses a message the store does not hold", async () => {

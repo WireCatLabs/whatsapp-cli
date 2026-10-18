@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 28
+export const PROTOCOL = 29
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -265,7 +265,8 @@ export const engineErrorCode = v.picklist([
  * (`device.in-use`), WhatsApp handed the login to another connection (`device.replaced`), logged the device out, refuses
  * this version (`client.outdated`), banned the account, or asked it to slow down (`account.rate-limited`, never the
  * engine's own lookup pace), or has not yet sent the keys a settings change is sealed with (`settings.keys-missing`).
- * The CLI registers each one (`src/reasons.ts`).
+ * A download WhatsApp no longer keeps the file for says how asking the phone to upload it again ended (`media.*`), or
+ * that the engine stopped while it waited (`engine.stopped`). The CLI registers each one (`src/reasons.ts`).
  */
 export const engineReason = v.picklist([
   "device.in-use",
@@ -275,6 +276,13 @@ export const engineReason = v.picklist([
   "account.banned",
   "account.rate-limited",
   "settings.keys-missing",
+  "media.not-on-phone",
+  "media.phone-cannot-decrypt",
+  "media.phone-answer-unreadable",
+  "media.phone-failed",
+  "media.phone-timeout",
+  "media.retry-failed",
+  "engine.stopped",
 ])
 
 export const engineError = v.strictObject({
