@@ -122,12 +122,13 @@ Open work, most important first. The plan in flight is
      Web's `WAWebStarMessageSync`, Cobalt and whatsapp-rust, but not yet sent to WhatsApp. Open: that the phone shows
      and drops the star on someone else's message in a group (the participant field), one in a one-to-one chat, and the
      owner's own. A chat the store holds by phone number may be dropped, as with delete for the owner alone.
-   - **A star set on the phone does not reach the store.** cli-core 0.339.0 stores a star from `messages star` and
-     takes a `star` watch event, `HistoryBatch.stars` and `Message.starred`; the engine does not map whatsmeow's
-     `events.Star` or a pushed message's starred flag to them yet.
-   - **A delete for the owner alone made on the phone does not reach the store.** The engine ignores whatsmeow's
-     `events.DeleteForMe`, so `messages list` and `search` still show the message. cli-core already takes an
-     incoming deletion event and marks the message deleted; the engine only has to map this one to it.
+   - **Live check of stars and deletes for the owner alone made on the phone.** The engine passes whatsmeow's
+     `events.Star` and `events.DeleteForMe` on as `star` and `delete` events, and a pushed message's starred flag as
+     `starred`, but none has come from a real phone yet. Open: that a star set and taken off on the phone reaches
+     `messages list <chat> starred:true` in a one-to-one chat and a group, that the history push after a fresh link
+     carries the flag at all, and that the app-state chat id lands on the chat the store holds (a phone-number id is
+     mapped to the LID only when whatsmeow knows it). A full app-state resync (whatsmeow drops its events) loses the
+     stars changed while the device was out of sync.
    - **Messages stored before files were.** A photo with a caption stored by an older `wa` has the caption and no
      attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
      not push history again; a re-link would refill it.

@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 26
+const protocol = 27
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -105,6 +105,8 @@ type waMessage struct {
 
 	Attachments []waAttachment `json:"attachments,omitempty"`
 	Poll        *waPoll        `json:"poll,omitempty"`
+	// Only ever true: a push can be older than a star the phone took off since, and an absent flag keeps the stored one.
+	Starred *bool `json:"starred,omitempty"`
 }
 
 type waHistory struct {
@@ -160,6 +162,9 @@ func (w *wire) connection(state, until string) {
 func (w *wire) loginCode(kind, code string) { w.send(map[string]any{"login": kind, "code": code}) }
 func (w *wire) deleted(chat, id string) {
 	w.send(map[string]any{"event": "delete", "chat": chat, "id": id})
+}
+func (w *wire) starred(chat, id string, starred bool) {
+	w.send(map[string]any{"event": "star", "chat": chat, "id": id, "starred": starred})
 }
 
 func fieldOf(event string) string {

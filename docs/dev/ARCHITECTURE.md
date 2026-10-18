@@ -184,6 +184,12 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   and for a one-to-one chat whose stored sender is addressed otherwise than the chat (`buildStar`: index `star`, chat,
   id, fromMe, the same participant as `deleteForMe`; regular_high, version 2 — as WhatsApp Web's
   `WAWebStarMessageSync`, Cobalt and whatsapp-rust write it). Channels and broadcasts are refused.
+  A star or a delete for the owner alone made on another device arrives as whatsmeow's `events.Star` or
+  `events.DeleteForMe`; `events.go` passes it on as a `star` event (`chat`, `id`, `starred`) or the `delete` event a
+  revoke gives, under the chat id `canonical` picks, and drops one without a chat, an id or a star action. whatsmeow
+  emits neither during a full app-state sync, and `EmitAppStateEventsOnFullSync` stays off (it would write the
+  address book one contact at a time and emit every mute, pin and archive), so the stars from before the link come
+  on the history push's messages as `starred`, only ever `true`: a push may be older than a star taken off since.
   `archiveChat`, `unarchiveChat` and `markChatUnread` (`engine/cmd/wa-engine/chatlist.go`; the same newest-message
   key and `timestamp`) send `BuildArchive`, whose archive also unpins the chat, and `BuildMarkChatAsRead` with read
   false. `pinChat` and `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server

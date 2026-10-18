@@ -1,13 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"slices"
 	"strings"
 	"testing"
 
 	"go.mau.fi/whatsmeow/appstate"
+	"go.mau.fi/whatsmeow/proto/waCommon"
+	"go.mau.fi/whatsmeow/proto/waHistorySync"
+	"go.mau.fi/whatsmeow/proto/waSyncAction"
+	"go.mau.fi/whatsmeow/proto/waWeb"
 	"go.mau.fi/whatsmeow/types"
+	"go.mau.fi/whatsmeow/types/events"
+	"google.golang.org/protobuf/proto"
 )
 
 // Pinned against WhatsApp Web's WAWebStarMessageSync and constructMsgKeySegmentsFromMsgKey, whatsapp-rust's STAR
@@ -66,5 +73,69 @@ func TestAStarIsRefusedBeforeConnecting(t *testing.T) {
 	err := (&engine{}).star(cases["a channel's post"])
 	if err == nil || !strings.Contains(err.Error(), "on the phone") {
 		t.Errorf("a channel's post: got %v, want the channel refusal, not a missing sender", err)
+	}
+}
+
+func TestAStarMadeOnAnotherDeviceGoesOutUnderTheStoredChat(t *testing.T) {
+	stored[annPN.User] = annLID
+	defer delete(stored, annPN.User)
+	cases := []struct {
+		event any
+		want  string
+	}{
+		{&events.Star{ChatJID: annPN, MessageID: "3EB0S1", Action: &waSyncAction.StarAction{Starred: proto.Bool(true)}},
+			`{"chat":"` + annLID.String() + `","event":"star","id":"3EB0S1","starred":true}`},
+		{&events.Star{ChatJID: group, SenderJID: annLID, MessageID: "3EB0S2", Action: &waSyncAction.StarAction{Starred: proto.Bool(false)}},
+			`{"chat":"` + group.String() + `","event":"star","id":"3EB0S2","starred":false}`},
+		{&events.DeleteForMe{ChatJID: annPN, MessageID: "3EB0D1", IsFromMe: true},
+			`{"chat":"` + annLID.String() + `","event":"delete","id":"3EB0D1"}`},
+	}
+	for _, c := range cases {
+		var out bytes.Buffer
+		e := &engine{out: newWire(&out), conv: testConverter()}
+		e.handle(c.event)
+		if got := strings.TrimSpace(out.String()); got != c.want {
+			t.Errorf("%+v went out as %s, want %s", c.event, got, c.want)
+		}
+	}
+}
+
+func TestAStarWithoutAWholeKeyIsDropped(t *testing.T) {
+	starred := &waSyncAction.StarAction{Starred: proto.Bool(true)}
+	for _, evt := range []any{
+		&events.Star{ChatJID: annLID, MessageID: "3EB0S1"},
+		&events.Star{ChatJID: annLID, Action: starred},
+		&events.Star{MessageID: "3EB0S1", Action: starred},
+		&events.Star{ChatJID: types.StatusBroadcastJID, MessageID: "3EB0S1", Action: starred},
+		&events.DeleteForMe{ChatJID: annLID},
+	} {
+		var out bytes.Buffer
+		e := &engine{out: newWire(&out), conv: testConverter()}
+		e.handle(evt)
+		if out.Len() > 0 {
+			t.Errorf("%+v went out as %s", evt, out.String())
+		}
+	}
+}
+
+func TestAPushedMessageCarriesTheStarOnlyWhenStarred(t *testing.T) {
+	data := &waHistorySync.HistorySync{
+		SyncType: waHistorySync.HistorySync_INITIAL_BOOTSTRAP.Enum(),
+		Conversations: []*waHistorySync.Conversation{{
+			ID: proto.String(annLID.String()),
+			Messages: []*waHistorySync.HistorySyncMsg{
+				{Message: &waWeb.WebMessageInfo{Key: &waCommon.MessageKey{ID: proto.String("3EB0H1")}, Starred: proto.Bool(true)}},
+				{Message: &waWeb.WebMessageInfo{Key: &waCommon.MessageKey{ID: proto.String("3EB0H2")}, Starred: proto.Bool(false)}},
+			},
+		}},
+	}
+	parse := func(chat types.JID, web *waWeb.WebMessageInfo) (*events.Message, error) {
+		evt := incoming(chat, chat, text("from history"))
+		evt.Info.ID = web.GetKey().GetID()
+		return evt, nil
+	}
+	messages := testConverter().history(data, parse).Messages
+	if len(messages) != 2 || messages[0].Starred == nil || !*messages[0].Starred || messages[1].Starred != nil {
+		t.Errorf("got %+v", messages)
 	}
 }

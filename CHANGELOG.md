@@ -19,7 +19,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   agent's call answers `validation_error` (`input.invalid`, no such command), as before; the owner's own `messages
   delete` at those levels is refused with exit 5. A delete
   of several messages that fails partway, with or without `--for-everyone`, now names the ones already deleted and
-  is not marked safe to retry: delete only the rest. Not yet checked live on the phone.
+  is not marked safe to retry: delete only the rest. A message you delete for yourself on the phone leaves the
+  local store the same way while `serve` or `watch` runs. Not yet checked live on the phone.
 - **`messages download` asks your phone for a file WhatsApp no longer keeps**, as WhatsApp's apps do, instead of
   answering `not_found` (exit 6) at once. It waits up to 20 seconds for the phone to upload it again and fetches the
   new copy. A phone that does not answer ends the download with `timeout` (exit 9); exit 6 now means the phone no
@@ -171,7 +172,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   nothing is sent. A channel's post is starred on the phone. It goes through the profile's permissions
   (`messages.star`, `messages.unstar`), an agent can do it over MCP, and it answers `settings.keys-missing` as `chats
   mute` does. The local store keeps a star set with `wa`, so `messages list <chat> starred:true` and `search
-  messages is:starred` find it; a star set on the phone does not reach the store yet. The store moves to version 24
+  messages is:starred` find it. While `serve` or `watch` runs, a star set or taken off on the phone reaches the
+  store too, and `watch --events --jsonl` prints it as `{ "event": "star", "chatId", "chatTitle", "messageId",
+  "starred" }`; the messages the phone pushes after linking keep their stars. The store moves to version 24
   for this the first time this version opens it; `wa` 0.1.0 still opens it. Not yet checked live on the phone.
 - **`wa <profile> messages pin` and `messages unpin`**: a message in the local store is pinned for the whole chat; a
   message the store lacks is `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies and

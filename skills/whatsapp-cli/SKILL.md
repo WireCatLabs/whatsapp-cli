@@ -83,6 +83,8 @@ the store does not hold yet needs its `…@g.us` id.
   `messages forward` and `messages transcribe --local` work the same way, from the file keys the store holds; a file
   WhatsApp no longer keeps is asked of the owner's phone again, which must be online (a `timeout` otherwise). A
   `--reply-to` a message the store lacks still sends, but the phone may show the quote as unavailable.
+- **Starred messages are read from the store.** `messages list <chat> starred:true` and `search messages is:starred`
+  answer offline; while `serve` runs, the store follows stars set or taken off on the phone too.
 - **Poll counts are what the store heard.** WhatsApp has no request for votes: `serve` and `watch` keep each
   person's newest vote as it arrives, and `polls show` and `polls voters` count those. A vote cast while nothing
   listened is missing. A WhatsApp poll never closes and every vote can change, so there is no `polls close` and no

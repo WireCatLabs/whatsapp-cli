@@ -48,6 +48,14 @@ func (e *engine) handle(raw any) {
 		if history.Kind != "on_demand" || !history.empty() || len(rekeys) > 0 {
 			e.out.event("history", history)
 		}
+	case *events.Star:
+		if chat, ok := e.conv.appStateMessage(evt.ChatJID, evt.MessageID); ok && evt.Action != nil {
+			e.out.starred(chat, evt.MessageID, evt.Action.GetStarred())
+		}
+	case *events.DeleteForMe:
+		if chat, ok := e.conv.appStateMessage(evt.ChatJID, evt.MessageID); ok {
+			e.out.deleted(chat, evt.MessageID)
+		}
 	case *events.MediaRetry:
 		e.retries.deliver(evt)
 	case *events.AppStateSyncComplete:

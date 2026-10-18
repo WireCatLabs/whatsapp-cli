@@ -76,7 +76,9 @@ wa personal messages unstar "Book club" 3EB0A1B2C3D4E5F6A7B8
 A star is your own mark, which WhatsApp syncs to your other devices; nobody in the chat is told. Like an edit, it
 needs the message in the local store. The local store keeps a star you set with `wa`:
 `wa personal messages list "Book club" starred:true` and `wa personal search messages is:starred` find those
-messages. A star set on the phone does not reach the store yet. Whether the phone shows it has not been checked yet.
+messages. While `serve` or `watch` runs, a star you set or take off on the phone reaches the store too, and
+`watch --events` prints it; so do the stars of the messages the phone pushes right after linking. Whether the phone
+shows a star set with `wa` has not been checked yet.
 Star a channel's post on the phone.
 
 ## Mute a chat
