@@ -20,8 +20,8 @@ export default defineConfig({
         "src/bin/**",
       ],
       reporter: ["text-summary", "json-summary", "html"],
-      // A little under what the suite reaches (2026-10-17: 95/94/91/83), so coverage can rise and not fall.
-      thresholds: { lines: 94, statements: 93, functions: 90, branches: 82, perFile: { lines: 50 } },
+      // A little under what the suite reaches (2026-10-18: 96.1/95.3/92.3/85.6), so coverage can rise and not fall.
+      thresholds: { lines: 96, statements: 95, functions: 92, branches: 85, perFile: { lines: 50 } },
     },
   },
 })
