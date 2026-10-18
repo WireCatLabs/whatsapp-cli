@@ -6,8 +6,9 @@ import type { WaPrivacy, WaPrivacyChange } from "../engine/privacy.js"
 
 export type PrivacyAdapter = Required<Pick<MessengerAdapter, "privacy" | "updatePrivacy">>
 
-const GROUP_ADD: Record<Audience, string> = { everyone: "all", contacts: "contacts", nobody: "none" }
-// WhatsApp's "silence unknown callers": an unknown caller's call still arrives, without ringing.
+// whatsmeow lists groupadd none, but Baileys dropped it as refused by WhatsApp (WhiskeySockets/Baileys#966).
+const GROUP_ADD: Partial<Record<Audience, string>> = { everyone: "all", contacts: "contacts" }
+// Baileys' "mute unknown calls" (WhiskeySockets/Baileys#872), the phone's "silence unknown callers"; not checked live.
 const CALL_ADD: Partial<Record<Audience, string>> = { everyone: "all", contacts: "known" }
 
 const audienceOf = (values: Partial<Record<Audience, string>>, value: string): Audience | undefined =>
@@ -32,6 +33,8 @@ export const toPrivacy = (privacy: WaPrivacy): PrivacySettings => {
 const refusedUpFront = (change: PrivacySettings): string | undefined => {
   if (change.findByPhone !== undefined) return "WhatsApp has no setting for who finds the account by its number"
   if (change.phoneNumber !== undefined) return "WhatsApp has no setting for who sees the account's number"
+  if (change.chatInvites === "nobody")
+    return "WhatsApp lets everyone or only contacts add the account to groups, not nobody"
   if (change.calls === "nobody")
     return "WhatsApp lets everyone call, or silences callers the account does not know (contacts), not nobody"
   return undefined
@@ -43,7 +46,8 @@ const refusedUpFront = (change: PrivacySettings): string | undefined => {
  */
 const changesFor = (change: PrivacySettings, now: WaPrivacy): WaPrivacyChange[] => {
   const wanted: WaPrivacyChange[] = []
-  if (change.chatInvites !== undefined) wanted.push({ name: "groupadd", value: GROUP_ADD[change.chatInvites] })
+  if (change.chatInvites !== undefined)
+    wanted.push({ name: "groupadd", value: GROUP_ADD[change.chatInvites] as string })
   if (change.calls !== undefined) wanted.push({ name: "calladd", value: CALL_ADD[change.calls] as string })
   if (change.hideOnline === true)
     wanted.push({ name: "last", value: "none" }, { name: "online", value: "match_last_seen" })

@@ -19,10 +19,11 @@ type waPrivacy struct {
 	CallAdd  string `json:"calladd"`
 }
 
-// privacyValues are the settings wa changes and the values whatsmeow documents for each (types.PrivacySettings).
+// privacyValues are the settings wa changes and the values whatsmeow documents for each (types.PrivacySettings),
+// less groupadd none: whatsmeow lists it, but Baileys dropped it as refused by WhatsApp (WhiskeySockets/Baileys#966).
 var privacyValues = map[types.PrivacySettingType][]types.PrivacySetting{
 	types.PrivacySettingTypeGroupAdd: {types.PrivacySettingAll, types.PrivacySettingContacts,
-		types.PrivacySettingContactBlacklist, types.PrivacySettingNone},
+		types.PrivacySettingContactBlacklist},
 	types.PrivacySettingTypeLastSeen: {types.PrivacySettingAll, types.PrivacySettingContacts,
 		types.PrivacySettingContactBlacklist, types.PrivacySettingNone},
 	types.PrivacySettingTypeOnline:  {types.PrivacySettingAll, types.PrivacySettingMatchLastSeen},
@@ -55,6 +56,7 @@ func (e *engine) privacy() (*waPrivacy, error) {
 }
 
 // setPrivacy sends one request per setting, so every one is checked before the first goes: a refusal changes nothing.
+// WhatsApp failing a later request does not undo the earlier ones, and the failure says so.
 func (e *engine) setPrivacy(changes []waPrivacyChange) (*waPrivacy, error) {
 	if err := checkPrivacy(changes); err != nil {
 		return nil, err
@@ -62,13 +64,22 @@ func (e *engine) setPrivacy(changes []waPrivacyChange) (*waPrivacy, error) {
 	if err := e.connect(); err != nil {
 		return nil, err
 	}
-	for _, change := range changes {
+	for i, change := range changes {
 		_, err := e.client.SetPrivacySetting(e.ctx, types.PrivacySettingType(change.Name), types.PrivacySetting(change.Value))
+		if err != nil && i > 0 {
+			return nil, partlyChanged(err)
+		}
 		if err != nil {
 			return nil, err
 		}
 	}
 	return e.privacy()
+}
+
+func partlyChanged(err error) *refusal {
+	partly := *classify(err)
+	partly.Message += "; the privacy settings sent before it did change (see account privacy show)"
+	return &partly
 }
 
 func checkPrivacy(changes []waPrivacyChange) error {

@@ -218,10 +218,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   to groups (`--chat-invites`), whose calls ring (`--calls`) and whether online and last seen are hidden
   (`--hide-online`). `show` asks WhatsApp each time. `set` changes only the settings named and answers them all; it
   is a write under `permissions.account.privacy.set`. WhatsApp has no setting for who finds the account by its
-  number or who sees the number, so `--find-by-phone` and `--phone-number` are refused, and so is
-  `--calls nobody`: `--calls contacts` is WhatsApp's "silence unknown callers", which lets their calls arrive without
-  ringing. A setting kept with exceptions ("my contacts except…") is left out of `show`. `--hide-online off` shows
-  last seen to contacts. Engine requests `privacy` and `setPrivacy`.
+  number or who sees the number, so `--find-by-phone` and `--phone-number` are refused, and so are
+  `--chat-invites nobody` (WhatsApp is reported to refuse it) and `--calls nobody`. `--calls contacts` sends the value
+  meant as the phone's "silence unknown callers" (not yet checked on a real account). A setting kept with exceptions
+  ("my contacts except…") is left out of `show`. `--hide-online off` shows last seen to contacts. `set` sends one
+  request per setting: if WhatsApp fails one, those sent before it stay changed, and the error says so. Engine requests `privacy` and `setPrivacy`.
 - **`wa <profile> flood clear`** (cli-core's, as in tg and max): forgets the waits WhatsApp asked for and lifts the
   hold on writes. The refusal during a hold already named it; `wa` did not have it.
 - **`session`, `session start`, `session end` and `setup` carry `mcp: false`** in `commands --json` (WC-CMD-21):

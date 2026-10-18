@@ -57,18 +57,18 @@ describe("wa account privacy", () => {
       "privacy",
       "set",
       "--chat-invites",
-      "nobody",
+      "contacts",
       "--hide-online",
       "on",
       "--json",
     ])
     expect(code).toBe(0)
     expect(sent).toEqual([
-      { name: "groupadd", value: "none" },
+      { name: "groupadd", value: "contacts" },
       { name: "last", value: "none" },
       { name: "online", value: "match_last_seen" },
     ])
-    expect(item.privacy).toEqual({ calls: "everyone", chat_invites: "nobody", hide_online: true })
+    expect(item.privacy).toEqual({ calls: "everyone", chat_invites: "contacts", hide_online: true })
   })
 
   it("`set --hide-online off` shows last seen to contacts, and changes nothing already so", async () => {
@@ -90,6 +90,7 @@ describe("wa account privacy", () => {
       ["--find-by-phone", "contacts"],
       ["--phone-number", "nobody"],
       ["--calls", "nobody"],
+      ["--chat-invites", "nobody"],
     ]) {
       const { code, error, sent } = await wa(["privacy", "account", "privacy", "set", ...option, "--json"])
       expect(code).toBe(2)
