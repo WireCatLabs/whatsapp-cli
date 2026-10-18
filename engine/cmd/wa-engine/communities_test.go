@@ -24,7 +24,28 @@ func TestACommunityIsMarked(t *testing.T) {
 	info.JID = community
 	info.IsParent = true
 	assertJSON(t, testConverter().group(info, nil).Chat, `{"jid":"120363000000000002@g.us","name":"Book club",`+
-		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"community":true}`)
+		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"parent":null,"community":true}`)
+}
+
+func TestALiveReadOfAGroupInNoCommunitySaysItHasNoParent(t *testing.T) {
+	assertJSON(t, testConverter().group(groupInfo(), nil).Chat, `{"jid":"120363000000000001@g.us","name":"Book club",`+
+		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"parent":null}`)
+}
+
+func TestTheJoinedGroupsListLeavesAMissingParentUnsaid(t *testing.T) {
+	assertJSON(t, listedLinked(testConverter().group(groupInfo(), nil).Chat), `{"jid":"120363000000000001@g.us",`+
+		`"name":"Book club","kind":"group","unread":null,"lastMessageAt":null,"participants":3}`)
+	info := groupInfo()
+	info.LinkedParentJID = community
+	if got := listedLinked(testConverter().group(info, nil).Chat).Parent; got.jid != community.String() {
+		t.Errorf("listed parent = %v, want %v", got, community)
+	}
+}
+
+func TestAPushedGroupInNoCommunityLeavesTheParentUnsaid(t *testing.T) {
+	assertJSON(t, pushedChats(&waHistorySync.Conversation{ID: proto.String(group.String())})[0],
+		`{"jid":"120363000000000001@g.us","name":null,"kind":"group","unread":0,`+
+			`"lastMessageAt":null,"participants":null,"archived":false,"muted":false}`)
 }
 
 func pushedChats(conversations ...*waHistorySync.Conversation) []waChat {
@@ -51,9 +72,9 @@ func TestAPushedGroupGivesTheCommunityFieldsALiveReadGives(t *testing.T) {
 	live := testConverter().group(info, nil).Chat
 	pushed := pushedChats(&waHistorySync.Conversation{ID: proto.String(group.String()),
 		ParentGroupID: proto.String(community.String()), IsDefaultSubgroup: proto.Bool(true)})[0]
-	if pushed.Parent == nil || *pushed.Parent != *live.Parent || pushed.Community != live.Community {
+	if pushed.Parent.IsZero() || pushed.Parent != live.Parent || pushed.Community != live.Community {
 		t.Errorf("pushed parent=%v community=%v, live parent=%v community=%v",
-			pushed.Parent, pushed.Community, *live.Parent, live.Community)
+			pushed.Parent, pushed.Community, live.Parent, live.Community)
 	}
 }
 
@@ -66,7 +87,7 @@ func TestOnlyAGroupTakesACommunityAndOnlyAGroupIsOne(t *testing.T) {
 		&waHistorySync.Conversation{ID: proto.String(group.String())},
 	)
 	for i, chat := range chats {
-		if chat.Parent != nil || chat.Community {
+		if !chat.Parent.IsZero() || chat.Community {
 			t.Errorf("chat %d: parent=%v community=%v", i, chat.Parent, chat.Community)
 		}
 	}

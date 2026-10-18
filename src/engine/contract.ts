@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 34
+export const PROTOCOL = 35
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -96,8 +96,8 @@ export const waChat = v.strictObject({
   participants: v.nullable(v.number()),
   archived: v.optional(v.boolean()),
   muted: v.optional(v.boolean()),
-  /** The community a group is linked to. */
-  parent: v.optional(jid),
+  /** The community a group is linked to; `null` when a live read says it is in none, absent when nothing said. */
+  parent: v.optional(v.nullable(jid)),
   /** A community itself: a group that holds other groups. */
   community: v.optional(v.literal(true)),
 })

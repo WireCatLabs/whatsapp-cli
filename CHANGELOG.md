@@ -7,6 +7,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **`wa --help` and a bare `wa` show a short first screen** instead of every command and option: what `wa` is for,
+  the usage line, the other WireCat tools it works with, and where to start. `wa --help-all` prints the old help and `wa help options` the
+  options of every command. Each command's own `--help` now ends with what it returns, the commands that usually
+  come next, and an example. A bare `wa commands` prints a text list by section, also when piped; a script that read
+  its JSON must pass `--json` (cli-core 0.344.0).
 - **`chats mark-read` takes a mark-unread off, and needs WhatsApp's settings keys for it.** It sent a read receipt
   only, which leaves a chat marked unread on the phone, and in your own chat it sent nothing at all. It now first
   marks the chat read on your devices, up to `--until-id` or the newest message the store holds, then sends the
@@ -146,6 +151,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A pushed community no longer loses its mark.** The store replaced a chat's `provider_metadata` whole on every
+  push, so a later push that did not say a group was a community took `community: true` off it. A key a push leaves
+  out now keeps its stored value, and so does a group's `parent_chat_id` (cli-core 0.346.0). Engine protocol
+  35.
+- **`inbox` and `review` check `--json=<fields>` against the message summary's fields**, and refuse a name it does
+  not have instead of printing empty items. `--brief` and `--full` no longer mention mail (cli-core 0.345.0).
 - **`session start` and `setup` link a new profile.** They failed before showing a code with "cannot open the lock
   beside the device store": nothing made the profile's own folder before the engine opened its lock there. The engine
   now makes it, mode 700, before it takes the lock.

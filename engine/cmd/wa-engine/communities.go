@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"go.mau.fi/whatsmeow/proto/waHistorySync"
 	"go.mau.fi/whatsmeow/types"
 )
@@ -8,7 +10,10 @@ import (
 // linked says where a group stands in a WhatsApp community: a group in one names it as its parent, and the community
 // itself is marked. mautrix-whatsapp reads the same two fields to make a space and its rooms
 // (pkg/connector/chatinfo.go, wrapGroupInfo).
+// A live read of one group is the one source that says a group is in no community, so only it sends the parent as
+// null.
 func linked(chat waChat, info *types.GroupInfo) waChat {
+	chat.Parent = parentField{said: true}
 	return inCommunity(chat, info.LinkedParentJID, info.IsParent)
 }
 
@@ -25,11 +30,36 @@ func pushedLinked(chat waChat, raw types.JID, conv *waHistorySync.Conversation) 
 	return inCommunity(chat, parent, conv.GetIsParentGroup())
 }
 
+// listedLinked leaves out a parent the joined-groups list does not name: that list asks WhatsApp for members and
+// descriptions only, so its silence is no proof, and mautrix-whatsapp too clears a parent only on an unlink
+// notification (pkg/connector/chatinfo.go, wrapGroupInfoChange).
+func listedLinked(chat waChat) waChat {
+	if chat.Parent.jid == "" {
+		chat.Parent = parentField{}
+	}
+	return chat
+}
+
 func inCommunity(chat waChat, parent types.JID, isParent bool) waChat {
 	if !parent.IsEmpty() {
-		id := parent.String()
-		chat.Parent = &id
+		chat.Parent = parentField{said: true, jid: parent.String()}
 	}
 	chat.Community = isParent
 	return chat
+}
+
+// parentField is left out when the source did not say, and null when it said the group is in no community: the store
+// keeps the parent it holds for the first and clears it for the second.
+type parentField struct {
+	said bool
+	jid  string
+}
+
+func (p parentField) IsZero() bool { return !p.said }
+
+func (p parentField) MarshalJSON() ([]byte, error) {
+	if p.jid == "" {
+		return []byte("null"), nil
+	}
+	return json.Marshal(p.jid)
 }

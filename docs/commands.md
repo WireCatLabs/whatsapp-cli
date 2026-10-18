@@ -36,8 +36,8 @@ without one.
 | `--no-input` | never prompt or open interactive login; piped input remains available. |
 | `--max-input-bytes <bytes>` | maximum buffered input bytes (default: 16777216). |
 | `--max-output-bytes <bytes>` | maximum machine output bytes (default: 4194304; 0 disables). |
-| `--brief` | found messages and mail as reference, title, time, sender and excerpt only. |
-| `--full` | found messages and mail with their whole text and every provider field. |
+| `--brief` | found messages as reference, title, time, sender and excerpt only. |
+| `--full` | found messages with their whole text and every provider field. |
 | `--dry-run` | preview parsed arguments and permissions before running the action. |
 | `--yes` | go ahead without the question an ask level puts before a write. |
 | `--record` | keep this run — ids and timings, never message content. |
@@ -1084,7 +1084,7 @@ a private local display name in the selected account
 
 #### `wa contacts alias set`
 
-
+your own name for a person in this account; kept on this machine, never sent
 
 **Changes something on this computer only.**
 
@@ -1099,7 +1099,7 @@ wa contacts alias set <person> <alias>
 
 #### `wa contacts alias rm`
 
-
+drop your local name for a person; their own name shows again
 
 **Changes something on this computer only.**
 
@@ -1117,7 +1117,7 @@ your private notes on a stored contact, the same in every account that sees them
 
 #### `wa contacts notes list`
 
-
+every private note you keep on a person, oldest first
 
 ```sh
 wa contacts notes list <person> [query]
@@ -1130,7 +1130,7 @@ wa contacts notes list <person> [query]
 
 #### `wa contacts notes show`
 
-
+one private note on a person, with its revision for edit
 
 ```sh
 wa contacts notes show <person> <id>
@@ -1143,7 +1143,7 @@ wa contacts notes show <person> <id>
 
 #### `wa contacts notes add`
 
-
+add a private note on a person from stdin or --file; never sent
 
 **Changes something on this computer only.**
 
@@ -1161,7 +1161,7 @@ wa contacts notes add <person> [options]
 
 #### `wa contacts notes edit`
 
-
+replace a note's text; --revision must match the one you read
 
 **Changes something on this computer only.**
 
@@ -1181,7 +1181,7 @@ wa contacts notes edit <person> <id> [options]
 
 #### `wa contacts notes remove`
 
-
+delete one private note on a person
 
 **Changes something on this computer only.**
 
@@ -2465,7 +2465,7 @@ remembered analysis permissions for this account's chats and provider endpoints
 
 #### `wa conversations consents list`
 
-
+which chats and provider endpoints you allowed to analyse, and when
 
 ```sh
 wa conversations consents list
@@ -2473,7 +2473,7 @@ wa conversations consents list
 
 #### `wa conversations consents revoke`
 
-
+forget analysis permissions so the next analysis asks again
 
 **Changes something on this computer only.**
 
@@ -3574,11 +3574,11 @@ wa tasks reject <task> [options]
 
 ## `wa search`
 
-find things by text: one resource when you know it (messages, notes), or search all across messages and notes; mail is memo search mail
+find things by text: one resource when you know it (messages, notes), or search all across messages and notes; for mail, the separate memo CLI: memo search mail
 
 ### `wa search all`
 
-search messenger messages and notes in the local store, and a meeting account's transcripts when --source names one — best match first; not mail (memo search mail), tasks, people, memories or projects. Use it when you do not know where something was written; search messages or notes reads one kind with all its fields
+search messenger messages and notes in the local store, and a meeting account's transcripts when --source names one — best match first; not mail (the separate memo CLI searches it: memo search mail), tasks, people, memories or projects. Use it when you do not know where something was written; search messages or notes reads one kind with all its fields
 
 ```sh
 wa search all <query> [options]
@@ -4011,7 +4011,7 @@ wa doctor report create [options]
 
 ## `wa commands`
 
-commands, options and exit codes as JSON — inspect one command path per call
+every command by section, one line each; --json: the contract, one path per call
 
 ### `wa commands schema`
 

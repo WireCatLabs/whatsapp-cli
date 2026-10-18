@@ -60,7 +60,7 @@ export const fakeGroups = (seed: Seed, chats: WaChat[]): FakeGroups => {
       chat: {
         ...chat,
         name: change.title ?? chat.name,
-        ...(parentChatId ? { parent: parentChatId } : {}),
+        parent: parentChatId ?? null,
         ...(providerMetadata?.community ? { community: true } : {}),
       },
       description: change.description ?? null,

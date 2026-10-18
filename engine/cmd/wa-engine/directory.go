@@ -43,7 +43,7 @@ func (e *engine) directory() []waChat {
 		if groups, err := e.client.GetJoinedGroups(e.ctx); err == nil {
 			list := make([]waChat, 0, len(groups))
 			for _, group := range groups {
-				list = append(list, e.groupChat(group))
+				list = append(list, listedLinked(e.groupChat(group)))
 			}
 			e.mu.Lock()
 			e.groups = list

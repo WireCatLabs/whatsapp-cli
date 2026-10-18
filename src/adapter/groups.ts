@@ -65,9 +65,11 @@ const isPerson = (id: string) => id.endsWith("@lid") || id.endsWith("@s.whatsapp
 
 /** A group as `chats update` and `chats create` answer it. */
 export const toGroupCard = (group: WaGroup): GroupCard => {
-  const chat = toChat(group.chat)
+  // A null parent tells the store to clear it; an answer leaves it out, as the store's own answer does.
+  const { parentChatId, ...chat } = toChat(group.chat)
   return {
     ...chat,
+    ...(parentChatId == null ? {} : { parentChatId }),
     description: group.description,
     link: group.link,
     settings: {

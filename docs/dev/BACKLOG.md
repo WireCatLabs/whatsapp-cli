@@ -92,8 +92,14 @@ Open work, most important first. The plan in flight is
      live push yet; `IsDefaultSubgroup` (the announcement group) is not carried, as no live read carries it. Listing a community's
      groups (`GetSubGroups`, which also names groups the owner is not in), linking and unlinking (`LinkGroup`,
      `UnlinkGroup`) and creating a group in a community (`ReqCreateGroup.LinkedParentJID`) wait for cli-core: a
-     `parent_chat_id` field in the chat-list query, a `GroupAdmin` method for link and unlink behind the send guard,
-     and a store upsert that can clear a parent once a group is unlinked.
+     `parent_chat_id` field in the chat-list query and a `GroupAdmin` method for link and unlink behind the send guard.
+     A group taken out of its community still names it in the store. cli-core 0.346 clears a stored parent when a
+     saved chat says `parentChatId: null`, and the engine says `parent: null` on a live read of one group (a push and
+     the joined-groups list leave the field out, so they keep the stored one). But nothing that knows "no parent"
+     reaches the store: the store takes chats only from pushes, and a chat saved from WhatsApp's unlink notification
+     (`events.GroupInfo.Unlink`) would overwrite the stored title, unread count and last message time, which the
+     notification does not carry. That waits for cli-core to save part of a chat, or to take a chat change as an
+     event. `community` stays true-only: a community does not turn back into a plain group.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
    - **Live checks of the chat-state writes** in the own chat (2026-10-18, `bin/live-chat-state`): `account privacy
