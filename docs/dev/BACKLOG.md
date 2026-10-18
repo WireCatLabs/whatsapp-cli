@@ -132,11 +132,12 @@ Open work, most important first. The plan in flight is
      attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
      not push history again; a re-link would refill it.
    - **Files WhatsApp no longer keeps.** A download asks the owner's phone to upload the file again and fetches the new
-     copy, but the new path is not kept: cli-core saves a `providerRef` the adapter sets while it reads a file
-     (0.339.0, 0.340.0), and wa's adapter does not set it yet, so each later download asks the phone again, and a
-     forward still sends the old path, which reaches the recipient as a file that will not open. Not yet run against
-     WhatsApp: the retry in the own chat (the owner runs `bin/live-expired-file` for it), and whether the phone
-     answers a receipt for a one-to-one chat with someone else addressed by LID.
+     copy; ~~each later download asks the phone again~~ the new path is kept in the stored `providerRef`, so a later
+     download and a forward use it. Left: a later push of the same message with the old ref (a history push after a
+     re-link) replaces the kept one, as cli-core's message upsert does; cli-core #1540 leaves it to wa, whose adapter
+     would have to leave the ref off a re-pushed attachment the store already holds with one. Not yet run against WhatsApp: the retry in the own
+     chat and that a second download no longer asks (the owner runs `bin/live-expired-file` for both), and whether the
+     phone answers a receipt for a one-to-one chat with someone else addressed by LID.
    - **Forwarding several contact cards** (`ContactsArrayMessage`) and a live location is refused; a place or a card
      stored before `wa` kept their content too.
    - **Live check of forwarding a place or a contact card**: whether WhatsApp's apps show and open a forwarded place

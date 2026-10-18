@@ -444,30 +444,32 @@ func (e *engine) post(
 	return message, nil
 }
 
-// download writes one stored file to the path the CLI chose, created here and readable by this user alone.
-func (e *engine) download(req request) error {
+// download writes one stored file to the path the CLI chose, created here and readable by this user alone. It answers
+// the new path when the phone had to upload the file again, and nil when WhatsApp still kept it.
+func (e *engine) download(req request) (*refreshed, error) {
 	if req.Attachment == nil || req.Attachment.Ref == nil || req.Attachment.Ref.DirectPath == "" {
-		return &failure{"validation_error", "the store does not hold this file's keys"}
+		return nil, &failure{"validation_error", "the store does not hold this file's keys"}
 	}
 	ref := req.Attachment.Ref
 	media, ok := mediaTypes[ref.Media]
 	if !ok {
-		return &failure{"validation_error", "the engine cannot download this kind of file"}
+		return nil, &failure{"validation_error", "the engine cannot download this kind of file"}
 	}
 	if !filepath.IsAbs(req.Path) {
-		return &failure{"validation_error", "a download needs an absolute path to write to"}
+		return nil, &failure{"validation_error", "a download needs an absolute path to write to"}
 	}
 	if err := e.connect(); err != nil {
-		return err
+		return nil, err
 	}
 	file, err := os.OpenFile(req.Path, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
-		return &failure{"validation_error", "the download could not create its file"}
+		return nil, &failure{"validation_error", "the download could not create its file"}
 	}
+	var renewed *refreshed
 	err = e.fetch(ref, media, file)
 	// A channel's files have no key, and the phone is asked by the message's key; without both, the expiry stands.
 	if _, keyErr := targetOf(req); expired(err) && len(ref.MediaKey) > 0 && keyErr == nil {
-		err = e.fetchAgain(req, ref, media, file)
+		renewed, err = e.fetchAgain(req, ref, media, file)
 	}
 	closeErr := file.Close()
 	if err == nil {
@@ -475,9 +477,9 @@ func (e *engine) download(req request) error {
 	}
 	if err != nil {
 		_ = os.Remove(req.Path)
-		return mediaFailure(err)
+		return nil, mediaFailure(err)
 	}
-	return nil
+	return renewed, nil
 }
 
 func (e *engine) fetch(ref *waMediaRef, media whatsmeow.MediaType, file *os.File) error {

@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 30
+export const PROTOCOL = 31
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -114,6 +114,12 @@ export const waMediaRef = v.strictObject({
   fileSha256: v.optional(v.string()),
   fileEncSha256: v.optional(v.string()),
 })
+
+/**
+ * A download's answer: the new path when the phone had to upload the file again, `null` when WhatsApp still kept it.
+ * Only the path changes; the keys and checksums stay those of the stored ref.
+ */
+export const waDownloaded = v.nullable(v.strictObject({ directPath: v.pipe(v.string(), v.nonEmpty()) }))
 
 /** A place as its message carried it, kept so a forward sends it again; `geo:` in `url` rounds the coordinates. */
 export const waPlaceRef = v.strictObject({
@@ -317,6 +323,7 @@ export type WaMessage = v.InferOutput<typeof waMessage>
 export type WaPoll = v.InferOutput<typeof waPoll>
 export type WaVote = v.InferOutput<typeof waVote>
 export type WaMediaRef = v.InferOutput<typeof waMediaRef>
+export type WaDownloaded = v.InferOutput<typeof waDownloaded>
 export type WaPlaceRef = v.InferOutput<typeof waPlaceRef>
 export type WaCardRef = v.InferOutput<typeof waCardRef>
 export type WaAttachment = v.InferOutput<typeof waAttachment>
@@ -468,9 +475,9 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngi
   /**
    * Writes a stored file to `path`, which must not exist yet; the engine creates it readable by this user alone. A
    * file WhatsApp no longer keeps is asked of the owner's phone again, for the message `key` names, and fetched from
-   * its new upload; a phone that does not answer in time is a `timeout`.
+   * its new upload, and the answer is that upload's path; a phone that does not answer in time is a `timeout`.
    */
-  download(attachment: WaAttachment, path: string, key: WaKey): Promise<void>
+  download(attachment: WaAttachment, path: string, key: WaKey): Promise<WaDownloaded>
   forward(request: WaForward): Promise<WaMessage>
   createPoll(request: WaNewPoll): Promise<WaMessage>
   /** The account's vote in a poll, by the answers' texts; none takes it back. Everyone in the chat sees it. */

@@ -167,7 +167,7 @@ func (e *engine) dispatch(req request) (any, error) {
 	case "sendAlbum":
 		return e.sendAlbum(req)
 	case "download":
-		return nil, e.download(req)
+		return e.download(req)
 	case "forward":
 		return e.forward(req)
 	case "older":

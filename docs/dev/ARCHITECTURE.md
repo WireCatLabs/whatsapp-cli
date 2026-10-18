@@ -69,7 +69,9 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   request, so a one-shot command and one relayed through `serve` behave the same. The CLI sends the message's key with
   the attachment, from the store. Each way the retry fails has its reason (`media.*`, registered in
   `src/reasons.ts`); a download the new upload served logs `media.reuploaded` to `WA_ENGINE_LOG`, the only sign of
-  it. The new path is not kept: the `download` request answers nothing, so the adapter sets no `providerRef`.
+  it. The `download` request then answers the new path (`waDownloaded`; `null` when WhatsApp still kept the file),
+  and the adapter sets the whole ref with that path as the file's `providerRef`, which cli-core saves on the stored
+  attachment, so a later download and `messages forward` use it. Only the path changes, as mautrix-whatsapp takes it.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
   the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete`,
   `messages star`, `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store

@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it } from "vitest"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { privateStore } from "./paths.js"
 import { run } from "./program.js"
-import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { type ExpiredFiles, type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { assertPrivate } from "./testing/private-files.js"
 
 const base = contractSeed({ ids: whatsAppIds })
@@ -52,6 +52,11 @@ const elsewhere: Message = {
   ]),
   chatId: base.dialog,
 }
+const expiring: Message = {
+  ...theirs(12, "", [{ kind: "photo", mime: "image/jpeg", providerRef: ref("image", 12) }]),
+  chatId: base.dialog,
+  timestamp: new Date(Date.UTC(2026, 8, 1)).toISOString(),
+}
 const SYNTHETIC_VCARD = "BEGIN:VCARD\nVERSION:3.0\nFN:Ann Lee\nTEL:+00 000 000 0001\nEND:VCARD"
 const placed = theirs(10, "", [
   {
@@ -66,7 +71,7 @@ const card = theirs(11, "", [
 ])
 const seed = {
   ...base,
-  messages: [...base.messages, photo, voice, place, keyless, plain, notes, elsewhere, placed, card],
+  messages: [...base.messages, photo, voice, place, keyless, plain, notes, elsewhere, placed, card, expiring],
 }
 
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
@@ -478,6 +483,7 @@ describe("hearing voice notes with a model on this machine", () => {
           engine.download = async (attachment, path) => {
             engine.downloads.push(attachment)
             writeFileSync(path, tone, { mode: 0o600, flag: "wx" })
+            return null
           }
           engines.push(engine)
           return engine
@@ -541,16 +547,54 @@ describe("hearing voice notes with a model on this machine", () => {
   })
 })
 
+describe("a file the phone uploaded again", () => {
+  const expired: ExpiredFiles = { paths: new Set([ref("image", 12).directPath]), asked: [] }
+  const reuploaded = { ...ref("image", 12), directPath: `${ref("image", 12).directPath}-reuploaded` }
+  const engines: FakeEngine[] = []
+  const withPhone = (argv: string[]) =>
+    wa(["media", ...argv, "--json"], () => {
+      const engine = fakeEngine(seed, { expired })
+      engines.push(engine)
+      return engine
+    })
+
+  it("keeps the new copy's path, so a second download does not ask the phone again", async () => {
+    const download = ["messages", "download", base.dialog, expiring.id]
+    const first = await withPhone([...download, "--output-dir", folder()])
+    expect(first.code).toBe(0)
+    expect(expired.asked).toEqual([{ chat: base.dialog, id: expiring.id, fromMe: false, sender: expiring.senderId }])
+    const second = await withPhone([...download, "--output-dir", folder()])
+    expect(second.code).toBe(0)
+    expect(expired.asked).toHaveLength(1)
+    expect(engines.at(-1)?.downloads.map((attachment) => attachment.ref)).toEqual([reuploaded])
+    for (const result of [first, second]) {
+      expect(result.stdout).not.toContain("reuploaded")
+      expect(result.stdout).not.toContain("mediaKey")
+    }
+  })
+
+  it("forwards it from the new path", async () => {
+    await withPhone(["messages", "download", base.dialog, expiring.id, "--output-dir", folder()])
+    const result = await withPhone(["messages", "forward", base.dialog, expiring.id, "--to", base.busy])
+    expect(result.code).toBe(0)
+    expect(engines.at(-1)?.forwards).toEqual([
+      expect.objectContaining({ attachment: expect.objectContaining({ kind: "photo", ref: reuploaded }) }),
+    ])
+    expect(result.stdout).not.toContain("reuploaded")
+  })
+})
+
 describe("a download leaves nothing readable by others", () => {
   it("writes the engine's copy 0600 in a folder only this user can open", async () => {
     let checked = false
     const engine = fakeEngine(seed)
     const download = engine.download
     engine.download = async (attachment, path, key) => {
-      await download(attachment, path, key)
+      const answer = await download(attachment, path, key)
       assertPrivate(join(path, ".."), 0o700)
       assertPrivate(path, 0o600)
       checked = true
+      return answer
     }
     const result = await wa(
       ["media", "messages", "download", base.busy, voice.id, "--output-dir", folder(), "--json"],

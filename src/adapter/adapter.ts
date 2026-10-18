@@ -36,6 +36,7 @@ import {
   OLDER_MAX,
   type WaAttachment,
   type WaKey,
+  type WaMediaRef,
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
@@ -227,11 +228,21 @@ export const whatsAppAdapter = (
   // A deletion for the account alone and a star are changes to its synced settings, not messages.
   const synced = settingsWrite(translated, words)
 
-  async function* fetched(attachment: WaAttachment, key: WaKey): AsyncIterable<Uint8Array> {
+  // The phone's new upload replaces the whole stored ref on `file`, so cli-core saves it and a later download or a
+  // forward uses the live path; a second read of the same file in this run uses it too.
+  async function* fetched(
+    file: RemoteFile,
+    attachment: WaAttachment & { ref: WaMediaRef },
+    key: WaKey,
+  ): AsyncIterable<Uint8Array> {
     const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
     try {
       const path = join(folder, "file")
-      await translated(engine.download(attachment, path, key))
+      const renewed = await translated(engine.download(attachment, path, key))
+      if (renewed) {
+        attachment.ref = { ...attachment.ref, directPath: renewed.directPath }
+        file.providerRef = attachment.ref
+      }
       yield* createReadStream(path)
     } finally {
       await rm(folder, { recursive: true, force: true })
@@ -364,14 +375,15 @@ export const whatsAppAdapter = (
           skipped.push(stored.kind)
           return
         }
-        files.push({
+        const file: RemoteFile = {
           kind: attachment.kind,
           ...(attachment.name === undefined ? {} : { name: attachment.name }),
           ...(attachment.mime === undefined ? {} : { mime: attachment.mime }),
           ...(attachment.size === undefined ? {} : { size: attachment.size }),
           position,
-          bytes: () => fetched(attachment, keyOf(chatId, message)),
-        })
+          bytes: () => fetched(file, attachment, keyOf(chatId, message)),
+        }
+        files.push(file)
       })
       return { files, skipped }
     },

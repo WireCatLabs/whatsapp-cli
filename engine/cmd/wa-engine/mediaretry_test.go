@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"testing"
@@ -135,5 +136,16 @@ func TestTheReceiptAddressesTheMessageAsMautrixDoes(t *testing.T) {
 	own := retryInfo(target{chat: ann, id: "3EB0A2"}, types.EmptyJID)
 	if !own.IsFromMe || own.IsGroup || own.Chat != ann {
 		t.Errorf("the account's own in a one-to-one chat: %+v", own)
+	}
+}
+
+func TestADownloadAnswersTheNewPathOnlyAfterTheRetry(t *testing.T) {
+	var out bytes.Buffer
+	w := newWire(&out)
+	w.ok(1, (*refreshed)(nil))
+	w.ok(2, &refreshed{DirectPath: "/v/t62/synthetic-again"})
+	want := `{"id":1,"ok":null}` + "\n" + `{"id":2,"ok":{"directPath":"/v/t62/synthetic-again"}}` + "\n"
+	if out.String() != want {
+		t.Errorf("answers %q, want %q", out.String(), want)
 	}
 }

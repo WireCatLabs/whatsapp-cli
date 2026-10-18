@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 30, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 31, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -121,7 +121,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
         break
       }
       writeFileSync(fields.path, `synthetic ${fields.attachment.kind} bytes`, { mode: 0o600, flag: "wx" })
-      say({ id, ok: null })
+      say({ id, ok: fields.chat === "reuploaded@stub" ? { directPath: "/v/stub-reuploaded" } : null })
       break
     case "link":
       say({ login: "pair", code: "ABCD-EFGH" })
