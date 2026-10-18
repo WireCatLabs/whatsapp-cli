@@ -1,10 +1,10 @@
-import { mkdtempSync } from "node:fs"
+import { cpSync, mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
 import { contractSeed, mcpOverStdio } from "@wirecat/cli-core/testing"
-import { beforeAll, describe, expect, it } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import {
   EngineError,
   type EngineEvent,
@@ -99,14 +99,19 @@ const [deletedOwn, deletedTheirs] = [
   inBusy.find((message) => !message.outgoing) as Message,
 ]
 
-const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal, store?: string) => {
+// Each test gets a copy of one filled store: a message one test deletes would otherwise be missing from the next.
+let store = ""
+let filledStore = ""
+const env = () => ({ ...process.env, MESSAGING_STORE: store })
+
+const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
   const code = await run(argv, {
     streams,
     tty: false,
+    env: env(),
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
-    ...(store ? { env: { ...process.env, MESSAGING_STORE: store } } : {}),
   })
   return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
 }
@@ -124,7 +129,7 @@ const acting = async (argv: string[]) => {
 const errorCode = (stderr: string) => JSON.parse(stderr.slice(stderr.indexOf("{"))).error.code
 
 // Fills the store as the phone's first history push does, then stops watching.
-const filled = async (profile: string, from: typeof seed, store?: string) => {
+const filled = async (profile: string, from: typeof seed) => {
   const controller = new AbortController()
   const filling = () => {
     const engine = fakeEngine(from)
@@ -136,10 +141,20 @@ const filled = async (profile: string, from: typeof seed, store?: string) => {
     }
     return engine
   }
-  expect((await wa([profile, "watch", "--jsonl"], filling, controller.signal, store)).code).toBe(0)
+  expect((await wa([profile, "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
 }
 
-beforeAll(() => filled("actions", seed))
+beforeAll(async () => {
+  store = join(mkdtempSync(join(tmpdir(), "wa-actions-")), "messages.db")
+  await filled("actions", seed)
+  filledStore = store
+})
+
+beforeEach(() => {
+  const copy = mkdtempSync(join(tmpdir(), "wa-actions-"))
+  cpSync(dirname(filledStore), copy, { recursive: true })
+  store = join(copy, "messages.db")
+})
 
 describe("wa reactions", () => {
   it("puts a reaction on someone else's message, addressed by its stored sender", async () => {
@@ -211,7 +226,7 @@ describe("wa messages pin", () => {
       throw new Error("a refused pin must never connect")
     }
     const mcp = await mcpOverStdio((streams) =>
-      run(["agent", "mcp"], { streams: captureStreams(), tty: false, ...streams, engine: neverConnect }),
+      run(["agent", "mcp"], { streams: captureStreams(), tty: false, env: env(), ...streams, engine: neverConnect }),
     )
     const answer = await mcp.call("wa_write", {
       command: "messages pin",
@@ -377,6 +392,7 @@ describe("wa messages delete", () => {
       run(["agent", "mcp"], {
         streams: captureStreams(),
         tty: false,
+        env: env(),
         ...streams,
         engine: () => {
           engine = fakeEngine(seed)
@@ -419,6 +435,7 @@ describe("an agent's messages delete over MCP, by permission level", () => {
       run([profile, "mcp"], {
         streams: captureStreams(),
         tty: false,
+        env: env(),
         ...streams,
         engine: () => {
           engine = fakeEngine(seed)
@@ -465,7 +482,7 @@ describe("an agent's messages delete over MCP, by permission level", () => {
 })
 
 /** `wa watch --events` while the phone pushes `events`, then stops; the lines it printed. */
-const fromThePhone = async (store: string, events: EngineEvent[]) => {
+const fromThePhone = async (events: EngineEvent[]) => {
   const controller = new AbortController()
   const pushing = () => {
     const engine = fakeEngine(seed)
@@ -481,7 +498,7 @@ const fromThePhone = async (store: string, events: EngineEvent[]) => {
     }
     return engine
   }
-  const result = await wa(["actions", "watch", "--events", "--jsonl"], pushing, controller.signal, store)
+  const result = await wa(["actions", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
   return result.stdout
     .split("\n")
@@ -489,36 +506,25 @@ const fromThePhone = async (store: string, events: EngineEvent[]) => {
     .map((line) => JSON.parse(line))
 }
 
-const listedIds = async (store: string, chat: string, ...filters: string[]) => {
-  const listed = await wa(
-    ["actions", "--offline", "messages", "list", chat, ...filters, "--json"],
-    undefined,
-    undefined,
-    store,
-  )
+const listedIds = async (chat: string, ...filters: string[]) => {
+  const listed = await wa(["actions", "--offline", "messages", "list", chat, ...filters, "--json"])
   expect(listed.code, listed.stderr).toBe(0)
   return JSON.parse(listed.stdout).items.map((item: { id: string }) => item.id)
 }
 
 describe("stars and deletions made on the phone", () => {
-  const ownStore = () => join(mkdtempSync(join(tmpdir(), "wa-phone-")), "messages.db")
-
   it("prints a star from the phone in watch, and keeps it until the phone takes it off", async () => {
-    const store = ownStore()
-    await filled("actions", seed, store)
     const star = (starred: boolean): EngineEvent => ({ event: "star", chat: seed.dialog, id: phoneStarred.id, starred })
-    expect(await fromThePhone(store, [star(true)])).toEqual([
+    expect(await fromThePhone([star(true)])).toEqual([
       { event: "star", chatId: seed.dialog, chatTitle: expect.any(String), messageId: phoneStarred.id, starred: true },
     ])
-    expect(await listedIds(store, seed.dialog, "starred:true")).toContain(phoneStarred.id)
+    expect(await listedIds(seed.dialog, "starred:true")).toContain(phoneStarred.id)
 
-    await fromThePhone(store, [star(false)])
-    expect(await listedIds(store, seed.dialog, "starred:true")).not.toContain(phoneStarred.id)
+    await fromThePhone([star(false)])
+    expect(await listedIds(seed.dialog, "starred:true")).not.toContain(phoneStarred.id)
   })
 
   it("keeps the star a history push carries on its message", async () => {
-    const store = ownStore()
-    await filled("actions", seed, store)
     const pushed: WaMessage = {
       id: phonePushed.id,
       chat: seed.dialog,
@@ -531,19 +537,17 @@ describe("stars and deletions made on the phone", () => {
       replyTo: null,
     }
     const history: Omit<WaHistory, "messages"> = { kind: "recent", chats: [], contacts: [], votes: [] }
-    await fromThePhone(store, [{ event: "history", history: { ...history, messages: [{ ...pushed, starred: true }] } }])
-    expect(await listedIds(store, seed.dialog, "starred:true")).toContain(phonePushed.id)
+    await fromThePhone([{ event: "history", history: { ...history, messages: [{ ...pushed, starred: true }] } }])
+    expect(await listedIds(seed.dialog, "starred:true")).toContain(phonePushed.id)
 
-    await fromThePhone(store, [{ event: "history", history: { ...history, messages: [pushed] } }])
-    expect(await listedIds(store, seed.dialog, "starred:true")).toContain(phonePushed.id)
+    await fromThePhone([{ event: "history", history: { ...history, messages: [pushed] } }])
+    expect(await listedIds(seed.dialog, "starred:true")).toContain(phonePushed.id)
   })
 
   it("drops a message the owner deleted for themselves on the phone", async () => {
-    const store = ownStore()
-    await filled("actions", seed, store)
-    expect(await listedIds(store, seed.dialog)).toContain(phoneDeleted.id)
-    await fromThePhone(store, [{ event: "delete", chat: seed.dialog, id: phoneDeleted.id }])
-    expect(await listedIds(store, seed.dialog)).not.toContain(phoneDeleted.id)
+    expect(await listedIds(seed.dialog)).toContain(phoneDeleted.id)
+    await fromThePhone([{ event: "delete", chat: seed.dialog, id: phoneDeleted.id }])
+    expect(await listedIds(seed.dialog)).not.toContain(phoneDeleted.id)
   })
 })
 
@@ -602,6 +606,7 @@ describe("wa messages star", () => {
       run(["agent", "mcp"], {
         streams: captureStreams(),
         tty: false,
+        env: env(),
         ...streams,
         engine: () => {
           engine = fakeEngine(seed)
