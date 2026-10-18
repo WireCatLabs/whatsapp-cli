@@ -122,6 +122,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   marks such a mute with an end no clock can read (WhatsApp writes -1 into an unsigned field), and `wa` took that for
   a mute that had already ended. Any end past the year 9999 now reads as muted with no end, as whatsmeow reads it in
   app state. How the phone writes it in history is not yet checked live.
+- **A lock another process holds no longer stalls `serve`** (cli-core 0.340.0): the send journal, the request pace
+  and `recipients add` used to wait for it by blocking, so every relayed command and the connection's keep-alives
+  stopped for up to 5 seconds. They now wait without blocking; the `timeout` (exit 9) is unchanged.
+- **`setup` without a terminal no longer waits 5 minutes on a dead connection after the history push** (cli-core
+  0.340.0): the steps after it get the usual 30 seconds. At a terminal they stay unbounded.
+- **The MCP `messages list` tool no longer offers `topic:`** (cli-core 0.340.0): WhatsApp has no forum topics, and a
+  `topic:` term is refused as an unknown field, as on the command line.
+- **`chats admins add` has a summary that fits in 80 characters** (cli-core 0.340.0): "make a member an admin, with
+  every right"; `--help` still names the seven rights.
 - **A late answer from the phone no longer ends the next `messages sync` page early**: each request for older messages
   goes under its own id, and an answer that names an earlier request is saved like any history the phone sends instead
   of being taken for the current page. An empty late answer used to read as the chat's start. This holds if the phone
