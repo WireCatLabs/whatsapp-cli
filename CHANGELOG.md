@@ -8,17 +8,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Changed — may break callers
 
 - **`messages delete` without `--for-everyone` deletes the message for you only, where it used to be refused** (exit
-  2) (WC-PERM-13). `wa` asks WhatsApp to take the messages from this account's devices, to leave them with the
+  2). `wa` asks WhatsApp to take the messages from this account's devices, to leave them with the
   others in the chat, and to keep the photos and files the phone saved from them. Each message must be in the local
   store, since WhatsApp names it by its sender and the time it was sent; one the store lacks is exit 6 and nothing is
   deleted. A device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does. An
   agent's `messages delete` over MCP, which was refused too, now does the same, for the owner only; deleting for
   everyone stays the owner's `--for-everyone`. A deletion asks first by default, and over MCP that level lets the
   agent's call through, so at the default an agent can now delete the owner's copy. To keep agents from it, set
-  `permissions.messages.delete` to `readonly` or `deny`; the refusal is then exit 5, not the old exit 2. Not yet
-  checked live on the phone.
-- **A delete of several messages that fails partway names the ones already deleted** (WC-OUT-20), with or without
-  `--for-everyone`, and is not safe to retry: delete only the rest.
+  `permissions.messages.delete` to `readonly` or `deny`; the refusal is then exit 5, not the old exit 2. A delete
+  of several messages that fails partway, with or without `--for-everyone`, now names the ones already deleted and
+  is not marked safe to retry: delete only the rest. Not yet checked live on the phone.
 - **`messages download` asks your phone for a file WhatsApp no longer keeps**, as WhatsApp's apps do, instead of
   answering `not_found` (exit 6) at once. It waits up to 20 seconds for the phone to upload it again and fetches the
   new copy. A phone that does not answer ends the download with `timeout` (exit 9); exit 6 now means the phone no
@@ -34,24 +33,22 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   the phone-number id (`…@s.whatsapp.net`). A script that saved that id must take the new one from `chats list`. The
   move is repeated at each start for 30 days, so one that came while only a one-shot command ran still lands. A
   send typed to the old id stores a chat under it again, which a later repeat of the move merges.
-- **A write the connection dropped under answers `outcome_unknown`** (WC-LIFE-9): exit 14, `retry.safe: false`.
-  When the network dropped after a send, edit, reaction, group change or other write left, and it could not be sent
-  again, `wa` answered `network_error` (exit 10), which invited a retry and a double send. Also when WhatsApp handed
-  the login to another connection meanwhile: the write may have gone through, so that comes first. Check the chat
-  before you send again.
-- **A command cut off when WhatsApp ended the connection says why**: a command relayed through `serve` while another
-  process took the login over answered `network_error` (exit 10), which invites a retry; it now answers
-  `device.replaced`, and after a ban or a logout `account.banned` or `device.logged-out`. A script that retried on
-  `network_error` must not retry these.
+- **A command cut off by a dropped or ended connection no longer answers `network_error`** (exit 10), which invited
+  a retry and a double send. A send, edit, reaction, group change or other write whose request left before the
+  network dropped, and could not be sent again, now answers `outcome_unknown`: exit 14, `retry.safe: false`, also
+  when WhatsApp handed the login to another connection meanwhile, since the write may have gone through. Check the
+  chat before you send again. Otherwise, a command relayed through `serve` while another process took the login over
+  now answers `device.replaced`, and after a ban or a logout `account.banned` or `device.logged-out`. A script that
+  retried on `network_error` must not retry these.
 - **`chats rules set` refuses a `newAccount` rule** with `validation_error` (exit 2) and saves nothing: WhatsApp does
   not say when an account was made, so the rule was saved and could never match. A script that sets one must drop it.
-- **A send blocked by another process's lock exits 9, not 1** (cli-core 0.338.0; WC-OUT-18, WC-OUT-20): when
-  another process holds the send journal or the request pace past the 5 s wait, a send or `flood clear` answers
-  `timeout`, since nothing was sent and a retry is safe. A change to the recipient list held elsewhere for 5 s is
+- **A send that waits on another `wa` process exits 9, not 1** (cli-core 0.338.0): when another process on the
+  profile is sending or clearing the pace for longer than the 5 s wait, a send or `flood clear` answers `timeout`,
+  since nothing was sent and a retry is safe. A change to the recipient list held elsewhere for 5 s is
   refused with exit 9 and the list stays as it was; two changes at once no longer undo each other.
-- **`wa upgrade --offline` exits 2** (WC-OUT-19) instead of asking npm anyway.
+- **`wa upgrade --offline` exits 2** instead of asking npm anyway.
 - **`WA_READ_ONLY` refuses more, always with exit 5 and "this process is read-only (WA_READ_ONLY)"** (cli-core
-  0.328.0 to 0.337.0, WC-PERM-12). An agent that did any of these under the lock must do it in a process without
+  0.328.0 to 0.337.0). An agent that did any of these under the lock must do it in a process without
   it. Newly refused:
   - `session start`, `session end` and `setup`, before they act ("it cannot log in or out"); `session start` and
     `setup` on a profile linked before used to go ahead;
@@ -67,33 +64,34 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `messages delete` under the lock exits 5, not 7 ("asks before it acts"). `wa upgrade --check` now runs under the
   lock; `wa upgrade` without it is still refused.
 - **`conversations embed` and `conversations build` count as writes to an outside service, and `search
-  conversations` as a read from one** (cli-core 0.334.0, 0.336.0, WC-CMD-17): a failed run is not marked safe to
+  conversations` as a read from one** (cli-core 0.334.0, 0.336.0): a failed run is not marked safe to
   retry, and under `WA_READ_ONLY` each refuses before it sends chat text or the query to a remote provider; a local
   model still works. They always run in the calling process, never through `serve`. Their help now says "Changes
   something in WhatsApp", which here means the outside provider.
-- **A ban holds writes for as long as it lasts** (WC-PERM-18): a temporary ban WhatsApp dates holds writes until its
-  end, the error says when, and `standing.until` is that time. A ban with no end has `standing.state` `banned`, not
-  `frozen`, and `until: null` in `doctor --json`, `flood clear --json` and `server status --json`, where it held for
-  a year before; `wa <profile> flood clear` or a `doctor --online` that connects lifts it.
-- **A hold on writes stops every write** (cli-core 0.334.0, WC-PERM-18): while WhatsApp has the account banned or
-  rate-limited, a reaction, `chats mark-read` and a group title change are refused with exit `5` too, not only sends
-  and edits. Reads still work; `inbox` and `review` with `--mark-read` still show what they read and warn that
-  nothing was marked read.
+- **A ban or rate limit holds every write, for as long as it lasts** (cli-core 0.334.0): while WhatsApp has the
+  account banned or rate-limited, a reaction, `chats mark-read` and a group title change are refused with exit `5`
+  too, not only sends and edits. Reads still work; `inbox` and `review` with `--mark-read` still show what they read
+  and warn that nothing was marked read. A temporary ban WhatsApp dates holds writes until its end, the error says
+  when, and `standing.until` is that time. A ban with no end has `standing.state` `banned`, not `frozen`, and
+  `until: null` in `doctor --json`, `flood clear --json` and `server status --json`, where it held for a year
+  before; `wa <profile> flood clear` or a `doctor --online` that connects lifts it.
 - **`serve` banned by WhatsApp is not restarted by its unit** (exit 5 joins exit 4 in the unit's no-restart list):
   a restart 30 s later connected again during the ban. `wa <profile> server status` says it stopped and will not
   restart; start it again with `wa <profile> server start` once the ban ends.
-- **An older client's `session end` relayed into `serve` is refused** (WC-LIFE-11) with `permission_error`, exit
+- **An older client's `session end` relayed into `serve` is refused** with `permission_error`, exit
   `5`, `sent: false`, naming `server stop`; it was `provider_unavailable`, exit `12`, `device.in-use`. `serve`'s
   connection and the keys stay as they were.
 - **Ctrl+C or `--timeout` during the history wait after linking ends the wait, not the command**: `session start`
   keeps what arrived, counts it and exits 0. It exited 130 or 9, though the device was linked. `setup` goes on to
-  its account, chat and agent steps, which get a deadline of their own (cli-core 0.334.0, WC-LIFE-5, WC-LIFE-8); a
+  its account, chat and agent steps, which get a deadline of their own (cli-core 0.334.0); a
   Ctrl+C after the wait ends setup (130). With `--timeout`, the link and the wait share that one deadline, and the
   steps after it get that long again.
 - **`chats list` and `chats show` answer from the local store and never connect** (cli-core 0.328.0), so they run
-  here while `serve` runs. `recipients add` runs through `serve` instead of being refused with exit 12. A link
-  without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds. A command path given as one quoted
-  argument (`wa 'chats list'`) fails with `validation_error`; it printed the root help and exited 0.
+  here while `serve` runs. `recipients add` runs through `serve` instead of being refused with exit 12.
+- **A link without a terminal waits 5 minutes by default, not 30 seconds** (cli-core 0.328.0), so an agent's
+  `session start --qr-file` is not cut off before the code is scanned. `--timeout` still decides when given.
+- **A command path given as one argument fails** (cli-core 0.328.0): `wa 'chats list'` printed the root help and
+  exited 0; it now fails with `validation_error`.
 - **`wa mcp` offers only what `wa` has** (cli-core 0.328.0, 0.335.0): `chats link create`, which failed, is gone,
   and a command that refuses `--offline` no longer has an `offline` input; an agent that passes one gets
   `validation_error`. `metadata get` and `metadata refresh`, which failed too, now work (see Added).
@@ -101,30 +99,25 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   connects, and works with `--offline`. `wa` does not record joins and leaves yet, so the list is empty and `watch
   --events` has no chat events to show, and `stats chats show` leaves `members` out, sets `complete` to `false` and
   says in `missing` (and on stderr in text mode) that joins and leaves are not recorded for this chat yet (cli-core
-  0.337.0, WC-OUT-13).
+  0.337.0).
 - **A chat or person named by name is found in the local store first** (cli-core 0.337.0): part of the name is
   enough, and a name several stored chats match is refused with "… matches N chats", as `chats show` refuses it; a
   caller that matched the old "N chats share that name" must match the new text. Only a name the store does not hold
   is asked of WhatsApp's chat list, so a one-shot command now finds a stored group by its name. `watch` titles a
   chat from the store and follows its renames; a chat the store has never held has no title in `watch`.
-- **`wa commands --json` has two new keys** (cli-base 0.44.0): `runnable: true` on a group that runs on its own, and
-  `offline: false` on a command that cannot answer offline. A reader that rejects unknown keys must accept them.
-- **The message store moves to version 24 the first time this version opens it.** Nothing to do: `wa` 0.1.0 still
-  opens it.
 
 ### Fixed
 
-- **A late answer from the phone no longer ends the next `messages sync` page early**: each request for older
-  messages goes under its own id, and an answer that names an earlier request is saved as a history push instead of
-  being taken for the current page. An empty late answer used to read as the chat's start. This holds if the phone
-  names the request by that id, which is not yet checked live; otherwise answers are matched by their chat, as
-  before.
+- **A late answer from the phone no longer ends the next `messages sync` page early**: each request for older messages
+  goes under its own id, and an answer that names an earlier request is saved like any history the phone sends instead
+  of being taken for the current page. An empty late answer used to read as the chat's start. This holds if the phone
+  names the request by that id, which is not yet checked live; otherwise answers are matched by their chat, as before.
 - **A page the phone sends in pieces is filled**: when the phone sends fewer messages than asked, `wa` asks again from
   the oldest one it sent, one second apart, at most three asks and 25 seconds per page; what arrived before a
   timeout is kept.
 - **A rate limit or a ban that ends `watch` or `serve`'s feed holds the next command's writes** as a one-shot
   command meeting it would.
-- **`images embed` runs inside `serve` when `serve` holds the connection** (cli-core 0.337.0, WC-LIFE-11): it
+- **`images embed` runs inside `serve` when `serve` holds the connection** (cli-core 0.337.0): it
   downloads pictures through WhatsApp, so it is a read from WhatsApp, and its MCP tool has no `offline` input.
 - **Model downloads no longer go through a running `serve`** (cli-core 0.336.0): `models text download`, `models
   audio download` and `images models download` fetch from a model host, so they run in the calling process.
@@ -171,11 +164,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   nothing is sent. A channel's post is starred on the phone. It goes through the profile's permissions
   (`messages.star`, `messages.unstar`), an agent can do it over MCP, and it answers `settings.keys-missing` as `chats
   mute` does. The local store keeps a star set with `wa`, so `messages list <chat> starred:true` and `search
-  messages is:starred` find it; a star set on the phone does not reach the store yet. Not yet checked live on the
-  phone.
-- **`messages pin` and `messages unpin`**: a message in the local store is pinned for the whole chat; a message the
-  store lacks is `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies and counts
-  toward the hourly limit; `messages pin` takes no `--notify`, and an agent's `messages_pin` no `notify`.
+  messages is:starred` find it; a star set on the phone does not reach the store yet. The store moves to version 24
+  for this the first time this version opens it; `wa` 0.1.0 still opens it. Not yet checked live on the phone.
+- **`wa <profile> messages pin` and `messages unpin`**: a message in the local store is pinned for the whole chat; a
+  message the store lacks is `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies and
+  counts toward the hourly limit; `messages pin` takes no `--notify`, and an agent's `messages_pin` no `notify`.
   `--expire-time 24h`, `7d` or `30d` (MCP `expire_time`) says how long it lasts; without it the pin lasts 7 days, as
   the help says; any other length is `validation_error`, over MCP before it connects.
 - **`wa <profile> account privacy show` and `account privacy set`**: who sees last seen (`--last-seen`), the
@@ -224,6 +217,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   own.
 - **`tasks agenda` lists what others owe you** (cli-core 0.328.0): `assigned` in JSON and an "assigned — others owe
   you" section hold the open tasks someone else does, oldest first, each with its `assignees`.
+- **`wa commands --json` has two new keys** (cli-base 0.44.0): `runnable: true` on a group that runs on its own, and
+  `offline: false` on a command that cannot answer offline. A reader that rejects unknown keys must accept them.
 
 ## 0.1.0 — 17.10.2026
 
