@@ -85,6 +85,19 @@ Open work, most important first. The plan in flight is
    - **Live checks of `chats delete` and `chats clear`**: not run against WhatsApp. Open, as for mute: a one-to-one
      chat addressed by its LID; and whether the phone deletes up to the named message when newer ones arrived
      that the store has not heard of yet (the patch should leave those).
+   - **Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`**: not run against WhatsApp.
+     Open, as for mute: a one-to-one chat addressed by its LID. Also: whether the phone shows a fourth pinned chat
+     (its apps keep three; the server cannot read a patch to refuse one); whether pinning an archived chat unarchives
+     it (whatsmeow's, Baileys' and whatsapp-rust's pin patches carry no unarchive); whether `chats mark-read`, which
+     sends a read receipt and no app-state patch, clears a mark-unread on the phone; and whether an archived chat comes
+     back when a message newer than the patch's range arrives.
+   - **`chats mark-read` after a `mark-unread`.** `mark-read` sends a read receipt only; the app-state patch that
+     undoes a mark-unread is the same one with read true (whatsmeow's `BuildMarkChatAsRead`). If the live
+     check shows the receipt leaves the mark, `mark-read` also sends that patch. Open then: a second write that can
+     fail with `settings.keys-missing` after the receipt went out, and `inbox`/`review --mark-read` doing it per chat.
+   - **An archive or mark-unread with nothing stored.** Baileys accepts an empty message range, whatsapp-rust calls
+     one safe, and whatsmeow fills in the current time; `wa` still refuses a chat the store holds nothing of, as
+     `chats delete` does. Sending an empty range is an option once a live check shows the phone takes it.
    - **The store keeps a deleted chat.** cli-core's `chats delete` and `chats clear` leave the local store as it is,
      so `messages list` and `search` still show what was deleted (queued to cli-core); the engine also ignores
      whatsmeow's `DeleteChat` and `ClearChat` events, so a deletion made on the phone does not reach the store either.

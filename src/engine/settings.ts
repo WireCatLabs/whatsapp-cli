@@ -28,6 +28,12 @@ export interface SettingsEngine {
   deleteForMe(message: WaAnchor): Promise<void>
   /** Stars `message`, or takes the star off, on the account's devices alone; nobody in the chat is told. */
   star(message: WaKey, starred: boolean): Promise<void>
+  /** Moves `last`'s chat into the archive, which unpins it, or back out; bounded by `last` as `deleteChat` is. */
+  archiveChat(last: WaAnchor, archived: boolean): Promise<void>
+  /** Pins the chat at the top of the account's chat list, or unpins it. Not a message pin. */
+  pinChat(jid: string, pinned: boolean): Promise<void>
+  /** Marks `last`'s chat unread on the account's devices; no receipt is sent or taken back. */
+  markChatUnread(last: WaAnchor): Promise<void>
 }
 
 const nothing = v.nullable(v.unknown())
@@ -48,5 +54,18 @@ export const goSettings = (request: EngineRequest): SettingsEngine => ({
   },
   star: async (message, starred) => {
     await request("star", { ...keyFields(message), starred }, nothing)
+  },
+  archiveChat: async (last, archived) => {
+    await request(
+      archived ? "archiveChat" : "unarchiveChat",
+      { ...keyFields(last), timestamp: last.timestamp },
+      nothing,
+    )
+  },
+  pinChat: async (jid, pinned) => {
+    await request(pinned ? "pinChat" : "unpinChat", { jid }, nothing)
+  },
+  markChatUnread: async (last) => {
+    await request("markChatUnread", { ...keyFields(last), timestamp: last.timestamp }, nothing)
   },
 })

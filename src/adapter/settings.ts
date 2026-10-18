@@ -7,7 +7,12 @@ import type { Words } from "./checks.js"
 import { toAccount } from "./map.js"
 
 /** The account's own settings, which WhatsApp syncs to its other devices, and the profile everyone sees. */
-export type SettingsAdapter = Required<Pick<MessengerAdapter, "mute" | "updateProfile" | "deleteChat" | "clearHistory">>
+export type SettingsAdapter = Required<
+  Pick<
+    MessengerAdapter,
+    "mute" | "updateProfile" | "deleteChat" | "clearHistory" | "archiveChat" | "pinChat" | "markChatUnread"
+  >
+>
 
 export interface SettingsDeps {
   engine: WhatsAppEngine
@@ -40,14 +45,14 @@ export const settingsWrite =
 export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: SettingsDeps): SettingsAdapter => {
   const keyed = settingsWrite(translated, words)
 
-  // WhatsApp deletes up to a message the patch names, either side's; a guessed one makes the phone drop the patch
+  // WhatsApp applies the patch up to a message it names, either side's; a guessed one makes the phone drop the patch
   // without a word, so a chat the store holds nothing of is refused.
-  const newest = async (chatId: string): Promise<WaAnchor> => {
+  const newest = async (chatId: string, purpose: string): Promise<WaAnchor> => {
     const last = await stored.anchor(chatId, AFTER_EVERY_MESSAGE)
     if (!last)
       throw new CliError(
         "not_found",
-        "nothing of this chat is in the local store, and WhatsApp needs its newest message to know what to delete; " +
+        `nothing of this chat is in the local store, and WhatsApp needs its newest message to know ${purpose}; ` +
           `${words("serve")} keeps the store filled`,
       )
     return { ...keyOf(chatId, last), timestamp: last.timestamp }
@@ -58,10 +63,19 @@ export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: Se
       await keyed(engine.mute(chatId, until))
     },
     deleteChat: async (chatId) => {
-      await keyed(engine.deleteChat(await newest(chatId)))
+      await keyed(engine.deleteChat(await newest(chatId, "what to delete")))
     },
     clearHistory: async (chatId) => {
-      await keyed(engine.clearChat(await newest(chatId)))
+      await keyed(engine.clearChat(await newest(chatId, "what to delete")))
+    },
+    archiveChat: async (chatId, archived) => {
+      await keyed(engine.archiveChat(await newest(chatId, "what the archive covers"), archived))
+    },
+    pinChat: async (chatId, pinned) => {
+      await keyed(engine.pinChat(chatId, pinned))
+    },
+    markChatUnread: async (chatId) => {
+      await keyed(engine.markChatUnread(await newest(chatId, "what is unread")))
     },
     updateProfile: async (change) => toAccount(await keyed(engine.updateProfile(toWaProfile(change)))),
   }

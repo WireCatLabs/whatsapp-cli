@@ -75,6 +75,11 @@ const WRITES = new Set([
   "clearChat",
   "deleteForMe",
   "star",
+  "archiveChat",
+  "unarchiveChat",
+  "pinChat",
+  "unpinChat",
+  "markChatUnread",
   "logout",
 ])
 

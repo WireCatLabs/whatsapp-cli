@@ -50,7 +50,7 @@ func TestADeleteKeepsThePhonesSavedFiles(t *testing.T) {
 
 func TestADeletionNeedsTheLastMessageAndAChat(t *testing.T) {
 	last := request{Chat: group.String(), Message: "3EB0LAST", Sender: annLID.String(), Timestamp: "2026-09-01T10:00:00Z"}
-	if _, at, err := lastOf(last); err != nil || !at.Equal(sentAt) {
+	if _, at, err := lastOf(last, "no channels"); err != nil || !at.Equal(sentAt) {
 		t.Errorf("a full key gave %v, %v", at, err)
 	}
 	channel, untimed, unaddressed := last, last, last
@@ -58,7 +58,7 @@ func TestADeletionNeedsTheLastMessageAndAChat(t *testing.T) {
 	untimed.Timestamp = ""
 	unaddressed.Message = ""
 	for _, req := range []request{channel, untimed, unaddressed} {
-		if _, _, err := lastOf(req); !isFailure(err, "validation_error") {
+		if _, _, err := lastOf(req, "no channels"); !isFailure(err, "validation_error") {
 			t.Errorf("%+v gave %v, want a validation_error", req, err)
 		}
 	}

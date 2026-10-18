@@ -106,6 +106,12 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   profileChanges: WaProfileChange[]
   /** Each chat deletion and clear, in order, with the newest message it was bounded by. */
   chatDeletions: { op: "deleteChat" | "clearChat"; last: WaAnchor }[]
+  /** Each archive and unarchive, in order, with the newest message it was bounded by. */
+  archives: { last: WaAnchor; archived: boolean }[]
+  /** Each chat pin and unpin, in order; not message pins. */
+  chatPins: { jid: string; pinned: boolean }[]
+  /** Each chat marked unread, by the newest message it was bounded by. */
+  markedUnread: WaAnchor[]
   closed: boolean
   loggedOut: boolean
 }
@@ -158,6 +164,9 @@ export const fakeEngine = (
   const profileChanges: WaProfileChange[] = []
   let ownName = seed.account?.name ?? null
   const chatDeletions: FakeEngine["chatDeletions"] = []
+  const archives: FakeEngine["archives"] = []
+  const chatPins: FakeEngine["chatPins"] = []
+  const markedUnread: WaAnchor[] = []
   const keysMissing = () =>
     new EngineError(
       "provider_unavailable",
@@ -195,6 +204,9 @@ export const fakeEngine = (
     mutes,
     profileChanges,
     chatDeletions,
+    archives,
+    chatPins,
+    markedUnread,
     closed: false,
     loggedOut: false,
     push,
@@ -353,6 +365,18 @@ export const fakeEngine = (
     star: async (message, starred) => {
       if (!settingsKeys) throw keysMissing()
       actions.push({ op: "star", key: message, starred })
+    },
+    archiveChat: async (last, archived) => {
+      if (!settingsKeys) throw keysMissing()
+      archives.push({ last, archived })
+    },
+    pinChat: async (jid, pinned) => {
+      if (!settingsKeys) throw keysMissing()
+      chatPins.push({ jid, pinned })
+    },
+    markChatUnread: async (last) => {
+      if (!settingsKeys) throw keysMissing()
+      markedUnread.push(last)
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

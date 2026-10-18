@@ -21,7 +21,15 @@ const (
 // deleteChat deletes the chat (`deleteChat`) or every message in it (`clearChat`) from the account's devices, up to the
 // chat's newest stored message. Nobody else in the chat is told.
 func (e *engine) deleteChat(req request) error {
-	t, at, err := lastOf(req)
+	return e.sendUpTo(req, "wa deletes chats and groups; delete a channel on the phone",
+		func(chat types.JID, at time.Time, last *waCommon.MessageKey) appstate.PatchInfo {
+			return chatDeletionPatch(req.Op, chat, at, last)
+		})
+}
+
+// sendUpTo sends a patch bounded by the chat's newest stored message; `channel` is the refusal for a channel.
+func (e *engine) sendUpTo(req request, channel string, build func(types.JID, time.Time, *waCommon.MessageKey) appstate.PatchInfo) error {
+	t, at, err := lastOf(req, channel)
 	if err != nil {
 		return err
 	}
@@ -29,18 +37,18 @@ func (e *engine) deleteChat(req request) error {
 		return err
 	}
 	t = e.participantFor(t)
-	return e.sendAppState(chatDeletionPatch(req.Op, t.chat, at, e.client.BuildMessageKey(t.chat, t.sender, t.id)))
+	return e.sendAppState(build(t.chat, at, e.client.BuildMessageKey(t.chat, t.sender, t.id)))
 }
 
-// lastOf reads the chat's newest message as the CLI's store holds it. WhatsApp deletes up to the message the patch
+// lastOf reads the chat's newest message as the CLI's store holds it. WhatsApp applies the patch up to the message it
 // names, so a guessed one would make the phone drop the patch without a word.
-func lastOf(req request) (target, time.Time, error) {
+func lastOf(req request, channel string) (target, time.Time, error) {
 	t, err := targetOf(req)
 	if err != nil {
 		return target{}, time.Time{}, err
 	}
 	if t.chat.Server == types.NewsletterServer || t.chat.Server == types.BroadcastServer {
-		return target{}, time.Time{}, &failure{"validation_error", "wa deletes chats and groups; delete a channel on the phone"}
+		return target{}, time.Time{}, &failure{"validation_error", channel}
 	}
 	at, err := time.Parse(time.RFC3339Nano, req.Timestamp)
 	if err != nil {
@@ -84,11 +92,12 @@ func indexFlag(on bool) string {
 
 // deleteForMe deletes one message from the account's devices alone; the others in the chat keep it.
 func (e *engine) deleteForMe(req request) error {
+	const channel = "wa deletes messages in chats and groups; delete a channel's post on the phone"
 	if chat, err := types.ParseJID(req.Chat); err == nil &&
 		(chat.Server == types.NewsletterServer || chat.Server == types.BroadcastServer) {
-		return &failure{"validation_error", "wa deletes messages in chats and groups; delete a channel's post on the phone"}
+		return &failure{"validation_error", channel}
 	}
-	t, at, err := lastOf(req)
+	t, at, err := lastOf(req, channel)
 	if err != nil {
 		return err
 	}
