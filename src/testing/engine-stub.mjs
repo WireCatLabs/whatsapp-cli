@@ -217,6 +217,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       break
     case "channel":
     case "followChannel":
+      if (fields.link === "crash@stub") process.exit(3)
       say({
         id,
         ok: {
