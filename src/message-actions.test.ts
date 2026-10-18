@@ -41,7 +41,21 @@ const [forMeOwn, forMeTheirs, forAgent] = [
   },
   { ...fresh, chatId: base.dialog, id: "3EB0000000000000000F05", timestamp: "2026-08-01T09:02:00.000Z" },
 ]
-const seed = { ...base, messages: [...base.messages, fresh, answer, forMeOwn, forMeTheirs, forAgent] }
+const atLevel = Object.fromEntries(
+  (["default", "readonly", "deny"] as const).map((level, at) => [
+    level,
+    {
+      ...fresh,
+      chatId: base.dialog,
+      id: `3EB0000000000000000F0${6 + at}`,
+      timestamp: `2026-08-01T09:0${3 + at}:00.000Z`,
+    },
+  ]),
+) as Record<"default" | "readonly" | "deny", Message>
+const seed = {
+  ...base,
+  messages: [...base.messages, fresh, answer, forMeOwn, forMeTheirs, forAgent, ...Object.values(atLevel)],
+}
 const inBusy = seed.messages.filter((message) => message.chatId === seed.busy)
 const theirs = inBusy.filter((message) => !message.outgoing).at(-1) as Message
 const oldOwn = inBusy.find((message) => message.outgoing && message.id !== fresh.id) as Message
@@ -352,6 +366,58 @@ describe("wa messages delete", () => {
         },
       },
     ])
+  })
+})
+
+describe("an agent's messages delete over MCP, by permission level", () => {
+  const agentDeletes = async (profile: string, message: Message) => {
+    let engine: FakeEngine | undefined
+    const mcp = await mcpOverStdio((streams) =>
+      run([profile, "mcp"], {
+        streams: captureStreams(),
+        tty: false,
+        ...streams,
+        engine: () => {
+          engine = fakeEngine(seed)
+          return engine
+        },
+      }),
+    )
+    const answer = await mcp.call("wa_write", {
+      command: "messages delete",
+      arguments: { chat: seed.dialog, messages: [message.id] },
+    })
+    await mcp.close()
+    return { body: answer.body as { error?: Record<string, unknown> }, actions: engine?.actions ?? [] }
+  }
+
+  it("goes ahead at the default level, ask, since no one is there to answer", async () => {
+    const { body, actions } = await agentDeletes("mcp-ask", atLevel.default)
+    expect(body).toMatchObject({ item: { deleted: [atLevel.default.id], for_everyone: false } })
+    expect(actions).toMatchObject([{ op: "deleteForMe", key: { id: atLevel.default.id } }])
+  })
+
+  // The server does not offer a write the level forbids, so the agent hears "no such command", not exit 5.
+  it.each(["readonly", "deny"] as const)("is not offered at %s, and the owner's own call exits 5", async (level) => {
+    const profile = `mcp-${level}`
+    const message = atLevel[level]
+    expect((await wa([profile, "config", "set", "permissions.messages.delete", level])).code).toBe(0)
+    const { body, actions } = await agentDeletes(profile, message)
+    expect(body.error).toMatchObject({ code: "validation_error", reason: "input.invalid" })
+    expect(body.error?.message).toContain('no command "messages delete" here')
+    expect(actions).toEqual([])
+
+    let engine: FakeEngine | undefined
+    const owner = await wa(
+      [profile, "messages", "delete", seed.dialog, message.id, "--allow-dangerous", "--json"],
+      () => {
+        engine = fakeEngine(seed)
+        return engine
+      },
+    )
+    expect(owner.code).toBe(5)
+    expect(errorCode(owner.stderr)).toBe("permission_error")
+    expect(engine?.actions ?? []).toEqual([])
   })
 })
 
