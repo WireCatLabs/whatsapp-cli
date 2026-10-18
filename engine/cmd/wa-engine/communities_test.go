@@ -19,7 +19,6 @@ func TestACommunityIsMarked(t *testing.T) {
 	info := groupInfo()
 	info.JID = community
 	info.IsParent = true
-	assertJSON(t, linked(waChat{JID: community.String(), Kind: "group"}, info),
-		`{"jid":"120363000000000002@g.us","name":null,"kind":"group","unread":null,"lastMessageAt":null,`+
-			`"participants":null,"community":true}`)
+	assertJSON(t, testConverter().group(info, nil).Chat, `{"jid":"120363000000000002@g.us","name":"Book club",`+
+		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"community":true}`)
 }
