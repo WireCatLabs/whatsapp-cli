@@ -136,7 +136,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   announces the album, then each file tied to it. The text is the photo's caption and the answer is the photo's
   message, under the send id. A repeat with the same `--operation-id` after an unknown outcome sends the same message
   ids, which WhatsApp takes as the same messages, as it does for a single send. A document beside a photo is still
-  refused. Not yet checked against WhatsApp's apps. Engine protocol 16 (`sendAlbum`).
+  refused. Not yet checked against WhatsApp's apps. Engine protocol 17 (`sendAlbum`).
 - **A sent photo carries its preview**: the chat shows a small blurred picture before the download. Not yet for a
   video or a WEBP photo.
 
