@@ -5,7 +5,6 @@ import { annotate } from "@wirecat/cli-base/commands"
 import { qrPng, readSecret, terminalQr } from "@wirecat/cli-core"
 import {
   asFirstWord,
-  type Closeable,
   commandWords,
   environmentOf,
   inputPolicy,
@@ -81,8 +80,6 @@ export interface StartSessionOptions {
   signal?: AbortSignal
   /** How far the questions and the QR code sit right, to line up under a setup step. */
   indent?: number
-  /** Each connection, as it opens, for the caller's deadline to close. */
-  track?: (closeable: Closeable) => void
   /**
    * Ctrl+C, a cancel or --timeout ends the history wait alone, and the command answers with what was kept. A command
    * with steps after the wait calls `endUntilStopped()` when it returns, so those steps get a deadline again.
@@ -108,7 +105,6 @@ export const startSession = async (
     command: typed = "wa session start",
     signal,
     indent: pad = 0,
-    track,
     stopEndsWait = false,
   }: StartSessionOptions,
 ): Promise<Session> => {
@@ -134,7 +130,6 @@ export const startSession = async (
   try {
     const linked = await linkDevice(command, context, {
       method,
-      ...(track ? { track } : {}),
       beforeLink: () => {
         signal?.throwIfAborted()
         if (!terminal && qrFile === undefined) throw unanswerable()
@@ -180,10 +175,7 @@ export const startSession = async (
       const stop = stopEndsWait ? environment.untilStopped?.() : environment.signal
       const ended = AbortSignal.any([signal, stop].filter((one) => one !== undefined))
       session.received = await context.withMessenger(
-        (adapter) => {
-          track?.(adapter)
-          return receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, ended)
-        },
+        (adapter) => receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, ended),
         { listen: true },
       )
     }
