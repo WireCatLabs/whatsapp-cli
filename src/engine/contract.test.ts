@@ -16,3 +16,15 @@ describe("the re-key on the wire", () => {
     expect(v.safeParse(engineEvent, { event: "rekey", ...rekey, chat: rekey.to }).success).toBe(false)
   })
 })
+
+describe("a star on the wire", () => {
+  it("reads the line the engine writes for a star made on another device", () => {
+    const line = '{"chat":"100000000000002@lid","event":"star","id":"3EB0S1","starred":true}'
+    expect(v.parse(engineEvent, JSON.parse(line))).toEqual({
+      event: "star",
+      chat: "100000000000002@lid",
+      id: "3EB0S1",
+      starred: true,
+    })
+  })
+})
