@@ -103,6 +103,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> chats mute` and `chats unmute`** (cli-core's, as in max): stop a chat's notifications for good or
+  `--until` a time (`2h`, `7d`, `2026-09-25T09:00`), and hear it again. It is the account's own setting, which WhatsApp
+  syncs to the other devices; nobody in the chat is told (not yet checked live on the phone). It is a write and goes
+  through the profile's permissions. A device linked minutes ago may not have WhatsApp's settings keys yet: the command
+  then answers exit 12 with reason `settings.keys-missing` and says to keep `serve` running a few minutes. A channel is
+  muted on the phone. The permission keys are `chats.mute` and `chats.unmute`; a setting for `chats.mute` alone still
+  covers both. Engine protocol 18, op `mute`.
 - **`messages pin` and `messages unpin`** (cli-core 0.336.0's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is sent
   as WhatsApp's `PinInChatMessage`, addressed by the message's key in the local store; a message the store lacks is
   `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies, with or without `--notify`,

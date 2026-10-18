@@ -115,6 +115,17 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("sends a mute's end, null for an unmute, and keeps the missing-keys reason", async () => {
+    const engine = await stub("ok")
+    await expect(engine.mute("100000000000002@lid", "forever")).resolves.toBeUndefined()
+    await expect(engine.mute("100000000000002@lid", null)).resolves.toBeUndefined()
+    await expect(engine.mute("nokeys@stub", "forever")).rejects.toMatchObject({
+      code: "provider_unavailable",
+      reason: "settings.keys-missing",
+    })
+    await engine.close()
+  })
+
   it("rejects at start when the lock is held, naming the holder", async () => {
     await expect(stub("refuse")).rejects.toMatchObject({
       code: "provider_unavailable",

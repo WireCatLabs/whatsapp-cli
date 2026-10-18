@@ -45,6 +45,8 @@ without a server form over MCP. Set that key to `readonly` to refuse sends. Chec
 
 This controls messages. Other actions have their own keys: `reactions` for reactions, `polls` for polls and votes,
 `chats.mark-read` for read receipts. The other side sees all three, so give them the same care as sending.
+`chats.mute` and `chats.unmute` cover `chats mute` and `chats unmute`, which nobody else sees; a setting for
+`chats.mute` alone still covers both.
 
 ## Questions in scripts
 

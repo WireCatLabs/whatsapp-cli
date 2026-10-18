@@ -1,7 +1,9 @@
 [
   "chats members audit",
+  "chats mute",
   "chats requests accept",
   "chats requests decline",
+  "chats unmute",
   "commands schema",
   "contacts alias rm",
   "contacts profile",

@@ -46,6 +46,7 @@ import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
+import { type SettingsAdapter, settingsAdapter } from "./settings.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
@@ -59,7 +60,8 @@ export type WhatsAppAdapter = MessengerCore &
   PollAdapter &
   GroupAdapter &
   PrivacyAdapter &
-  MessagePins
+  MessagePins &
+  SettingsAdapter
 
 // WhatsApp addresses a message by its sender and by whether it is the account's own, and the engine keeps no
 // messages, so an edit, a deletion, a reaction or a read receipt looks the message up in cli-core's store first.
@@ -231,7 +233,10 @@ export const whatsAppAdapter = (
     }
   }
 
-  const core: Omit<WhatsAppAdapter, keyof (GroupAdapter & PollAdapter & PrivacyAdapter & MessagePins)> = {
+  const core: Omit<
+    WhatsAppAdapter,
+    keyof (GroupAdapter & PollAdapter & PrivacyAdapter & MessagePins & SettingsAdapter)
+  > = {
     formatMarkdown: async (text) => parseMarkdownSpans(text),
 
     self: () => engine.self(),
@@ -474,5 +479,6 @@ export const whatsAppAdapter = (
     ...pollAdapter({ engine, stored, held, keyOf, translated }),
     ...privacyAdapter({ engine, translated }),
     ...pinAdapter({ engine, held, keyOf, translated }),
+    ...settingsAdapter({ engine, translated, words }),
   }
 }
