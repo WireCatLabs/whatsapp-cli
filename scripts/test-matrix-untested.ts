@@ -171,13 +171,6 @@ export const UNTESTED: Untested[] = [
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); " +
       "src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine",
   })),
-  ...["--all", "--pause", "--extract"].map((option) => ({
-    command: "messages download",
-    option,
-    reason:
-      "cli-core's shared command walks the chat and extracts text itself, tested in cli-core " +
-      "(src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine",
-  })),
   ...["--local", "--model"].map((option) => ({
     command: "messages transcribe",
     option,
@@ -204,11 +197,6 @@ export const UNTESTED: Untested[] = [
     option: "--operation-id",
     reason: "a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/guard.test.ts)",
   },
-  {
-    command: "messages send",
-    option: "--allow-any-file",
-    reason: "cli-core's file check, tested in cli-core (src/sends/upload.test.ts); wa receives the file it allowed",
-  },
   ...["--new", "--limit", "--kind", "--transcribe", "--model"].map((option) => ({
     command: "inbox",
     option,
@@ -226,6 +214,13 @@ export const UNTESTED: Untested[] = [
       "the engine",
   })),
 
+  ...["--from-dir", "--cursor", "--limit", "--ocr", "--concurrency"].map((option) => ({
+    command: "attachments extract",
+    option,
+    reason:
+      "reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); " +
+      "src/media.test.ts drives --download, the option that reaches the engine",
+  })),
   ...["--permission", "--http", "--port", "--public-url", "--revoke"].map((option) => ({
     command: "mcp",
     option,

@@ -1,11 +1,12 @@
-import { mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import type { Attachment, Message } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
 import type { WhatsAppEngine } from "./engine/contract.js"
+import { privateStore } from "./paths.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { assertPrivate } from "./testing/private-files.js"
@@ -41,7 +42,16 @@ const voice = theirs(2, "", [
 const place = theirs(3, "", [{ kind: "location", url: "geo:39.470000,-0.376000", title: "Synthetic Square" }])
 const keyless = theirs(4, "", [{ kind: "photo", mime: "image/jpeg" }])
 const plain = theirs(5, "synthetic plain text", [])
-const seed = { ...base, messages: [...base.messages, photo, voice, place, keyless, plain] }
+const notes = theirs(6, "", [
+  { kind: "document", name: "notes.txt", size: 24, mime: "text/plain", providerRef: ref("document", 6) },
+])
+const elsewhere: Message = {
+  ...theirs(7, "", [
+    { kind: "document", name: "minutes.txt", size: 24, mime: "text/plain", providerRef: ref("document", 7) },
+  ]),
+  chatId: base.dialog,
+}
+const seed = { ...base, messages: [...base.messages, photo, voice, place, keyless, plain, notes, elsewhere] }
 
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
@@ -125,6 +135,19 @@ describe("wa messages send with a file", () => {
     expect(result.engine.uploads).toEqual([{ kind: "voice", name: "note.ogg", size: 14 }])
   })
 
+  it("refuses a file from wa's own folder, where the device keys live, unless the owner adds --allow-any-file", async () => {
+    const path = join(dirname(privateStore("media")), "synthetic-export.txt")
+    mkdirSync(dirname(path), { recursive: true })
+    writeFileSync(path, "synthetic bytes")
+    const refused = await driving(["messages", "send", base.dialog, "--file", path])
+    expect(refused.code).toBe(2)
+    expect(failure(refused.stderr).message).toContain("--allow-any-file")
+    expect(refused.engine?.uploads ?? []).toEqual([])
+    const allowed = await driving(["messages", "send", base.dialog, "--file", path, "--allow-any-file"])
+    expect(allowed.code).toBe(0)
+    expect(allowed.engine.uploads).toEqual([{ kind: "document", name: "synthetic-export.txt", size: 15 }])
+  })
+
   it("refuses a photo and a file together, and sends nothing", async () => {
     const dir = folder()
     writeFileSync(join(dir, "a.png"), "x")
@@ -160,8 +183,40 @@ describe("wa messages download", () => {
     const output = folder()
     const result = await driving(["messages", "download", base.busy, "--all", "--pause", "1ms", "--output-dir", output])
     expect(result.code).toBe(0)
-    expect(result.engine.downloads.map((attachment) => attachment.ref)).toEqual([ref("audio", 2), ref("image", 1)])
-    expect(readdirSync(output).filter((name) => !name.startsWith("."))).toHaveLength(2)
+    expect(result.engine.downloads.map((attachment) => attachment.ref)).toEqual([
+      ref("document", 6),
+      ref("audio", 2),
+      ref("image", 1),
+    ])
+    expect(readdirSync(output).filter((name) => !name.startsWith("."))).toHaveLength(3)
+  })
+
+  it("reads a downloaded document's text into the store with --extract", async () => {
+    const result = await driving(["messages", "download", base.busy, notes.id, "--extract", "--output-dir", folder()])
+    expect(result.code).toBe(0)
+    expect(result.engine.downloads.map((attachment) => attachment.ref)).toEqual([ref("document", 6)])
+    expect(JSON.parse(result.stdout).item.extraction).toMatchObject({
+      extracted: 1,
+      items: [{ name: "notes.txt", status: "extracted" }],
+    })
+  })
+
+  it("downloads the chat's files no download saved yet through the engine, for attachments extract --download", async () => {
+    const engines: FakeEngine[] = []
+    const argv = ["media", "attachments", "extract", "--chat", base.dialog, "--download", "--output-dir", folder()]
+    const result = await wa([...argv, "--json"], () => {
+      const engine = fakeEngine(seed)
+      engines.push(engine)
+      return engine
+    })
+    expect(result.code).toBe(0)
+    expect(engines.flatMap((engine) => engine.downloads).map((attachment) => attachment.ref)).toContainEqual(
+      ref("document", 7),
+    )
+    expect(engines.every((engine) => engine.closed)).toBe(true)
+    const item = JSON.parse(result.stdout).item
+    expect(item.not_downloaded).toBe(0)
+    expect(item.files).toContainEqual(expect.objectContaining({ name: "minutes.txt", status: "extracted" }))
   })
 
   it("names a place as not a file, and downloads nothing", async () => {

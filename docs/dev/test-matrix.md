@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**152 ✅ · 571 ⛔ · 0 ❌** — 227 commands, 496 options.
+**158 ✅ · 565 ⛔ · 0 ❌** — 227 commands, 496 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -155,7 +155,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages send` | `--photo` | ✅ |  |
 | `messages send` | `--as-file` | ✅ |  |
 | `messages send` | `--voice` | ✅ |  |
-| `messages send` | `--allow-any-file` | ⛔ | cli-core's file check, tested in cli-core (src/sends/upload.test.ts); wa receives the file it allowed |
+| `messages send` | `--allow-any-file` | ✅ |  |
 | `messages send` | `--filename` | ✅ |  |
 | `messages show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
 | `messages context` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
@@ -170,7 +170,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages download` | `--output-dir` | ✅ |  |
 | `messages download` | `--all` | ✅ |  |
 | `messages download` | `--pause` | ✅ |  |
-| `messages download` | `--extract` | ⛔ | cli-core's shared command walks the chat and extracts text itself, tested in cli-core (src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine |
+| `messages download` | `--extract` | ✅ |  |
 | `messages transcribe` |  | ✅ |  |
 | `messages transcribe` | `--local` | ⛔ | needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, and cli-core's src/speech tests drive the local model |
 | `messages transcribe` | `--model` | ⛔ | needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, and cli-core's src/speech tests drive the local model |
@@ -362,15 +362,15 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `conversations embed clear` | `--provider` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `conversations embed clear` | `--base-url` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `conversations embed clear` | `--dims` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--chat` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--from-dir` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--cursor` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--download` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--output-dir` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--ocr` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
-| `attachments extract` | `--concurrency` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
+| `attachments extract` |  | ✅ |  |
+| `attachments extract` | `--chat` | ✅ |  |
+| `attachments extract` | `--from-dir` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
+| `attachments extract` | `--cursor` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
+| `attachments extract` | `--download` | ✅ |  |
+| `attachments extract` | `--output-dir` | ✅ |  |
+| `attachments extract` | `--limit` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
+| `attachments extract` | `--ocr` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
+| `attachments extract` | `--concurrency` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
 | `attachments list` |  | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `attachments list` | `--limit` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
 | `attachments list` | `--page` | ⛔ | shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter |
