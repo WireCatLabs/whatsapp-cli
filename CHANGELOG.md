@@ -178,7 +178,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`wa <profile> conversations rebuild`** builds, then embeds on this machine, the chats that changed and the group
   chats never built, or only `--chat`, bounded by `--max-chats` and `--max-chunks`. It sends nothing anywhere.
 - **`wa <profile> chats mute` and `chats unmute`**: stop a chat's notifications for good or `--until` a time (`2h`,
-  `7d`, `2026-09-25T09:00`), and hear it again; agents get `chats_mute` and `chats_unmute`. It is the account's own
+  `7d`, `2026-09-25T09:00`), and hear it again; agents run both through `wa_write`. It is the account's own
   setting, which WhatsApp syncs to the other devices; nobody in the chat is told (not yet checked live on the phone).
   It is a write and goes through the profile's permissions, under `chats.mute` and `chats.unmute`; a setting for
   `chats.mute` alone still covers both. A device linked minutes ago may not have WhatsApp's settings keys yet: the
@@ -186,8 +186,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   channel is muted on the phone.
 - **`wa <profile> chats archive` and `unarchive`, `chats pin` and `unpin`, and `chats mark-unread`**: move a chat
   into WhatsApp's archive and back, keep it at the top of the chat list, or mark it unread, on the account's
-  devices; nobody in the chat is told. Agents get them too (`chats_archive`, `chats_pin`, `chats_mark_unread` and
-  their opposites). `chats pin` pins the chat, not a message (`messages pin` does that). Archiving a chat also
+  devices; nobody in the chat is told. Agents run them too, through `wa_write` (`command: "chats archive"` and the
+  rest). `chats pin` pins the chat, not a message (`messages pin` does that). Archiving a chat also
   unpins it. Archive, unarchive and mark-unread name the chat's newest stored message, as `chats delete` does, and
   refuse a chat the store holds nothing of (exit 6); pin needs no message. WhatsApp's apps keep three pinned chats;
   `wa` does not count them. A mark-unread sends no receipt; `chats mark-read` sends only a receipt, so it may not
@@ -214,7 +214,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   for this the first time this version opens it; `wa` 0.1.0 still opens it. Not yet checked live on the phone.
 - **`wa <profile> messages pin` and `messages unpin`**: a message in the local store is pinned for the whole chat; a
   message the store lacks is `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies and
-  counts toward the hourly limit; `messages pin` takes no `--notify`, and an agent's `messages_pin` no `notify`.
+  counts toward the hourly limit; `messages pin` takes no `--notify`, and an agent's `wa_write` call no `notify`.
   `--expire-time 24h`, `7d` or `30d` (MCP `expire_time`) says how long it lasts; without it the pin lasts 7 days, as
   the help says; any other length is `validation_error`, over MCP before it connects.
 - **`wa <profile> account privacy show` and `account privacy set`**: who sees last seen (`--last-seen`), the
