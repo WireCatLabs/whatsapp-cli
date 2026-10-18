@@ -191,13 +191,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Added
 
 - **`wa <profile> messages send <chat> --sticker-file <file.webp>`** sends a `.webp` as a WhatsApp sticker, alone,
-  with no text; agents send `sticker_file` to `messages_send` through `wa_write`. It is a message like any other: the
-  profile's permissions, the send journal and `--operation-id` apply, and so does the file guard (`--allow-any-file`
-  for a file in `wa`'s own folders). A file that is not a WebP, or is larger than 500 KiB, is refused before
-  connecting. A sticker to a channel is refused for now.
-- **`wa <profile> chats update <group> --remove-photo`** takes a group's photo away; agents send `remove_photo` to
-  `chats_update` through `wa_write`. The members see it. It goes through the profile's permissions under
-  `chats.update`, as `--photo` does, and is refused beside `--photo` before connecting. The photo goes first: if a
+  with no text; agents send `sticker_file` through `wa_write` (`command: "messages send"`). It is a message like any
+  other: the profile's permissions, the send journal and `--operation-id` apply, and so does the file guard
+  (`--allow-any-file` for a file in `wa`'s own folders). A file that is not a WebP, or is larger than 500 KiB, is
+  refused before connecting. A sticker to a channel is refused for now.
+- **`wa <profile> chats update <group> --remove-photo`** takes a group's photo away; agents send `remove_photo`
+  through `wa_write` (`command: "chats update"`). The members see it. It goes through the profile's permissions
+  under `chats.update`, as `--photo` does, and is refused beside `--photo` before connecting. The photo goes first: if a
   title, description or setting given with it then fails, the error says the photo was removed.
 - **`chats update --photo` and `account update --photo` say they take a `.jpg` or `.jpeg` file**, and refuse a file
   named otherwise, as they already refused one whose first bytes are not a JPEG's, before connecting. The engine still
@@ -309,9 +309,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   made shows `outgoing: false`. See [channels](docs/usage.md#channels).
 - **`wa` posts to a WhatsApp channel you run**: `messages send <channel> <text>` asks WhatsApp for your role in the
   channel first and refuses anyone but its owner and admins with `permission_error` (exit 5) before anything is sent.
-  The channel's followers see the post at once. Not a reply; a poll, a forward, an edit or a deletion in a channel is
-  refused before anything is sent. A refused post still passes the profile's send permissions first, so under `ask`
-  it asks before it is refused. Not yet checked live.
+  The channel's followers see the post at once. Not a reply; a poll, a vote, a forward, an edit or a deletion in a
+  channel is refused before anything is sent. A refused post still passes the profile's send permissions first, so
+  under `ask` it asks before it is refused. Not yet checked live.
 - **`wa` posts a photo, a video, a voice note or a file to a WhatsApp channel you run**: `messages send <channel>
   --photo/--file/--voice <path>`, the text as the caption. The role is asked first, as for a text post, so a channel
   you only follow is refused (exit 5) before anything is uploaded. A channel's files are not encrypted: `wa` uploads
