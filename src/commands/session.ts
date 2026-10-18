@@ -22,6 +22,17 @@ import { Argument, Command } from "commander"
 import { type Environment, linkDevice, WHATSAPP } from "../messenger.js"
 import { privateStore } from "../paths.js"
 
+/**
+ * Shown once, before the code that links the device. It ignores `--quiet` the way the QR code does: it belongs to
+ * the prompt the person is answering, and after the link it is too late to read it.
+ */
+export const BAN_WARNING = [
+  "Before you link: wa is not an official WhatsApp app, and WhatsApp may ban an account that uses one.",
+  "It also bans accounts that send in bulk or write to people who do not know them.",
+  "wa writes only when a command asks, sends at most 30 messages an hour by default, and holds every",
+  "write when WhatsApp says to slow down or restricts the account. Never send in bulk or to strangers.",
+].join("\n")
+
 /** The phone pushes its history right after linking, once; how long to keep receiving it. */
 export const HISTORY_WAIT = { firstMs: 120_000, quietMs: 45_000 }
 
@@ -133,6 +144,7 @@ export const startSession = async (
       beforeLink: () => {
         signal?.throwIfAborted()
         if (!terminal && qrFile === undefined) throw unanswerable()
+        context.streams.diagnostic(indent(BAN_WARNING, pad))
       },
       phone: async () => {
         if (!terminal)

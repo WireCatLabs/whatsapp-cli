@@ -18,6 +18,12 @@ Agent:  Draft to Alice Example: "Yes, 8 pm." Send it?
 You:    Yes.
 ```
 
+> ⚠️ **`wa` is an unofficial client of your real WhatsApp account.** WhatsApp's terms forbid unofficial clients, and
+> WhatsApp may ban an account that uses one. It also bans accounts that send in bulk or write to people who do not
+> know them. `wa` writes only when a command asks, sends at most 30 messages an hour by default, and holds every
+> write when WhatsApp says to slow down or restricts the account. Do not send in bulk, and do not write to strangers.
+> You use `wa` at your own risk. More: [limits](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/limits.md)
+
 ## Quick start
 
 ```sh
@@ -288,8 +294,8 @@ others. WhatsApp is different in three ways:
   store and never connects.
 - **One connection per device.** WhatsApp allows one. While `wa serve` runs, other commands for the same profile,
   a send included, run through its connection. On Windows they are refused until `serve` stops, for now.
-- **Unofficial.** WhatsApp's terms forbid unofficial clients, and WhatsApp may ban an account that uses one. `wa`
-  never sends in bulk or to strangers, never sends "online" or "typing", and marks nothing read unless you ask.
+- **Unofficial.** The risk of a ban is in the warning at the top of this page. `wa` never sends
+  "online" or "typing", and marks nothing read unless you ask.
 
 ## Part of WireCat
 

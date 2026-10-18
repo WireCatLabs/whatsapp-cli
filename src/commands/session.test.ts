@@ -11,6 +11,7 @@ import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
 import { run } from "../program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
+import { BAN_WARNING } from "./session.js"
 
 // serve offers no relay on Windows, so there the lock's listeningAt is the sign it is up.
 const listening = (lock: string): unknown => {
@@ -202,6 +203,37 @@ describe("wa session start at a terminal", () => {
     expect(engine?.link).not.toHaveBeenCalled()
   })
 
+  it("warns about bans on stderr before the code, once per link and even with --quiet", async () => {
+    const warnsBefore = (stderr: string, code: string) => {
+      expect(stderr).toContain(BAN_WARNING)
+      expect(stderr.indexOf(BAN_WARNING)).toBeLessThan(stderr.indexOf(code))
+      expect(stderr.split(BAN_WARNING)).toHaveLength(2)
+    }
+    const scanned = await wa(["warned", "session", "start"], () => fakeEngine(seed, { linked: false }), terminal())
+    expect(scanned.code, scanned.stderr).toBe(0)
+    warnsBefore(scanned.stderr, "Linked devices")
+    expect(scanned.stdout).not.toContain("ban")
+
+    const quiet = await wa(["hushed", "session", "start", "--quiet"], () => fakeEngine(seed, { linked: false }), {
+      ...terminal(),
+    })
+    expect(quiet.stderr).toContain(BAN_WARNING)
+
+    const paired = await wa(
+      ["warnedphone", "session", "start", "phone"],
+      () => fakeEngine(seed, { linked: false }),
+      terminal("+7 000 000 00 01\n"),
+    )
+    expect(paired.code, paired.stderr).toBe(0)
+    warnsBefore(paired.stderr, "pairing code:")
+    expect(paired.stdout).toContain("Linked as")
+    expect(paired.stdout).not.toContain("ban")
+
+    const again = await wa(["warned", "session", "start"], () => fakeEngine(seed), terminal())
+    const later = await wa(["warned", "chats", "list"], never)
+    expect(`${again.stderr}${later.stderr}`).not.toContain(BAN_WARNING)
+  })
+
   it("draws the QR code in the terminal", async () => {
     const result = await wa(["scanned", "session", "start"], () => fakeEngine(seed, { linked: false }), terminal())
     expect(result.code).toBe(0)
@@ -227,7 +259,8 @@ describe("wa session start at a terminal", () => {
     }
     const qrFile = `${process.env.TMPDIR}/expired.png`
     const result = await wa(["expired", "session", "start", "--qr-file", qrFile, "--json"], () => engine)
-    expect(JSON.parse(result.stderr).error).toMatchObject({ code: "timeout" })
+    expect(result.stderr.startsWith(BAN_WARNING)).toBe(true)
+    expect(JSON.parse(result.stderr.slice(BAN_WARNING.length)).error).toMatchObject({ code: "timeout" })
     expect(engine.closed).toBe(true)
   })
 })

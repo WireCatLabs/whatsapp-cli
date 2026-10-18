@@ -196,6 +196,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   checks the photo is a square of 190 to 720 pixels a side.
 - **`wa <profile> conversations rebuild`** builds, then embeds on this machine, the chats that changed and the group
   chats never built, or only `--chat`, bounded by `--max-chats` and `--max-chunks`. It sends nothing anywhere.
+- **`setup` and `session start` warn about bans before they show the QR code or the pairing code.** The warning
+  says that `wa` is an unofficial client, that WhatsApp may ban an account for using one or for bulk or unsolicited
+  messages, what `wa` does to keep the risk low, and what not to do. It goes to stderr once per link, in every
+  output mode and with `--quiet` too, since it belongs to the code the person is about to scan; stdout and the JSON
+  answer are unchanged. A device that is linked already, and every later command, prints nothing new. The README,
+  the installation and linking pages, the MCP page and the agent skill carry the same warning; the MCP page also says
+  that by default an agent may send up to 30 messages an hour without asking, and how to lower that.
 - **`wa <profile> chats mute` and `chats unmute`**: stop a chat's notifications for good or `--until` a time (`2h`,
   `7d`, `2026-09-25T09:00`), and hear it again; agents run both through `wa_write`. It is the account's own
   setting, which WhatsApp syncs to the other devices; nobody in the chat is told (not yet checked live on the phone).

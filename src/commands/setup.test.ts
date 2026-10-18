@@ -11,6 +11,7 @@ import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
 import { run } from "../program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
+import { BAN_WARNING } from "./session.js"
 
 const input = vi.hoisted(() => ({
   answers: [] as string[],
@@ -127,6 +128,9 @@ describe("wa setup", () => {
     expect(answer.next).toMatchObject({ inbox: "wa default inbox --limit 5", receive: "wa default server install" })
     expect(existsSync(qrFile)).toBe(false)
     expect(result.stderr).toContain(qrFile)
+    expect(result.stderr.indexOf(BAN_WARNING)).toBeGreaterThan(-1)
+    expect(result.stderr.indexOf(BAN_WARNING)).toBeLessThan(result.stderr.indexOf(qrFile))
+    expect(result.stdout).not.toContain("ban")
     expect(result.requests[0]).toMatchObject({ link: true, holder: "setup" })
     expect(result.engine.closed).toBe(true)
     expect(installSkill).toHaveBeenCalledWith(expect.anything(), expect.any(URL), { targets: ["agents"], env })
@@ -183,6 +187,7 @@ describe("wa setup", () => {
     const answer = JSON.parse(result.stdout).item
     expect(answer).toMatchObject({ device: { reused: true } })
     expect(answer).not.toHaveProperty("history")
+    expect(result.stderr).not.toContain(BAN_WARNING)
     expect(input.prompts).toEqual([])
     expect(installSkill).toHaveBeenCalledWith(expect.anything(), expect.any(URL), { targets: ["claude"], env })
   })
@@ -272,6 +277,9 @@ describe("wa setup", () => {
     expect(result.code).toBe(0)
     expect(input.prompts).toEqual([expect.stringMatching(/^ {6}phone number/)])
     expect(result.stderr).toContain("Link with phone number instead")
+    const warning = BAN_WARNING.replace(/^/gm, "      ")
+    expect(result.stderr.indexOf(warning)).toBeGreaterThan(result.stderr.indexOf("[2/5] Link"))
+    expect(result.stderr.indexOf(warning)).toBeLessThan(result.stderr.indexOf("pairing code:"))
     expect(result.stdout).not.toContain("+0 000")
     expect(result.stderr).not.toContain("+0 000")
   })

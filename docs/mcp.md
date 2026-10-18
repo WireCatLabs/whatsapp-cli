@@ -129,6 +129,18 @@ The MCP server follows the same rule as every other `wa` command:
 
 ## What an agent may do
 
+> ⚠️ **By default an agent may send without asking you.** With no `permissions` set, `messages.send` is allowed, and
+> the server shows no confirmation form of its own. The only cap is the profile's send limit, `sends_per_hour`: 30
+> sends an hour, shared with every command. WhatsApp may ban an account for bulk or unsolicited messages, so lower
+> the allowance before you connect an agent:
+>
+> ```sh
+> wa personal config set sends_per_hour 5                   # a lower hourly cap
+> wa personal config set permissions.messages.send readonly # no sends from this profile
+> ```
+>
+> Or start the server with `--permission messages.send=readonly` to stop sending for that process only.
+
 The profile's `permissions` decide the access ([permissions](permissions.md)). `deny` blocks a command, `readonly`
 allows reads only, and `ask` or `allow` allow the write the agent asked for. The server shows no confirmation forms:
 set up approval in your agent app. In the terminal, a command at `ask` still needs your confirmation. With JSON or
