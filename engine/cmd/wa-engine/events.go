@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"go.mau.fi/whatsmeow/appstate"
+	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 )
 
@@ -28,7 +29,11 @@ func (e *engine) end(state string, why *refusal) {
 func (e *engine) handle(raw any) {
 	switch evt := raw.(type) {
 	case *events.Message:
-		if evt.Message.GetPollUpdateMessage() != nil {
+		if evt.Info.Chat.Server == types.NewsletterServer {
+			if post, ok := e.conv.channelPost(evt); ok {
+				e.out.event("message", post)
+			}
+		} else if evt.Message.GetPollUpdateMessage() != nil {
 			e.pollVote(evt)
 		} else if changed, ok := e.liveMessage(evt); ok {
 			if changed.kind == "delete" {
@@ -66,6 +71,8 @@ func (e *engine) handle(raw any) {
 	case *events.Connected:
 		e.refreshSelf()
 		e.end("connected", nil)
+		// While listening nothing else asks for the directory, so this push is how the store learns the channels.
+		go e.followedChannels()
 	case *events.Disconnected, *events.KeepAliveTimeout:
 		e.out.connection("disconnected", "")
 	case *events.KeepAliveRestored:

@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import type { ChannelEngine } from "./channels.js"
 import type { GroupEngine } from "./groups.js"
 import type { PrivacyEngine } from "./privacy.js"
 import type { SettingsEngine } from "./settings.js"
@@ -13,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 27
+export const PROTOCOL = 28
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -55,6 +56,8 @@ export const ENGINE_OPS = {
   pinChat: "write",
   unpinChat: "write",
   markChatUnread: "write",
+  followChannel: "write",
+  unfollowChannel: "write",
   logout: "write",
   connect: "read",
   close: "read",
@@ -72,6 +75,8 @@ export const ENGINE_OPS = {
   lookup: "read",
   contacts: "read",
   privacy: "read",
+  channel: "read",
+  channelMessages: "read",
 } as const
 
 export type EngineOp = keyof typeof ENGINE_OPS
@@ -170,6 +175,8 @@ export const waMessage = v.strictObject({
   poll: v.optional(waPoll),
   /** Only ever `true`, on a pushed message the owner starred: a push may be older than a star taken off since. */
   starred: v.optional(v.literal(true)),
+  /** A channel post's number on WhatsApp's servers: a channel's history is read back from it. */
+  serverId: v.optional(v.number()),
 })
 
 /**
@@ -421,7 +428,7 @@ export class EngineError extends Error {
  * An event nobody listens for yet is kept and handed to the first listener of its kind, so a history push that
  * comes right after connecting is not lost to a `feed` that started a moment after `watch`.
  */
-export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngine {
+export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngine, ChannelEngine {
   /**
    * The linked account, from the engine's own store: no request. `null` before a login. Always the user JID in LID
    * form with no device part (`…@lid`, not `…:12@s.whatsapp.net`): the store keys the account by it, so a change of

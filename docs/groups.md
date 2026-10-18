@@ -29,6 +29,7 @@ Some words on this page:
 | Rename a group, set its photo, or change who may add people | `wa personal chats update` |
 | Show or replace the invite link | `wa personal chats link show`, `chats link reset` |
 | Let in or turn away people who asked to join | `wa personal chats requests list`, `chats requests accept` |
+| Follow a channel, read its posts, or unfollow it | `wa personal chats join`, `messages sync`, `chats leave` ([channels](usage.md#channels)) |
 
 Every option is in the [command reference](commands.md).
 

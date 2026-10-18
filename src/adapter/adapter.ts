@@ -39,6 +39,7 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
+import { channelAdapter, channelHistory, isChannel } from "./channels.js"
 import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
@@ -417,6 +418,10 @@ export const whatsAppAdapter = (
     // page reached (`before` is a time, `fetching.orderBy: "time"`).
     history: async (chat, { limit, before }) => {
       const { id: chatId } = await core.resolve(chat)
+      if (isChannel(chatId))
+        return translated(
+          channelHistory(engine, stored, chatId, { limit, ...(before === undefined ? {} : { before }) }),
+        )
       const anchor = await stored.anchor(chatId, before)
       if (!anchor)
         throw new CliError(
@@ -501,15 +506,17 @@ export const whatsAppAdapter = (
     },
   }
 
+  const groups = groupAdapter({
+    engine,
+    resolve: core.resolve,
+    translated,
+    wroteTo: (person) => stored.wroteTo(person),
+    onDisk,
+  })
   return {
     ...core,
-    ...groupAdapter({
-      engine,
-      resolve: core.resolve,
-      translated,
-      wroteTo: (person) => stored.wroteTo(person),
-      onDisk,
-    }),
+    ...groups,
+    ...channelAdapter({ engine, resolve: core.resolve, translated, groups }),
     ...pollAdapter({ engine, stored, held, keyOf, translated }),
     ...privacyAdapter({ engine, translated }),
     ...pinAdapter({ engine, held, keyOf, translated }),

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**233 ✅ · 520 ⛔ · 0 ❌** — 242 commands, 511 options.
+**234 ✅ · 519 ⛔ · 0 ❌** — 242 commands, 511 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -163,7 +163,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages evidence` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/store-mode.test.ts and src/services/evidence.test.ts |
 | `messages evidence` | `--cursor` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/store-mode.test.ts and src/services/evidence.test.ts |
 | `messages list` |  | ✅ |  |
-| `messages list` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
+| `messages list` | `--limit` | ✅ |  |
 | `messages list` | `--cursor` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
 | `messages list` | `--transcribe` | ✅ |  |
 | `messages list` | `--model` | ✅ |  |

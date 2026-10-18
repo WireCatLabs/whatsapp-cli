@@ -2,6 +2,7 @@ import { spawn } from "node:child_process"
 import { createInterface } from "node:readline"
 import * as v from "valibot"
 import { engineBinary, enginePackage } from "../engine-binary.js"
+import { goChannels } from "./channels.js"
 import {
   EngineError,
   type EngineOp,
@@ -260,6 +261,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     ...goGroups(request),
     ...goPrivacy(request),
     ...goSettings(request),
+    ...goChannels(request),
   }
 }
 

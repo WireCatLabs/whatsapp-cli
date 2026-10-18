@@ -50,6 +50,11 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   answer is saved by cli-core like any server read. A phone that does not answer is `timeout`, never an empty page,
   since an empty page tells cli-core the chat's start is held. `fetching.maxPageSize` is 50, what WhatsApp's own
   clients ask. `historyOnDemand` lets `messages sync <chat>` reach it; `--all` stays refused.
+- **A channel's posts are on WhatsApp's servers.** A channel (whatsmeow's newsletter, `…@newsletter`) is the
+  exception: `history` for one sends the engine's `channelMessages` instead of `older`, with no phone involved and
+  nothing stored needed to start — the newest posts first, then those before the server id of the stored post the
+  last page reached. A post keeps its message id, the same one a live post carries, and its server id in
+  `providerMetadata.serverId`.
 - **A file is fetched by the keys in the store.** whatsmeow needs a file's path on WhatsApp's servers and its keys
   to fetch and decrypt it. The engine sends them with each message as the attachment's `ref`, and cli-core keeps them
   as the opaque `providerRef`, never shown in an answer. `messages download` and `messages transcribe --local` look the
@@ -194,6 +199,17 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   key and `timestamp`) send `BuildArchive`, whose archive also unpins the chat, and `BuildMarkChatAsRead` with read
   false. `pinChat` and `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server
   cannot read.
+- **Channel requests** (`engine/cmd/wa-engine/newsletters.go`; the contract in
+  [`src/engine/channels.ts`](../../src/engine/channels.ts)): `channel` (`GetNewsletterInfo`, with the account's
+  role), `channelMessages` (`jid`, `count` up to 50, `before` a server id; `GetNewsletterMessages`, asked past a page
+  of only skipped posts up to three rounds), `followChannel` (a `whatsapp.com/channel/` link:
+  `GetNewsletterInfoWithInvite`, then `FollowNewsletter`) and `unfollowChannel`. The followed channels
+  (`GetSubscribedNewsletters`) are asked once per process, like the joined groups: when the engine connects, and by
+  the directory if that came first. The first answer goes out as a `history` push, which `serve`'s and `watch`'s
+  `feed` stores as chats of kind `channel`; `watch` itself titles chats from the store. A live post comes
+  through the same conversion with its server id; a live edit or deletion of a post is passed over. In the adapter,
+  `chats join` and `chats leave` branch on a channel link or id (`src/adapter/channels.ts`) and hand the rest to the
+  group requests.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

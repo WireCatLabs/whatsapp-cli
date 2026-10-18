@@ -51,6 +51,8 @@ func (e *engine) directory() []waChat {
 		}
 	}
 
+	channels := e.followedChannels()
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	byID := map[string]waChat{}
@@ -59,6 +61,9 @@ func (e *engine) directory() []waChat {
 	}
 	for _, group := range e.groups {
 		byID[group.JID] = group
+	}
+	for _, channel := range channels {
+		byID[channel.JID] = channel
 	}
 	// A chat pushed in phone form may have been re-keyed since; its LID form, if pushed too, wins.
 	for id, chat := range e.chats {

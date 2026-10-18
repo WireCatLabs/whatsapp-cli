@@ -226,7 +226,7 @@ wa chats events <chat> [query]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 ### `wa chats inspect`
@@ -251,7 +251,7 @@ wa chats show <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats documents`
 
@@ -267,7 +267,7 @@ wa chats documents list <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -288,7 +288,7 @@ wa chats members list <chat> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `query` | optional | field:value terms; this list filters by none yet. |
 
 | Option | What it does |
@@ -307,7 +307,7 @@ wa chats members audit <chat> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
@@ -325,7 +325,7 @@ wa chats members history <chat> [query]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 #### `wa chats members fetch`
@@ -340,7 +340,7 @@ wa chats members fetch <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -359,7 +359,7 @@ wa chats members add <chat> <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `person` | required | an id, or part of a name. |
 
 #### `wa chats members remove`
@@ -374,7 +374,7 @@ wa chats members remove <chat> <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `person` | required | an id, or part of a name. |
 
 ### `wa chats mark-read`
@@ -389,7 +389,7 @@ wa chats mark-read <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -417,7 +417,7 @@ wa chats tracking show <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 #### `wa chats tracking add`
 
@@ -431,7 +431,7 @@ wa chats tracking add <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 #### `wa chats tracking remove`
 
@@ -445,7 +445,7 @@ wa chats tracking remove <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats create`
 
@@ -492,7 +492,7 @@ wa chats leave <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats update`
 
@@ -506,7 +506,7 @@ wa chats update <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -533,7 +533,7 @@ wa chats link show <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 #### `wa chats link reset`
 
@@ -547,7 +547,7 @@ wa chats link reset <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats requests`
 
@@ -563,7 +563,7 @@ wa chats requests list <chat> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
@@ -583,7 +583,7 @@ wa chats requests accept <chat> <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `person` | required | who asked: an id from `chats requests list`. |
 
 #### `wa chats requests decline`
@@ -598,7 +598,7 @@ wa chats requests decline <chat> <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `person` | required | who asked: an id from `chats requests list`. |
 
 ### `wa chats admins`
@@ -617,7 +617,7 @@ wa chats admins add <chat> <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `person` | required | an id, or part of a name. |
 
 #### `wa chats admins remove`
@@ -632,7 +632,7 @@ wa chats admins remove <chat> <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `person` | required | an id, or part of a name. |
 
 ### `wa chats folders`
@@ -729,7 +729,7 @@ wa chats rules show <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 #### `wa chats rules set`
 
@@ -743,7 +743,7 @@ wa chats rules set <chat> <key> <value>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `key` | required | one of: trusted, blocked, blockedNames, links, invites, forwards, blockedPeople, flood.messages, flood.minutes, flood.action, newAccount.days, newAccount.action, consent.delete, consent.remove. |
 | `value` | required | the new value; a list is comma-separated. |
 
@@ -759,7 +759,7 @@ wa chats rules unset <chat> <key>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `key` | required | one of: trusted, blocked, blockedNames, links, invites, forwards, blockedPeople, flood.messages, flood.minutes, flood.action, newAccount.days, newAccount.action, consent.delete, consent.remove. |
 
 ### `wa chats moderate`
@@ -774,7 +774,7 @@ wa chats moderate <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -795,7 +795,7 @@ wa chats mute <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -813,7 +813,7 @@ wa chats unmute <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats archive`
 
@@ -827,7 +827,7 @@ wa chats archive <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats unarchive`
 
@@ -841,7 +841,7 @@ wa chats unarchive <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats pin`
 
@@ -855,7 +855,7 @@ wa chats pin <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats unpin`
 
@@ -869,7 +869,7 @@ wa chats unpin <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats mark-unread`
 
@@ -883,7 +883,7 @@ wa chats mark-unread <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa chats delete`
 
@@ -897,7 +897,7 @@ wa chats delete <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -915,7 +915,7 @@ wa chats clear <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -1293,7 +1293,7 @@ wa messages evidence <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -1310,7 +1310,7 @@ wa messages list <chat> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `query` | optional | where to start: id<42, date>2026-10-01; starred:true keeps the ones you starred. |
 
 | Option | What it does |
@@ -1333,7 +1333,7 @@ wa messages send <chat> [text] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `text` | optional | the message. |
 
 | Option | What it does |
@@ -1359,7 +1359,7 @@ wa messages show <chat> [message]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); or a msg: locator, with no message id after it. |
 | `message` | optional | the message id. |
 
 ### `wa messages context`
@@ -1372,7 +1372,7 @@ wa messages context <chat> [message] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); or a msg: locator, with no message id after it. |
 | `message` | optional | the message id. |
 
 | Option | What it does |
@@ -1397,7 +1397,7 @@ wa messages download <chat> [message] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | optional | the message id; left out with --all. |
 
 | Option | What it does |
@@ -1417,7 +1417,7 @@ wa messages transcribe <chat> <message> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the id of a voice message. |
 
 | Option | What it does |
@@ -1437,7 +1437,7 @@ wa messages edit <chat> <message> [text] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the id of your own message. |
 | `text` | optional | the new text; without it, read from stdin. |
 
@@ -1457,7 +1457,7 @@ wa messages delete <chat> <messages> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `messages` | required | the message ids, by spaces or commas, at most 10. |
 
 | Option | What it does |
@@ -1477,12 +1477,12 @@ wa messages forward <chat> <message> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | the chat the message is in: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | the chat the message is in: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 
 | Option | What it does |
 |---|---|
-| `--to <chat>` | where it goes: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--to <chat>` | where it goes: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--operation-id <id>` | repeat a forward whose outcome was unknown, without risking a second copy. |
 
 ### `wa messages pin`
@@ -1497,7 +1497,7 @@ wa messages pin <chat> <message> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 
 | Option | What it does |
@@ -1516,7 +1516,7 @@ wa messages unpin <chat> <message>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 
 ### `wa messages star`
@@ -1531,7 +1531,7 @@ wa messages star <chat> <message>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 
 ### `wa messages unstar`
@@ -1546,7 +1546,7 @@ wa messages unstar <chat> <message>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 
 ### `wa messages link`
@@ -1559,7 +1559,7 @@ wa messages link <chat> [message]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); or a msg: locator, with no message id after it. |
 | `message` | optional | the message id. |
 
 ### `wa messages comments`
@@ -1572,7 +1572,7 @@ wa messages comments <chat> <post> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | the channel: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | the channel: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `post` | required | the post's message id in the channel. |
 | `query` | optional | where to start: id<42. |
 
@@ -1591,7 +1591,7 @@ wa messages links <chat> <message>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 
 ### `wa messages sync`
@@ -1606,7 +1606,7 @@ wa messages sync [chat] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -1640,7 +1640,7 @@ wa reactions add <chat> <message> <emoji>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 | `emoji` | required | one emoji, for example 👍. |
 
@@ -1656,7 +1656,7 @@ wa reactions remove <chat> <message>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the message id. |
 
 ## `wa polls`
@@ -1673,7 +1673,7 @@ wa polls show <chat> <message>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the id of the message that carries the poll. |
 
 ### `wa polls voters`
@@ -1686,7 +1686,7 @@ wa polls voters <chat> <message> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the id of the message that carries the poll. |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
@@ -1707,7 +1707,7 @@ wa polls vote <chat> <message> [answers] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | the id of the message that carries the poll. |
 | `answers` | optional | answer ids, as `polls show` prints them. |
 
@@ -1727,7 +1727,7 @@ wa polls create <chat> <question> <answers> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `question` | required | the question. |
 | `answers` | required | two answers or more. |
 
@@ -1992,7 +1992,7 @@ wa store status [chat]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa store gaps`
 
@@ -2008,7 +2008,7 @@ wa store gaps plan <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 #### `wa store gaps repair`
 
@@ -2022,7 +2022,7 @@ wa store gaps repair <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -2127,7 +2127,7 @@ wa store export [chats] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chats` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us); several with --output-dir. |
+| `chats` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); several with --output-dir. |
 
 | Option | What it does |
 |---|---|
@@ -2302,7 +2302,7 @@ wa conversations build [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--analyze` | link batches using the configured analysis provider; requires --chat and remembers consent for this chat/provider. |
 | `--provider <provider>` | analysis: agent, openai or anthropic. |
 | `--model <model>` | analysis model; overrides analysis_model. |
@@ -2321,7 +2321,7 @@ wa conversations list <chat> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
@@ -2338,7 +2338,7 @@ wa conversations show <conversation> [message]
 
 | Argument | | What it is |
 |---|---|---|
-| `conversation` | required | a conversation id from `conversations list`; or a chat: its name, or its WhatsApp id (…@lid, …@g.us), with a message. |
+| `conversation` | required | a conversation id from `conversations list`; or a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter), with a message. |
 | `message` | optional | a message id in that chat: show the conversation it is in. |
 
 ### `wa conversations related`
@@ -2351,7 +2351,7 @@ wa conversations related <chat> <message> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `message` | required | a message id in that chat. |
 
 | Option | What it does |
@@ -2372,7 +2372,7 @@ wa conversations status [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
 | `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
@@ -2392,7 +2392,7 @@ wa conversations batches status [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--size <n>` | messages to answer per batch, 10–200; 50 by default. |
 
 #### `wa conversations batches next`
@@ -2405,7 +2405,7 @@ wa conversations batches next [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--size <n>` | messages to answer per batch, 10–200; 50 by default. |
 
 ### `wa conversations links`
@@ -2438,7 +2438,7 @@ wa conversations links clear [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | only the answers this model gave. |
 
 ### `wa conversations consents`
@@ -2480,7 +2480,7 @@ wa conversations embed [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
 | `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
@@ -2501,7 +2501,7 @@ wa conversations embed status [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
 | `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
@@ -2519,7 +2519,7 @@ wa conversations embed clear [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
 | `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
@@ -2541,7 +2541,7 @@ wa attachments extract [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat's files; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat's files; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--from-dir <dir>` | match files in this nonrecursive directory; needs --chat. |
 | `--cursor <cursor>` | continue from the cursor returned by a bounded extraction. |
 | `--download` | first save the files no download saved yet, from the messenger, into --output-dir. |
@@ -2578,7 +2578,7 @@ wa attachments show <chat> [message] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator alone. |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); or a msg: locator alone. |
 | `message` | optional | the message id. |
 
 | Option | What it does |
@@ -2605,7 +2605,7 @@ wa attachments text set <chat> [message] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us); or a msg: locator, with no message id after it. |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); or a msg: locator, with no message id after it. |
 | `message` | optional | the message id. |
 
 | Option | What it does |
@@ -2650,7 +2650,7 @@ wa tags add <tag> [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | the chat to tag, or the chat of --message; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | the chat to tag, or the chat of --message; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--contact <person>` | the person to tag: their id, @username or name, as the local store knows them. |
 | `--message <message>` | the message to tag: its id in --chat, or a msg: locator alone. |
 | `--task <id>` | the task to tag: its id or key, as tasks list shows it. |
@@ -2671,7 +2671,7 @@ wa tags remove <tag> [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | the chat to untag, or the chat of --message; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | the chat to untag, or the chat of --message; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--contact <person>` | the person to untag: their id, @username or name, as the local store knows them. |
 | `--message <message>` | the message to untag: its id in --chat, or a msg: locator alone. |
 | `--task <id>` | the task to untag: its id or key, as tasks list shows it. |
@@ -2822,7 +2822,7 @@ wa images embed [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--limit <n>` | at most this many pictures in one run; 100 if not given. |
 
 ### `wa images models`
@@ -2910,7 +2910,7 @@ wa stats messages show [query] [options]
 | Option | What it does |
 |---|---|
 | `--by <chat\|sender\|day\|hour>` | what to count by (default: chat). |
-| `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every account of this messenger held in the store; personal, bots or all — the same as in: in the query. |
 | `--limit <n>` | how many rows. |
 | `--timezone <zone>` | the IANA timezone for calendar days and hours. |
@@ -2935,7 +2935,7 @@ wa stats messages counters show [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | held accounts of this messenger; refresh uses the active account. |
 | `--exact` | bare words match exact forms. |
 | `--timezone <zone>` | IANA timezone for query dates. |
@@ -2960,7 +2960,7 @@ wa stats messages counters refresh [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | held accounts of this messenger; refresh uses the active account. |
 | `--exact` | bare words match exact forms. |
 | `--timezone <zone>` | IANA timezone for query dates. |
@@ -2985,7 +2985,7 @@ wa stats messages unanswered [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--exact` | bare words match exact forms rather than stems. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
@@ -3008,7 +3008,7 @@ wa stats messages discussion [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--exact` | bare words match exact forms rather than stems. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
@@ -3035,7 +3035,7 @@ wa stats messages top [query] [options]
 | `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
 | `--weights <json>` | the complete component weights; replaces preset weights. |
 | `--message-kind <kind>` | select proven all, posts or comments before ranking. One of: `all`, `posts`, `comments`. |
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--timezone <zone>` | the IANA timezone for dates and active days. |
 | `--exact` | bare words match exact forms rather than stems. |
@@ -3079,7 +3079,7 @@ wa stats contacts responses [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--exact` | bare words match exact forms rather than stems. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
@@ -3105,7 +3105,7 @@ wa stats contacts top [query] [options]
 | `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
 | `--weights <json>` | the complete component weights; replaces preset weights. |
 | `--message-kind <kind>` | select proven all, posts or comments before ranking. One of: `all`, `posts`, `comments`. |
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--timezone <zone>` | the IANA timezone for dates and active days. |
 | `--exact` | bare words match exact forms rather than stems. |
@@ -3146,7 +3146,7 @@ wa stats chats show <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -3164,7 +3164,7 @@ wa stats chats newcomers <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -3186,7 +3186,7 @@ wa stats chats retention <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -3212,7 +3212,7 @@ wa stats tasks show [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--type <type>` | only this type: question, request, mention or promise. |
 
 ### `wa stats charts`
@@ -3227,7 +3227,7 @@ wa stats charts <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -3323,7 +3323,7 @@ wa tasks link <task> [targets] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | a chat it concerns, repeatable; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | a chat it concerns, repeatable; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--kind <kind>` | related-to (default), evidence — it shows the task is real — or created-from; for task:<id>, related-to, blocked-by, follow-up-of, duplicate-of or discovered-from. |
 
 ### `wa tasks show`
@@ -3472,7 +3472,7 @@ wa tasks scan <chat> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 | Option | What it does |
 |---|---|
@@ -3650,7 +3650,7 @@ wa search conversations <query> [options]
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 | `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
 | `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given. |
-| `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--since-time <time>` | only those still going at this ISO 8601 time, or 30m / 2h / 1d ago, or later. |
 | `--filter <query>` | strict Lucene filter: any message in a conversation must match; does not change the meaning query. |
 | `--source <accounts>` | accounts to search: personal, bots, all, a provider, or a list like group:work,telegram:Alice,email:me@example.com; defaults to the active account. |
@@ -3679,7 +3679,7 @@ wa searches create <name> [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every account of this messenger held in the store; personal, bots or all — the same as in: in the query; or a list: group:work,telegram:Alice,email:me@example.com. |
 | `--limit <n>` | how many. |
 | `--newest` | newest first instead of best first. |
@@ -3790,7 +3790,7 @@ wa recipients add <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
 ### `wa recipients remove`
 

@@ -4,6 +4,7 @@ import type { Chat, Message } from "@wirecat/cli-core"
 import type { IdMaker, Seed } from "@wirecat/cli-core/testing"
 import * as v from "valibot"
 import { isFile, toWaAttachment } from "../adapter/map.js"
+import type { WaChannel } from "../engine/channels.js"
 import {
   EngineError,
   type EngineEvent,
@@ -22,6 +23,7 @@ import {
 import { eventHub } from "../engine/events.js"
 import type { WaPrivacy } from "../engine/privacy.js"
 import type { WaProfileChange } from "../engine/settings.js"
+import { type FakeChannels, fakeChannels } from "./fake-channels.js"
 import { type FakeGroups, fakeGroups } from "./fake-groups.js"
 import { type FakePrivacy, fakePrivacy } from "./fake-privacy.js"
 
@@ -76,7 +78,7 @@ const UPLOADED: Record<string, { kind: WaAttachment["kind"]; media: "image" | "v
 /** The bytes the fake engine "downloads": synthetic, named after the file's kind. */
 export const syntheticBytes = (attachment: WaAttachment): Buffer => Buffer.from(`synthetic ${attachment.kind} bytes`)
 
-export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
+export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, FakeChannels {
   /** Pushes an event as the engine would, checked against the contract first. */
   push(event: EngineEvent): void
   sent: WaMessage[]
@@ -121,7 +123,9 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
 /**
  * The engine in memory, filled from cli-core's contract seed. It pushes the seed's history once, as the phone does
  * right after linking, and drops a repeated message id as WhatsApp does. `phone` is what the phone still holds and
- * sends when asked for older history; without it the phone is offline and every such request times out.
+ * sends when asked for older history; without it the phone is offline and every such request times out. With
+ * `channel`, the account follows one channel in that role; the directory names it, and connecting pushes it as the
+ * Go engine does.
  */
 export const fakeEngine = (
   seed: Seed,
@@ -130,7 +134,14 @@ export const fakeEngine = (
     phone,
     privacy,
     settingsKeys = true,
-  }: { linked?: boolean; phone?: WaMessage[]; privacy?: WaPrivacy; settingsKeys?: boolean } = {},
+    channel,
+  }: {
+    linked?: boolean
+    phone?: WaMessage[]
+    privacy?: WaPrivacy
+    settingsKeys?: boolean
+    channel?: WaChannel["role"]
+  } = {},
 ): FakeEngine => {
   const hub = eventHub()
   let self = linked ? (seed.account?.id ?? null) : null
@@ -194,9 +205,15 @@ export const fakeEngine = (
     return message
   }
 
+  const channels = fakeChannels(channel)
+  let channelsPushed = false
+  // As the Go engine, which asks WhatsApp for the followed channels only once connected.
+  let connected = false
+
   const engine: FakeEngine = {
     ...fakeGroups(seed, chats),
     ...fakePrivacy(privacy),
+    ...channels,
     sent,
     sends,
     actions,
@@ -215,12 +232,19 @@ export const fakeEngine = (
     loggedOut: false,
     push,
     self: () => self,
-    ready: async () => {},
+    ready: async () => {
+      connected = true
+      const followed = channels.followed()
+      if (!channelsPushed && followed.length > 0) {
+        channelsPushed = true
+        push({ event: "history", history: { kind: "other", chats: followed, contacts: [], messages: [], votes: [] } })
+      }
+    },
     me: async () => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")
       return { jid: seed.account.id, name: ownName }
     },
-    directory: async () => chats,
+    directory: async () => [...chats, ...(connected ? channels.followed() : [])],
     chat: async (jid) => {
       const chat = chats.find((one) => one.jid === jid)
       if (!chat) throw new EngineError("not_found", `no chat ${jid}`)
