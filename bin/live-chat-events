@@ -1,0 +1,55 @@
+#!/usr/bin/env sh
+# Live check of `chats events` (BACKLOG item 5): do a group's service messages ("X added Y") come in the phone's
+# history push, with the people in them, so that the store lists them? The owner runs it from a terminal; an agent
+# never does.
+#
+#   bin/live-chat-events <profile> <group>
+#
+# It writes nothing anyone sees: through the running `serve` it asks the own phone for one page of the group's older
+# history, then reads the store. It prints counts per kind of change only: no name, no id, no number.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+group=${2:-}
+need_profile "$profile"
+[ -n "$group" ] || die "name a group: bin/live-chat-events <profile> <group>"
+serve_running "$profile" ||
+  die "start $wa $profile serve first: the history page comes through it, so no one-shot connection takes the device"
+
+count() {
+  wa_json "$profile" chats events "$group" 'time>=3650d' --offline --timeout 30s |
+    json 'Object.entries(d.items.reduce((n, one) => ({ ...n, [one.type]: (n[one.type] ?? 0) + 1 }), {}))
+      .map(([type, n]) => `${type} ${n}`).join(", ") || "none"'
+}
+
+cat <<EOF
+
+Plan, on profile $profile:
+  1. count the group's stored changes (who joined, left, was added, removed, promoted or demoted, new titles)
+  2. wa $profile messages sync <group> --limit 50 --no-catch-up, through serve: the engine asks your own phone for
+     one page of the group's older messages. Nobody in the group sees it
+  3. count them again
+
+Pick a group whose older messages on the phone show someone joining, leaving or being added.
+EOF
+
+before=$(count) || exit 1
+echo "stored before: $before"
+confirm "Step 2 asks your phone for one page of the group's history."
+set +e
+wa_json "$profile" messages sync "$group" --limit 50 --no-catch-up --timeout 120s >/dev/null
+code=$?
+set -e
+echo "messages sync exited $code; waiting 15 s for the rest of the answer"
+sleep 15
+after=$(count) || exit 1
+
+echo
+echo "── result ──"
+echo "stored before: $before"
+echo "stored after:  $after"
+echo "Compare with the phone: does the page it sent show as many service messages of each kind?"

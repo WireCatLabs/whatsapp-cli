@@ -51,8 +51,9 @@ Open work, most important first. The plan in flight is
      (the owner runs `bin/live-poll-vote` for it, in the own chat).
    - ~~**`chats events`**~~ — built: live `events.GroupInfo` and the history push's group service messages go to
      cli-core's store (engine protocol 33). Still open: a live check that a push's service messages carry the people
-     as the protobuf says (`bin/live-*` for the owner), and `member_stays`, which cli-core does not fill from events
-     yet.
+     as the protobuf says (the owner runs `bin/live-chat-events`), the owner's own join or add, which whatsmeow
+     sends live as `events.JoinedGroup` (only a history push records it), and `member_stays`, which cli-core does
+     not fill from events yet.
    - **Names of groups the store lacks, in a one-shot command.** cli-core finds a stored group by name (0.337.0);
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
