@@ -1,4 +1,5 @@
 import type { MessageEvent } from "@wirecat/cli-core"
+import type { HistoryBatch } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it } from "vitest"
 import { EngineError, type WaMessage } from "../engine/contract.js"
@@ -129,6 +130,25 @@ describe("whatsAppAdapter", () => {
     const feeding = whatsAppAdapter(engine).feed(() => {}, new AbortController().signal)
     engine.push({ event: "connection", state: "logged_out" })
     await expect(feeding).rejects.toMatchObject({ code: "authentication_error" })
+  })
+
+  it("passes a re-key on as a batch of its own, and a push's re-keys with the push", async () => {
+    const engine = fakeEngine(seed)
+    const controller = new AbortController()
+    const batches: HistoryBatch[] = []
+    const feeding = whatsAppAdapter(engine).feed((batch) => batches.push(batch), controller.signal)
+    const rekey = { from: "70000000009@s.whatsapp.net", to: "100000000000001@lid" }
+    engine.push({ event: "rekey", ...rekey })
+    engine.push({
+      event: "history",
+      history: { kind: "recent", chats: [], contacts: [], messages: [incoming()], votes: [], rekeys: [rekey] },
+    })
+    controller.abort()
+    await feeding
+    expect(batches.slice(-2)).toMatchObject([
+      { rekeys: [rekey] },
+      { rekeys: [rekey], messages: [{ id: incoming().id }] },
+    ])
   })
 
   it("maps archived and muted chats, and leaves them out when WhatsApp does not say", () => {

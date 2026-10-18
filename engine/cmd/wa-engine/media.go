@@ -423,6 +423,7 @@ func (e *engine) post(to types.JID, sendID string, content *waE2E.Message, text,
 		message.Sender = &me.JID
 		message.SenderName = me.Name
 	}
+	e.phones.note(e.ctx, message.Chat)
 	return message, nil
 }
 

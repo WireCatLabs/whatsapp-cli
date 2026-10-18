@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 24
+const protocol = 25
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -113,9 +113,12 @@ type waHistory struct {
 	Contacts []waContact `json:"contacts"`
 	Messages []waMessage `json:"messages"`
 	Votes    []waVote    `json:"votes"`
+	// Chats emitted before in phone form whose person now has a LID; the CLI applies them first.
+	Rekeys []waRekey `json:"rekeys,omitempty"`
 
-	oldest map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
-	sent   map[string]int    // per chat, how many messages the phone sent, kept or skipped
+	oldest  map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
+	sent    map[string]int    // per chat, how many messages the phone sent, kept or skipped
+	learned known             // the push's own phone-to-LID mappings
 }
 
 type waAccount struct {

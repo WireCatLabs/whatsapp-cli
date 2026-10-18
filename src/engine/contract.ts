@@ -13,7 +13,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 24
+export const PROTOCOL = 25
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -124,8 +124,15 @@ export const waVote = v.strictObject({
 })
 
 /**
+ * A one-to-one chat the engine emitted before in phone form (`from`), now named by its person's LID (`to`). The store
+ * moves the old chat to the new id before anything under the new id lands. The engine repeats a re-key for a while,
+ * since the CLI may not have been listening; a repeat changes nothing.
+ */
+export const waRekey = v.strictObject({ from: jid, to: jid })
+
+/**
  * One push from the phone. `kind` follows whatsmeow's sync types; the adapter treats them all alike. `votes` are the
- * votes in the pushed polls, which the store saves with the push, not as `vote` events.
+ * votes in the pushed polls, which the store saves with the push, not as `vote` events. `rekeys` apply first.
  */
 export const waHistory = v.strictObject({
   kind: v.picklist(["bootstrap", "recent", "full", "on_demand", "push_name", "other"]),
@@ -133,6 +140,7 @@ export const waHistory = v.strictObject({
   contacts: v.array(waContact),
   messages: v.array(waMessage),
   votes: v.array(waVote),
+  rekeys: v.optional(v.array(waRekey)),
 })
 
 /**
@@ -159,6 +167,8 @@ export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("edit"), message: waMessage }),
   v.strictObject({ event: v.literal("delete"), chat: jid, id: v.string() }),
   v.strictObject({ event: v.literal("vote"), vote: waVote }),
+  /** A re-key outside a history push, sent before the first message under the new id. */
+  v.strictObject({ event: v.literal("rekey"), ...waRekey.entries }),
   /** `until`: when a temporary ban ends, if WhatsApp said. */
   v.strictObject({ event: v.literal("connection"), state: connectionState, until: v.optional(time) }),
 ])
@@ -229,6 +239,7 @@ export type WaPlaceRef = v.InferOutput<typeof waPlaceRef>
 export type WaCardRef = v.InferOutput<typeof waCardRef>
 export type WaAttachment = v.InferOutput<typeof waAttachment>
 export type WaHistory = v.InferOutput<typeof waHistory>
+export type WaRekey = v.InferOutput<typeof waRekey>
 export type EngineEvent = v.InferOutput<typeof engineEvent>
 export type ConnectionState = v.InferOutput<typeof connectionState>
 export type EngineErrorCode = v.InferOutput<typeof engineErrorCode>

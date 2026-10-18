@@ -24,11 +24,11 @@ func TestSecondHolderIsRefusedAndToldWhoHoldsIt(t *testing.T) {
 
 func TestEmptyStoreIsNotLinkedUnlessLinking(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "private.db")
-	if _, refused := openDevice(context.Background(), path, false, waLog.Noop); refused == nil ||
+	if _, _, refused := openDevice(context.Background(), path, false, waLog.Noop); refused == nil ||
 		refused.Code != "authentication_error" {
 		t.Errorf("got %+v", refused)
 	}
-	device, refused := openDevice(context.Background(), path, true, waLog.Noop)
+	device, _, refused := openDevice(context.Background(), path, true, waLog.Noop)
 	if refused != nil || device == nil || device.ID != nil {
 		t.Errorf("got %+v %+v", device, refused)
 	}

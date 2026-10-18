@@ -32,6 +32,8 @@ type engine struct {
 
 	addressing map[types.JID]types.AddressingMode // per group, asked once
 
+	phones *phoneChats // nil when private.db could not hold the table: chats are then never re-keyed
+
 	olderOne  sync.Mutex // one request for older history at a time, so its answer is known by its chat
 	olderAsks olderWaiter
 
@@ -73,7 +75,15 @@ func (e *engine) self() *string {
 // linked says the device has its stores; a device made for linking has none until the phone confirms.
 func (e *engine) linked() bool { return e.client.Store.ID != nil }
 
+// lidFor also answers for a chat already re-keyed, so it is never emitted in phone form again.
 func (e *engine) lidFor(pn types.JID) (types.JID, bool) {
+	if lid, ok := e.storedLID(pn); ok {
+		return lid, true
+	}
+	return e.phones.lidOf(pn.User)
+}
+
+func (e *engine) storedLID(pn types.JID) (types.JID, bool) {
 	if !e.linked() {
 		return types.JID{}, false
 	}
@@ -238,5 +248,6 @@ func (e *engine) send(req request) (*waMessage, error) {
 		message.Sender = &me.JID
 		message.SenderName = me.Name
 	}
+	e.phones.note(e.ctx, message.Chat)
 	return message, nil
 }

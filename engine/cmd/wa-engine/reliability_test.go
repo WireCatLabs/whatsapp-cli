@@ -123,7 +123,7 @@ func TestClosingStdinEndsTheEngineWhileItIsStillConnecting(t *testing.T) {
 		}
 	}()
 
-	device, refused := openDevice(context.Background(), filepath.Join(t.TempDir(), "private.db"), true, waLog.Noop)
+	device, _, refused := openDevice(context.Background(), filepath.Join(t.TempDir(), "private.db"), true, waLog.Noop)
 	if refused != nil {
 		t.Fatal(refused)
 	}

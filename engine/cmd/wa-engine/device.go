@@ -40,34 +40,35 @@ func holdLock(storePath, holder string) (*os.File, *refusal) {
 }
 
 // openDevice opens the profile's device store. One device per file: none means not linked yet (only login may then
-// create one), several means the file is not ours to guess in.
-func openDevice(ctx context.Context, storePath string, linking bool, logger waLog.Logger) (*store.Device, *failure) {
+// create one), several means the file is not ours to guess in. The database comes back too, for the engine's own
+// table beside whatsmeow's.
+func openDevice(ctx context.Context, storePath string, linking bool, logger waLog.Logger) (*store.Device, *sql.DB, *failure) {
 	if err := os.MkdirAll(filepath.Dir(storePath), 0o700); err != nil {
-		return nil, &failure{"provider_error", "cannot create the profile folder"}
+		return nil, nil, &failure{"provider_error", "cannot create the profile folder"}
 	}
 	dsn := "file:" + storePath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
-		return nil, &failure{"provider_error", "cannot open the device store"}
+		return nil, nil, &failure{"provider_error", "cannot open the device store"}
 	}
 	container := sqlstore.NewWithDB(db, "sqlite", logger)
 	if err := container.Upgrade(ctx); err != nil {
-		return nil, &failure{"provider_error", "cannot prepare the device store"}
+		return nil, nil, &failure{"provider_error", "cannot prepare the device store"}
 	}
 	_ = os.Chmod(storePath, 0o600)
 	devices, err := container.GetAllDevices(ctx)
 	if err != nil {
-		return nil, &failure{"provider_error", "cannot read the device store"}
+		return nil, nil, &failure{"provider_error", "cannot read the device store"}
 	}
 	switch {
 	case len(devices) == 1:
-		return devices[0], nil
+		return devices[0], db, nil
 	case len(devices) > 1:
-		return nil, &failure{"provider_error", "the device store holds more than one linked device; log in again"}
+		return nil, nil, &failure{"provider_error", "the device store holds more than one linked device; log in again"}
 	case linking:
-		return container.NewDevice(), nil
+		return container.NewDevice(), db, nil
 	default:
-		return nil, &failure{"authentication_error", "this profile is not linked to WhatsApp"}
+		return nil, nil, &failure{"authentication_error", "this profile is not linked to WhatsApp"}
 	}
 }
 
