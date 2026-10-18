@@ -133,6 +133,27 @@ describe("wa setup", () => {
     for (let step = 1; step <= 5; step++) expect(result.stderr).toContain(`${step}/5`)
   })
 
+  it("a cancel during the history wait ends only the wait, and setup finishes with exit 0", async () => {
+    const qrFile = join(env.WA_CACHE_DIR ?? "", "early.png")
+    mkdirSync(dirname(qrFile), { recursive: true })
+    const stop = new AbortController()
+    const engine = unlinked()
+    const listen = engine.listen
+    engine.listen = (kinds, onEvent) => {
+      const unlisten = listen(kinds, onEvent)
+      if (kinds.includes("history")) setImmediate(() => stop.abort())
+      return unlisten
+    }
+    const result = await execute(
+      ["setup", "--qr-file", qrFile, "--agent", "none", "--json"],
+      { signal: stop.signal, historyWait: { firstMs: 60_000, quietMs: 60_000 } },
+      engine,
+    )
+    expect(result.code, result.stderr).toBe(0)
+    expect(JSON.parse(result.stdout).item.history.messages).toBe(seed.messages.length)
+    expect(result.engine.closed).toBe(true)
+  })
+
   it("a cancel after the history wait still ends setup and closes the engine", async () => {
     const qrFile = join(env.WA_CACHE_DIR ?? "", "cut.png")
     mkdirSync(dirname(qrFile), { recursive: true })

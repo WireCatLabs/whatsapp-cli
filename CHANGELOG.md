@@ -15,7 +15,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **Ctrl+C or `--timeout` during the history wait after linking ends the wait, not the command**: `session start`
   keeps what arrived, counts it and exits 0. It exited 130 or 9, though the device was linked. `setup` goes on to
   its account, chat and agent steps, which get a deadline of their own (cli-core 0.334.0, WC-LIFE-5, WC-LIFE-8); a
-  Ctrl+C after the wait ends setup (130). With `--timeout`, the wait and the steps after it each get that long.
+  Ctrl+C after the wait ends setup (130). With `--timeout`, the link and the wait share that one deadline, and the
+  steps after it get that long again.
 - **cli-core 0.328.0's command changes**: `chats list` and `chats show` declare a local read and never connect, so
   they run here while `serve` runs; `recipients add` runs through `serve` instead of being refused with exit 12; a
   link without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds; a command path given as one
