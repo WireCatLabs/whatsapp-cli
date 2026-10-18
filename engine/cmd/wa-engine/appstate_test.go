@@ -59,7 +59,7 @@ func TestAMissingSettingsKeyIsTheKeysReason(t *testing.T) {
 
 // whatsmeow answers before it reaches the network, so this pins the wording appStateFailure matches.
 func TestWhatsmeowsOwnNoKeysErrorIsTheKeysReason(t *testing.T) {
-	device, refused := openDevice(context.Background(), filepath.Join(t.TempDir(), "private.db"), true, waLog.Noop)
+	device, _, refused := openDevice(context.Background(), filepath.Join(t.TempDir(), "private.db"), true, waLog.Noop)
 	if refused != nil {
 		t.Fatal(refused)
 	}
