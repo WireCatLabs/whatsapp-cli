@@ -52,9 +52,25 @@ const atLevel = Object.fromEntries(
     },
   ]),
 ) as Record<"default" | "readonly" | "deny", Message>
+const [partlyDeleted, partlyRefused] = ["3EB0000000000000000F09", "3EB0000000000000000F0A"].map((id, at) => ({
+  ...fresh,
+  chatId: base.dialog,
+  id,
+  timestamp: `2026-08-01T09:0${6 + at}:00.000Z`,
+})) as [Message, Message]
 const seed = {
   ...base,
-  messages: [...base.messages, fresh, answer, forMeOwn, forMeTheirs, forAgent, ...Object.values(atLevel)],
+  messages: [
+    ...base.messages,
+    fresh,
+    answer,
+    forMeOwn,
+    forMeTheirs,
+    forAgent,
+    partlyDeleted,
+    partlyRefused,
+    ...Object.values(atLevel),
+  ],
 }
 const inBusy = seed.messages.filter((message) => message.chatId === seed.busy)
 const theirs = inBusy.filter((message) => !message.outgoing).at(-1) as Message
@@ -297,12 +313,20 @@ describe("wa messages delete", () => {
   it("names what went when a later message fails, and does not call the run safe to retry", async () => {
     let engine: FakeEngine | undefined
     const result = await wa(
-      ["actions", "messages", "delete", seed.dialog, `${answer.id},${forAgent.id}`, "--allow-dangerous", "--json"],
+      [
+        "actions",
+        "messages",
+        "delete",
+        seed.dialog,
+        `${partlyDeleted.id},${partlyRefused.id}`,
+        "--allow-dangerous",
+        "--json",
+      ],
       () => {
         engine = fakeEngine(seed)
         const deleteForMe = engine.deleteForMe
         engine.deleteForMe = async (message) => {
-          if (message.id === forAgent.id)
+          if (message.id === partlyRefused.id)
             throw new EngineError("provider_unavailable", "synthetic refusal", "settings.keys-missing")
           await deleteForMe(message)
         }
@@ -311,9 +335,9 @@ describe("wa messages delete", () => {
     )
     expect(result.code).toBe(12)
     const { error } = JSON.parse(result.stderr.slice(result.stderr.indexOf("{")))
-    expect(error.message).toContain(`deleted ${answer.id}; ${forAgent.id}`)
+    expect(error.message).toContain(`deleted ${partlyDeleted.id}; ${partlyRefused.id}`)
     expect(error.retry).toEqual({ safe: false })
-    expect(engine?.actions.map((action) => action.key.id)).toEqual([answer.id])
+    expect(engine?.actions.map((action) => action.key.id)).toEqual([partlyDeleted.id])
   })
 
   it("says to keep serve running when WhatsApp has not sent the settings keys yet", async () => {
