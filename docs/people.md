@@ -95,9 +95,11 @@ These connect; while `serve` runs, they go through `serve`'s connection.
 wa personal contacts profile 100000000000001@lid        # their name, about line and whether they show a photo
 wa personal contacts block 100000000000001@lid
 wa personal contacts unblock 100000000000001@lid
-echo "+34 600 000 000" | wa personal contacts lookup    # whether this number has WhatsApp, and its id
+wa personal contacts lookup < number.txt                # whether this number has WhatsApp, and its id
 wa personal contacts sync                                # the phone's address book into the local store
 ```
+
+For `contacts lookup`, first write the number to `number.txt`, on one line, in international format.
 
 - `contacts profile` tells the person nothing. It shows no phone number.
 - `contacts lookup` reads the number from stdin, never from the command line, and sends nothing to it. It takes one
