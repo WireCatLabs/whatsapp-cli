@@ -136,9 +136,12 @@ Open work, most important first. The plan in flight is
      copy, but the new path is not kept: cli-core saves a `providerRef` the adapter sets while it reads a file
      (0.339.0, 0.340.0), and wa's adapter does not set it yet, so each later download asks the phone again, and a
      forward still sends the old path, which reaches the recipient as a file that will not open. Not yet run against
-     WhatsApp: whether the phone answers a receipt for a one-to-one chat addressed by LID.
+     WhatsApp: the retry in the own chat (the owner runs `bin/live-expired-file` for it), and whether the phone
+     answers a receipt for a one-to-one chat with someone else addressed by LID.
    - **Forwarding several contact cards** (`ContactsArrayMessage`) and a live location is refused; a place or a card
      stored before `wa` kept their content too.
+   - **Live check of forwarding a place or a contact card**: whether WhatsApp's apps show and open a forwarded place
+     and card has not been run (the owner runs `bin/live-forward-card` for it, in the own chat).
    - **Media leftovers**: files to channels; `metadata refresh` for a channel (`group` reads groups only).
    - **Channels: what following and reading left open.** Files to a channel (whatsmeow's `UploadNewsletter`, not
      encrypted; `media.go` refuses them), and downloading a channel post's file (no media key). Mentions in channel
@@ -162,7 +165,8 @@ Open work, most important first. The plan in flight is
      The shape matches Baileys 7.0.0-rc14, the one open-source sender found (`lib/Utils/messages.js`, `album` and
      `albumParentKey`): each file is a plain photo or video whose `messageContextInfo.messageAssociation` is
      `MEDIA_ALBUM` with the parent key `{remoteJid, fromMe: true, id}`. Baileys, like whatsmeow, sends the
-     `AlbumMessage` with stanza type `text`. whatsmeow and mautrix-whatsapp only read albums.
+     `AlbumMessage` with stanza type `text`. whatsmeow and mautrix-whatsapp only read albums. The owner runs
+     `bin/live-album` for it, in the own chat; it also asks whether a sent photo shows its preview.
    - **No preview on a sent video.** A photo carries a 72-pixel JPEG preview; a video needs a frame decoder, and the
      engine has no pure-Go one (no cgo, no ffmpeg), so a video goes without one. A WEBP photo too: the standard
      library does not decode WEBP. The preview ignores a JPEG's EXIF orientation, so a phone photo taken on its side

@@ -1,0 +1,130 @@
+#!/usr/bin/env sh
+# Live check of an album and a photo's preview (BACKLOG item 5, "Live check of an album" and "No preview on a sent
+# video"): one `messages send` with a made-up photo and a short video to the own chat, then questions to the owner
+# at the phone. The owner runs it from a terminal; an agent never does.
+#
+#   bin/live-album <profile> [--video <file.mp4>]
+#
+# The photo is drawn here; the video is the --video file, or a 2-second test pattern made with ffmpeg when there is
+# one. It writes only to the own chat, through the running `serve`, and asks before the send. It prints exit codes,
+# error codes and yes/no only: no message text, no id, no number.
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+shift
+video=""
+case "${1:-}" in
+  "") ;;
+  --video) video=${2:-} && [ -n "$video" ] || die "--video needs a file" ;;
+  *) die "unknown argument — usage: $(basename -- "$0") <profile> [--video <file.mp4>]" ;;
+esac
+# wa sends a file as a playable video by its extension alone.
+if [ -n "$video" ]; then
+  [ -f "$video" ] || die "no file at $video"
+  case "$video" in
+    *.mp4 | *.MP4 | *.m4v | *.M4V | *.mov | *.MOV) ;;
+    *) die "the video must end in .mp4, .m4v or .mov, or wa sends it as a document and there is no album" ;;
+  esac
+elif ! command -v ffmpeg >/dev/null; then
+  die "no ffmpeg here to make a test video — pass one: $(basename -- "$0") $profile --video <file.mp4>"
+elif ! ffmpeg -hide_banner -encoders 2>/dev/null | grep -q libx264; then
+  die "this ffmpeg has no H.264 encoder (libx264), which WhatsApp plays — pass one: --video <file.mp4>"
+fi
+
+own=$(own_chat "$profile") || exit 1
+serve_running "$profile" ||
+  die "start $wa $profile serve first: the writes go through it, so no one-shot connection takes the device"
+
+run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
+caption="wa album check $run"
+dir=$(umask 077 && mktemp -d "${TMPDIR:-/tmp}/wa-live-album.XXXXXX")
+sent=no
+
+leftover() {
+  rm -rf -- "$dir"
+  [ "$sent" = no ] || echo "the album \"$caption\" may be in your own chat — delete it from the phone" >&2
+}
+trap leftover EXIT
+on_signals
+
+# Colour bands, so a preview is easy to tell from a grey box.
+node -e '
+  const { crc32, deflateSync } = require("node:zlib")
+  const width = 320, height = 240
+  const rows = []
+  for (let y = 0; y < height; y++) {
+    const row = Buffer.alloc(1 + width * 3)
+    for (let x = 0; x < width; x++)
+      row.set([(x * 255) / width, (y * 255) / height, x < width / 2 ? 200 : 40], 1 + x * 3)
+    rows.push(row)
+  }
+  const chunk = (type, data) => {
+    const head = Buffer.alloc(8)
+    head.writeUInt32BE(data.length)
+    head.write(type, 4)
+    const sum = Buffer.alloc(4)
+    sum.writeUInt32BE(crc32(Buffer.concat([head.subarray(4), data])))
+    return Buffer.concat([head, data, sum])
+  }
+  const header = Buffer.alloc(13)
+  header.writeUInt32BE(width)
+  header.writeUInt32BE(height, 4)
+  header.set([8, 2, 0, 0, 0], 8)
+  const png = Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", header),
+    chunk("IDAT", deflateSync(Buffer.concat(rows))),
+    chunk("IEND", Buffer.alloc(0)),
+  ])
+  require("node:fs").writeFileSync(process.argv[1], png)
+' "$dir/photo.png" || die "could not draw the test photo"
+what="your video"
+if [ -z "$video" ]; then
+  what="a 2-second test video"
+  video="$dir/clip.mp4"
+  ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc=duration=2:size=320x240:rate=15 \
+    -c:v libx264 -pix_fmt yuv420p -movflags +faststart "$video" </dev/null || die "ffmpeg could not make the test video"
+fi
+
+cat <<EOF
+
+Plan, on profile $profile, in your own chat only:
+  1. wa messages send, one send: a test photo drawn here and $what, with the caption "$caption"
+  2. you look at your own chat on the phone and answer three questions
+  3. you delete the album from the phone; wa keeps only the photo's message, so it cannot delete the whole album
+
+Before step 1, turn off photo auto-download on the phone (Settings > Storage and data > Media auto-download), so the
+photo stays undownloaded and you see its preview. Turn it back on afterwards.
+A video with no preview (a grey box until it downloads) is expected: wa makes no video preview yet.
+EOF
+confirm "Step 1 sends the album to your own chat."
+sent=yes
+errs="$dir/errors"
+attempt "$profile" messages send "$own" "$caption" --photo "$dir/photo.png" --file "$video" --yes --timeout 120s
+if [ "$rc" = 0 ]; then
+  echo "messages send: exit 0"
+else
+  echo "messages send: exit $rc, error $(error_code)"
+  [ "$rc" != 2 ] || sent=no
+  die "the send failed"
+fi
+
+echo
+echo "Step 2: on the phone, open your own chat. Do not tap the photo yet."
+grouped=$(phone "Do the photo and the video show as one album (one bubble with two items) with the caption?")
+preview=$(phone "Before you tap it, does the photo show a small coloured picture of itself (not a grey box)?")
+plays=$(phone "Now tap both: does the photo open, and does the video play?")
+
+cat <<EOF
+
+Question                 Phone    BACKLOG item 5 line it settles
+one album, two items     $(printf '%-8s' "$grouped") "Live check of an album": WhatsApp groups the files
+photo preview            $(printf '%-8s' "$preview") "No preview on a sent video": the photo half
+photo opens, video plays $(printf '%-8s' "$plays") "Live check of an album": both files reach the phone whole
+
+A yes settles that part of the line; a no is a bug to file. Delete the album from the phone now.
+EOF

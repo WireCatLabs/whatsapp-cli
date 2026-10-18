@@ -1,0 +1,113 @@
+#!/usr/bin/env sh
+# Live check of a download WhatsApp no longer keeps the file for (BACKLOG item 5, "Files WhatsApp no longer
+# keeps"): the engine asks the owner's phone to upload the file again and fetches the new copy. The owner runs it
+# from a terminal; an agent never does.
+#
+#   bin/live-expired-file <profile> [<message-id>]
+#
+# The message is one in the own chat: the id given, or else the oldest stored photo there (the oldest file, when
+# there is no photo). The download goes through the running `serve` into a throwaway folder, removed at the end. It
+# prints exit codes, error codes, sizes, ages and yes/no only: no message text, no id, no file name, no content.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+message=${2:-}
+own=$(own_chat "$profile") || exit 1
+serve_running "$profile" ||
+  die "start $wa $profile serve first: the phone's answer reaches the connected engine, so no one-shot takes the device"
+
+dir=$(mktemp -d "${TMPDIR:-/tmp}/wa-live-expired.XXXXXX")
+errs="$dir/errors"
+trap 'rm -rf -- "$dir"' EXIT
+on_signals
+
+picked="the message you named"
+if [ -z "$message" ]; then
+  # Newest first, so the last row is the oldest. The id is the last part of the locator,
+  # msg:<provider>/<account>/<chat>/<id>.
+  message=$(wa_json "$profile" attachments list "chat:$own" --all --offline --timeout 60s | json '(() => {
+    const files = new Set(["photo", "video", "document", "voice", "audio", "sticker"])
+    const mine = d.items.filter((one) => {
+      const parts = one.message.split("/").map(decodeURIComponent)
+      return parts.length === 4 && parts[2] === a && files.has(one.kind)
+    })
+    const oldest = mine.filter((one) => one.kind === "photo").at(-1) ?? mine.at(-1)
+    return oldest && decodeURIComponent(oldest.message.split("/")[3])
+  })()' "$own") || die "attachments list failed"
+  [ -n "$message" ] || die "the store holds no file in your own chat — send yourself one from the phone, months ago"
+  picked="the oldest stored file in your own chat"
+fi
+
+age=$(wa_json "$profile" messages show "$own" "$message" --offline --timeout 30s |
+  json 'Math.floor((Date.now() - Date.parse(d.item.timestamp)) / 86400000)') ||
+  die "messages show failed — is that message in your own chat?"
+kind=$(wa_json "$profile" messages show "$own" "$message" --offline --timeout 30s |
+  json 'd.item.attachments.map((one) => one.kind).join(", ") || "no attachment"')
+
+cat <<EOF
+
+Plan, on profile $profile, in your own chat only:
+  1. wa messages download of $picked ($kind, sent $age days ago), through serve, into a throwaway folder
+  2. if WhatsApp no longer keeps the file, the engine asks your phone to upload it again (a receipt from this
+     device to your own phone, to no one else) and downloads the new copy; the phone has 20 s to answer
+  3. the folder is deleted; only exit codes, sizes and the outcome are printed
+
+Keep WhatsApp open on the phone, online. A file deleted from the phone cannot come back.
+EOF
+confirm "Step 1 downloads the file."
+
+started=$(date +%s)
+attempt "$profile" messages download "$own" "$message" --output-dir "$dir/files" --timeout 120s
+took=$(($(date +%s) - started))
+
+# A file that failed still exits 0, named in the answer's batch.failures; a message with no keys exits 6. Both carry
+# the engine's fixed words, matched here and never printed.
+said() {
+  printf '%s' "$out" | grep -q -F -e "$1" || grep -q -F -e "$1" -- "$errs"
+}
+
+saved=$(printf '%s' "$out" | json 'd.item.files.length' 2>/dev/null) || saved=0
+bytes=$(printf '%s' "$out" | json 'd.item.files.reduce((sum, one) => sum + (one.bytes ?? 0), 0)' 2>/dev/null) || bytes=0
+failed=$(printf '%s' "$out" | json 'd.item.batch?.failures?.map((one) => one.error.code).join(", ")' 2>/dev/null) ||
+  failed=""
+[ -n "$failed" ] || failed=$(error_code || true)
+
+echo
+echo "── result ──"
+echo "messages download: exit $rc, $saved file(s) saved, $bytes bytes, error ${failed:-none}, took $took s"
+echo "the message is $age days old"
+retry=yes
+if [ "$saved" != 0 ]; then
+  retry=unknown
+  outcome="saved. The engine logs nothing on this path, so this does not show whether WhatsApp still kept the file
+or the phone uploaded it again; the older the message, the likelier the second"
+elif said "did not upload this file again in time"; then
+  outcome="the phone did not answer within 20 s — is it online? run again"
+elif said "neither WhatsApp nor the phone keeps this file"; then
+  outcome="the phone no longer has the file either"
+elif said "could not upload this file again" || said "answer about this file could not be read"; then
+  outcome="the phone answered with an error"
+elif said "stopped before the phone answered"; then
+  outcome="the engine stopped while it waited"
+elif said "has no file to download"; then
+  retry=no
+  outcome="no verdict: the store holds no keys for this file — name another message"
+else
+  retry=unknown
+  outcome="no verdict: the download failed before or outside the retry"
+fi
+
+cat <<EOF
+
+The retry asked the phone: $retry
+Outcome: $outcome
+
+BACKLOG item 5, "Files WhatsApp no longer keeps": "asked the phone: yes" shows the retry runs in the own chat; a
+saved file of an old message shows it most likely succeeds. A one-to-one chat with someone else, addressed by its
+LID, stays open.
+EOF
