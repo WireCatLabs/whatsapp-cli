@@ -23,6 +23,7 @@ Three terms appear on every page:
 | Keep a copy of your messages on this computer, and search or export it | [The local store](archive.md) |
 | Send, save and forward photos and files, and hear voice notes as text | [File attachments](attachments.md) |
 | Answer, edit, react and delete, yourself or through an agent, and delete for everyone yourself, within your limits | [Using wa](usage.md), [Permissions](permissions.md) |
+| Mute, archive, pin or delete a chat and star a message on your own devices; set your name and privacy | [Using wa](usage.md) |
 | See which questions nobody answered in your groups | [Groups](groups.md) |
 | Use WhatsApp from an app with no terminal, or from a chat in the browser | [The MCP server](mcp.md), [From the browser](remote.md) |
 

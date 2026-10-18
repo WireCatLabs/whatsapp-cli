@@ -34,9 +34,10 @@ Open work, most important first. The plan in flight is
    sets `fetched:<chat>` on the first page of a run without `before`, read only for its time (`stats` `fetched_at`,
    the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
    reported to the lead for cli-core to decide.
-5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
-   profiles, blocking, number lookup, Markdown, polls, message pins, chat mute, chat delete/clear and the own name
-   and about are built; what they left open:
+5. **Feature groups**: edit, delete for everyone and for the owner alone, reactions, mark-read, files and albums,
+   group admin and the group photo, join requests, profiles, blocking, number lookup, Markdown, polls, message pins
+   and stars, chat mute, archive, pin, mark-unread, delete and clear, the own name, about and photo, and privacy are built;
+   what they left open:
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
      them (cli-core 0.322.0); a live vote whose poll the store does not hold yet is passed over.
    - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and

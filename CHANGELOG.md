@@ -7,211 +7,223 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **`messages delete` without `--for-everyone` deletes the message for you only, where it used to be refused** (exit
+  2) (WC-PERM-13). `wa` asks WhatsApp to take the messages from this account's devices, to leave them with the
+  others in the chat, and to keep the photos and files the phone saved from them. Each message must be in the local
+  store, since WhatsApp names it by its sender and the time it was sent; one the store lacks is exit 6 and nothing is
+  deleted. A device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does. An
+  agent's `messages delete` over MCP, which was refused too, now does the same, for the owner only; deleting for
+  everyone stays the owner's `--for-everyone`. A deletion asks first by default, and over MCP that level lets the
+  agent's call through, so at the default an agent can now delete the owner's copy. To keep agents from it, set
+  `permissions.messages.delete` to `readonly` or `deny`; the refusal is then exit 5, not the old exit 2. Not yet
+  checked live on the phone.
+- **A delete of several messages that fails partway names the ones already deleted** (WC-OUT-20), with or without
+  `--for-everyone`, and is not safe to retry: delete only the rest.
+- **`messages download` asks your phone for a file WhatsApp no longer keeps**, as WhatsApp's apps do, instead of
+  answering `not_found` (exit 6) at once. It waits up to 20 seconds for the phone to upload it again and fetches the
+  new copy. A phone that does not answer ends the download with `timeout` (exit 9); exit 6 now means the phone no
+  longer has the file either. A script that read exit 6 as "expired" must also expect exit 9, and give a slow phone a
+  longer `--timeout`. The new copy's address is not kept, so each later download asks again, and a forward of such
+  a file may still reach the recipient as one that will not open. Not yet run against WhatsApp.
+- **`messages forward` sends a stored place or contact card, where it used to refuse it.** The store now keeps a
+  place's coordinates, name and address, and a contact card itself, next to a file's keys, where no answer shows
+  them. A place or card stored before this, a live location and several cards in one message are still refused.
+- **A person's chat moves to their LID when WhatsApp gives them one.** WhatsApp names a one-to-one chat by the
+  person's phone number until it gives them a LID, its private id for a person. `serve` and `watch` now move the
+  stored chat and its messages to the LID, so `messages list` and `search` show one chat, and no chat is left under
+  the phone-number id (`…@s.whatsapp.net`). A script that saved that id must take the new one from `chats list`. The
+  move is repeated at each start for 30 days, so one that came while only a one-shot command ran still lands. A
+  send typed to the old id stores a chat under it again, which a later repeat of the move merges.
+- **A write the connection dropped under answers `outcome_unknown`** (WC-LIFE-9): exit 14, `retry.safe: false`.
+  When the network dropped after a send, edit, reaction, group change or other write left, and it could not be sent
+  again, `wa` answered `network_error` (exit 10), which invited a retry and a double send. Also when WhatsApp handed
+  the login to another connection meanwhile: the write may have gone through, so that comes first. Check the chat
+  before you send again.
+- **A command cut off when WhatsApp ended the connection says why**: a command relayed through `serve` while another
+  process took the login over answered `network_error` (exit 10), which invites a retry; it now answers
+  `device.replaced`, and after a ban or a logout `account.banned` or `device.logged-out`. A script that retried on
+  `network_error` must not retry these.
+- **`chats rules set` refuses a `newAccount` rule** with `validation_error` (exit 2) and saves nothing: WhatsApp does
+  not say when an account was made, so the rule was saved and could never match. A script that sets one must drop it.
 - **A send blocked by another process's lock exits 9, not 1** (cli-core 0.338.0; WC-OUT-18, WC-OUT-20): when
   another process holds the send journal or the request pace past the 5 s wait, a send or `flood clear` answers
   `timeout`, since nothing was sent and a retry is safe. A change to the recipient list held elsewhere for 5 s is
   refused with exit 9 and the list stays as it was; two changes at once no longer undo each other.
-- **`wa upgrade --offline` exits 2** (WC-OUT-19) instead of asking npm anyway, and `wa upgrade --check` now runs
-  under `WA_READ_ONLY` (WC-PERM-12); `wa upgrade` without `--check` is still refused there.
+- **`wa upgrade --offline` exits 2** (WC-OUT-19) instead of asking npm anyway.
+- **`WA_READ_ONLY` refuses more, always with exit 5 and "this process is read-only (WA_READ_ONLY)"** (cli-core
+  0.328.0 to 0.337.0, WC-PERM-12). An agent that did any of these under the lock must do it in a process without
+  it. Newly refused:
+  - `session start`, `session end` and `setup`, before they act ("it cannot log in or out"); `session start` and
+    `setup` on a profile linked before used to go ahead;
+  - the message store: `store reset`, `restore`, `clear`, `migrate`, `repair`, `decrypt` and `copies delete`
+    (`--dry-run` still previews);
+  - what the owner saved: `searches create|delete|clear`, `contacts alias set|rm`, `contacts notes
+    add|edit|remove` and `tags remove`;
+  - other local writes: `tags add`, `tags auto`, `mentions confirm|reject`, `contacts link|unlink`, `attachments text
+    set`, `chats tracking add|remove`, `conversations links add|clear`, `conversations consents revoke` and `tasks
+    reject`; `tasks close` only suggests the close;
+  - and their MCP tools.
 
-- **A write the connection dropped under answers `outcome_unknown`** (WC-LIFE-9): exit 14, `retry.safe: false`.
-  When the network dropped after a send, edit, reaction, group change or other write left, and whatsmeow could not
-  send it again, it answered `network_error` (exit 10), which invited a retry and a double send. Also when
-  WhatsApp handed the login to another connection meanwhile: the write may have gone through, so that comes first.
+  `messages delete` under the lock exits 5, not 7 ("asks before it acts"). `wa upgrade --check` now runs under the
+  lock; `wa upgrade` without it is still refused.
+- **`conversations embed` and `conversations build` count as writes to an outside service, and `search
+  conversations` as a read from one** (cli-core 0.334.0, 0.336.0, WC-CMD-17): a failed run is not marked safe to
+  retry, and under `WA_READ_ONLY` each refuses before it sends chat text or the query to a remote provider; a local
+  model still works. They always run in the calling process, never through `serve`. Their help now says "Changes
+  something in WhatsApp", which here means the outside provider.
+- **A ban holds writes for as long as it lasts** (WC-PERM-18): a temporary ban WhatsApp dates holds writes until its
+  end, the error says when, and `standing.until` is that time. A ban with no end has `standing.state` `banned`, not
+  `frozen`, and `until: null` in `doctor --json`, `flood clear --json` and `server status --json`, where it held for
+  a year before; `wa <profile> flood clear` or a `doctor --online` that connects lifts it.
+- **A hold on writes stops every write** (cli-core 0.334.0, WC-PERM-18): while WhatsApp has the account banned or
+  rate-limited, a reaction, `chats mark-read` and a group title change are refused with exit `5` too, not only sends
+  and edits. Reads still work; `inbox` and `review` with `--mark-read` still show what they read and warn that
+  nothing was marked read.
 - **`serve` banned by WhatsApp is not restarted by its unit** (exit 5 joins exit 4 in the unit's no-restart list):
   a restart 30 s later connected again during the ban. `wa <profile> server status` says it stopped and will not
   restart; start it again with `wa <profile> server start` once the ban ends.
-- **A temporary ban WhatsApp dates holds writes until its end** (WC-PERM-18): the engine passes the ban's expiry
-  (engine protocol 11), the error says when it ends, and `standing.until` is that time.
-- **`session start`, `session end` and `setup` are refused under `WA_READ_ONLY` before they act** (cli-core 0.328.0,
-  `logsInOrOut`), with "this process is read-only (WA_READ_ONLY) — it cannot log in or out" and exit 5. `session
-  start` and `setup` on a profile linked before used to go ahead.
+- **An older client's `session end` relayed into `serve` is refused** (WC-LIFE-11) with `permission_error`, exit
+  `5`, `sent: false`, naming `server stop`; it was `provider_unavailable`, exit `12`, `device.in-use`. `serve`'s
+  connection and the keys stay as they were.
 - **Ctrl+C or `--timeout` during the history wait after linking ends the wait, not the command**: `session start`
   keeps what arrived, counts it and exits 0. It exited 130 or 9, though the device was linked. `setup` goes on to
   its account, chat and agent steps, which get a deadline of their own (cli-core 0.334.0, WC-LIFE-5, WC-LIFE-8); a
   Ctrl+C after the wait ends setup (130). With `--timeout`, the link and the wait share that one deadline, and the
   steps after it get that long again.
-- **cli-core 0.328.0's command changes**: `chats list` and `chats show` declare a local read and never connect, so
-  they run here while `serve` runs; `recipients add` runs through `serve` instead of being refused with exit 12; a
-  link without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds; a command path given as one
-  quoted argument (`wa 'chats list'`) fails with `validation_error`. `wa mcp` no longer offers `chats link create`,
-  `metadata get` or `metadata refresh`, which `wa` does not have and which failed.
-- **A hold on writes stops every write** (cli-core 0.334.0, WC-PERM-18): while WhatsApp has the account banned or
-  rate-limited, a reaction, `chats mark-read` and a group title change are refused with exit `5`
-  too, not only sends and edits. Reads still work; `inbox` and `review` with `--mark-read` still show what they read
-  and warn that nothing was marked read.
-- **A ban with no end holds writes until it is lifted** (WC-PERM-18): `standing.state` is `banned`, not `frozen`,
-  and the hold has `until: null` in `doctor --json`, `flood clear --json` and `server status --json`, where it held
-  for a year before. `wa <profile> flood clear` or a `doctor --online` that connects lifts it. A ban WhatsApp dates
-  still ends then.
-- **An older client's `session end` relayed into `serve` is refused by cli-core** (WC-LIFE-11) with
-  `permission_error`, exit `5`, `sent: false`, naming `server stop`; it was `provider_unavailable`, exit `12`,
-  `device.in-use`. `serve`'s connection and the keys stay as they were.
-- **`conversations embed` counts as a write to an outside service** (cli-core 0.334.0, WC-CMD-17): a failed run is
-  not marked safe to retry, and under `WA_READ_ONLY` it refuses before sending chat text to a remote provider.
+- **`chats list` and `chats show` answer from the local store and never connect** (cli-core 0.328.0), so they run
+  here while `serve` runs. `recipients add` runs through `serve` instead of being refused with exit 12. A link
+  without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds. A command path given as one quoted
+  argument (`wa 'chats list'`) fails with `validation_error`; it printed the root help and exited 0.
+- **`wa mcp` offers only what `wa` has** (cli-core 0.328.0, 0.335.0): `chats link create`, which failed, is gone,
+  and a command that refuses `--offline` no longer has an `offline` input; an agent that passes one gets
+  `validation_error`. `metadata get` and `metadata refresh`, which failed too, now work (see Added).
 - **`chats events` answers from the local store** (cli-core 0.336.0): it no longer refuses with exit `2`, never
-  connects, and works with `--offline`. `wa` does not record joins and leaves yet, so the list is empty, and
-  `stats chats show` leaves `members` out, sets `complete` to `false` and says in `missing` (and on stderr in text
-  mode) that joins and leaves are not recorded for this chat yet (cli-core 0.337.0, WC-OUT-13).
-- **`conversations build` counts as a write to an outside service and `search conversations` as a read from one**
-  (cli-core 0.336.0, WC-CMD-17): under `WA_READ_ONLY` each refuses before it sends chat text or the query to a remote
-  provider; a local model still works. Both always run in the calling process, never through `serve`.
-- **`WA_READ_ONLY` also keeps what the owner saved** (cli-core 0.336.0, WC-PERM-12): `searches create`, `searches
-  delete`, `searches clear`, `contacts alias set`, `contacts alias rm`, `contacts notes edit`, `contacts notes remove`
-  and `tags remove`, and their MCP tools, refuse with exit `5`. An agent that saved searches must do it in a process
-  without the lock.
+  connects, and works with `--offline`. `wa` does not record joins and leaves yet, so the list is empty and `watch
+  --events` has no chat events to show, and `stats chats show` leaves `members` out, sets `complete` to `false` and
+  says in `missing` (and on stderr in text mode) that joins and leaves are not recorded for this chat yet (cli-core
+  0.337.0, WC-OUT-13).
 - **A chat or person named by name is found in the local store first** (cli-core 0.337.0): part of the name is
   enough, and a name several stored chats match is refused with "… matches N chats", as `chats show` refuses it; a
   caller that matched the old "N chats share that name" must match the new text. Only a name the store does not hold
   is asked of WhatsApp's chat list, so a one-shot command now finds a stored group by its name. `watch` titles a
   chat from the store and follows its renames; a chat the store has never held has no title in `watch`.
-- **`WA_READ_ONLY` refuses every local write cli-core has not marked safe** (cli-core 0.337.0, WC-PERM-12): `tags
-  add`, `tags auto`, `mentions confirm`, `mentions reject`, `contacts notes add`, `contacts link`, `contacts unlink`,
-  `attachments text set`, `chats tracking add|remove`, `conversations links add|clear`, `conversations consents
-  revoke` and `tasks reject`, and their MCP tools, now refuse with exit `5`. Under the lock `tasks close` only
-  suggests the close.
+- **`wa commands --json` has two new keys** (cli-base 0.44.0): `runnable: true` on a group that runs on its own, and
+  `offline: false` on a command that cannot answer offline. A reader that rejects unknown keys must accept them.
+- **The message store moves to version 24 the first time this version opens it.** Nothing to do: `wa` 0.1.0 still
+  opens it.
 
 ### Fixed
 
-- **A privacy change cut by a dropped connection or an engine crash answers `outcome_unknown`** (WC-LIFE-9): exit
-  14, `retry.safe: false`. `setPrivacy` was missing from both lists of writes, so the caller was told the engine
-  stopped or the network failed, and could think nothing changed.
-
-- **`images embed` runs inside `serve` when `serve` holds the connection** (cli-core 0.337.0, WC-LIFE-11): it
-  downloads pictures through WhatsApp, so it is a read from WhatsApp, and its MCP tool has no `offline` input.
-
-- **`chats rules set` refuses a `newAccount` rule** (cli-core's `knowsAccountAge`): WhatsApp does not say when an
-  account was made, so the rule was saved and could never match. It now fails with `validation_error` (exit 2) and
-  saves nothing.
 - **A late answer from the phone no longer ends the next `messages sync` page early**: each request for older
-  messages goes under its own id, and an answer whose notification names an earlier request is saved as a history
-  push instead of being taken for the current page. An empty late answer used to read as the chat's start. This
-  holds if the phone names the request by that id, which is not yet checked live; otherwise answers are matched by
-  their chat, as before.
+  messages goes under its own id, and an answer that names an earlier request is saved as a history push instead of
+  being taken for the current page. An empty late answer used to read as the chat's start. This holds if the phone
+  names the request by that id, which is not yet checked live; otherwise answers are matched by their chat, as
+  before.
 - **A page the phone sends in pieces is filled**: when the phone sends fewer messages than asked, `wa` asks again from
   the oldest one it sent, one second apart, at most three asks and 25 seconds per page; what arrived before a
   timeout is kept.
-- **A command cut off when WhatsApp ended the connection says why**: a command relayed through `serve` while another
-  process took the login over answered `network_error`, which invites a retry; it now answers `device.replaced`, and
-  after a ban or a logout `account.banned` or `device.logged-out`.
-- **The phone-number and agent prompts of `session start` and `setup` go to the run's own stderr** (cli-core's
-  `secretInputOf`), so a test or an embedding program that captures the run sees them.
-- **`WA_READ_ONLY` guards the message store** (cli-core 0.334.0, WC-PERM-12): `store reset`, `restore`, `clear`,
-  `migrate`, `repair`, `decrypt` and `copies delete` refuse with exit `5`; `--dry-run` still previews.
 - **A rate limit or a ban that ends `watch` or `serve`'s feed holds the next command's writes** as a one-shot
   command meeting it would.
+- **`images embed` runs inside `serve` when `serve` holds the connection** (cli-core 0.337.0, WC-LIFE-11): it
+  downloads pictures through WhatsApp, so it is a read from WhatsApp, and its MCP tool has no `offline` input.
+- **Model downloads no longer go through a running `serve`** (cli-core 0.336.0): `models text download`, `models
+  audio download` and `images models download` fetch from a model host, so they run in the calling process.
+- **`wa chats list --json | head` ends quietly** (cli-core 0.328.0): through a running `serve` the client kept
+  writing into the closed pipe and printed a stack trace; it now exits 0.
+- **The phone-number and agent prompts of `session start` and `setup` go to the run's own stderr**, so a test or an
+  embedding program that captures the run sees them.
+- **`polls vote` and `polls voters` no longer mention anonymous polls** in their help and their agent tools
+  (cli-core 0.328.0): WhatsApp has none.
+- **`--json=item.<field>` keeps that field** (cli-base 0.44.0): `--json=item.profile` printed `item: {}`.
+- **A query with a `/` that opens a regular expression and never closes it says to quote the value** (cli-base
+  0.44.0): `text/plain` now hints `"text/plain"`. The error code and reason are unchanged.
 
 ### Added
 
-- **`wa <profile> chats mute` and `chats unmute`** (cli-core's, as in max): stop a chat's notifications for good or
-  `--until` a time (`2h`, `7d`, `2026-09-25T09:00`), and hear it again. It is the account's own setting, which WhatsApp
-  syncs to the other devices; nobody in the chat is told (not yet checked live on the phone). It is a write and goes
-  through the profile's permissions. A device linked minutes ago may not have WhatsApp's settings keys yet: the command
-  then answers exit 12 with reason `settings.keys-missing` and says to keep `serve` running a few minutes. A channel is
-  muted on the phone. The permission keys are `chats.mute` and `chats.unmute`; a setting for `chats.mute` alone still
-  covers both. Engine protocol 18, op `mute`.
-- **`messages pin` and `messages unpin`** (cli-core 0.336.0's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is sent
-  as WhatsApp's `PinInChatMessage`, addressed by the message's key in the local store; a message the store lacks is
-  `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies and counts toward the hourly
-  limit; `messages pin` takes no `--notify` (cli-core 0.339.0) and an agent's `messages_pin` no `notify`.
+- **`wa <profile> chats mute` and `chats unmute`**: stop a chat's notifications for good or `--until` a time (`2h`,
+  `7d`, `2026-09-25T09:00`), and hear it again; agents get `chats_mute` and `chats_unmute`. It is the account's own
+  setting, which WhatsApp syncs to the other devices; nobody in the chat is told (not yet checked live on the phone).
+  It is a write and goes through the profile's permissions, under `chats.mute` and `chats.unmute`; a setting for
+  `chats.mute` alone still covers both. A device linked minutes ago may not have WhatsApp's settings keys yet: the
+  command then answers exit 12 with reason `settings.keys-missing` and says to keep `serve` running a few minutes. A
+  channel is muted on the phone.
+- **`wa <profile> chats archive` and `unarchive`, `chats pin` and `unpin`, and `chats mark-unread`**: move a chat
+  into WhatsApp's archive and back, keep it at the top of the chat list, or mark it unread, on the account's
+  devices; nobody in the chat is told. Agents get them too (`chats_archive`, `chats_pin`, `chats_mark_unread` and
+  their opposites). `chats pin` pins the chat, not a message (`messages pin` does that). Archiving a chat also
+  unpins it. Archive, unarchive and mark-unread name the chat's newest stored message, as `chats delete` does, and
+  refuse a chat the store holds nothing of (exit 6); pin needs no message. WhatsApp's apps keep three pinned chats;
+  `wa` does not count them. A mark-unread sends no receipt; `chats mark-read` sends only a receipt, so it may not
+  clear the mark. Channels are refused. Each answers `settings.keys-missing` as `chats mute` does, and has its own
+  permission key (`chats.archive`, `chats.unarchive`, `chats.pin`, `chats.unpin`, `chats.mark-unread`), allowed by
+  default. Not yet checked live on the phone.
+- **`wa <profile> chats delete` and `chats clear`**: delete a chat, or every message in it, from this account's
+  devices; the others in it keep theirs. WhatsApp deletes up to a message it is told of, so `wa` names the chat's
+  newest message in the local store, the owner's own or not, and refuses a chat the store holds nothing of (exit 6)
+  rather than guess. A message that arrived after the store last heard should stay. `chats clear` deletes starred
+  messages too; neither asks WhatsApp to delete the photos and files the phone saved from the chat. Both ask first
+  at the default permission level (`chats.delete`, `chats.clear`; `--allow-dangerous` skips the question), are not
+  offered over MCP, and answer `settings.keys-missing` as `chats mute` does. The local store keeps the chat's
+  messages. Not yet checked live on the phone.
+- **`wa <profile> messages star` and `messages unstar`**: star one message so it is easy to find again, or take the
+  star off. It is the account's own mark, which WhatsApp syncs to the other devices; nobody in the chat is told. The
+  message must be in the local store, since WhatsApp names it by its sender; one the store lacks is exit 6 and
+  nothing is sent. A channel's post is starred on the phone. It goes through the profile's permissions
+  (`messages.star`, `messages.unstar`), an agent can do it over MCP, and it answers `settings.keys-missing` as `chats
+  mute` does. The local store keeps a star set with `wa`, so `messages list <chat> starred:true` and `search
+  messages is:starred` find it; a star set on the phone does not reach the store yet. Not yet checked live on the
+  phone.
+- **`messages pin` and `messages unpin`**: a message in the local store is pinned for the whole chat; a message the
+  store lacks is `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies and counts
+  toward the hourly limit; `messages pin` takes no `--notify`, and an agent's `messages_pin` no `notify`.
   `--expire-time 24h`, `7d` or `30d` (MCP `expire_time`) says how long it lasts; without it the pin lasts 7 days, as
-  the help says; any other length is `validation_error`, over MCP before it connects. Engine protocol 16, ops `pin`
-  (with an optional `duration` in seconds) and `unpin`.
-- **`wa <profile> account privacy show` and `account privacy set`** (cli-core 0.336.0's; max offers five of them): who
-  sees last seen (`--last-seen`), the profile photo (`--profile-photo`) and the about text (`--about-text`), whether
-  online and last seen are hidden (`--hide-online`), whether read receipts go (`--read-receipts`; off also hides others'
-  receipts from the owner, as on the phone), who may add the account to groups (`--chat-invites`) and whose calls ring
-  (`--calls`). `show` asks WhatsApp each time, and reports a setting kept on the phone as "my contacts except…" as
-  `contacts_except`, which `set` refuses; for groups, cli-core has no such value, so it is left out. `set` changes only
-  the settings named and answers them all; it is a write under `permissions.account.privacy.set`. WhatsApp has no
-  setting for who finds the account by its number or who sees the number, so `--find-by-phone` and `--phone-number` are
-  not offered. Refused before anything is sent: `--chat-invites nobody` (WhatsApp is reported to refuse it), `--calls
-  nobody`, and `--hide-online` with `--last-seen`, which both set last seen. `--calls contacts` sends the value meant as
-  the phone's "silence unknown callers" (not yet checked on a real account). `--hide-online off` shows last seen to
-  contacts. `set` sends one request per setting: if WhatsApp fails one, those sent before it stay changed, and the error
-  says so. Engine protocol 14, ops `privacy` and `setPrivacy`.
-- **A person's chat stays one when they gain a LID** (WC-ARCH-18, WC-SECR-1): WhatsApp names a one-to-one chat by the
-  person's phone number until it gives them a LID. The engine now notices the change and announces a re-key — a
-  `rekey` event before the first message under the LID, or `rekeys` in a history push — and `serve` and `watch` move
-  the stored chat and its messages to the LID (cli-core 0.336.0). The engine keeps the chats it emitted in phone form
-  in `private.db` across restarts, records them for file sends, forwards, polls and edits as for text sends, and
-  repeats a re-key at each start for 30 days, so one that came while only a one-shot command ran still lands. Engine
-  protocol 25, event `rekey`.
-- **`wa <profile> chats update <group> --photo <file>` sets the group's photo** (cli-core's `groupPhoto`; engine
-  protocol 12, op `setGroupPhoto`). WhatsApp takes only a square JPEG of 190 to 720 pixels a side, and `wa` does not
-  convert one: anything else is refused with `validation_error` before WhatsApp is asked, a PNG or WebP by its bytes
-  whatever its name. The photo is set before the title, description or settings given with it, so a refused photo
-  leaves the group unchanged, and a `--title` over 25 characters is refused before the photo is set. If the rest of
-  the change then fails, the error begins "the photo was set", keeping its code. It runs under the same permission
-  and hourly limit as the rest of `chats update`.
-  Removing a group's photo is not built: cli-core's `chats update` has no option for it.
-- **A group says which WhatsApp community it is in** (engine protocol 15: `parent` and `community` on a chat). A
-  group linked to a community answers with `parent_chat_id`, the community's id; the community itself is a group
-  with `provider_metadata.community: true`. They come with the group as WhatsApp gives it: the answers of `chats
-  update`, `chats create` and `chats join`. The local store does not hold them yet, so `chats list` and `chats show`
-  do not show them. Listing a community's groups, and linking or unlinking one, are not built: cli-core has no
-  command for them.
+  the help says; any other length is `validation_error`, over MCP before it connects.
+- **`wa <profile> account privacy show` and `account privacy set`**: who sees last seen (`--last-seen`), the
+  profile photo (`--profile-photo`) and the about text (`--about-text`), whether online and last seen are hidden
+  (`--hide-online`), whether read receipts go (`--read-receipts`; off also hides others' receipts from the owner, as
+  on the phone), who may add the account to groups (`--chat-invites`) and whose calls ring (`--calls`). `show` asks
+  WhatsApp each time, and reports a setting kept on the phone as "my contacts except…" as `contacts_except`, which
+  `set` refuses; for groups that value is left out. `set` changes only the settings named and answers them all; it
+  is a write under `permissions.account.privacy.set`. WhatsApp has no setting for who finds the account by its
+  number or who sees the number, so `--find-by-phone` and `--phone-number` are not offered. Refused before anything
+  is sent: `--chat-invites nobody` (WhatsApp is reported to refuse it), `--calls nobody`, and `--hide-online` with
+  `--last-seen`, which both set last seen. `--calls contacts` sends the value meant as the phone's "silence unknown
+  callers" (not yet checked on a real account). `--hide-online off` shows last seen to contacts. `set` sends one
+  request per setting: if WhatsApp fails one, those sent before it stay changed, and the error says so; a change cut
+  by a dropped connection answers `outcome_unknown` (exit 14), since it may have gone through.
+- **`wa <profile> account update` sets the owner's WhatsApp name, about line and profile photo**: `--first-name` sets the name
+  people see, with `--last-name` joined to it after a space (WhatsApp keeps one name, so a last name alone is
+  refused), and `--description` the "about" line. The name is a setting WhatsApp syncs to the other devices; others
+  probably see it only once the phone next comes online, since a device tells WhatsApp its name when it says it is
+  online and `wa` never does (not checked live). `--photo` sets the profile photo (not checked live): `wa` takes
+  a square JPEG of 190 to 720 pixels a side, as for a group's photo, checked before anything changes. The answer is
+  the account with the new name. A device without WhatsApp's settings keys yet answers `settings.keys-missing`, as
+  `chats mute` does; the name goes first, then the about, then the photo, and a step WhatsApp refuses after another
+  changed says which did. The permission key is `account.update`.
+- **`wa <profile> chats update <group> --photo <file>` sets the group's photo.** WhatsApp takes only a square JPEG
+  of 190 to 720 pixels a side, and `wa` does not convert one: anything else is refused with `validation_error`
+  before WhatsApp is asked, a PNG or WebP by its bytes whatever its name. The photo is set before the title,
+  description or settings given with it, so a refused photo leaves the group unchanged, and a `--title` over 25
+  characters is refused before the photo is set. If the rest of the change then fails, the error begins "the photo
+  was set", keeping its code. It runs under the same permission and hourly limit as the rest of `chats update`.
+  Removing a group's photo is not built.
+- **A group says which WhatsApp community it is in.** A group linked to a community answers with `parent_chat_id`,
+  the community's id; the community itself is a group with `provider_metadata.community: true`. They come with the
+  group as WhatsApp gives it: the answers of `chats update`, `chats create` and `chats join`. The local store does
+  not hold them yet, so `chats list` and `chats show` do not show them. Listing a community's groups, and linking or
+  unlinking one, are not built.
 - **A photo and a video in one send go as an album** (`messages send --photo … --file clip.mp4`): one message that
   announces the album, then each file tied to it. The text is the photo's caption and the answer is the photo's
   message, under the send id. A repeat with the same `--operation-id` after an unknown outcome sends the same message
   ids, which WhatsApp takes as the same messages, as it does for a single send. A document beside a photo is still
-  refused. Not yet checked against WhatsApp's apps. Engine protocol 17 (`sendAlbum`).
+  refused. Not yet checked against WhatsApp's apps.
 - **A sent photo carries its preview**: the chat shows a small blurred picture before the download. Not yet for a
   video or a WEBP photo.
-- **`wa <profile> account update`** (cli-core's, as in tg and max): `--first-name` sets the name people see, with
-  `--last-name` joined to it after a space (WhatsApp keeps one name, so a last name alone is refused), and
-  `--description` the "about" line. The name is a setting WhatsApp syncs to the other devices; others probably see it
-  only once the phone next comes online, since a device tells WhatsApp its name when it says it is online and `wa`
-  never does (not checked live). `--photo` sets the profile photo (not checked live): `wa` takes a square JPEG of 190 to
-  720 pixels a side, the sides it takes for a group's, checked before anything changes. The answer is the account with the new name. A
-  device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does; the name goes
-  first, then the about, then the photo, and a step WhatsApp refuses after another changed says which did. The
-  permission key is `account.update`. Engine protocol 26, op `updateProfile` (`path` for the photo).
-- **`wa <profile> chats delete` and `chats clear`** (cli-core's, as in max): delete a chat, or every message in it, from
-  this account's devices; the others in it keep theirs. WhatsApp deletes up to a message it is told of, so `wa` names
-  the chat's newest message in the local store, the owner's own or not, and refuses a chat the store holds nothing of
-  (exit 6) rather than guess. A message that arrived after the store last heard should stay. `chats clear` deletes
-  starred messages too; neither asks WhatsApp to delete the photos and files the phone saved from the chat. Both ask
-  first at the default permission level (`chats.delete`, `chats.clear`; `--allow-dangerous` skips the question), are
-  not offered over MCP, and answer `settings.keys-missing` as `chats mute` does. The local store keeps the chat's
-  messages (cli-core's command leaves it as it is). Not yet checked live on the phone. Engine protocol 20, ops
-  `deleteChat` and `clearChat`.
-- **`wa <profile> messages delete` without `--for-everyone` deletes for you only** (WC-PERM-13): `wa` asks WhatsApp
-  to take the messages from this account's devices, to leave them with the others in the chat, and to keep the photos
-  and files the phone saved from them. It was refused with exit 2. Each message must be in the local store, since
-  WhatsApp names it by its sender and the time it was sent; one the store lacks is exit 6 and nothing is deleted. An
-  agent's `messages delete` over MCP now works the same way, for the owner only; for everyone stays the owner's
-  `--for-everyone`. It answers `settings.keys-missing` as `chats mute` does. A delete of several messages that fails
-  partway, with or without `--for-everyone`, names the ones already deleted and is not safe to retry (WC-OUT-20).
-  Not yet checked live on the phone. Engine protocol 21, op `deleteForMe`.
-- **`wa <profile> messages star` and `messages unstar`** (cli-core 0.336.0's, `messageStars`): star one message so it
-  is easy to find again, or take the star off. It is the account's own mark, which WhatsApp syncs to the other
-  devices; nobody in the chat is told. The message must be in the local store, since WhatsApp names it by its sender;
-  one the store lacks is exit 6 and nothing is sent. A channel's post is starred on the phone. It goes through the
-  profile's permissions (`messages.star`, `messages.unstar`), an agent can do it over MCP (`wa_write` with
-  `messages star`), and it answers `settings.keys-missing` as `chats mute` does. The local store keeps a star set with
-  `wa` (cli-core 0.339.0), so `messages list <chat> starred:true` and `search messages is:starred` find it; a star set
-  on the phone does not reach the store yet. Not yet checked live on the phone. Engine protocol 22, op `star`.
-- **`wa <profile> chats archive` and `unarchive`, `chats pin` and `unpin`, and `chats mark-unread`** (cli-core
-  0.336.0's): move a chat into WhatsApp's archive and back, keep it at the top of the chat list, or mark it unread, on
-  the account's devices; nobody in the chat is told. `chats pin` pins the chat, not a message (`messages pin` does
-  that). Archiving a chat also unpins it (whatsmeow's archive patch does both). Archive, unarchive and mark-unread name
-  the chat's newest stored message, as `chats delete` does, and refuse a chat the store holds nothing of (exit 6); pin
-  needs no message. WhatsApp's apps keep three pinned chats; the server cannot refuse a fourth, and `wa` does not count
-  them. A mark-unread sends no receipt; `chats mark-read` sends only a receipt, so it may not clear the mark. Channels
-  are refused. Each answers `settings.keys-missing` as `chats mute` does, and has its own permission key
-  (`chats.archive`, `chats.unarchive`, `chats.pin`, `chats.unpin`, `chats.mark-unread`), allowed by default. Not yet
-  checked live on the phone. Engine protocol 23, ops `archiveChat`, `unarchiveChat`, `pinChat`, `unpinChat` and
-  `markChatUnread`.
-- **A file WhatsApp no longer keeps is asked of your phone again** (`messages download`): as WhatsApp's apps do, `wa`
-  asks the phone to upload it again, waits up to 20 seconds, and fetches the new copy. Without an answer the download
-  ends with `timeout`; a file the phone no longer has either is `not_found`. Engine protocol 24 (`download` carries the
-  message's key). Not yet run against WhatsApp.
-- **`messages forward` sends a stored place or contact card again**: the store now keeps a place's coordinates, name
-  and address, and a contact card itself, next to a file's keys, where no answer shows them. A place or card stored
-  before this, a live location and several cards in one message are still refused.
-- **`metadata get` and `metadata refresh`** read a group's title and description into the store for `tags auto`, as in
-  `tg`. A channel in the list answers with an error of its own.
+- **`wa <profile> metadata get` and `metadata refresh`** read a group's title and description into the store for
+  `tags auto`; the group is not changed, and agents get both. A channel in the list answers with an error of its
+  own.
+- **`tasks agenda` lists what others owe you** (cli-core 0.328.0): `assigned` in JSON and an "assigned — others owe
+  you" section hold the open tasks someone else does, oldest first, each with its `assignees`.
 
 ## 0.1.0 — 17.10.2026
 
