@@ -102,22 +102,28 @@ func (w *olderWaiter) forget(ask *olderAsk) {
 type olderMatch string
 
 const (
-	matchSession olderMatch = "session"
-	matchChat    olderMatch = "chat"
-	matchLate    olderMatch = "late"
-	matchNone    olderMatch = "none"
+	matchSession   olderMatch = "session"
+	matchOtherChat olderMatch = "session-other-chat"
+	matchChat      olderMatch = "chat"
+	matchLate      olderMatch = "late"
+	matchNone      olderMatch = "none"
 )
 
 func (w *olderWaiter) match(h waHistory, session string) (*olderAsk, olderMatch) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	ask := w.current
+	ours := ask != nil && (len(h.Chats) == 0 || names(h, ask.chat))
 	switch {
+	// A batch for the request that names another chat would read as the chat's start; it waits for the live check of
+	// whether the phone answers a LID chat under its phone number.
+	case session != "" && ask != nil && session == ask.id && !ours:
+		return nil, matchOtherChat
 	case session != "" && ask != nil && session == ask.id:
 		return ask, matchSession
 	case session != "" && slices.Contains(w.late, session):
 		return nil, matchLate
-	case ask != nil && (len(h.Chats) == 0 || names(h, ask.chat)):
+	case ours:
 		return ask, matchChat
 	}
 	return nil, matchNone

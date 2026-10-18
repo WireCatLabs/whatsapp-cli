@@ -109,8 +109,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 - **Older history** (`engine/cmd/wa-engine/older.go`): `older` (`chat`, `message`, `fromMe`, `timestamp` of the
   anchor, `count` up to 50) sends whatsmeow's `BuildHistorySyncRequest` to the phone as a peer message under an id
   the engine chose first, and waits for the `ON_DEMAND` history sync that answers it, then answers `{messages, more}`.
-  A batch is credited to the waiting request when its notification's `PeerDataRequestSessionID` is that id; one naming
-  a request that stopped waiting (the last 16 are kept) is late and goes out as a `history` event. Without either —
+  A batch is credited to the waiting request when its notification's `PeerDataRequestSessionID` is that id and it
+  names the request's chat or no chat; one with that id naming another chat is passed on as a `history` event, since
+  it would read as the chat's start. One naming a request that stopped waiting (the last 16 are kept) is late and
+  goes out as a `history` event. Without either —
   whether the phone puts the request's id there is not confirmed live — the batch is matched as before: one request is
   in flight per process, so by its chat after conversion to LID form, or by naming no chat at all (nothing older).
   Other chats and push names in the same batch go out as a `history` event (saved only where a `feed` listens, as

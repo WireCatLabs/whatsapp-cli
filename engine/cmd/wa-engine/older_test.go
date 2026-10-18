@@ -157,17 +157,22 @@ func TestABatchOfOnlySkippedMessagesIsAskedPastFromItsOldest(t *testing.T) {
 	}
 }
 
-func TestTheSessionIDCreditsItsRequestEvenWhenTheBatchNamesAnotherChat(t *testing.T) {
+func TestTheSessionIDCreditsItsRequestOnlyWhenTheBatchNamesItsChat(t *testing.T) {
 	var w olderWaiter
 	ask := w.wait("3EB0REQ1", annLID.String())
 	other := testConverter().history(onDemand(conversation(group, "3EB0G1")), parsedAsText)
-	if _, how, _ := w.deliver(other, "3EB0REQ1"); how != matchSession {
-		t.Fatalf("got %s", how)
+	if rest, how, _ := w.deliver(other, "3EB0REQ1"); how != matchOtherChat || len(rest.Messages) != 1 {
+		t.Fatalf("got %s, %+v; want the batch passed whole to the history event", how, rest)
 	}
-	if batch := <-ask.answer; len(batch.Messages) != 0 || batch.More {
-		t.Errorf("the group's messages are not this chat's: got %+v", batch)
+	select {
+	case batch := <-ask.answer:
+		t.Fatalf("another chat's batch was read as this chat's start: %+v", batch)
+	default:
 	}
 	h := testConverter().history(onDemand(conversation(annLID, "3EB0O1")), parsedAsText)
+	if _, how, _ := w.deliver(h, "3EB0REQ1"); how != matchSession || len((<-ask.answer).Messages) != 1 {
+		t.Fatalf("got %s", how)
+	}
 	if _, how, _ := w.deliver(h, "3EB0REQ1"); how != matchLate {
 		t.Errorf("a second answer to a request already answered is late, got %s", how)
 	}

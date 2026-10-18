@@ -67,8 +67,9 @@ Every command runs with `--json` and a timeout.
 ### H — older history from the phone (`serve` stopped, WhatsApp open on the phone)
 
 Record counts and yes/no only. The engine's log line per `ON_DEMAND` batch carries exactly that: how it was matched
-(`session`, `chat`, `late`, `none`), how many messages, the chunk and progress, and whether the notification's
-`PeerDataRequestSessionID` and `OriginalMessageID` are the request's id.
+(`session`, `session-other-chat`, `chat`, `late`, `none`), how many messages, the chunk and progress, and whether the
+notification's `PeerDataRequestSessionID` and `OriginalMessageID` are the request's id. `session-other-chat` would
+also say the phone answered the LID chat under another id, such as its phone number.
 
 | Id | What | Commands | Puts back |
 |---|---|---|---|

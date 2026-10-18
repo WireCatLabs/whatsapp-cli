@@ -30,7 +30,7 @@ Open work, most important first. The plan in flight is
    and matches neither); whether the phone finds a chat named by its LID when it knows it by phone number. cli-core
    sets `fetched:<chat>` on the first page of a run without `before`, read only for its time (`stats` `fetched_at`,
    the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
-   raised with cli-core.
+   reported to the lead for cli-core to decide.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
    profiles, blocking, number lookup, Markdown and polls are built; what they left open:
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
