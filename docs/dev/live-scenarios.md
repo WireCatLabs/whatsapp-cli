@@ -116,7 +116,8 @@ Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are i
    `setsid nohup bin/wa <profile> serve`, stdin and stdout on `/dev/null`, and its diagnostics where the stopped
    `serve` had them (the file or terminal behind its stderr; `/dev/null` for a pipe). It waits until `doctor`
    shows the lock held by `serve` (`WC-LIFE-11`). The `EXIT` trap does the same on any earlier exit once `serve`
-   was stopped.
+   was stopped. Signals are ignored while it puts `serve` back, so a second Ctrl-C cannot leave it half done, and it
+   never starts a second `serve` while the stopped one still runs.
 7. The owner sends a control word while `serve` runs. Both words are counted again.
 
 The last lines give the verdict:

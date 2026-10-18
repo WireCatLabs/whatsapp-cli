@@ -108,6 +108,11 @@ on_signals() {
   trap 'exit 143' TERM
 }
 
+# Uninterruptible: a second Ctrl-C half-way through putting serve back would leave the owner without it.
+hold_signals() {
+  trap '' HUP INT QUIT TERM
+}
+
 confirm() {
   printf '\n%s\nEnter to go on, Ctrl-C to stop: ' "$1"
   read -r _ || exit 130
@@ -200,4 +205,16 @@ start_serve() {
     sleep 1
   done
   echo "serve holds the lock again"
+}
+
+# Puts back the serve stop_serve stopped, once, and never as a second serve while the stopped one still lives. The
+# caller holds signals around it (hold_signals).
+restore_serve() {
+  [ "$stopped" = yes ] || return 0
+  if kill -0 "$serve" 2>/dev/null; then
+    echo "serve (pid $serve) is still running — not starting a second one" >&2
+    return 0
+  fi
+  stopped=no
+  start_serve "$1"
 }

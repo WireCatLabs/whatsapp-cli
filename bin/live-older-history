@@ -55,17 +55,7 @@ put_back() {
     stop_serve "$profile" || return 1
   fi
   logging=no
-  [ "$stopped" = yes ] || return 0
-  if kill -0 "$serve" 2>/dev/null; then
-    echo "serve (pid $serve) is still running — not starting a second one" >&2
-    return 0
-  fi
-  stopped=no
-  start_serve "$profile"
-}
-# Uninterruptible: a second Ctrl-C half-way through would leave the owner without serve, or with the logging one.
-hold_signals() {
-  trap '' HUP INT QUIT TERM
+  restore_serve "$profile"
 }
 finish() {
   hold_signals
