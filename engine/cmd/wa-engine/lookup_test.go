@@ -130,6 +130,20 @@ func TestWhatsAppsRateLimitStopsTheLookupsForAWeekAcrossRestarts(t *testing.T) {
 	}
 }
 
+func TestARateLimitAnotherRequestMetMidRunStopsTheRest(t *testing.T) {
+	clock := time.Date(2026, 10, 18, 10, 0, 0, 0, time.UTC)
+	a, log := fakeAsker(t, filepath.Join(t.TempDir(), "private.db"), &clock, nil)
+	ask := a.ask
+	a.ask = func(jids []types.JID) error {
+		a.hold(context.Background())
+		return ask(jids)
+	}
+	a.run(context.Background(), fakeUsers(20))
+	if len(log.sizes) != 1 {
+		t.Errorf("went on into a rate limit: %v", log.sizes)
+	}
+}
+
 func TestAnAskThatCannotBeRecordedFirstIsNotSent(t *testing.T) {
 	clock := time.Date(2026, 10, 18, 10, 0, 0, 0, time.UTC)
 	a, log := fakeAsker(t, filepath.Join(t.TempDir(), "private.db"), &clock, nil)

@@ -66,15 +66,16 @@ func (a *lidAsker) run(ctx context.Context, users []string) (limited bool) {
 		return false
 	}
 	defer a.one.Unlock()
-	if a.recent(ctx, lidAskHeld) {
-		return false
-	}
 	due := a.due(ctx, users)
 	for start := 0; start < len(due) && start < lidAskBatch*lidAskPerRun; start += lidAskBatch {
 		a.mu.Lock()
 		pause := a.last.Add(lidAskGap).Sub(a.now())
 		a.mu.Unlock()
 		if !a.last.IsZero() && pause > 0 && !a.wait(pause) {
+			return false
+		}
+		// Before each batch: a 429 another request met during the wait stops the rest.
+		if a.recent(ctx, lidAskHeld) {
 			return false
 		}
 		batch := due[start:min(start+lidAskBatch, len(due))]
