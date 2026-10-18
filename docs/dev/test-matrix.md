@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**241 ✅ · 518 ⛔ · 0 ❌** — 243 commands, 516 options.
+**242 ✅ · 519 ⛔ · 0 ❌** — 244 commands, 517 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -752,6 +752,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `skill show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | `skill install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | `skill install` | `--for` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
+| `help` |  | ✅ |  |
 | *global* | `--version` | ✅ |  |
 | *global* | `--verbose` | ✅ |  |
 | *global* | `--json` | ✅ |  |
@@ -770,3 +771,4 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--yes` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/admin-commands.test.ts |
 | *global* | `--record` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/messenger.test.ts |
 | *global* | `--no-record` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/json-fields.test.ts |
+| *global* | `--help-all` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/help/first-screen.test.ts |

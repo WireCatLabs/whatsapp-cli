@@ -8,7 +8,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Changed — may break callers
 
 - **`wa --help` and a bare `wa` show a short first screen** instead of every command and option: what `wa` is for,
-  the usage line, what it can do and where to go next. `wa --help-all` prints the old help and `wa help options` the
+  the usage line, the other WireCat tools it works with, and where to start. `wa --help-all` prints the old help and `wa help options` the
   options of every command. Each command's own `--help` now ends with what it returns, the commands that usually
   come next, and an example. A bare `wa commands` prints a text list by section, also when piped; a script that read
   its JSON must pass `--json` (cli-core 0.344.0).

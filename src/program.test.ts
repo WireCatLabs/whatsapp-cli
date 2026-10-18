@@ -39,6 +39,18 @@ describe("wa", () => {
     expect(result).toMatchObject({ code: 0, stdout: "0.1.0" })
   })
 
+  it("keeps every command's options and the full help behind help options and --help-all", async () => {
+    const offline = () => {
+      throw new Error("help must never start the engine")
+    }
+    const options = await wa(["help", "options"], offline)
+    expect(options.code).toBe(0)
+    expect(options.stdout).toContain("--offline")
+    const all = await wa(["--help-all"], offline)
+    expect(all.code).toBe(0)
+    expect(all.stdout).toContain("Options:")
+  })
+
   it("refuses a read before anything was recorded, and says how to fill the store", async () => {
     const result = await wa(["readsempty", "chats", "list", "--json"], () => {
       throw new Error("a read must never start the engine")
