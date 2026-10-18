@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
-# Live checks of the chat-state writes (BACKLOG item 5): privacy read back, a mute and an unmute, a pin and an
-# unpin, a delete for the owner alone (scenario W6). Each step ends with a question to the owner at the phone.
+# Live checks of the chat-state writes (BACKLOG item 5): privacy read back, a mute and an unmute, a message pin and
+# an unpin, a star and an unstar (W7), a chat pin, an archive and a mark-unread with their undoing, a delete for the
+# owner alone (W6). Each step ends with a question to the owner at the phone.
 # The owner runs it from a terminal; an agent never does.
 #
 #   bin/live-chat-state <profile>
@@ -20,9 +21,12 @@ own=$(own_chat "$profile") || exit 1
 serve_running "$profile" ||
   die "start $wa $profile serve first: the writes go through it, so no one-shot connection takes the device"
 
+# Each command path, and each of its options as "<path> --<option>".
 paths=$(wa_json "$profile" commands --timeout 30s |
   json 'd.commands.flatMap(function walk(one) {
-    return [one.path.join(" "), ...one.commands.flatMap(walk)]
+    const path = one.path.join(" ")
+    const options = one.options.map((option) => `${path} ${option.flags.match(/--[a-z-]+/)?.[0]}`)
+    return [path, ...options, ...one.commands.flatMap(walk)]
   }).join("\n")') ||
   die "wa commands failed"
 
@@ -31,23 +35,34 @@ marker="wa state check $run"
 errs=$(mktemp)
 muted=no
 pinned=no
+starred=no
+chat_pinned=no
+archived=no
+unread=no
 sent=no
 marker_id=""
-privacy=skipped mute=skipped unmute=skipped pin=skipped unpin=skipped forme=skipped
+privacy=skipped mute=skipped unmute=skipped pin=skipped unpin=skipped star=skipped unstar=skipped
+chatpin=skipped chatunpin=skipped archive=skipped unarchive=skipped markunread=skipped markread=skipped
+forme=skipped
 
 # Each flag is set before its write: a write cut by the timeout or a Ctrl-C may still reach WhatsApp. Exit 2 is a
 # refusal before anything is sent, so it clears the flag again.
 leftover() {
   rm -f "$errs"
   [ "$muted" = no ] || echo "your own chat may still be muted (for 1 h at most) — unmute it from the phone" >&2
-  [ "$pinned" = no ] || echo "the marker \"$marker\" may still be pinned in your own chat — unpin it on the phone" >&2
+  [ "$pinned" = no ] ||
+    echo "the marker \"$marker\" may still be pinned in your own chat (for 24 h at most) — unpin it on the phone" >&2
+  [ "$starred" = no ] || echo "the marker \"$marker\" may still be starred — unstar it on the phone" >&2
+  [ "$chat_pinned" = no ] || echo "your own chat may still be pinned in the chat list — unpin it on the phone" >&2
+  [ "$archived" = no ] || echo "your own chat may still be in Archived — unarchive it on the phone" >&2
+  [ "$unread" = no ] || echo "your own chat may still be marked unread — open it on the phone" >&2
   [ "$sent" = no ] || echo "the marker \"$marker\" may still be in your own chat — delete it from the phone" >&2
 }
 trap leftover EXIT
 on_signals
 
 has() {
-  printf '%s\n' "$paths" | grep -qx "$1"
+  printf '%s\n' "$paths" | grep -qx -- "$1"
 }
 
 # One wa call: its stdout in $out, its exit code in $rc. Its stderr stays in $errs and is never printed whole,
@@ -92,8 +107,12 @@ cat <<EOF
 Plan, on profile $profile, in your own chat only:
   1. wa account privacy show: read only; you compare it with the phone's Settings > Privacy
   2. wa chats mute --until 1h, then wa chats unmute
-  3. wa messages send: the marker "$marker"; wa messages pin on it, then wa messages unpin
-  4. wa messages delete, for you only (no --for-everyone): the marker goes from your devices
+  3. wa messages send: the marker "$marker"; wa messages pin --expire-time 24h on it, then wa messages unpin
+  4. wa messages star on the marker, then wa messages unstar (W7)
+  5. wa chats pin on your own chat, then wa chats unpin
+  6. wa chats archive on your own chat, then wa chats unarchive
+  7. wa chats mark-unread on your own chat, then wa chats mark-read
+  8. wa messages delete, for you only (no --for-everyone): the marker goes from your devices
 After each step it asks what the phone shows. A step this build has no command for is skipped.
 EOF
 
@@ -142,7 +161,7 @@ else
 fi
 
 echo
-echo "Step 3: a marker message, pinned and unpinned"
+echo "Step 3: a marker message, pinned for 24 hours and unpinned"
 confirm "Step 3 sends the marker \"$marker\" to your own chat."
 sent=yes
 attempt "$profile" messages send "$own" "$marker" --yes --timeout 60s
@@ -152,10 +171,11 @@ report "messages send"
 marker_id=$(printf '%s' "$out" | json 'd.item.message.id') || marker_id=""
 [ -n "$marker_id" ] || die "messages send gave no message id"
 
-if has "messages pin" && has "messages unpin"; then
-  confirm "Next it pins the marker, telling the chat (your own chat: only you)."
+# The shortest pin WhatsApp offers, so a pin the script could not undo ends by itself within a day.
+if has "messages pin --expire-time" && has "messages unpin"; then
+  confirm "Next it pins the marker for 24 hours, telling the chat (your own chat: only you)."
   pinned=yes
-  attempt "$profile" messages pin "$own" "$marker_id" --yes --timeout 60s
+  attempt "$profile" messages pin "$own" "$marker_id" --expire-time 24h --yes --timeout 60s
   if not_built; then
     pinned=no
     echo "messages pin: not built in this checkout yet"
@@ -182,8 +202,114 @@ else
 fi
 
 echo
-echo "Step 4: delete the marker for you only (W6)"
-confirm "Step 4 deletes the marker for you only: it goes from your devices, not from the chat."
+echo "Step 4: star and unstar the marker (W7)"
+if has "messages star" && has "messages unstar"; then
+  confirm "Step 4 stars the marker; only you see the star."
+  starred=yes
+  attempt "$profile" messages star "$own" "$marker_id" --yes --timeout 60s
+  report "messages star"
+  if [ "$rc" = 0 ]; then
+    star=$(phone "Does the phone show the star on the marker?")
+    confirm "Next it takes the star off the marker."
+    attempt "$profile" messages unstar "$own" "$marker_id" --yes --timeout 60s
+    report "messages unstar"
+    if [ "$rc" = 0 ]; then
+      starred=no
+      unstar=$(phone "Is the star gone from the marker?")
+    else
+      unstar=failed
+    fi
+  else
+    star=failed
+    [ "$rc" != 2 ] || starred=no
+  fi
+else
+  echo "not built in this checkout yet"
+fi
+
+# Before the archive: whatsmeow's archive patch also unpins the chat, which would hide what the unpin does.
+echo
+echo "Step 5: chats pin and unpin"
+if has "chats pin" && has "chats unpin"; then
+  confirm "Step 5 pins your own chat at the top of your chat list; nobody is told."
+  chat_pinned=yes
+  attempt "$profile" chats pin "$own" --yes --timeout 60s
+  report "chats pin"
+  if [ "$rc" = 0 ]; then
+    chatpin=$(phone "Is your own chat at the top of the phone's chat list, with the pin icon?")
+    confirm "Next it unpins your own chat."
+    attempt "$profile" chats unpin "$own" --yes --timeout 60s
+    report "chats unpin"
+    if [ "$rc" = 0 ]; then
+      chat_pinned=no
+      chatunpin=$(phone "Is the pin icon gone from your own chat?")
+    else
+      chatunpin=failed
+    fi
+  else
+    chatpin=failed
+    [ "$rc" != 2 ] || chat_pinned=no
+  fi
+else
+  echo "not built in this checkout yet"
+fi
+
+echo
+echo "Step 6: chats archive and unarchive"
+if has "chats archive" && has "chats unarchive"; then
+  confirm "Step 6 moves your own chat into Archived; nobody is told."
+  archived=yes
+  attempt "$profile" chats archive "$own" --yes --timeout 60s
+  report "chats archive"
+  if [ "$rc" = 0 ]; then
+    archive=$(phone "Is your own chat in Archived on the phone, and gone from the chat list?")
+    confirm "Next it brings your own chat back from Archived."
+    attempt "$profile" chats unarchive "$own" --yes --timeout 60s
+    report "chats unarchive"
+    if [ "$rc" = 0 ]; then
+      archived=no
+      unarchive=$(phone "Is your own chat back in the chat list, out of Archived?")
+    else
+      unarchive=failed
+    fi
+  else
+    archive=failed
+    [ "$rc" != 2 ] || archived=no
+  fi
+else
+  echo "not built in this checkout yet"
+fi
+
+echo
+echo "Step 7: chats mark-unread, then mark-read"
+if has "chats mark-unread"; then
+  confirm "Step 7 marks your own chat unread on your devices; nobody is told."
+  unread=yes
+  attempt "$profile" chats mark-unread "$own" --yes --timeout 60s
+  report "chats mark-unread"
+  if [ "$rc" = 0 ]; then
+    markunread=$(phone "Does the phone show the unread dot on your own chat?")
+    confirm "Next it marks your own chat read: a read receipt, in your own chat only."
+    attempt "$profile" chats mark-read "$own" --yes --timeout 60s
+    report "chats mark-read"
+    if [ "$rc" = 0 ]; then
+      markread=$(phone "Is the unread dot gone from your own chat?")
+      # A no means the receipt left the mark on the phone, so the owner still has it to clear.
+      [ "$markread" = no ] || unread=no
+    else
+      markread=failed
+    fi
+  else
+    markunread=failed
+    [ "$rc" != 2 ] || unread=no
+  fi
+else
+  echo "not built in this checkout yet"
+fi
+
+echo
+echo "Step 8: delete the marker for you only (W6)"
+confirm "Step 8 deletes the marker for you only: it goes from your devices, not from the chat."
 attempt "$profile" messages delete "$own" "$marker_id" --allow-dangerous --yes --timeout 60s
 if not_built; then
   echo "messages delete for you only: not built in this checkout yet"
@@ -207,9 +333,18 @@ Step                     Phone    BACKLOG item 5 line it settles
 1 privacy show           $(printf '%-8s' "$privacy") "Live checks of account privacy": the show half, and what calladd known is
 2 chats mute             $(printf '%-8s' "$mute") "Live checks of chats mute": a one-to-one chat addressed by its LID
 2 chats unmute           $(printf '%-8s' "$unmute") the same line, the unmute
-3 messages pin           $(printf '%-8s' "$pin") "Message pins": a pin in the own chat (a group stays open)
+3 messages pin 24h       $(printf '%-8s' "$pin") "Message pins": a pin in the own chat (a group stays open)
 3 messages unpin         $(printf '%-8s' "$unpin") the same line, the unpin in the own chat
-4 delete for you only    $(printf '%-8s' "$forme") "Live check of delete for the owner alone": the own message (W6)
+4 messages star          $(printf '%-8s' "$star") "Live check of starring": the owner's own message (W7)
+4 messages unstar        $(printf '%-8s' "$unstar") the same line, the unstar
+5 chats pin              $(printf '%-8s' "$chatpin") "Live checks of chats archive, ... mark-unread": the pin, by LID
+5 chats unpin            $(printf '%-8s' "$chatunpin") the same line, the unpin
+6 chats archive          $(printf '%-8s' "$archive") the same line, the archive
+6 chats unarchive        $(printf '%-8s' "$unarchive") the same line, the unarchive
+7 chats mark-unread      $(printf '%-8s' "$markunread") the same line, the mark-unread
+7 chats mark-read        $(printf '%-8s' "$markread") "chats mark-read after a mark-unread": yes, the receipt clears it
+8 delete for you only    $(printf '%-8s' "$forme") "Live check of delete for the owner alone": the own message (W6)
 
 A yes settles that part of the line; no or failed is a bug to file; skipped waits for that feature's build.
+For 7 chats mark-read, a no settles the line the other way: mark-read must also send the read patch.
 EOF
