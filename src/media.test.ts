@@ -574,6 +574,7 @@ describe("a file the phone uploaded again", () => {
   })
 
   it("forwards it from the new path", async () => {
+    await withPhone(["messages", "download", base.dialog, expiring.id, "--output-dir", folder()])
     const result = await withPhone(["messages", "forward", base.dialog, expiring.id, "--to", base.busy])
     expect(result.code).toBe(0)
     expect(engines.at(-1)?.forwards).toEqual([
