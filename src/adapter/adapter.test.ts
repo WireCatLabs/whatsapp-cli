@@ -151,6 +151,69 @@ describe("whatsAppAdapter", () => {
     ])
   })
 
+  it("skips a pushed history event that fails, says so once on stderr, and stores the ones after it", async () => {
+    const engine = fakeEngine(seed)
+    const warnings: string[] = []
+    const controller = new AbortController()
+    const handed: string[] = []
+    const feeding = whatsAppAdapter(engine, undefined, undefined, (line) => warnings.push(line)).feed((batch) => {
+      const id = batch.messages?.[0]?.id ?? ""
+      if (!id.startsWith("3EB0FEED")) return
+      if (id === "3EB0FEED00000002") throw new TypeError(`unexpected ${id} synthetic text`)
+      handed.push(id)
+    }, controller.signal)
+    for (const id of ["3EB0FEED00000001", "3EB0FEED00000002", "3EB0FEED00000003"])
+      engine.push({
+        event: "history",
+        history: { kind: "recent", chats: [], contacts: [], messages: [incoming({ id })], votes: [] },
+      })
+    controller.abort()
+    await expect(feeding).resolves.toBeUndefined()
+    expect(handed).toEqual(["3EB0FEED00000001", "3EB0FEED00000003"])
+    expect(warnings).toEqual([
+      expect.stringContaining("history event could not be handled and was skipped (TypeError)"),
+    ])
+    expect(warnings[0]).not.toMatch(/3EB0|synthetic|@/)
+  })
+
+  it("skips live events that fail, says the first at once and the count at the end, and hands on the rest", async () => {
+    const engine = fakeEngine(seed)
+    const warnings: string[] = []
+    const controller = new AbortController()
+    const ids: string[] = []
+    const watched = whatsAppAdapter(engine, undefined, undefined, (line) => warnings.push(line)).watch(
+      (event) => {
+        if (event.event !== "message") return
+        if (["3EB0FEED00000002", "3EB0FEED00000003"].includes(event.message.id)) throw new Error("boom")
+        ids.push(event.message.id)
+      },
+      controller.signal,
+      () => {
+        for (const id of ["3EB0FEED00000001", "3EB0FEED00000002", "3EB0FEED00000003", "3EB0FEED00000004"])
+          engine.push({ event: "message", message: incoming({ id }) })
+        controller.abort()
+      },
+    )
+    await expect(watched).resolves.toBeUndefined()
+    expect(ids).toEqual(["3EB0FEED00000001", "3EB0FEED00000004"])
+    expect(warnings).toEqual([
+      expect.stringContaining("message event could not be handled and was skipped (Error)"),
+      "2 pushed events could not be handled and were skipped in all",
+    ])
+  })
+
+  it("ends feed when handling a push finds the engine gone", async () => {
+    const engine = fakeEngine(seed)
+    const feeding = whatsAppAdapter(engine, undefined, undefined, () => {}).feed(() => {
+      throw new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly", "engine.stopped")
+    }, new AbortController().signal)
+    engine.push({
+      event: "history",
+      history: { kind: "recent", chats: [], contacts: [], messages: [incoming()], votes: [] },
+    })
+    await expect(feeding).rejects.toMatchObject({ code: "provider_unavailable", details: { reason: "engine.stopped" } })
+  })
+
   it("maps archived and muted chats, and leaves them out when WhatsApp does not say", () => {
     const chat = {
       jid: seed.busy,

@@ -234,7 +234,7 @@ export const WHATSAPP: Messenger = {
     const linked = handedOver.get(command)
     handedOver.delete(command)
     const words = wordsFor(base.settings.profile)
-    if (linked) return whatsAppAdapter(linked, options.stored, words)
+    if (linked) return whatsAppAdapter(linked, options.stored, words, base.renderer.warn)
     const engine = await openEngine(command, base, { listen: options.listen === true })
     if (engine.self() === null) {
       await engine.close()
@@ -243,6 +243,6 @@ export const WHATSAPP: Messenger = {
         `profile "${base.settings.profile}" is not linked to WhatsApp — run ${loginHint(base.settings.profile)}`,
       )
     }
-    return whatsAppAdapter(engine, options.stored, words)
+    return whatsAppAdapter(engine, options.stored, words, base.renderer.warn)
   },
 }
