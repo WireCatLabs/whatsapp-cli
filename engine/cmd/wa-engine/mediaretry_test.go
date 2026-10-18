@@ -49,7 +49,7 @@ func TestThePhonesAnswerGivesTheNewPathOrSaysWhy(t *testing.T) {
 			Result: waMmsRetry.MediaRetryNotification_GENERAL_ERROR.Enum()}), "", "provider_error"},
 		{"the server says the phone has none", &events.MediaRetry{MessageID: "3EB0A1",
 			Error: &events.MediaRetryError{Code: 2}}, "", "not_found"},
-		{"an answer under another key", func() *events.MediaRetry {
+		{"an answer sealed for another message", func() *events.MediaRetry {
 			evt := phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{Result: success})
 			evt.MessageID = "3EB0B2"
 			return evt
