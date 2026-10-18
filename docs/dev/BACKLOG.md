@@ -68,7 +68,11 @@ Open work, most important first. The plan in flight is
      cli-core's store (engine protocol 33). Still open: a live check that a push's service messages carry the people
      as the protobuf says (the owner runs `bin/live-chat-events`), the owner's own join or add, which whatsmeow
      sends live as `events.JoinedGroup` (only a history push records it), and `member_stays`, which cli-core does
-     not fill from events yet.
+     not fill from events yet. A live removal whose notification names no sender is a `leave`, while the push's
+     `GROUP_PARTICIPANT_REMOVE` stub is a `remove`, so that change gets two ids and two rows; which one the sender-less
+     notification is has not been seen. Stub types not read yet (their parameters have not been seen):
+     `GROUP_PARTICIPANT_ACCEPT`, `_ADD_REQUEST_JOIN`, `_JOINED_GROUP_AND_PARENT_GROUP` and `_CHANGE_NUMBER`,
+     `COMMUNITY_PARTICIPANT_PROMOTE` and `_DEMOTE`, and the `*_RICH` variants.
    - **Names of groups the store lacks, in a one-shot command.** cli-core finds a stored group by name (0.337.0);
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
