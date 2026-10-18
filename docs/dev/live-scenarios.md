@@ -88,8 +88,8 @@ main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`,
 there (below). The script asks before each step and passes `--yes` only after that. It prints exit
 codes, counts and yes or no: never a message's text, an id or a phone number (`WC-SECR-1`). A failed `wa` call
 shows only its command words, exit code and error code, since cli-core's JSON error names the chat and message it
-was about (`WC-SECR-6`); `session start` is the exception, as it runs on the terminal for the owner to scan. A closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are in
-`bin/lib/live.sh`.
+was about (`WC-SECR-6`); `session start` is the exception, as it runs on the terminal for the owner to scan. A
+closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are in `bin/lib/live.sh`.
 
 | Script | Covers | What it changes | How it is put back |
 |---|---|---|---|
