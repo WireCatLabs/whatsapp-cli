@@ -348,7 +348,7 @@ describe("wa doctor --online", () => {
     expect(errorOf(refused.stderr)).toMatchObject({
       code: "permission_error",
       reason: "account.banned",
-      details: { standing: { state: "frozen" } },
+      details: { standing: { state: "banned" } },
     })
 
     let held: FakeEngine | undefined
@@ -367,12 +367,29 @@ describe("wa doctor --online", () => {
       return engine
     })
     const report = JSON.parse(stillBanned.stdout).item
-    expect(report.online.standing.state).toBe("frozen")
-    expect(report.flood.send_block).toMatchObject({ state: "frozen" })
+    expect(report.online.standing.state).toBe("banned")
+    expect(report.flood.send_block).toMatchObject({ state: "banned", until: null })
 
     const back = await wa([profile, "doctor", "--online", "--json"], () => fakeEngine(seed))
     expect(JSON.parse(back.stdout).item.flood.send_block).toBeNull()
     expect((await send(() => fakeEngine(seed))).code).toBe(0)
+  })
+
+  it("lifts a ban hold with flood clear", async () => {
+    const refused = await wa(["cleared", "messages", "send", seed.dialog, "synthetic text", "--json"], () => {
+      const engine = fakeEngine(seed)
+      engine.send = async () => {
+        throw new EngineError("permission_error", "WhatsApp has banned or restricted this account", "account.banned")
+      }
+      return engine
+    })
+    expect(errorOf(refused.stderr).details.standing).toMatchObject({ state: "banned" })
+
+    const cleared = await wa(["cleared", "flood", "clear", "--json"], () => fakeEngine(seed))
+    expect(cleared.code, cleared.stderr).toBe(0)
+    expect(
+      (await wa(["cleared", "messages", "send", seed.dialog, "synthetic text", "--json"], () => fakeEngine(seed))).code,
+    ).toBe(0)
   })
 
   it("holds writes until the end WhatsApp gives a temporary ban", async () => {
@@ -391,7 +408,7 @@ describe("wa doctor --online", () => {
     })
     const error = errorOf(refused.stderr)
     expect(error.message).toContain(`the ban ends ${ends}`)
-    expect(error.details.standing).toMatchObject({ state: "frozen", until: ends })
+    expect(error.details.standing).toMatchObject({ state: "banned", until: ends })
 
     let held: FakeEngine | undefined
     const meanwhile = await wa(["dated", "messages", "send", seed.dialog, "synthetic text", "--json"], () => {

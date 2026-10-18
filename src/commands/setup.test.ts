@@ -313,6 +313,27 @@ describe("wa setup", () => {
     expect(installSkill).not.toHaveBeenCalled()
   })
 
+  it("gives the steps after the history wait a deadline of their own", async () => {
+    const qrFile = join(env.WA_CACHE_DIR ?? "", "stall.png")
+    mkdirSync(dirname(qrFile), { recursive: true })
+    input.wait = true
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const running = execute(
+      ["setup", "--qr-file", qrFile, "--timeout", "2s"],
+      { tty: true, stdin: terminal() },
+      unlinked(),
+    )
+    for (let step = 0; step < 300 && !input.signal; step++) await vi.advanceTimersByTimeAsync(10)
+    expect(input.signal?.aborted).toBe(false)
+    await vi.advanceTimersByTimeAsync(2_100)
+    const result = await running
+    expect(result.code).toBe(9)
+    expect(result.stderr).toContain("did not finish within 2000ms")
+    expect(input.signal?.aborted).toBe(true)
+    expect(result.engine.closed).toBe(true)
+    expect(installSkill).not.toHaveBeenCalled()
+  })
+
   it("cancels cleanly at the agent choice and keeps the device", async () => {
     const path = linkedDevice()
     input.cancel = true

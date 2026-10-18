@@ -41,7 +41,9 @@ the list of processes.
 Right after either, the phone pushes your history. `session start` keeps the same connection open, saves what
 arrives into the local store, and stops when the phone has been quiet for 45 seconds, or at Ctrl+C. Ctrl+C there,
 or `--timeout`, ends only this wait: the device stays linked, what arrived is kept and counted, and the command ends
-with exit code `0`. Then keep receiving with `wa personal server install` ([the local store](archive.md)).
+with exit code `0`. `wa personal setup` waits the same way, then goes on to its remaining steps under the
+command's usual time limit, started afresh. Then keep receiving with `wa personal server install`
+([the local store](archive.md)).
 
 ### When an agent runs the link
 

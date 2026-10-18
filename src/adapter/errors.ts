@@ -7,11 +7,6 @@ import type { EngineError } from "../engine/contract.js"
  * (WC-PERM-18). The owner's to change: docs/dev/BACKLOG.md.
  */
 export const RATE_LIMIT_HOLD_MS = 15 * 60_000
-/**
- * A ban WhatsApp gives no end for holds writes until `doctor --online` connects again. cli-core keeps no hold without
- * an end, so the end is set past any ban WhatsApp gives.
- */
-export const BAN_HOLD_MS = 365 * 24 * 60 * 60_000
 
 const at = (ms: number) => new Date(ms).toISOString()
 
@@ -37,9 +32,9 @@ export const fromEngine = (error: EngineError, now = Date.now()): CliError => {
     return new CliError(error.code, dated ? `${error.message}; the ban ends ${at(ends)}` : error.message, {
       ...reason,
       standing: {
-        state: "frozen",
+        state: "banned",
         hint: "WhatsApp banned or restricted this account",
-        until: at(dated ? ends : now + BAN_HOLD_MS),
+        ...(dated ? { until: at(ends) } : {}),
       } satisfies AccountStanding,
     })
   }

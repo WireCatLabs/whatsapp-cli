@@ -5,7 +5,6 @@ import { installSkill, type SkillTarget } from "@wirecat/cli-base/skill"
 import { readSecret } from "@wirecat/cli-core"
 import {
   asFirstWord,
-  type Closeable,
   commandWords,
   environmentOf,
   inputPolicy,
@@ -18,7 +17,6 @@ import {
   rootOf,
   runtime,
   secretInputOf,
-  withDeadline,
 } from "@wirecat/cli-core/cli"
 import { levelFor } from "@wirecat/cli-core/sends"
 import { Command, Option } from "commander"
@@ -144,115 +142,102 @@ export const setupCommand = () =>
           "wa setup needs a terminal to link a device — run it locally, or pass --qr-file for an agent",
           { reason: "input.required" },
         )
-      const { platform } = environmentOf(this)
+      const environment = environmentOf(this)
+      const { platform } = environment
       const prefix = `wa ${asFirstWord(context.profile)}`
       const command =
         installer(environmentOf<Environment>(this).update) === "npx"
           ? `npm${platform === "win32" ? ".cmd" : ""} exec --yes --package=${PACKAGE} -- ${prefix}`
           : prefix
-      const cancellation = new AbortController()
-      const closeables: Closeable[] = [
-        {
-          close: async () => {
-            cancellation.abort()
-          },
-        },
-      ]
-      const track = (closeable: Closeable) => {
-        closeables.push(closeable)
-      }
+      // The command's own signal, not a phase's: Ctrl+C during the history wait ends the wait, not setup.
+      const signal = environment.commandSignal ?? environment.signal ?? new AbortController().signal
       const screen = screenFor(context, this.optsWithGlobals().quiet === true)
       const linkContext: MessengerContext = { ...context, renderer: { ...context.renderer, note: screen.detail } }
-      const answer = await withDeadline(context.settings.commandTimeoutMs, closeables, async () => {
-        screen.title(
-          `WhatsApp setup — profile ${context.profile}. Allow about 5 minutes; the phone sends recent history once.`,
-        )
-        screen.step(1, "This computer")
-        const paths = pathsFor(context.env)
-        for (const path of [paths.config, paths.state, paths.cache]) {
-          mkdirSync(path, { recursive: true })
-          accessSync(path, constants.W_OK)
-        }
-        screen.detail("✓ local directories ready")
-        if (platform === "win32")
-          screen.detail(
-            "Windows: use wa.cmd or npm.cmd if PowerShell blocks scripts. Open a new terminal after installing Node.js.",
-          )
-
-        screen.step(2, existsSync(devicePath) ? "Link" : "Link: scan the QR code or type the pairing code")
-        const session = await startSession(this, linkContext, {
-          signal: cancellation.signal,
-          method: options.method,
-          ...(options.qrFile === undefined ? {} : { qrFile: options.qrFile }),
-          command: `${prefix}setup`,
-          indent: screen.indent,
-          track,
-        })
-        const reused = session.alreadyLinked
-        const history = session.received
+      screen.title(
+        `WhatsApp setup — profile ${context.profile}. Allow about 5 minutes; the phone sends recent history once.`,
+      )
+      screen.step(1, "This computer")
+      const paths = pathsFor(context.env)
+      for (const path of [paths.config, paths.state, paths.cache]) {
+        mkdirSync(path, { recursive: true })
+        accessSync(path, constants.W_OK)
+      }
+      screen.detail("✓ local directories ready")
+      if (platform === "win32")
         screen.detail(
-          history
-            ? `✓ linked; ${chatCount(history.chats)} and ${history.messages} messages kept from the phone`
-            : "✓ existing device, no new link",
+          "Windows: use wa.cmd or npm.cmd if PowerShell blocks scripts. Open a new terminal after installing Node.js.",
         )
 
-        screen.step(3, "Account")
-        const account = await context.withMessenger(async (adapter) => {
-          track(adapter)
-          cancellation.signal.throwIfAborted()
-          return adapter.me()
-        })
-        screen.detail(`✓ ${account.name === null ? "verified" : singleLine(account.name)}`)
-
-        screen.step(4, "A few chats")
-        // WhatsApp has no chat list to ask for: the store holds what the phone pushed and what serve received.
-        const chats = await context.withStore((store, key) =>
-          store.forAccount(key).chats.chats({ limit: 5, offset: 0 }),
-        )
-        screen.detail(`✓ ${chatCount(chats.items.length)} read from the local store`)
-        if (chats.items.length === 0) screen.detail(`nothing kept yet — \`${command}server install\` starts receiving`)
-
-        screen.step(5, "Agent")
-        const agent = await agentFor(this, context, options.agent, screen.indent, cancellation.signal)
-        screen.detail(agent === "none" ? "✓ no agent skill installed" : `✓ ${agent}`)
-        const targets: readonly SkillTarget[] =
-          agent === "all" ? ["claude", "agents"] : [agent === "claude" ? "claude" : "agents"]
-        cancellation.signal.throwIfAborted()
-        const written = agent === "none" ? [] : installSkill(WA, SKILL, { targets, env: context.env })
-        const next = {
-          instructions: `${command}skill show`,
-          inbox: `${command}inbox --limit 5`,
-          chats: `${command}chats list --limit 5`,
-          receive: `${command}server install`,
-          history_status: `${command}store status`,
-          ...(agent === "none" ? { skill: `${command}skill install`, mcp: `${command}mcp config` } : {}),
-        }
-        return {
-          profile: context.profile,
-          runtime: runtime(),
-          paths,
-          device: { path: devicePath, reused },
-          account: { id: account.id, name: account.name },
-          ...(history ? { history } : {}),
-          chats: { checked: chats.items.length, has_more: chats.hasMore },
-          agent: { name: agent, written },
-          next,
-        }
+      screen.step(2, existsSync(devicePath) ? "Link" : "Link: scan the QR code or type the pairing code")
+      const session = await startSession(this, linkContext, {
+        signal,
+        method: options.method,
+        ...(options.qrFile === undefined ? {} : { qrFile: options.qrFile }),
+        command: `${prefix}setup`,
+        indent: screen.indent,
+        stopEndsWait: true,
       })
-      const { agent, next, chats } = answer
+      environment.endUntilStopped?.()
+      const reused = session.alreadyLinked
+      const history = session.received
+      screen.detail(
+        history
+          ? `✓ linked; ${chatCount(history.chats)} and ${history.messages} messages kept from the phone`
+          : "✓ existing device, no new link",
+      )
+
+      screen.step(3, "Account")
+      const account = await context.withMessenger(async (adapter) => {
+        signal.throwIfAborted()
+        return adapter.me()
+      })
+      screen.detail(`✓ ${account.name === null ? "verified" : singleLine(account.name)}`)
+
+      screen.step(4, "A few chats")
+      // WhatsApp has no chat list to ask for: the store holds what the phone pushed and what serve received.
+      const chats = await context.withStore((store, key) => store.forAccount(key).chats.chats({ limit: 5, offset: 0 }))
+      screen.detail(`✓ ${chatCount(chats.items.length)} read from the local store`)
+      if (chats.items.length === 0) screen.detail(`nothing kept yet — \`${command}server install\` starts receiving`)
+
+      screen.step(5, "Agent")
+      const agent = await agentFor(this, context, options.agent, screen.indent, signal)
+      screen.detail(agent === "none" ? "✓ no agent skill installed" : `✓ ${agent}`)
+      const targets: readonly SkillTarget[] =
+        agent === "all" ? ["claude", "agents"] : [agent === "claude" ? "claude" : "agents"]
+      signal.throwIfAborted()
+      const written = agent === "none" ? [] : installSkill(WA, SKILL, { targets, env: context.env })
+      const next = {
+        instructions: `${command}skill show`,
+        inbox: `${command}inbox --limit 5`,
+        chats: `${command}chats list --limit 5`,
+        receive: `${command}server install`,
+        history_status: `${command}store status`,
+        ...(agent === "none" ? { skill: `${command}skill install`, mcp: `${command}mcp config` } : {}),
+      }
+      const answer = {
+        profile: context.profile,
+        runtime: runtime(),
+        paths,
+        device: { path: devicePath, reused },
+        account: { id: account.id, name: account.name },
+        ...(history ? { history } : {}),
+        chats: { checked: chats.items.length, has_more: chats.hasMore },
+        agent: { name: agent, written },
+        next,
+      }
       if (context.format !== "pretty") printItem(context, answer)
       else {
         const rows = {
           "Try now": next.inbox,
           "Keep receiving": `${next.receive}  (a background server saves new messages)`,
           "Agent skill":
-            agent.name === "none"
+            agent === "none"
               ? `skipped — install later: ${next.skill}`
-              : `installed for ${agent.name}; start a new agent session if it is not found`,
+              : `installed for ${agent}; start a new agent session if it is not found`,
           "For an agent": next.instructions,
         }
         context.streams.data(
-          `\n✓ WhatsApp is ready — profile ${context.profile}, ${chatCount(chats.checked)} checked\n\n` +
+          `\n✓ WhatsApp is ready — profile ${context.profile}, ${chatCount(chats.items.length)} checked\n\n` +
             indent(renderPretty(rows, { color: context.color }), 2),
         )
       }

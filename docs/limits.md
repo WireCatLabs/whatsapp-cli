@@ -57,12 +57,13 @@ WA_REQUESTS_PER_MINUTE=30 wa personal messages send 100000000000001@lid "on my w
   with exit code `8`; `wa personal sends list` shows what was sent.
 - **A recipient list**, when it is on, refuses a send to any other chat with exit code `7`
   ([permissions](permissions.md#restrict-recipients-and-repeated-sends)).
-- **A banned or restricted account** holds sends, edits and the other writes counted toward the send limit with exit
-  code `5`: until the ban ends, when WhatsApp says when (the error names the time), otherwise until
-  `wa personal doctor --online` connects again; see the phone. Reads from the local store still work.
-- **When WhatsApp asks the account to slow down**, the same writes are held for 15 minutes (exit code `8`, then `5`
-  while the hold lasts). Reads go on. Neither hold stops a reaction or a read receipt, so send none while one lasts.
-  `wa personal flood clear` lifts a hold once you know it is over.
+- **A banned or restricted account** holds every write with exit code `5`, reactions and read receipts too: until the
+  ban ends, when WhatsApp says when (the error names the time), otherwise until it is lifted, by
+  `wa personal doctor --online` connecting again or by `wa personal flood clear`; see the phone. Reads from the local
+  store still work.
+- **When WhatsApp asks the account to slow down**, every write is held for 15 minutes (exit code `8`, then `5` while
+  the hold lasts). Reads go on. `inbox` and `review` with `--mark-read` still show what they read and say that
+  nothing was marked read. `wa personal flood clear` lifts a hold once you know it is over.
 - **A poll** has 2 to 12 answers, each with its own text; it counts as a send.
 - A send that may or may not have arrived (exit code `14`) is never repeated by `wa`. Check `wa personal sends list`
   and the chat before you send again ([how wa behaves in scripts](cli-contract.md#previews-and-safe-retries)).
