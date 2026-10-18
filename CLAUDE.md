@@ -56,8 +56,11 @@ sparse, only *why*. Go code in `engine/` follows `gofmt` and `go vet`.
 Local commits check only staged lint and secrets. There is no pre-push check.
 Config integrity, repository lint, Markdown, and secret detection run in PR CI.
 The bounded `ci:quick` step adds typechecking, a build and the command lint.
-Full tests, coverage, builds and parity also run once on each merge to `main` (Linux only, no publishing).
+Full validation (`ci.yml`: tests with the coverage floor, the Go engine, docs, parity, prose, a secret scan) runs on
+every pull request (`pr.yml`) and on each merge to `main`, Linux only. That is stricter than `WC-CI-5`, by the owner's
+ruling of 2026-10-18, after a broken coverage floor (`WC-TEST-11`) reached `main` twice.
 Platform suites run for releases, explicit manual validation, and monthly nonpublishing validation. See the
 [shared policy](https://github.com/WireCatLabs/community/blob/main/standards/README.md#ci-and-hooks).
 The handbook's rules for this are on its
-[CI page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/ci.md) (`WC-CI-1` to `WC-CI-7`, `WC-CI-9`).
+[CI page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/ci.md) (`WC-CI-1` to `WC-CI-7`, `WC-CI-9`;
+`WC-CI-5` is the one `wa` departs from, upward).

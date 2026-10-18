@@ -5,7 +5,7 @@ The rules are the handbook's
 which wins over this page; this page is how `wa` runs them.
 
 ```sh
-pnpm lint && pnpm typecheck && pnpm test:coverage   # what CI runs, with the coverage floor
+pnpm lint && pnpm typecheck && pnpm test:coverage   # what CI runs on every PR, with the coverage floor
 pnpm engine:test                                    # gofmt, go vet and go test over engine/
 pnpm test:matrix                                    # every command and option has a test or a reason
 pnpm docs:check                                     # links, anchors, user pages, the changelog's shape
@@ -50,4 +50,6 @@ real adapter and the fake engine. The `ServerReads` cases are skipped by design:
 ## Coverage has a floor
 
 `vitest.config.ts` holds it, below max-cli's while the code is young. Raise it when coverage rises; never lower it to
-let a change through.
+let a change through (`WC-TEST-11`). Full validation (`ci.yml`) checks it on every pull request, through `pr.yml`,
+and again on each merge to `main`: stricter than the handbook's `WC-CI-5`, which keeps full tests for `main`
+(`WC-CI-7`), because a floor broken by a merge turned `main` red twice.

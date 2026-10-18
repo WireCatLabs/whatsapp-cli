@@ -86,11 +86,12 @@ Preserve released command facts and existing URLs/anchors.
 ## Go
 
 - `engine/` is a Go module of its own. `gofmt` and `go vet` are the style; `pnpm engine:test` runs both and the tests.
-  On a pull request that touches `engine/` or `scripts/engine-packages.mjs`, `engine-pr.yml` runs the same with Go
-  set up from `engine/go.mod` and cached; the shared standards job has no Go.
+  On every pull request, full validation's `engine` job (`ci.yml`, called from `pr.yml`) runs the same with Go set
+  up from `engine/go.mod`, cross-builds the six targets and runs the TypeScript client against the built engine; the
+  shared standards job has no Go. `engine-pr.yml`, the older path-scoped job, still runs and is now redundant.
 - `engine/THIRD_PARTY_NOTICES` holds the licence of every Go module the engine links, on all six targets, and Go's
   own. It is generated: after a dependency or Go version change, run `node scripts/engine-packages.mjs notices` and
-  commit the result. `notices --check` (in `engine-pr.yml`) and every `build` fail while the file names another set
+  commit the result. `notices --check` and every `build` fail while the file names another set
   of linked modules or another Go than the current `go list -deps` gives.
 - whatsmeow is pinned by commit in `engine/go.mod`, with checksums in `go.sum`; it is never vendored or patched in
   place. A protocol fix upstream is a one-line bump.
