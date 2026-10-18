@@ -140,6 +140,13 @@ export const UNTESTED: Untested[] = [
     ["messages links"],
   ]),
   ...cliCore("src/services/messages-link.test.ts", [["messages link"]]),
+  ...["--limit", "--dry-run"].map((option) => ({
+    command: "tags auto",
+    option,
+    reason:
+      "how many stored chats to tag, and a preview from the store; cli-core's shared command, tested in cli-core " +
+      "(src/cli/messenger/tags.test.ts); src/groups.test.ts drives --sync-first, the option that reaches the engine",
+  })),
   ...cliCore("src/cli/messenger/doctor-command.test.ts", [["doctor report create", "--run"]]),
   {
     command: "config show",

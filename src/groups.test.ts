@@ -535,3 +535,31 @@ describe("wa chats rules", () => {
     expect((await naming("rules", "chats", "rules", "show", seed.chats[2]?.id ?? "")).body.saved).toBe(false)
   })
 })
+
+describe("wa tags auto", () => {
+  it("with --sync-first, reads the group's description from WhatsApp and tags the group by it", async () => {
+    const asked: string[] = []
+    const result = await wa([PROFILE, "tags", "auto", "--chat", seed.busy, "--sync-first", "--json"], () => {
+      const engine = fakeEngine(seed)
+      const group = engine.group
+      engine.group = async (jid, options) => {
+        asked.push(jid)
+        return { ...(await group(jid, options)), description: "a synthetic news digest" }
+      }
+      return engine
+    })
+    expect(result.code, result.stderr).toBe(0)
+    expect(asked).toEqual([seed.busy])
+    expect(JSON.parse(result.stdout).item.items).toMatchObject([
+      { chat_id: seed.busy, source: "metadata", tags: [{ tag: "news", fields: ["description"] }] },
+    ])
+  })
+
+  it("without it, tags from the store alone and never starts the engine", async () => {
+    const result = await wa([PROFILE, "tags", "auto", "--chat", seed.chats[2]?.id ?? "", "--json"], () => {
+      throw new Error("tags auto without --sync-first must not start the engine")
+    })
+    expect(result.code, result.stderr).toBe(0)
+    expect(JSON.parse(result.stdout).item.items).toMatchObject([{ source: "stored-chat", tags: [] }])
+  })
+})
