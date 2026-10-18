@@ -1,6 +1,9 @@
+import { cpSync, mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { beforeAll, describe, expect, it } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import type { WaChannel } from "./engine/channels.js"
 import type { WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
@@ -10,9 +13,20 @@ import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.
 const seed = contractSeed({ ids: whatsAppIds })
 const PROFILE = "channels"
 
+// Each test gets a copy of one filled store: a follow, an unfollow or a sync would otherwise change the next one's answer.
+let store = ""
+let filledStore = ""
+let env: NodeJS.ProcessEnv = {}
+
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
-  const code = await run(argv, { streams, tty: false, ...(engine ? { engine } : {}), ...(signal ? { signal } : {}) })
+  const code = await run(argv, {
+    streams,
+    tty: false,
+    env: { ...process.env, MESSAGING_STORE: store, ...env },
+    ...(engine ? { engine } : {}),
+    ...(signal ? { signal } : {}),
+  })
   return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
 }
 
@@ -29,6 +43,7 @@ const acting = async (argv: string[], role?: WaChannel["role"], profile = PROFIL
 }
 
 beforeAll(async () => {
+  store = join(mkdtempSync(join(tmpdir(), "wa-channels-")), "messages.db")
   const controller = new AbortController()
   const filling = () => {
     const engine = fakeEngine(seed, { channel: "subscriber" })
@@ -41,6 +56,14 @@ beforeAll(async () => {
     return engine
   }
   expect((await wa([PROFILE, "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
+  filledStore = store
+})
+
+beforeEach(() => {
+  env = {}
+  const copy = mkdtempSync(join(tmpdir(), "wa-channels-"))
+  cpSync(dirname(filledStore), copy, { recursive: true })
+  store = join(copy, "messages.db")
 })
 
 describe("wa channels", () => {
@@ -93,5 +116,47 @@ describe("wa channels", () => {
     expect(result.code).toBe(0)
     expect(result.engine?.channelActions).toEqual([{ op: "unfollowChannel", jid: CHANNEL }])
     expect(result.engine?.groupActions).toEqual([])
+  })
+
+  it("follows nothing under WA_READ_ONLY", async () => {
+    env = { WA_READ_ONLY: "1" }
+    const result = await acting(["chats", "join", CHANNEL_INVITE])
+    expect(result.code).not.toBe(0)
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.channelActions ?? []).toEqual([])
+  })
+
+  it("unfollows nothing under WA_READ_ONLY", async () => {
+    env = { WA_READ_ONLY: "1" }
+    const result = await acting(["chats", "leave", CHANNEL], "subscriber")
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.channelActions ?? []).toEqual([])
+  })
+
+  it("unfollows nothing when the profile denies leaving", async () => {
+    expect((await wa(["no-leaves", "config", "set", "permissions.chats.leave", "deny"])).code).toBe(0)
+    const result = await acting(["chats", "leave", CHANNEL], "subscriber", "no-leaves")
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.channelActions ?? []).toEqual([])
+  })
+
+  it("answers not found for a channel link WhatsApp does not know", async () => {
+    const result = await acting(["chats", "join", "https://whatsapp.com/channel/FAKE0000000000000000ZZ"])
+    expect(errorCode(result.stderr)).toBe("not_found")
+    expect(result.engine?.channelActions).toEqual([])
+  })
+
+  it("joins a group by a group link, not as a channel", async () => {
+    const result = await acting(["chats", "join", "https://chat.whatsapp.com/FAKE0000000000000000AB"])
+    expect(result.code).toBe(0)
+    expect(result.engine?.channelActions).toEqual([])
+    expect(result.body.item.chat.kind).not.toBe("channel")
+  })
+
+  it("leaves a group with chats leave, not as a channel", async () => {
+    const result = await acting(["chats", "leave", seed.busy], "subscriber")
+    expect(result.code).toBe(0)
+    expect(result.engine?.channelActions).toEqual([])
+    expect(result.engine?.groupActions).toEqual([expect.objectContaining({ op: "leave", jid: seed.busy })])
   })
 })
