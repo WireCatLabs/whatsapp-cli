@@ -191,7 +191,8 @@ wa personal messages delete 120363000000000001@g.us 3EB0AAAAAAAAAAAAAAAAAA --for
 
 In a group you administer, this removes another member's message for everyone; anywhere, it removes your own. It
 needs the message in the local store, since WhatsApp addresses a message by its sender too. It asks first by
-default, and it cannot be undone. Deleting for yourself alone is not built: do that on the phone.
+default, and it cannot be undone. Without `--for-everyone` it is for you only: `wa` asks WhatsApp to take the
+message from all your devices and leave it with the others (not yet checked on a phone).
 
 ## Run a group
 

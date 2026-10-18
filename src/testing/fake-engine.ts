@@ -91,8 +91,9 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   olderAsked: { anchor: WaAnchor; count: number }[]
   /** Every edit, deletion, reaction, read receipt, vote and pin, in order, with the key it was addressed by. */
   actions: {
-    op: "edit" | "revoke" | "react" | "read" | "vote" | "pin" | "unpin"
-    key: WaKey
+    op: "edit" | "revoke" | "deleteForMe" | "react" | "read" | "vote" | "pin" | "unpin"
+    /** A deletion for the account alone also carries the message's time. */
+    key: WaKey | WaAnchor
     text?: string
     emoji?: string | null
     answers?: string[]
@@ -343,6 +344,10 @@ export const fakeEngine = (
     clearChat: async (last) => {
       if (!settingsKeys) throw keysMissing()
       chatDeletions.push({ op: "clearChat", last })
+    },
+    deleteForMe: async (message) => {
+      if (!settingsKeys) throw keysMissing()
+      actions.push({ op: "deleteForMe", key: message })
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

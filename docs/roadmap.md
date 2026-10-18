@@ -18,7 +18,6 @@ What is not: [not in wa yet](usage.md#not-in-wa-yet).
 
 ## Later
 
-- **Deleting a message for yourself alone.** Until then, delete it on the phone.
 - **Several files in one message**, and thumbnails on sent photos and videos.
 - **Files WhatsApp no longer keeps**: asking the sender's phone to upload an expired file again.
 - **Communities.**

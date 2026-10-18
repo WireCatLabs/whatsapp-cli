@@ -73,6 +73,8 @@ func (e *engine) dispatchSettings(req request) (any, bool, error) {
 		return value, true, err
 	case "deleteChat", "clearChat":
 		return nil, true, e.deleteChat(req)
+	case "deleteForMe":
+		return nil, true, e.deleteForMe(req)
 	}
 	return nil, false, nil
 }

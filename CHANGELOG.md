@@ -167,6 +167,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   not offered over MCP, and answer `settings.keys-missing` as `chats mute` does. The local store keeps the chat's
   messages (cli-core's command leaves it as it is). Not yet checked live on the phone. Engine protocol 20, ops
   `deleteChat` and `clearChat`.
+- **`wa <profile> messages delete` without `--for-everyone` deletes for you only** (WC-PERM-13): `wa` asks WhatsApp
+  to take the messages from this account's devices, to leave them with the others in the chat, and to keep the photos
+  and files the phone saved from them. It was refused with exit 2. Each message must be in the local store, since
+  WhatsApp names it by its sender and the time it was sent; one the store lacks is exit 6 and nothing is deleted. An
+  agent's `messages delete` over MCP now works the same way, for the owner only; for everyone stays the owner's
+  `--for-everyone`. It answers `settings.keys-missing` as `chats mute` does. A delete of several messages that fails
+  partway, with or without `--for-everyone`, names the ones already deleted and is not safe to retry (WC-OUT-20).
+  Not yet checked live on the phone. Engine protocol 21, op `deleteForMe`.
 
 ## 0.1.0 — 17.10.2026
 

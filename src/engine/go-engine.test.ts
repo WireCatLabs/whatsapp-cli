@@ -144,6 +144,15 @@ describe("startGoEngine", () => {
     ).rejects.toMatchObject({ code: "outcome_unknown", reason: "engine.stopped-mid-write" })
   })
 
+  it("sends a deletion for the account alone with the message's key and time, as a write that may have happened", async () => {
+    const message = { chat: "120363000000000001@g.us", id: "3EB0A1", fromMe: false, sender: "100000000000002@lid" }
+    const engine = await stub("ok")
+    await expect(engine.deleteForMe({ ...message, timestamp: "2026-09-01T10:00:00.000Z" })).resolves.toBeUndefined()
+    await expect(
+      engine.deleteForMe({ ...message, chat: "crash@stub", timestamp: "2026-09-01T10:00:00.000Z" }),
+    ).rejects.toMatchObject({ code: "outcome_unknown", reason: "engine.stopped-mid-write" })
+  })
+
   it("rejects at start when the lock is held, naming the holder", async () => {
     await expect(stub("refuse")).rejects.toMatchObject({
       code: "provider_unavailable",
