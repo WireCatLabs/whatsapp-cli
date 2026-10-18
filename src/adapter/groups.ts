@@ -102,7 +102,7 @@ export interface GroupDeps {
 }
 
 // A JPEG starts with a start-of-image marker and then another marker; the file's name says nothing.
-const isJpeg = async (source: UploadSource): Promise<boolean> => {
+export const isJpeg = async (source: UploadSource): Promise<boolean> => {
   const head = Buffer.alloc(3)
   if (source.kind === "bytes") head.set(source.bytes.subarray(0, 3))
   else {

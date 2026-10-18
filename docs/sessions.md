@@ -71,12 +71,16 @@ wa personal session end      # unlink the device on WhatsApp's side, and delete 
 ```sh
 wa personal account update --first-name Ana --last-name Silva   # WhatsApp keeps one name: "Ana Silva"
 wa personal account update --description "Back on Monday"       # the "about" line
+wa personal account update --photo ~/me.jpg                     # the profile photo, a square JPEG
 ```
 
 The name goes to the phone and your other devices at once. Other people probably see it only once the phone next
 comes online: a device tells WhatsApp its name when it says it is online, and `wa` never does (not checked yet). A
 device linked a few minutes ago may not have WhatsApp's settings keys yet; keep `serve` running a while and try again.
-Set the profile photo on the phone: `wa` does not set it yet.
+
+The photo is a square JPEG of 190 to 720 pixels a side, as for a group: `wa` does not convert or crop one, and a PNG or
+WebP is refused by its content, before anything changes. Given together, the name goes first, then the about, then the
+photo; if a later one fails, the error says which changed. Removing the photo is done on the phone.
 
 `wa personal session end` removes the device **on WhatsApp's side too**: it disappears from the phone's list of linked
 devices. It leaves the local store as it is. While `serve` runs for the profile, it refuses (exit code `12`): stop

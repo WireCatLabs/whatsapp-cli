@@ -1,9 +1,11 @@
 import { CliError } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
 import type { MessengerAdapter, ProfileChange, StoredMessages } from "@wirecat/cli-core/cli"
+import type { UploadSource } from "@wirecat/cli-core/sends"
 import { EngineError, type WaAnchor, type WaKey, type WhatsAppEngine } from "../engine/contract.js"
 import type { WaProfileChange } from "../engine/settings.js"
 import type { Words } from "./checks.js"
+import { isJpeg } from "./groups.js"
 import { toAccount } from "./map.js"
 
 /** The account's own settings, which WhatsApp syncs to its other devices, and the profile everyone sees. */
@@ -20,6 +22,8 @@ export interface SettingsDeps {
   words: Words
   stored: StoredMessages
   keyOf: (chatId: string, message: Message) => WaKey
+  /** An upload as a file the engine can read. */
+  onDisk: <T>(source: UploadSource, work: (path: string) => Promise<T>) => Promise<T>
 }
 
 // `anchor` gives the newest message sent at a time or before; this one is later than any message's.
@@ -42,7 +46,14 @@ export const settingsWrite =
       }),
     )
 
-export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: SettingsDeps): SettingsAdapter => {
+export const settingsAdapter = ({
+  engine,
+  translated,
+  words,
+  stored,
+  keyOf,
+  onDisk,
+}: SettingsDeps): SettingsAdapter => {
   const keyed = settingsWrite(translated, words)
 
   // WhatsApp applies the patch up to a message it names, either side's; a guessed one makes the phone drop the patch
@@ -77,14 +88,22 @@ export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: Se
     markChatUnread: async (chatId) => {
       await keyed(engine.markChatUnread(await newest(chatId, "what is unread")))
     },
-    updateProfile: async (change) => toAccount(await keyed(engine.updateProfile(toWaProfile(change)))),
+    updateProfile: async (change) => {
+      const profile = toWaProfile(change)
+      const { photo } = change
+      if (photo === undefined) return toAccount(await keyed(engine.updateProfile(profile)))
+      if (!(await isJpeg(photo.source)))
+        throw new CliError(
+          "validation_error",
+          `${photo.name} is not a JPEG — WhatsApp takes a profile photo only as one`,
+        )
+      return toAccount(await keyed(onDisk(photo.source, (path) => engine.updateProfile({ ...profile, path }))))
+    },
   }
 }
 
 /** WhatsApp keeps one name, so a first and a last name are joined into it; a last name alone has nothing to join. */
-const toWaProfile = ({ firstName, lastName, description, photo }: ProfileChange): WaProfileChange => {
-  if (photo !== undefined)
-    throw new CliError("validation_error", "wa does not set the profile photo yet; set it on the phone")
+const toWaProfile = ({ firstName, lastName, description }: ProfileChange): WaProfileChange => {
   if (firstName === undefined && lastName !== undefined)
     throw new CliError(
       "validation_error",

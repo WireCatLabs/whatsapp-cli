@@ -418,28 +418,29 @@ func (e *engine) resetLink(raw string) (*waGroup, error) {
 
 // WhatsApp takes a group photo as a JPEG, and whatsmeow sends the bytes as given. mautrix-whatsapp v0.2610.0 sends
 // only square JPEGs of these sides: it re-encodes any other picture to a side clamped to them, ends included
-// (pkg/connector/handlematrix.go, convertRoomAvatar).
+// (pkg/connector/handlematrix.go, convertRoomAvatar). The account's own photo goes in the same request, which Baileys
+// makes a 640-pixel square JPEG for both (src/Utils/messages-media.ts, generateProfilePicture).
 const (
-	groupPhotoMin = 190
-	groupPhotoMax = 720
+	photoMin = 190
+	photoMax = 720
 )
 
-// groupPhoto reads the picture in full only once its header shows WhatsApp would take it.
-func groupPhoto(path string) ([]byte, error) {
+// squareJPEG reads a group's or the account's photo, `what`, in full only once its header shows WhatsApp would take it.
+func squareJPEG(path, what string) ([]byte, error) {
 	if !filepath.IsAbs(path) {
-		return nil, &failure{"validation_error", "a group photo needs its absolute path"}
+		return nil, &failure{"validation_error", "a " + what + " needs its absolute path"}
 	}
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, &failure{"validation_error", "the group photo could not be opened"}
+		return nil, &failure{"validation_error", "the " + what + " could not be opened"}
 	}
 	defer file.Close()
 	config, format, err := image.DecodeConfig(file)
 	if err != nil || format != "jpeg" {
-		return nil, &failure{"validation_error", "WhatsApp takes a group photo only as a JPEG"}
+		return nil, &failure{"validation_error", "WhatsApp takes a " + what + " only as a JPEG"}
 	}
-	if config.Width != config.Height || config.Width < groupPhotoMin || config.Width > groupPhotoMax {
-		return nil, &failure{"validation_error", "WhatsApp takes a group photo as a square of 190 to 720 pixels a side"}
+	if config.Width != config.Height || config.Width < photoMin || config.Width > photoMax {
+		return nil, &failure{"validation_error", "WhatsApp takes a " + what + " as a square of 190 to 720 pixels a side"}
 	}
 	if _, err := file.Seek(0, io.SeekStart); err != nil {
 		return nil, err
@@ -447,22 +448,31 @@ func groupPhoto(path string) ([]byte, error) {
 	return io.ReadAll(file)
 }
 
+// setPicture sets a group's photo, or the account's own with types.EmptyJID: whatsmeow then sends no target, as
+// Baileys does for the account's own picture (src/Socket/chats.ts, updateProfilePicture).
+func (e *engine) setPicture(jid types.JID, photo []byte) error {
+	if err := e.connect(); err != nil {
+		return err
+	}
+	if _, err := e.client.SetGroupPhoto(e.ctx, jid, photo); err != nil {
+		if errors.Is(err, whatsmeow.ErrInvalidImageFormat) {
+			return &failure{"validation_error", "WhatsApp refused the photo; it takes a square JPEG"}
+		}
+		return err
+	}
+	return nil
+}
+
 func (e *engine) setGroupPhoto(raw, path string) (*waGroup, error) {
 	jid, err := groupJID(raw)
 	if err != nil {
 		return nil, err
 	}
-	photo, err := groupPhoto(path)
+	photo, err := squareJPEG(path, "group photo")
 	if err != nil {
 		return nil, err
 	}
-	if err := e.connect(); err != nil {
-		return nil, err
-	}
-	if _, err := e.client.SetGroupPhoto(e.ctx, jid, photo); err != nil {
-		if errors.Is(err, whatsmeow.ErrInvalidImageFormat) {
-			return nil, &failure{"validation_error", "WhatsApp refused the photo; it takes a square JPEG"}
-		}
+	if err := e.setPicture(jid, photo); err != nil {
 		return nil, err
 	}
 	return e.readGroup(jid, true)

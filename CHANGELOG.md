@@ -162,10 +162,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `--last-name` joined to it after a space (WhatsApp keeps one name, so a last name alone is refused), and
   `--description` the "about" line. The name is a setting WhatsApp syncs to the other devices; others probably see it
   only once the phone next comes online, since a device tells WhatsApp its name when it says it is online and `wa`
-  never does (not checked live). The answer is the account with the new name. `--photo` is refused: `wa` does not set the profile
-  photo yet. A device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does; an
-  about WhatsApp refuses after the name changed says the name did. The permission key is `account.update`. Engine
-  protocol 19, op `updateProfile`.
+  never does (not checked live). `--photo` sets the profile photo: a square JPEG of 190 to 720 pixels a side, as for
+  a group's, checked before anything changes (not checked live). The answer is the account with the new name. A
+  device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does; the name goes
+  first, then the about, then the photo, and a step WhatsApp refuses after another changed says which did. The
+  permission key is `account.update`. Engine protocol 26, op `updateProfile` (`path` for the photo).
 - **`wa <profile> chats delete` and `chats clear`** (cli-core's, as in max): delete a chat, or every message in it, from
   this account's devices; the others in it keep theirs. WhatsApp deletes up to a message it is told of, so `wa` names
   the chat's newest message in the local store, the owner's own or not, and refuses a chat the store holds nothing of

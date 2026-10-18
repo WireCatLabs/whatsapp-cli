@@ -77,10 +77,11 @@ Open work, most important first. The plan in flight is
      reads no live mute events, so `inbox` leaves the chat in until the next history push. That push may read it
      wrong too: `convert.go` takes `muteEndTime > 0` as seconds, while a mute for good is -1 in app state and the
      history field is unsigned — whether the phone writes it as all ones, and in which unit, is not checked.
-   - **The own profile photo** (`account update --photo`) is refused. whatsmeow has no own-photo call, but
-     `SetGroupPhoto(ctx, types.EmptyJID, jpeg)` sends the request Baileys' `updateProfilePicture` sends for the own
-     picture (no `target`). It needs the square-JPEG check `groupPhoto` from `chats update --photo` (PR #55); build it
-     on that once both are in.
+   - **The own profile photo** (`account update --photo`). **Built (2026-10-18):** whatsmeow has no own-photo call;
+     `SetGroupPhoto(ctx, types.EmptyJID, jpeg)` sends no `target`, the request Baileys' `updateProfilePicture` sends
+     for the own picture, after the square-JPEG check `chats update --photo` uses. Removing it waits, as for a group.
+     **Live check** (not run): `account update --photo` with a 640-pixel square JPEG, through `serve`; the phone shows
+     the new photo, and whether WhatsApp takes the 190 and 720 pixel ends for an own photo as it does for a group's.
    - **Live checks of `account update`**: not run against WhatsApp. Open: when others see a new name, since `wa`
      sends no presence and WhatsApp learns a name from one; whether `SetStatusMessage` with no duration keeps the
      about for good (whatsmeow sends `ephemeral_duration_sec: 0`, and none of its callers sets one); whether the
