@@ -61,6 +61,17 @@ describe("wa", () => {
     expect(titles).toEqual(expect.arrayContaining(["Book club", "Ann Lee"]))
   })
 
+  it("answers chats events from the store without connecting", async () => {
+    const controller = new AbortController()
+    await wa(["events", "watch", "--jsonl"], pushedThenStopped(controller), controller.signal)
+
+    const result = await wa(["events", "chats", "events", seed.busy, "--json"], () => {
+      throw new Error("chats events must never start the engine")
+    })
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).items).toEqual([])
+  })
+
   it("sends through the engine with the send id as WhatsApp's message id", async () => {
     let engine: FakeEngine | undefined
     const result = await wa(["sender", "messages", "send", seed.dialog, "see you there", "--json"], () => {
@@ -230,7 +241,6 @@ describe("commands WhatsApp has no counterpart for", () => {
     ["account", "update", "--first-name", "Synthetic"],
     ["account", "sessions", "list"],
     ["account", "sessions", "end", "--others"],
-    ["chats", "events", seed.busy],
     ["chats", "inspect", "https://chat.whatsapp.com/FAKE0000000000000000AA"],
     ["chats", "folders", "list"],
     ["chats", "folders", "show", "Work"],

@@ -21,6 +21,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   link without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds; a command path given as one
   quoted argument (`wa 'chats list'`) fails with `validation_error`. `wa mcp` no longer offers `chats link create`,
   `metadata get` or `metadata refresh`, which `wa` does not have and which failed.
+- **`chats events` answers from the local store** (cli-core 0.336.0): it no longer refuses with exit `2`, never
+  connects, and works with `--offline`. `wa` does not record joins and leaves yet, so the list is empty.
+- **`conversations build` counts as a write to an outside service and `search conversations` as a read from one**
+  (cli-core 0.336.0, WC-CMD-17): under `WA_READ_ONLY` each refuses before it sends chat text or the query to a remote
+  provider; a local model still works. Both always run in the calling process, never through `serve`.
+- **`WA_READ_ONLY` also keeps what the owner saved** (cli-core 0.336.0, WC-PERM-12): `searches create`, `searches
+  delete`, `searches clear`, `contacts alias set`, `contacts alias rm`, `contacts notes edit`, `contacts notes remove`
+  and `tags remove`, and their MCP tools, refuse with exit `5`. An agent that saved searches must do it in a process
+  without the lock.
 
 ### Added
 
