@@ -392,6 +392,48 @@ describe("wa setup", () => {
     expect(installSkill).not.toHaveBeenCalled()
   })
 
+  it("on Windows names npm.cmd in next commands and says how to get past a PowerShell block", async () => {
+    linkedDevice()
+    const result = await execute(["setup", "--agent", "none", "--json"], {
+      platform: "win32",
+      update: { scriptPath: "/home/test/.npm/_npx/key/node_modules/@wirecat/whatsapp-cli/dist/bin/wa.js" },
+    })
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item.next.inbox).toMatch(/^npm\.cmd exec --yes /)
+    expect(result.stderr).toContain("Windows: use wa.cmd or npm.cmd")
+  })
+
+  it("--quiet hides the step headings from a person and still prints the result", async () => {
+    linkedDevice()
+    const result = await execute(["setup", "--quiet", "--agent", "none"], { tty: true, stdin: terminal() })
+    expect(result.code).toBe(0)
+    expect(result.stderr).not.toMatch(/\[\d\/5\]/)
+    expect(result.stderr).not.toContain("local directories ready")
+    expect(stripVTControlCharacters(result.stdout)).toContain("WhatsApp is ready")
+  })
+
+  it("counts one chat in the singular and verifies an account that has no name", async () => {
+    const chat = seed.chats[0]
+    if (!chat || !seed.account) throw new Error("the contract seed has a chat and an account")
+    const single = {
+      ...seed,
+      account: { ...seed.account, name: null },
+      chats: [chat],
+      messages: seed.messages.filter((message) => message.chatId === chat.id),
+    }
+    const qrFile = join(env.WA_CACHE_DIR ?? "", "one.png")
+    mkdirSync(dirname(qrFile), { recursive: true })
+    const result = await execute(
+      ["setup", "--qr-file", qrFile, "--agent", "none"],
+      { tty: true, stdin: terminal() },
+      fakeEngine(single, { linked: false }),
+    )
+    expect(result.code, result.stderr).toBe(0)
+    expect(result.stderr).toMatch(/✓ linked; 1 chat and \d+ messages kept/)
+    expect(result.stderr).toContain("✓ verified")
+    expect(stripVTControlCharacters(result.stdout)).toContain("1 chat checked")
+  })
+
   it("keeps the profile in next commands when running through npm exec", async () => {
     linkedDevice("work")
     const result = await execute(["work", "setup", "--agent", "none", "--json"], {

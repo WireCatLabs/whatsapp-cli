@@ -187,6 +187,17 @@ describe("wa session start at a terminal", () => {
     expect(result.stderr.split("\n").length).toBeGreaterThan(10)
   })
 
+  it("tells a person the profile is linked already, and how to link again", async () => {
+    if (!seed.account) throw new Error("the contract seed has an account")
+    const nameless = { ...seed, account: { ...seed.account, name: null } }
+    const result = await wa(["again", "session", "start"], () => fakeEngine(nameless), terminal())
+    expect(result.code, result.stderr).toBe(0)
+    const out = `${result.stdout}${result.stderr}`
+    expect(out).toContain("Already linked as you — profile again; nothing was asked.")
+    expect(out).toContain("`wa again session end` first to link again")
+    expect(out).not.toContain("History:")
+  })
+
   it("passes on why linking failed, in the engine's own code", async () => {
     const engine = fakeEngine(seed, { linked: false })
     engine.link = async () => {

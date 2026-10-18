@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**161 ✅ · 562 ⛔ · 0 ❌** — 227 commands, 496 options.
+**162 ✅ · 561 ⛔ · 0 ❌** — 227 commands, 496 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -720,7 +720,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--verbose` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/messenger.test.ts (-v) |
 | *global* | `--json` | ✅ |  |
 | *global* | `--jsonl` | ✅ |  |
-| *global* | `--quiet` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/program.test.ts |
+| *global* | `--quiet` | ✅ |  |
 | *global* | `--trace` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/messenger.test.ts |
 | *global* | `--debug` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/errors/reasons.test.ts |
 | *global* | `--timeout` | ✅ |  |
