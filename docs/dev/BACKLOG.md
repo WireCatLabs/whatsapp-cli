@@ -25,9 +25,9 @@ Open work, most important first. The plan in flight is
    sent fewer than asked (at most three asks, 1 s apart, 25 s in all); each request goes under an id the engine
    chose, and an answer whose `PeerDataRequestSessionID` names it is credited to it, one naming an earlier request
    is saved as a history push, and any other is matched by its chat as before. Still open, live (NEED-1387, own chat
-   only; scenario H1 in [live-scenarios.md](live-scenarios.md)): whether a 50-message answer comes in one `ON_DEMAND`
-   notification or several; whether `PeerDataRequestSessionID` equals the request's id (mautrix-whatsapp logs both
-   and matches neither); whether the phone finds a chat named by its LID when it knows it by phone number. cli-core
+   only; scenario H1 in [live-scenarios.md](live-scenarios.md), which the owner runs with
+   `bin/live-older-history`): whether a 50-message answer comes in one `ON_DEMAND` notification or several;
+   whether `PeerDataRequestSessionID` equals the request's id (mautrix-whatsapp logs both and matches neither); whether the phone finds a chat named by its LID when it knows it by phone number. cli-core
    sets `fetched:<chat>` on the first page of a run without `before`, read only for its time (`stats` `fetched_at`,
    the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
    reported to the lead for cli-core to decide.

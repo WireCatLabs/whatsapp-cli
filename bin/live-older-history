@@ -1,0 +1,161 @@
+#!/usr/bin/env sh
+# Live check H1 (docs/dev/live-scenarios.md): does one 50-message page of older history come in one ON_DEMAND
+# notification or several, and does the notification name the request by its id? The owner runs it from a
+# terminal; an agent never does.
+#
+#   bin/live-older-history <profile>
+#
+# The engine reads WA_ENGINE_LOG only when it starts, so the script stops the owner's `serve` (by its PID, after
+# checking it is the main checkout's `bin/wa <profile> serve`), starts it again with the log on, in a file beside
+# the device keys, asks the phone for one page of the own chat through it, then starts `serve` as it was. It prints
+# the engine's per-answer counts and yes/no only: no message text, no id, no number. The log is deleted at the end.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+own=$(own_chat "$profile") || exit 1
+serve_running "$profile" || die "no serve holds profile $profile's device — this check needs one running to restart"
+find_serve "$profile" || exit 1
+
+# Only the variable's presence is read, never serve's other settings.
+if [ -r "/proc/$serve/environ" ] && [ "$(tr '\0' '\n' <"/proc/$serve/environ" | grep -c '^WA_ENGINE_LOG=')" != 0 ]; then
+  die "serve already runs with WA_ENGINE_LOG set; this script could not start it again the same way"
+fi
+unset WA_ENGINE_LOG
+
+keys=$(wa_json "$profile" doctor --timeout 30s | json 'd.item.whatsapp.device.path') || die "doctor gave no device path"
+run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
+log="$(dirname -- "$keys")/engine-h1-$run.log"
+(umask 077 && set -C && : >"$log") || die "cannot create the log file beside the device keys"
+
+stopped=no
+started=""
+logging=no
+put_back() {
+  if [ "$logging" = yes ] && [ -n "$started" ] && kill -0 "$started" 2>/dev/null; then
+    logged=$started
+    tries=0
+    until serve_running "$profile"; do
+      tries=$((tries + 1))
+      [ "$tries" -le 60 ] || {
+        echo "the logging serve (pid $logged) does not hold the lock — stop it yourself" >&2
+        return 1
+      }
+      sleep 1
+    done
+    find_serve "$profile" || return 1
+    [ "$serve" = "$logged" ] || {
+      echo "serve (pid $serve) is not the one this script started — stopping nothing; stop it yourself" >&2
+      return 1
+    }
+    stop_serve "$profile" || return 1
+  fi
+  logging=no
+  [ "$stopped" = yes ] || return 0
+  if kill -0 "$serve" 2>/dev/null; then
+    echo "serve (pid $serve) is still running — not starting a second one" >&2
+    return 0
+  fi
+  stopped=no
+  start_serve "$profile"
+}
+# Uninterruptible: a second Ctrl-C half-way through would leave the owner without serve, or with the logging one.
+hold_signals() {
+  trap '' HUP INT QUIT TERM
+}
+finish() {
+  hold_signals
+  put_back || echo "then start $wa $profile serve again" >&2
+  rm -f -- "$log"
+  [ -n "$started" ] || return 0
+  if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; fi
+}
+trap finish EXIT
+on_signals
+
+cat <<EOF
+
+Plan, on profile $profile:
+  1. stop serve (pid $serve, its engine pid $engine) with kill, and wait for the lock to clear
+  2. start serve again with the engine's log on, into a file beside the device keys (mode 600):
+     $log
+  3. wa $profile messages sync <own chat> --limit 50 --no-catch-up, through serve: the engine asks your phone
+     for one page of 50 older messages. The ask is a message from this device to your own phone, to no one else;
+     the answer is saved in the store like any history
+  4. wait 30 s for any later part of the answer
+  5. stop that serve and start serve as before: $wa $profile serve, detached, diagnostics to $serve_err
+  6. count the log's on-demand history lines — counts and yes/no only — and delete the log
+
+Keep WhatsApp open on the phone. Your own chat needs more than 50 messages older than the oldest one the
+store holds.
+While serve restarts, messages other people send you wait for it, as on any reconnect.
+EOF
+confirm "Step 1 stops serve."
+
+stop_serve "$profile" || exit 1
+logging=yes
+start_serve "$profile" "$log" || exit 1
+
+confirm "Step 3 asks your phone for one page of your own chat."
+set +e
+synced=$(wa_json "$profile" messages sync "$own" --limit 50 --no-catch-up --timeout 120s)
+code=$?
+set -e
+fetched=$(printf '%s' "$synced" | json 'd.item.fetched' 2>/dev/null) || fetched=""
+echo "messages sync exited $code, fetched ${fetched:-?}"
+echo "waiting 30 s for any later part of the answer"
+sleep 30
+# Read before put_back: the result is printed even when putting serve back fails.
+shape='on-demand history: matched by [a-z-]*, [0-9]* messages credited, chunk [0-9]*, progress [0-9]*'
+shape="$shape, session id is the request id: [a-z]*, original id is the request id: [a-z]*"
+lines=$(grep -o -- "$shape" "$log" || true)
+
+back=0
+hold_signals
+put_back || back=1
+
+echo
+echo "── result ──"
+if [ -z "$lines" ]; then
+  echo "No verdict: no ON_DEMAND answer reached the engine (messages sync exited $code, fetched ${fetched:-?})."
+  echo "The store may already hold the chat's start, or the phone was offline."
+  exit "$back"
+fi
+# The fields are the engine's own words in engine/cmd/wa-engine/older.go: a match kind, then counts and true/false.
+echo "$lines" | awk -F', ' -v code="$code" -v fetched="${fetched:-?}" '
+  function flag(field) { sub(/.*: /, "", field); return field == "true" ? "yes" : "no" }
+  {
+    how = $1; sub(/.* by /, "", how)
+    split($2, credited, " "); split($3, chunk, " "); split($4, progress, " ")
+    session = flag($5); original = flag($6)
+    printf "answer %d: matched by %s, %d messages credited, chunk %d, progress %d, ", NR, how, credited[1], chunk[2],
+      progress[2]
+    printf "session id is the id of the waiting ask: %s, ", session
+    printf "original id is the id of the waiting ask: %s\n", original
+    total += credited[1]; kinds[how]++; seen[session]++; first[original]++
+  }
+  END {
+    asks = kinds["session"] + kinds["chat"]
+    printf "\nanswers: %d, %d of them credited to the waiting ask; messages credited: %d ", NR, asks, total
+    printf "(messages sync exited %s, fetched %s)\n", code, fetched
+    printf "matched by: session %d, session-other-chat %d, chat %d, late %d, none %d\n",
+      kinds["session"], kinds["session-other-chat"], kinds["chat"], kinds["late"], kinds["none"]
+    printf "session id is the id of the waiting ask, as logged: yes %d, no %d\n", seen["yes"], seen["no"]
+    printf "original id is the id of the waiting ask, as logged: yes %d, no %d\n", first["yes"], first["no"]
+    # late: the session id is that of an earlier request, logged false only because that request no longer waits.
+    named = kinds["session"] + kinds["session-other-chat"] + kinds["late"]
+    printf "session id is one of the request ids this device sent (session, session-other-chat, late): yes %d, no %d\n",
+      named, NR - named
+    extra = kinds["late"] + kinds["none"]
+    if (asks == 0) print "No verdict on notifications per ask: no answer was credited to a waiting ask."
+    else if (extra > 0)
+      printf "Several notifications: %d line(s) came for an ask already answered or no longer waiting (late), %s\n",
+        extra, "or matched no ask (none)."
+    else print "One notification per ask: no line came late or matched no ask."
+    print "Chunk order and progress are shown as the phone sent them; their base is not known yet."
+  }'
+[ "$back" = 0 ]

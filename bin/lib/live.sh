@@ -112,3 +112,92 @@ confirm() {
   printf '\n%s\nEnter to go on, Ctrl-C to stop: ' "$1"
   read -r _ || exit 130
 }
+
+# The profile's serve, from the lock: sets lock as read, engine and serve to the two PIDs, and serve_err to where
+# serve's diagnostics go. Fails unless serve is exactly the main checkout's `bin/wa <profile> serve`, the one
+# start_serve can start again the same way.
+find_serve() {
+  lock=$(lock_of "$1")
+  engine=$(echo "$lock" | cut -d'|' -f2)
+  engine_args=$(ps -ww -o args= -p "$engine") || { echo "cannot read process $engine" >&2; return 1; }
+  case "$engine_args" in
+    *wa-engine*" --holder serve"*) ;;
+    *) echo "process $engine holds the lock but is not wa's engine for serve — stopping nothing" >&2; return 1 ;;
+  esac
+  serve=$(ps -o ppid= -p "$engine" | tr -d ' ')
+  serve_args=$(ps -ww -o args= -p "$serve") || { echo "cannot read process $serve" >&2; return 1; }
+  case "$serve_args" in
+    *" $main/dist/bin/wa.js $1 serve") ;;
+    *)
+      echo "serve (pid $serve) was not started as $wa $1 serve; this script could not start it again the same way" >&2
+      return 1
+      ;;
+  esac
+  # Where serve's diagnostics went, so the restarted one writes there too; a pipe or socket cannot be reopened.
+  serve_err=/dev/null
+  if target=$(readlink "/proc/$serve/fd/2" 2>/dev/null); then
+    case "$target" in
+      /*) [ -w "$target" ] && serve_err=$target ;;
+    esac
+  fi
+  return 0
+}
+
+# Stops the serve find_serve found, by its PID, once the lock still names it, and waits until both processes are gone
+# and the lock is free. Sets stopped=yes just before the kill, for the caller's EXIT trap.
+stop_serve() {
+  [ "$(lock_of "$1")" = "$lock" ] && [ "$(ps -o ppid= -p "$engine" | tr -d ' ')" = "$serve" ] || {
+    echo "serve changed while the plan was on screen — stopping nothing; run the script again" >&2
+    return 1
+  }
+  # shellcheck disable=SC2034 # read by the caller's EXIT trap
+  stopped=yes
+  kill "$serve" || return 1
+  tries=0
+  while kill -0 "$serve" 2>/dev/null || kill -0 "$engine" 2>/dev/null; do
+    tries=$((tries + 1))
+    [ "$tries" -le 30 ] || { echo "serve (pid $serve) or its engine has not ended after 30 s" >&2; return 1; }
+    sleep 1
+  done
+  if lock_held "$1"; then
+    echo "something holds the lock again — a service manager may have restarted serve" >&2
+    return 1
+  fi
+  echo "serve stopped, lock free"
+}
+
+# Starts serve as find_serve found it: from the main checkout, detached, stdout to /dev/null, diagnostics to
+# serve_err. A second argument turns the engine's log on, into that file (WA_ENGINE_LOG). Sets started to serve's
+# PID and waits until serve holds the lock.
+start_serve() {
+  # A one-shot cut short by Ctrl-C may hold the lock for a moment; serve started now would be refused it.
+  tries=0
+  while lock_held "$1"; do
+    tries=$((tries + 1))
+    [ "$tries" -le 30 ] || { echo "the lock is still held after 30 s — start $wa $1 serve yourself" >&2; return 1; }
+    sleep 1
+  done
+  umask 077
+  # Its own session, so a Ctrl-C at a later prompt reaches the script and not serve.
+  (
+    cd -- "$main" || exit 1
+    [ -z "${2:-}" ] || export WA_ENGINE_LOG="$2"
+    if command -v setsid >/dev/null; then
+      exec setsid nohup "$wa" "$1" serve </dev/null >/dev/null 2>>"$serve_err"
+    fi
+    exec nohup "$wa" "$1" serve </dev/null >/dev/null 2>>"$serve_err"
+  ) &
+  started=$!
+  if [ -n "${2:-}" ]; then
+    echo "started serve (pid $started) with the engine's log on, its diagnostics to $serve_err as before"
+  else
+    echo "started serve again (pid $started), its diagnostics to $serve_err as before"
+  fi
+  tries=0
+  until serve_running "$1"; do
+    tries=$((tries + 1))
+    [ "$tries" -le 60 ] || { echo "serve does not hold the lock after 60 s" >&2; return 1; }
+    sleep 1
+  done
+  echo "serve holds the lock again"
+}

@@ -16,27 +16,7 @@ set -eu
 profile=${1:-}
 need_profile "$profile"
 serve_running "$profile" || die "no serve holds profile $profile's device — this check needs one running to stop"
-
-lock=$(lock_of "$profile")
-engine=$(echo "$lock" | cut -d'|' -f2)
-engine_args=$(ps -ww -o args= -p "$engine") || die "cannot read process $engine"
-case "$engine_args" in
-  *wa-engine*" --holder serve"*) ;;
-  *) die "process $engine holds the lock but is not wa's engine for serve — stopping nothing" ;;
-esac
-serve=$(ps -o ppid= -p "$engine" | tr -d ' ')
-serve_args=$(ps -ww -o args= -p "$serve") || die "cannot read process $serve"
-case "$serve_args" in
-  *" $main/dist/bin/wa.js $profile serve") ;;
-  *) die "serve (pid $serve) was not started as $wa $profile serve; this script could not start it again the same way" ;;
-esac
-# Where serve's diagnostics went, so the restarted one writes there too; a pipe or socket cannot be reopened.
-serve_err=/dev/null
-if target=$(readlink "/proc/$serve/fd/2" 2>/dev/null); then
-  case "$target" in
-    /*) [ -w "$target" ] && serve_err=$target ;;
-  esac
-fi
+find_serve "$profile" || exit 1
 
 run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
 marker="wacheck$run"
@@ -66,7 +46,7 @@ shown() {
 [ "$(hits "$marker")" = "0 0" ] || die "the store reads failed or already hold the marker — stopping nothing"
 
 stopped=no
-restarted=no
+started=""
 restart() {
   [ "$stopped" = yes ] || return 0
   stopped=no
@@ -74,33 +54,11 @@ restart() {
     echo "serve (pid $serve) is still running — not starting a second one" >&2
     return 0
   fi
-  # A one-shot cut short by Ctrl-C may hold the lock for a moment; serve started now would be refused it.
-  tries=0
-  while lock_held "$profile"; do
-    tries=$((tries + 1))
-    [ "$tries" -le 30 ] || { echo "the lock is still held after 30 s — start $wa $profile serve yourself" >&2; return 1; }
-    sleep 1
-  done
-  umask 077
-  # Its own session, so a Ctrl-C at a later prompt reaches the script and not serve.
-  if command -v setsid >/dev/null; then
-    (cd -- "$main" && exec setsid nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$serve_err") &
-  else
-    (cd -- "$main" && exec nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$serve_err") &
-  fi
-  restarted=yes
-  echo "started serve again (pid $!), its diagnostics to $serve_err as before"
-  tries=0
-  until serve_running "$profile"; do
-    tries=$((tries + 1))
-    [ "$tries" -le 60 ] || { echo "serve does not hold the lock after 60 s" >&2; return 1; }
-    sleep 1
-  done
-  echo "serve holds the lock again"
+  start_serve "$profile"
 }
 finish() {
   restart || true
-  [ "$restarted" = yes ] || return 0
+  [ -n "$started" ] || return 0
   if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; fi
 }
 trap finish EXIT
@@ -121,18 +79,7 @@ that is the question this check answers. Delete the two test messages from the p
 EOF
 confirm "Step 1 stops serve."
 
-[ "$(lock_of "$profile")" = "$lock" ] && [ "$(ps -o ppid= -p "$engine" | tr -d ' ')" = "$serve" ] ||
-  die "serve changed while the plan was on screen — stopping nothing; run the script again"
-stopped=yes
-kill "$serve"
-tries=0
-while kill -0 "$serve" 2>/dev/null || kill -0 "$engine" 2>/dev/null; do
-  tries=$((tries + 1))
-  [ "$tries" -le 30 ] || die "serve (pid $serve) or its engine has not ended after 30 s"
-  sleep 1
-done
-! lock_held "$profile" || die "something holds the lock again — a service manager may have restarted serve"
-echo "serve stopped, lock free"
+stop_serve "$profile" || exit 1
 
 confirm "Step 2: on the phone, send yourself (Message yourself) a message containing $marker, wait for its tick."
 
