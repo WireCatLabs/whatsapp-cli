@@ -19,35 +19,54 @@ serve_running "$profile" || die "no serve holds profile $profile's device — th
 
 lock=$(lock_of "$profile")
 engine=$(echo "$lock" | cut -d'|' -f2)
-engine_args=$(ps -o args= -p "$engine") || die "cannot read process $engine"
+engine_args=$(ps -ww -o args= -p "$engine") || die "cannot read process $engine"
 case "$engine_args" in
   *wa-engine*" --holder serve"*) ;;
   *) die "process $engine holds the lock but is not wa's engine for serve — stopping nothing" ;;
 esac
 serve=$(ps -o ppid= -p "$engine" | tr -d ' ')
-serve_args=$(ps -o args= -p "$serve") || die "cannot read process $serve"
+serve_args=$(ps -ww -o args= -p "$serve") || die "cannot read process $serve"
 case "$serve_args" in
   *" $main/dist/bin/wa.js $profile serve") ;;
   *) die "serve (pid $serve) was not started as $wa $profile serve; this script could not start it again the same way" ;;
 esac
+# Where serve's diagnostics went, so the restarted one writes there too; a pipe or socket cannot be reopened.
+serve_err=/dev/null
+if target=$(readlink "/proc/$serve/fd/2" 2>/dev/null); then
+  case "$target" in
+    /*) [ -w "$target" ] && serve_err=$target ;;
+  esac
+fi
 
 run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
 marker="wacheck$run"
 control="wacontrol$run"
-log="$main/.wa/serve.log"
 
-count() {
+# "<found by search> <found among the own chat's newest 50>", "?" for a read that failed.
+hits() {
   found=$(wa_json "$profile" search messages "$1" --offline --limit 5 --timeout 30s | json 'd.items.length') ||
     found="?"
-  own=$(wa_json "$profile" messages list me --offline --limit 50 --timeout 30s |
-    json 'd.items.filter((one) => (one.text ?? "").includes(a)).length' "$1") || own="?"
-  echo "$found by search, $own among the own chat's newest 50"
+  listed=$(wa_json "$profile" messages list me --offline --limit 50 --timeout 30s |
+    json 'd.items.filter((one) => (one.text ?? "").includes(a)).length' "$1") || listed="?"
+  echo "$found $listed"
 }
 
-[ "$(count "$marker")" = "0 by search, 0 among the own chat's newest 50" ] ||
-  die "the store reads failed or already hold the marker — stopping nothing"
+seen() {
+  case "$1" in
+    *"?"*) echo unknown ;;
+    "0 0") echo no ;;
+    *) echo yes ;;
+  esac
+}
+
+shown() {
+  echo "${1% *} by search, ${1#* } among the own chat's newest 50"
+}
+
+[ "$(hits "$marker")" = "0 0" ] || die "the store reads failed or already hold the marker — stopping nothing"
 
 stopped=no
+restarted=no
 restart() {
   [ "$stopped" = yes ] || return 0
   stopped=no
@@ -55,32 +74,37 @@ restart() {
     echo "serve (pid $serve) is still running — not starting a second one" >&2
     return 0
   fi
+  # A one-shot cut short by Ctrl-C may hold the lock for a moment; serve started now would be refused it.
+  tries=0
+  while lock_held "$profile"; do
+    tries=$((tries + 1))
+    [ "$tries" -le 30 ] || { echo "the lock is still held after 30 s — start $wa $profile serve yourself" >&2; return 1; }
+    sleep 1
+  done
   umask 077
   # Its own session, so a Ctrl-C at a later prompt reaches the script and not serve.
   if command -v setsid >/dev/null; then
-    setsid nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$log" &
+    (cd -- "$main" && exec setsid nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$serve_err") &
   else
-    nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$log" &
+    (cd -- "$main" && exec nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$serve_err") &
   fi
   restarted=yes
-  echo "started serve again (pid $!), its diagnostics in $log"
+  echo "started serve again (pid $!), its diagnostics to $serve_err as before"
   tries=0
   until serve_running "$profile"; do
     tries=$((tries + 1))
-    [ "$tries" -le 60 ] || { echo "serve does not hold the lock after 60 s — check $log" >&2; return 1; }
+    [ "$tries" -le 60 ] || { echo "serve does not hold the lock after 60 s" >&2; return 1; }
     sleep 1
   done
   echo "serve holds the lock again"
 }
-restarted=no
 finish() {
   restart || true
   [ "$restarted" = yes ] || return 0
   if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; fi
 }
 trap finish EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
+on_signals
 
 cat <<EOF
 
@@ -88,7 +112,7 @@ Plan, on profile $profile:
   1. stop serve (pid $serve, its engine pid $engine) with kill, and wait for the lock to clear
   2. you send yourself a message from the phone containing the word: $marker
   3. one one-shot connection: wa $profile doctor --online (connects, reads the account, sends nothing)
-  4. serve starts again as before: $wa $profile serve, detached, output to /dev/null, diagnostics to $log
+  4. serve starts again as before: $wa $profile serve, detached, output to /dev/null, diagnostics to $serve_err
   5. you send yourself a second message, the control: $control
   6. both words are counted in the store — counts only
 
@@ -97,17 +121,17 @@ that is the question this check answers. Delete the two test messages from the p
 EOF
 confirm "Step 1 stops serve."
 
-kill "$serve"
+[ "$(lock_of "$profile")" = "$lock" ] && [ "$(ps -o ppid= -p "$engine" | tr -d ' ')" = "$serve" ] ||
+  die "serve changed while the plan was on screen — stopping nothing; run the script again"
 stopped=yes
+kill "$serve"
 tries=0
 while kill -0 "$serve" 2>/dev/null || kill -0 "$engine" 2>/dev/null; do
   tries=$((tries + 1))
   [ "$tries" -le 30 ] || die "serve (pid $serve) or its engine has not ended after 30 s"
   sleep 1
 done
-case "$(lock_of "$profile")" in
-  *"|true") die "something holds the lock again — a service manager may have restarted serve" ;;
-esac
+! lock_held "$profile" || die "something holds the lock again — a service manager may have restarted serve"
 echo "serve stopped, lock free"
 
 confirm "Step 2: on the phone, send yourself (Message yourself) a message containing $marker, wait for its tick."
@@ -124,9 +148,19 @@ confirm "Step 5: on the phone, send yourself a message containing $control."
 echo "waiting 20 s for serve to save it"
 sleep 20
 
+marker_hits=$(hits "$marker")
+control_hits=$(hits "$control")
 echo
 echo "── result ──"
-echo "marker, sent while nothing was connected: $(count "$marker")"
-echo "control, sent while serve ran:            $(count "$control")"
-echo "A control found and a marker missing means the one-shot connection took the message (BACKLOG 9 holds)."
-echo "A marker found does not clear item 9: doctor --online may have ended before WhatsApp delivered it."
+echo "marker, sent while nothing was connected: $(shown "$marker_hits")"
+echo "control, sent while serve ran:            $(shown "$control_hits")"
+case "$code $(seen "$marker_hits") $(seen "$control_hits")" in
+  "0 unknown "* | "0 "*" unknown") echo "No verdict: a store read failed." ;;
+  "0 "*" no") echo "No verdict: serve saved not even the control, so it is not saving messages at all." ;;
+  "0 no yes") echo "BACKLOG 9 holds: the one-shot connection took the queued message, and it never reached the store." ;;
+  "0 yes yes")
+    echo "Not dropped this time: the marker reached the store. This does not clear BACKLOG 9:"
+    echo "doctor --online may have ended before WhatsApp delivered the queue, and serve then got it."
+    ;;
+  *) echo "No verdict: doctor --online failed, so the one-shot connection may never have connected." ;;
+esac

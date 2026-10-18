@@ -20,7 +20,10 @@ known=$(profiles) || die "wa account list failed"
 case " $known " in
   *" $profile "*) die "profile $profile exists already — name a new one; taken: $known" ;;
 esac
-device=$(wa_json "$profile" doctor --timeout 30s | json 'd.item.whatsapp.device.exists')
+has_device() {
+  wa_json "$profile" doctor --timeout 30s | json 'd.item.whatsapp.device.exists'
+}
+device=$(has_device)
 [ "$device" = false ] || die "profile $profile has device keys already — name a new one"
 
 cat <<EOF
@@ -34,9 +37,17 @@ read -r answer || exit 130
 [ "$answer" = yes ] || die "nothing linked"
 
 store=$(mktemp -d "${TMPDIR:-/tmp}/wa-fresh-link.XXXXXX")
-trap 'rm -rf "$store"' EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
+finish() {
+  rm -rf -- "$store" || echo "remove the throwaway store yourself: $store" >&2
+  [ "$(has_device 2>/dev/null)" != false ] || return 0
+  cat <<EOF
+
+Profile $profile is linked as a second device. To unlink it: $wa $profile session end
+(it unlinks on WhatsApp's side and deletes its keys here), or on the phone: Settings > Linked devices.
+EOF
+}
+trap finish EXIT
+on_signals
 
 echo "Scan the QR code below in WhatsApp > Settings > Linked devices > Link a device, then keep WhatsApp open."
 set +e
@@ -56,8 +67,3 @@ if [ "$code" -eq 0 ]; then
       `${d.item.received?.people ?? "?"} people`,
   ].join("\n")' <"$store/answer.json"
 fi
-cat <<EOF
-
-To unlink the new device: $wa $profile session end
-(it unlinks on WhatsApp's side and deletes its keys here), or on the phone: Settings > Linked devices.
-EOF

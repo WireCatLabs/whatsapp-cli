@@ -33,13 +33,12 @@ leftover() {
   echo "the test poll ($question) is still in your own chat — delete it from the phone for everyone" >&2
 }
 trap leftover EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
+on_signals
 
 cat <<EOF
 
 Plan, on profile $profile, in your own chat only:
-  1. wa polls create: the poll "$question", answers "yes" and "no"
+  1. wa polls create: the poll "$question", answers "yes" and "no"; wa polls show reads its answer ids
   2. wa polls vote: your vote for "yes"
   3. wa polls show: the tally, read back from the store
   4. wa messages delete --for-everyone: the poll goes

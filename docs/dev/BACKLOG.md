@@ -10,8 +10,9 @@ Open work, most important first. The plan in flight is
    pairing.
 9. **A one-shot connection may take messages and drop them.** If WhatsApp hands each queued message to a linked
    device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
-   and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
-   starts. The owner runs `bin/live-oneshot-drop` for it.
+   and `watch` save to the store. Unverified: check live — a message queued while nothing is connected, one
+   one-shot connection, then `serve`. The owner runs `bin/live-oneshot-drop` for it; a message arriving during a
+   longer one-shot `messages send` is not covered by it.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.

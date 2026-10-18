@@ -14,9 +14,28 @@ wa="$main/bin/wa"
 [ -f "$main/dist/bin/wa.js" ] || die "no build in $main — run pnpm build there first"
 [ -t 0 ] && [ -t 1 ] || die "run this from a terminal: it asks before every step"
 
-# Machine mode, and never a question nobody sees: the script has asked before each write.
+# Machine mode, and never a question nobody sees: the script has asked before each write. A failure shows only its
+# exit code and error code, because cli-core's JSON error names the chat and the message it was about.
 wa_json() {
-  "$wa" "$@" --json --no-input
+  errors=$(mktemp "${TMPDIR:-/tmp}/wa-live.XXXXXX") || return 1
+  "$wa" "$@" --json --no-input 2>"$errors" && { rm -f -- "$errors"; return 0; }
+  status=$?
+  reason=$(head -n 1 -- "$errors" | json 'd.error.code' 2>/dev/null) || reason=""
+  rm -f -- "$errors"
+  echo "wa $(command_words "$@") failed: exit $status, ${reason:-no error code}" >&2
+  return "$status"
+}
+
+# The leading lowercase words of a call: its command. The arguments after them may be ids.
+command_words() {
+  shown=""
+  for word in "$@"; do
+    case "$word" in
+      "" | -* | *[!a-z-]*) break ;;
+    esac
+    shown="$shown $word"
+  done
+  printf '%s' "${shown# }"
 }
 
 # Reads one JSON value on stdin and prints an expression over it (`d`), with `a` the optional second argument.
@@ -67,11 +86,26 @@ lock_of() {
       2>/dev/null
 }
 
+lock_held() {
+  case "$(lock_of "$1")" in
+    *"|true") return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 serve_running() {
   case "$(lock_of "$1")" in
     "serve (pid "*"|true") return 0 ;;
     *) return 1 ;;
   esac
+}
+
+# A closed terminal or a quit ends the script through its EXIT trap too; an untrapped signal would skip it.
+on_signals() {
+  trap 'exit 129' HUP
+  trap 'exit 130' INT
+  trap 'exit 131' QUIT
+  trap 'exit 143' TERM
 }
 
 confirm() {
