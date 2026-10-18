@@ -148,6 +148,16 @@ createInterface({ input: process.stdin }).on("line", (line) => {
           `"verified":false,"contact":true,"photo":null}}\n`,
       )
       break
+    case "privacy":
+    case "setPrivacy":
+      if (op === "setPrivacy" && !fields.privacy?.every((change) => change.name && change.value)) {
+        say({ id, error: { code: "validation_error", message: "no privacy setting to change" } })
+        break
+      }
+      process.stdout.write(
+        `{"id":${id},"ok":{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known"}}\n`,
+      )
+      break
     case "participants":
       process.stdout.write(`{"id":${id},"ok":{"notAdded":[]}}\n`)
       break

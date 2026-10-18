@@ -20,7 +20,9 @@ import {
   waPoll,
 } from "../engine/contract.js"
 import { eventHub } from "../engine/events.js"
+import type { WaPrivacy } from "../engine/privacy.js"
 import { type FakeGroups, fakeGroups } from "./fake-groups.js"
+import { type FakePrivacy, fakePrivacy } from "./fake-privacy.js"
 
 /** Ids shaped like WhatsApp's: groups, LIDs and web message ids. */
 export const whatsAppIds: IdMaker = (kind, n) =>
@@ -73,7 +75,7 @@ const UPLOADED: Record<string, { kind: WaAttachment["kind"]; media: "image" | "v
 /** The bytes the fake engine "downloads": synthetic, named after the file's kind. */
 export const syntheticBytes = (attachment: WaAttachment): Buffer => Buffer.from(`synthetic ${attachment.kind} bytes`)
 
-export interface FakeEngine extends WhatsAppEngine, FakeGroups {
+export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   /** Pushes an event as the engine would, checked against the contract first. */
   push(event: EngineEvent): void
   sent: WaMessage[]
@@ -105,7 +107,7 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups {
  */
 export const fakeEngine = (
   seed: Seed,
-  { linked = true, phone }: { linked?: boolean; phone?: WaMessage[] } = {},
+  { linked = true, phone, privacy }: { linked?: boolean; phone?: WaMessage[]; privacy?: WaPrivacy } = {},
 ): FakeEngine => {
   const hub = eventHub()
   let self = linked ? (seed.account?.id ?? null) : null
@@ -157,6 +159,7 @@ export const fakeEngine = (
 
   const engine: FakeEngine = {
     ...fakeGroups(seed, chats),
+    ...fakePrivacy(privacy),
     sent,
     sends,
     actions,

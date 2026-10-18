@@ -217,6 +217,7 @@ export const WHATSAPP: Messenger = {
   // Every delete wa makes is for everyone, which an agent may never do: the MCP delete refuses up front instead of
   // answering with an "add --for-everyone" that only the owner can act on.
   deleteForMe: false,
+  privacy: true,
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)

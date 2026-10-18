@@ -25,7 +25,7 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `messages edit`, `messages delete --for-everyone`, `messages download`, `messages forward`,
 `messages transcribe --local`, `reactions add|remove`, `polls create|show|vote|voters`, `chats mark-read`, group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
-`chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`,
+`chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
 Not built yet: `messages pin|unpin`, several files in one message, deleting for the owner alone,
 `chats inspect`, removing a group's photo (`chats update --photo` sets one, a square JPEG of 190 to

@@ -102,6 +102,23 @@ person's newest vote in the local store (`watch --events` prints each new one), 
 its history right after linking too, so the counts are what the store heard. A vote cast while nothing listened is
 missed until that person votes again.
 
+## Privacy
+
+```sh
+wa personal account privacy show                         # who may add you to groups, whose calls ring, online hidden
+wa personal account privacy set --chat-invites contacts  # only contacts add you to groups; the rest stays
+wa personal account privacy set --hide-online on         # last seen to nobody, online only to those who see it
+```
+
+`show` asks WhatsApp each time, not a copy kept on this computer. `set` changes only what you name and
+answers every setting as it now is; it changes your account on every device, and goes through the profile's
+permissions like a send (`permissions.account.privacy.set`). `--calls contacts` is WhatsApp's "silence unknown
+callers": calls from people you do not know still arrive, without ringing, and WhatsApp has no `--calls nobody`.
+`--hide-online off` shows last seen to your contacts, since WhatsApp does not keep the setting from before it was
+hidden. WhatsApp has no setting for who finds you by your number or who sees it, so `--find-by-phone` and
+`--phone-number` are refused. A setting kept with exceptions on the phone ("my contacts except…") is left out of
+`show`, and `set` replaces it. Who sees read receipts, the profile photo and the about text is not in `wa` yet; set it on the phone.
+
 ## Send, save and forward files
 
 ```sh
