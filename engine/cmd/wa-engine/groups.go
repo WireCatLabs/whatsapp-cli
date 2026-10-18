@@ -416,15 +416,15 @@ func (e *engine) resetLink(raw string) (*waGroup, error) {
 	return group, nil
 }
 
-// WhatsApp takes a group photo as a JPEG, and whatsmeow sends the bytes as given. mautrix-whatsapp passes one through
-// only when it is square and between these sides, and re-encodes it to one of them otherwise
-// (pkg/connector/handlematrix.go, avatarMinSize and avatarMaxSize).
+// WhatsApp takes a group photo as a JPEG, and whatsmeow sends the bytes as given. mautrix-whatsapp v0.2610.0 sends
+// only square JPEGs of these sides: it re-encodes any other picture to a side clamped to them, ends included
+// (pkg/connector/handlematrix.go, convertRoomAvatar).
 const (
 	groupPhotoMin = 190
 	groupPhotoMax = 720
 )
 
-// groupPhoto reads the picture only once its header shows WhatsApp would take it, so a huge file is never loaded.
+// groupPhoto reads the picture in full only once its header shows WhatsApp would take it.
 func groupPhoto(path string) ([]byte, error) {
 	if !filepath.IsAbs(path) {
 		return nil, &failure{"validation_error", "a group photo needs its absolute path"}
