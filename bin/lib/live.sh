@@ -26,6 +26,20 @@ wa_json() {
   return "$status"
 }
 
+# One wa call: its stdout in $out, its exit code in $rc. Its stderr stays in the caller's file $errs and is never
+# printed whole, since a refusal can quote the chat. Not wa_json: that keeps only the error code, and a caller may
+# need to read the refusal's fixed words.
+attempt() {
+  # shellcheck disable=SC2034,SC2154 # out and rc are the caller's to read, errs the caller's to set
+  out=$("$wa" "$@" --json --no-input 2>"$errs") && rc=0 || rc=$?
+}
+
+# The error's code ("validation_error", "settings.keys-missing"), the one part of a refusal that is safe to print.
+# A diagnostic line, such as download's "not a file", can come before the JSON error.
+error_code() {
+  grep -m 1 '^{' -- "$errs" | json 'd.error.code' 2>/dev/null
+}
+
 # The leading lowercase words of a call: its command. The arguments after them may be ids.
 command_words() {
   shown=""
@@ -116,6 +130,18 @@ hold_signals() {
 confirm() {
   printf '\n%s\nEnter to go on, Ctrl-C to stop: ' "$1"
   read -r _ || exit 130
+}
+
+# Asks until the answer is y or n; prints yes or no.
+phone() {
+  while :; do
+    printf '%s [y/n] ' "$1" >&2
+    read -r reply || exit 130
+    case "$reply" in
+      y | Y | yes) echo yes && return ;;
+      n | N | no) echo no && return ;;
+    esac
+  done
 }
 
 # The profile's serve, from the lock: sets lock as read, engine and serve to the two PIDs, and serve_err to where

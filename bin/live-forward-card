@@ -1,0 +1,88 @@
+#!/usr/bin/env sh
+# Live check of forwarding a place and a contact card (BACKLOG item 5, "Live check of forwarding a place or a
+# contact card"): the owner sends both to the own chat from the phone, `wa` forwards each back into the own chat, and
+# the owner says whether they open on the phone. The owner runs it from a terminal; an agent never does.
+#
+#   bin/live-forward-card <profile>
+#
+# It writes only to the own chat, through the running `serve`, and asks before each forward. It prints exit codes,
+# error codes and yes/no only: no message text, no id, no place, no name, no number.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+own=$(own_chat "$profile") || exit 1
+serve_running "$profile" ||
+  die "start $wa $profile serve first: the forwards go through it, and it stores what the phone sends"
+
+# The newest message in the own chat that is one place or one contact card alone, as the store holds it now.
+newest() {
+  wa_json "$profile" messages list "$own" --offline --limit 20 --timeout 30s |
+    json 'd.items.filter((one) => one.attachments.length === 1 && one.attachments[0].kind === a).at(-1)?.id' "$1"
+}
+
+place_before=$(newest location) || die "messages list failed"
+card_before=$(newest contact) || die "messages list failed"
+asked=no
+place=skipped card=skipped
+
+leftover() {
+  [ "$asked" = no ] || echo "delete the test place, card and any forwards from your own chat on the phone" >&2
+}
+trap leftover EXIT
+on_signals
+
+cat <<EOF
+
+Plan, on profile $profile, in your own chat only:
+  1. you send yourself, from the phone, a place and one contact card
+  2. wa messages forward of each, back into your own chat (--to your own chat)
+  3. you say whether the forwards open on the phone
+  4. you delete the four messages from the phone
+EOF
+confirm "Step 1: on the phone, open Message yourself. Send a place (Attach > Location > a place or your current
+location — not Share live location), then one contact (Attach > Contact > one person only). Wait for both ticks."
+asked=yes
+
+tries=0
+while :; do
+  place_id=$(newest location) || place_id=""
+  card_id=$(newest contact) || card_id=""
+  if [ -n "$place_id" ] && [ "$place_id" != "$place_before" ] && [ -n "$card_id" ] && [ "$card_id" != "$card_before" ]
+  then
+    break
+  fi
+  tries=$((tries + 1))
+  [ "$tries" -le 30 ] || die "no new place and card in your own chat's store after 30 tries — is serve saving?"
+  sleep 1
+done
+echo "the store holds the new place and contact card"
+
+confirm "Step 2 forwards the place into your own chat."
+if wa_json "$profile" messages forward "$own" "$place_id" --to "$own" --yes --timeout 60s >/dev/null; then
+  echo "messages forward of the place: exit 0"
+  place=$(phone "Does the forwarded place show as a map, marked Forwarded, and open on tap at the same spot?")
+else
+  place=failed
+fi
+
+confirm "Next it forwards the contact card into your own chat."
+if wa_json "$profile" messages forward "$own" "$card_id" --to "$own" --yes --timeout 60s >/dev/null; then
+  echo "messages forward of the contact card: exit 0"
+  card=$(phone "Does the forwarded card show the name, marked Forwarded, and open on tap with the same number?")
+else
+  card=failed
+fi
+
+cat <<EOF
+
+Forward          Phone    BACKLOG item 5 line it settles
+place            $(printf '%-8s' "$place") "Live check of forwarding a place or a contact card": the place
+contact card     $(printf '%-8s' "$card") the same line, the card
+
+A yes settles that part of the line; no or failed is a bug to file. Delete the four messages from the phone now.
+EOF

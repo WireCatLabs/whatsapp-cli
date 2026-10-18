@@ -65,17 +65,6 @@ has() {
   printf '%s\n' "$paths" | grep -qx -- "$1"
 }
 
-# One wa call: its stdout in $out, its exit code in $rc. Its stderr stays in $errs and is never printed whole,
-# since a refusal can quote the chat. Not wa_json: that keeps only the error code, and not_built reads the refusal.
-attempt() {
-  out=$("$wa" "$@" --json --no-input 2>"$errs") && rc=0 || rc=$?
-}
-
-# The error's code ("validation_error", "settings.keys-missing"), the one part of a refusal that is safe to print.
-error_code() {
-  head -n 1 -- "$errs" | json 'd.error.code' 2>/dev/null
-}
-
 report() {
   if [ "$rc" = 0 ]; then
     echo "$1: exit 0"
@@ -88,18 +77,6 @@ report() {
 # delete that is not for everyone.
 not_built() {
   [ "$rc" = 2 ] && grep -q -e "this messenger cannot" -e "deletes only for everyone so far" "$errs"
-}
-
-# Asks until the answer is y or n; prints yes or no.
-phone() {
-  while :; do
-    printf '%s [y/n] ' "$1" >&2
-    read -r reply || exit 130
-    case "$reply" in
-      y | Y | yes) echo yes && return ;;
-      n | N | no) echo no && return ;;
-    esac
-  done
 }
 
 cat <<EOF

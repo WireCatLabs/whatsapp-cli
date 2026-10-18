@@ -79,8 +79,8 @@ also say the phone answered the LID chat under another id, such as its phone num
 
 ## Scripts the owner runs
 
-Five checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;
-an agent never does (`WC-TEST-18`). Each takes the profile as its one argument and never picks one: without it, or
+Eight checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;
+an agent never does (`WC-TEST-18`). Each takes the profile as its first argument and never picks one: without it, or
 with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
 (`WC-LIFE-5`). Three calls differ: the restarted `serve` runs without a timeout, and `live-fresh-link` runs
@@ -98,6 +98,9 @@ Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are i
 | `bin/live-older-history <profile>` | H1: one 50-message page as one `ON_DEMAND` notification or several, and whether it names the request by its id | restarts `serve` with the engine's log on; one history request from this device to the own phone | starts `serve` again as it was on every exit path; deletes the log |
 | `bin/live-fresh-link <new-profile>` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes` | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
 | `bin/live-chat-state <profile>` | BACKLOG item 5, the chat-state writes: privacy read back, mute, message pin, star (W7), chat pin, archive, mark-unread and mark-read, delete for the owner alone (W6); own chat only | a 1-hour mute of the own chat, a marker message pinned for 24 hours and starred, the own chat pinned, archived and marked unread, through the running `serve` | each undone in the script; the marker deleted for the owner (or for everyone where that is not built); if it stops early, it says what to undo from the phone |
+| `bin/live-album <profile> [--video <file.mp4>]` | BACKLOG item 5, an album and a photo's preview; own chat only | one album of a test photo and a short video in the own chat, through the running `serve` | not undone by the script, which keeps only the photo's message: the owner deletes the album from the phone |
+| `bin/live-expired-file <profile> [<message-id>]` | BACKLOG item 5, a download of a file WhatsApp no longer keeps, through the phone's new upload; own chat only | one download into a throwaway folder; if the file is gone from WhatsApp, a receipt from this device to the own phone | the folder is deleted at the end |
+| `bin/live-forward-card <profile>` | BACKLOG item 5, forwarding a place and a contact card; own chat only | a place and a card the owner sends from the phone, and `wa`'s forward of each, all in the own chat, through the running `serve` | not undone by the script: the owner deletes the four messages from the phone |
 
 **`live-oneshot-drop`**, step by step:
 
@@ -214,6 +217,44 @@ line a yes settles:
 | chats pin, unpin, archive, unarchive, mark-unread | "Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`": a one-to-one chat addressed by its LID. A fourth pinned chat, pinning an archived chat, and an archived chat that a newer message brings back stay open |
 | mark-read | "`chats mark-read` after a `mark-unread`", for the own chat only. A no is expected: without the read patch, `wa` cannot undo a mark-unread there. Whether a receipt in a chat with someone else clears it stays open |
 | delete for you only | "Live check of delete for the owner alone": the owner's own message. Someone else's message in a group, a one-to-one chat with another person, and the saved files stay open |
+
+**`live-album`** needs `serve` running, and works in the own chat only. It draws a 320×240 PNG of colour bands, so a
+preview is easy to tell from a grey box. The video is the `--video` file (it must end in `.mp4`, `.m4v` or `.mov`,
+since `wa` sends a file as a video by its extension), or else a 2-second H.264 test pattern made with `ffmpeg`;
+without either it stops and names `--video`. Both go in one `messages send --photo … --file …` with a caption that
+carries a fresh run number. The owner turns off photo auto-download on the phone first, so the photo is still
+undownloaded when its preview is judged. Then it asks three questions: one album with two items; a preview on the
+photo before it is opened; the photo opens and the video plays. A video with no preview is expected (BACKLOG item 5,
+"No preview on a sent video"). The store keeps only the photo's message, so the owner deletes the album from the
+phone. The table at the end names the BACKLOG item 5 line each yes settles: "Live check of an album" and the photo
+half of "No preview on a sent video".
+
+**`live-expired-file`** needs `serve` running, since the phone's answer reaches the connected engine. It downloads
+one file of the own chat into a throwaway folder: the message id given as the second argument, or else the oldest
+stored photo there (the oldest file when there is no photo), found with `attachments list "chat:<own>" --all`.
+It prints the message's age in days, the number of files and bytes saved, the error code and the time taken, then
+whether the retry asked the phone, and the outcome. A download that fails per file still exits 0 with the failure in
+`batch.failures`, so it reads the answer and the error stream for the engine's fixed words, without printing them:
+
+| Engine's words | The retry asked the phone | Outcome |
+|---|---|---|
+| a file saved | unknown | saved; the engine logs nothing on this path, so a file WhatsApp still kept looks the same |
+| "did not upload this file again in time" | yes | the phone did not answer within 20 s |
+| "neither WhatsApp nor the phone keeps this file" | yes | the phone no longer has it either |
+| "could not upload this file again", "answer about this file could not be read" | yes | the phone answered with an error |
+| "stopped before the phone answered" | yes | the engine stopped while it waited |
+| "has no file to download" | no | no verdict: the store holds no keys for that message |
+
+A saved file of an old message is the likely retry, not a proven one: telling the two apart needs a line in the
+engine's log.
+
+**`live-forward-card`** needs `serve` running, which stores what the phone sends. It notes the newest place and
+the newest single contact card in the own chat (`messages list --offline --limit 20`), then asks the owner to send
+both from the phone: a place, not a live location, and one contact, not several, since `wa` refuses those two. It
+looks for a new place and a new card in the store 30 times, a second apart, so an older one is never forwarded.
+After an Enter each, it forwards the place and then the card with `messages forward <own> <id> --to <own>`, and asks whether each
+shows marked Forwarded and opens on the phone at the same spot or with the same number. The owner deletes the four
+messages from the phone.
 
 Left out on purpose: each changes what other people see, or destroys history, so the owner checks it by hand if
 wanted.
