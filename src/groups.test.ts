@@ -432,6 +432,36 @@ describe("wa communities", () => {
     const listed = (await offline("chats", "list")).items.find((chat: { id: string }) => chat.id === seed.busy)
     expect(listed.parent_chat_id).toBe(community)
   })
+
+  it("keeps a stored community through a push that does not say, and clears it when a chat says none", async () => {
+    const pushing = (more: Partial<WaChat>): EngineEvent => ({
+      event: "history",
+      history: {
+        kind: "recent",
+        chats: [
+          {
+            jid: seed.busy,
+            name: "Book club",
+            kind: "group",
+            unread: 0,
+            lastMessageAt: null,
+            participants: null,
+            ...more,
+          },
+        ],
+        contacts: [],
+        messages: [],
+        votes: [],
+      },
+    })
+    await watching([pushing({ parent: community }), pushing({})])
+    expect((await offline("chats", "show", seed.busy)).item.parent_chat_id).toBe(community)
+
+    await watching([pushing({ parent: null })])
+    const group = (await offline("chats", "show", seed.busy)).item
+    expect(group.parent_chat_id).toBeUndefined()
+    expect(group.title).toBe("Book club")
+  })
 })
 
 describe("wa chats requests", () => {

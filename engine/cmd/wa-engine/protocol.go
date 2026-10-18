@@ -85,8 +85,8 @@ type waChat struct {
 	Archived      *bool   `json:"archived,omitempty"`
 	Muted         *bool   `json:"muted,omitempty"`
 	// Parent is the community a group is linked to; Community marks a community itself.
-	Parent    *string `json:"parent,omitempty"`
-	Community bool    `json:"community,omitempty"`
+	Parent    parentField `json:"parent,omitzero"`
+	Community bool        `json:"community,omitempty"`
 }
 
 type waContact struct {

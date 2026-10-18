@@ -96,8 +96,8 @@ export const waChat = v.strictObject({
   participants: v.nullable(v.number()),
   archived: v.optional(v.boolean()),
   muted: v.optional(v.boolean()),
-  /** The community a group is linked to. */
-  parent: v.optional(jid),
+  /** The community a group is linked to; `null` when a live read says it is in none, absent when nothing said. */
+  parent: v.optional(v.nullable(jid)),
   /** A community itself: a group that holds other groups. */
   community: v.optional(v.literal(true)),
 })
