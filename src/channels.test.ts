@@ -60,8 +60,10 @@ describe("wa channels", () => {
 
     const listed = await wa([PROFILE, "messages", "list", CHANNEL, "--limit", "100", "--json"])
     expect(listed.code).toBe(0)
-    const ids = JSON.parse(listed.stdout).items.map((message: { id: string }) => message.id)
-    expect(ids).toEqual(CHANNEL_POSTS.slice(20).map((post) => post.id))
+    const items = JSON.parse(listed.stdout).items as { id: string; provider_metadata?: unknown }[]
+    expect(items.map((message) => message.id)).toEqual(CHANNEL_POSTS.slice(20).map((post) => post.id))
+    const post = CHANNEL_POSTS[20]
+    expect(items.find((message) => message.id === post?.id)?.provider_metadata).toEqual({ serverId: post?.serverId })
   })
 
   it("reads a channel the store holds nothing of yet", async () => {

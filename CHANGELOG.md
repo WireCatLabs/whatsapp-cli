@@ -231,12 +231,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   you" section hold the open tasks someone else does, oldest first, each with its `assignees`.
 - **`wa commands --json` has two new keys** (cli-base 0.44.0): `runnable: true` on a group that runs on its own, and
   `offline: false` on a command that cannot answer offline. A reader that rejects unknown keys must accept them.
-- **WhatsApp channels** (whatsmeow's newsletters): `chats join https://whatsapp.com/channel/<code>` follows one and
-  `chats leave <channel>` unfollows it, both through the profile's permissions; the followed channels reach the chat
-  list as `kind: "channel"` when `serve` or `watch` connects; `messages sync <channel>` reads its posts from
-  WhatsApp's servers into the local store, newest first, 50 at a time. A post keeps its message id, and its server
-  id rides in `providerMetadata.serverId`. Engine protocol 28, ops `channel`, `channelMessages`, `followChannel` and
-  `unfollowChannel`.
+- **`wa` follows and reads WhatsApp channels**, the one-way chats whose ids end in `@newsletter`: `chats join
+  https://whatsapp.com/channel/<code>` follows one and `chats leave <channel>` unfollows it, both through the
+  profile's permissions, and the channel's admins see that you followed. The channels you follow reach `chats list`
+  as `kind: "channel"` when `serve` or `watch` connects. `messages sync <channel>` reads its posts into the local
+  store from WhatsApp's servers, not from your phone: newest first, 50 at a time. Each post keeps its message id, and
+  WhatsApp's number for it is in `provider_metadata.serverId`. Every post's sender is the channel, so a post you
+  made shows `outgoing: false`. See [channels](docs/usage.md#channels).
 
 ## 0.1.0 — 17.10.2026
 
