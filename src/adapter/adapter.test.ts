@@ -176,7 +176,7 @@ describe("whatsAppAdapter", () => {
     expect(warnings[0]).not.toMatch(/3EB0|synthetic|@/)
   })
 
-  it("skips a live event that fails, says so once, and hands on the ones after it", async () => {
+  it("skips live events that fail, says the first at once and the count at the end, and hands on the rest", async () => {
     const engine = fakeEngine(seed)
     const warnings: string[] = []
     const controller = new AbortController()
@@ -184,19 +184,22 @@ describe("whatsAppAdapter", () => {
     const watched = whatsAppAdapter(engine, undefined, undefined, (line) => warnings.push(line)).watch(
       (event) => {
         if (event.event !== "message") return
-        if (event.message.id === "3EB0FEED00000002") throw new Error("boom")
+        if (["3EB0FEED00000002", "3EB0FEED00000003"].includes(event.message.id)) throw new Error("boom")
         ids.push(event.message.id)
       },
       controller.signal,
       () => {
-        for (const id of ["3EB0FEED00000001", "3EB0FEED00000002", "3EB0FEED00000003"])
+        for (const id of ["3EB0FEED00000001", "3EB0FEED00000002", "3EB0FEED00000003", "3EB0FEED00000004"])
           engine.push({ event: "message", message: incoming({ id }) })
         controller.abort()
       },
     )
     await expect(watched).resolves.toBeUndefined()
-    expect(ids).toEqual(["3EB0FEED00000001", "3EB0FEED00000003"])
-    expect(warnings).toHaveLength(1)
+    expect(ids).toEqual(["3EB0FEED00000001", "3EB0FEED00000004"])
+    expect(warnings).toEqual([
+      expect.stringContaining("message event could not be handled and was skipped (Error)"),
+      "2 pushed events could not be handled and were skipped in all",
+    ])
   })
 
   it("ends feed when handling a push finds the engine gone", async () => {
@@ -208,7 +211,7 @@ describe("whatsAppAdapter", () => {
       event: "history",
       history: { kind: "recent", chats: [], contacts: [], messages: [incoming()], votes: [] },
     })
-    await expect(feeding).rejects.toMatchObject({ reason: "engine.stopped" })
+    await expect(feeding).rejects.toMatchObject({ code: "provider_unavailable", details: { reason: "engine.stopped" } })
   })
 
   it("maps archived and muted chats, and leaves them out when WhatsApp does not say", () => {

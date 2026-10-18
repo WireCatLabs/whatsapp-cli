@@ -132,7 +132,10 @@ const ENDED: Partial<Record<ConnectionState, (words: Words, until?: string) => C
     fromEngine(new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly", "engine.stopped")),
 }
 
-const ENDING = new Set(Object.values(ENDED).map((end) => end(bareCheck).details.reason))
+const ENDING = new Set([
+  ...Object.values(ENDED).map((end) => end(bareCheck).details.reason),
+  "engine.stopped-mid-write",
+])
 
 /** A failure that means the connection is gone, not that one event was odd: it ends the listening. */
 const ends = (error: unknown) =>
@@ -141,9 +144,9 @@ const ends = (error: unknown) =>
 
 /**
  * Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why. Events are handled one at
- * a time in arrival order. One whose handling fails is skipped and said once on `warn` — kind and code only, never
- * its content — and the next still runs: a stalled queue would keep every later push out of the store until a
- * restart. `drained` settles when the handling caught up.
+ * a time in arrival order. One whose handling fails is skipped and the next still runs: a stalled queue would keep every
+ * later push out of the store until a restart. The first skip is said on `warn` at once, kind and code only, never its
+ * content; `drained` settles when the handling caught up and then says how many were skipped if there were more.
  */
 const listening = (
   engine: WhatsAppEngine,
@@ -155,14 +158,17 @@ const listening = (
 ): { done: Promise<void>; stop: () => void; drained: () => Promise<void> } => {
   let stop = () => {}
   let queue = Promise.resolve()
-  let warned = false
+  let skipped = 0
   const done = new Promise<void>((resolve, reject) => {
     const failed = (kind: string, error: unknown) => {
-      if (ends(error)) return reject(error)
-      if (warned) return
-      warned = true
+      if (ends(error)) return reject(error instanceof EngineError ? fromEngine(error) : error)
+      skipped += 1
+      if (skipped > 1) return
       const code = error instanceof CliError ? error.code : error instanceof Error ? error.name : "error"
-      warn(`a pushed ${kind} event could not be handled and was skipped (${code}); the ones after it go on`)
+      warn(
+        `a pushed ${kind} event could not be handled and was skipped (${code}); the ones after it go on, ` +
+          "and any more skips are counted when wa stops listening",
+      )
     }
     const unlisten = engine.listen(kinds, (event) => {
       const ended = event.event === "connection" ? ENDED[event.state]?.(words, event.until) : undefined
@@ -177,7 +183,13 @@ const listening = (
     }
     if (signal.aborted) resolve()
   })
-  return { done, stop, drained: () => queue }
+  // The caller may still be awaiting the engine's readiness when an ended connection rejects `done`.
+  done.catch(() => {})
+  const drained = () =>
+    queue.then(() => {
+      if (skipped > 1) warn(`${skipped} pushed events could not be handled and were skipped in all`)
+    })
+  return { done, stop, drained }
 }
 
 const VIDEO = new Set([".mp4", ".m4v", ".mov"])
