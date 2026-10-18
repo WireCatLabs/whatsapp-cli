@@ -158,7 +158,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   the keys a patch is sealed with, counts a patch the server took as done even if reading the settings back failed, and
   answers `outcome_unknown` when the patch left and no answer came. `mute` (`jid`, `until`: `forever`, an RFC 3339 time,
   or null to unmute; `BuildMuteAbs`, forever as -1, an end in milliseconds) refuses channels, which mute by another
-  request.
+  request. `updateProfile` (`pushName`, `about`, either left out; `engine/cmd/wa-engine/ownprofile.go`) sends the name
+  as `BuildSettingPushName` through `sendAppState` first, fills it into whatsmeow's store for `me` when the read-back did not, then the about with
+  `SetStatusMessage`, which is not app state; it answers the account, and sends no presence. The adapter joins
+  cli-core's first and last name into the one name.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

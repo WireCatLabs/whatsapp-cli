@@ -70,6 +70,7 @@ const WRITES = new Set([
   "block",
   "setPrivacy",
   "mute",
+  "updateProfile",
   "logout",
 ])
 

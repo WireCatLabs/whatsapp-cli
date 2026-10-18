@@ -126,6 +126,14 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("sends a profile change and reads the account it answers", async () => {
+    const engine = await stub("ok")
+    await expect(engine.updateProfile({ pushName: "Synthetic Owner" })).resolves.toMatchObject({
+      name: "Synthetic Owner",
+    })
+    await engine.close()
+  })
+
   it("rejects at start when the lock is held, naming the holder", async () => {
     await expect(stub("refuse")).rejects.toMatchObject({
       code: "provider_unavailable",

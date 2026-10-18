@@ -150,6 +150,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   refused. Not yet checked against WhatsApp's apps. Engine protocol 17 (`sendAlbum`).
 - **A sent photo carries its preview**: the chat shows a small blurred picture before the download. Not yet for a
   video or a WEBP photo.
+- **`wa <profile> account update`** (cli-core's, as in tg and max): `--first-name` sets the name people see, with
+  `--last-name` joined to it after a space (WhatsApp keeps one name, so a last name alone is refused), and
+  `--description` the "about" line. The name is a setting WhatsApp syncs to the other devices; others probably see it
+  only once the phone next comes online, since a device tells WhatsApp its name when it says it is online and `wa`
+  never does (not checked live). The answer is the account with the new name. `--photo` is refused: `wa` does not set the profile
+  photo yet. A device without WhatsApp's settings keys yet answers `settings.keys-missing`, as `chats mute` does; an
+  about WhatsApp refuses after the name changed says the name did. The permission key is `account.update`. Engine
+  protocol 19, op `updateProfile`.
 
 ## 0.1.0 — 17.10.2026
 

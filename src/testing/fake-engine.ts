@@ -21,6 +21,7 @@ import {
 } from "../engine/contract.js"
 import { eventHub } from "../engine/events.js"
 import type { WaPrivacy } from "../engine/privacy.js"
+import type { WaProfileChange } from "../engine/settings.js"
 import { type FakeGroups, fakeGroups } from "./fake-groups.js"
 import { type FakePrivacy, fakePrivacy } from "./fake-privacy.js"
 
@@ -99,6 +100,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   }[]
   /** Each mute and unmute, in order. */
   mutes: { jid: string; until: string | null }[]
+  /** Each change of the own name or about, in order. */
+  profileChanges: WaProfileChange[]
   closed: boolean
   loggedOut: boolean
 }
@@ -148,6 +151,8 @@ export const fakeEngine = (
   const forwards: WaForward[] = []
   const olderAsked: FakeEngine["olderAsked"] = []
   const mutes: FakeEngine["mutes"] = []
+  const profileChanges: WaProfileChange[] = []
+  let ownName = seed.account?.name ?? null
 
   const post = (chat: string, id: string, text: string, attachments: WaAttachment[], replyTo?: string): WaMessage => {
     const message: WaMessage = {
@@ -177,6 +182,7 @@ export const fakeEngine = (
     forwards,
     olderAsked,
     mutes,
+    profileChanges,
     closed: false,
     loggedOut: false,
     push,
@@ -184,7 +190,7 @@ export const fakeEngine = (
     ready: async () => {},
     me: async () => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")
-      return { jid: seed.account.id, name: seed.account.name }
+      return { jid: seed.account.id, name: ownName }
     },
     directory: async () => chats,
     chat: async (jid) => {
@@ -307,6 +313,18 @@ export const fakeEngine = (
           "settings.keys-missing",
         )
       mutes.push({ jid, until })
+    },
+    updateProfile: async (change) => {
+      if (!seed.account) throw new EngineError("authentication_error", "not linked")
+      if (change.pushName !== undefined && !settingsKeys)
+        throw new EngineError(
+          "provider_unavailable",
+          "WhatsApp has not sent the settings keys yet; keep serve running a few minutes and try again",
+          "settings.keys-missing",
+        )
+      profileChanges.push(change)
+      if (change.pushName !== undefined) ownName = change.pushName
+      return { jid: seed.account.id, name: ownName }
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

@@ -66,6 +66,18 @@ wa account list              # every profile on this computer, and the account e
 wa personal session end      # unlink the device on WhatsApp's side, and delete its keys here
 ```
 
+## Change your name and about
+
+```sh
+wa personal account update --first-name Ana --last-name Silva   # WhatsApp keeps one name: "Ana Silva"
+wa personal account update --description "Back on Monday"       # the "about" line
+```
+
+The name goes to the phone and your other devices at once. Other people probably see it only once the phone next
+comes online: a device tells WhatsApp its name when it says it is online, and `wa` never does (not checked yet). A
+device linked a few minutes ago may not have WhatsApp's settings keys yet; keep `serve` running a while and try again.
+Set the profile photo on the phone: `wa` does not set it yet.
+
 `wa personal session end` removes the device **on WhatsApp's side too**: it disappears from the phone's list of linked
 devices. It leaves the local store as it is. While `serve` runs for the profile, it refuses (exit code `12`): stop
 `serve` first with `wa personal server stop`, or Ctrl+C where it runs.

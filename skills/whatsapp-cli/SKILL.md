@@ -24,7 +24,7 @@ do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". T
 account, older history of one chat (`messages sync`), sending text (with `--reply-to`), one file per message or a photo and a video as an album,
 `messages edit`, `messages delete --for-everyone`, `messages download`, `messages forward`,
 `messages transcribe --local`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
-`polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, group admin
+`polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `account update` (name and about), group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
@@ -32,7 +32,7 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.
 Not built yet: deleting for the owner alone,
 `chats inspect`, removing a group's photo (`chats update --photo` sets one, a square JPEG of 190 to
-720 pixels a side), `account update`, `account sessions`, `chats create --channel`. WhatsApp has no
+720 pixels a side), `account sessions`, `chats create --channel`. WhatsApp has no
 `chats folders`, no `messages comments`, no second invite link, no partial admin rights and no account age (a
 `newAccount` rule in `chats rules set` is refused), and keeps the address book on the phone, so
 `contacts add|remove|rename|import` are refused. `chats show` answers from the store;

@@ -42,7 +42,7 @@ import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
-import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
+import { toAccount, toChat, toMember, toMessage, toWaAttachment } from "./map.js"
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
@@ -243,10 +243,7 @@ export const whatsAppAdapter = (
 
     newSendId: () => `3EB0${randomBytes(9).toString("hex").toUpperCase()}`,
 
-    me: async () => {
-      const account = await translated(engine.me())
-      return { id: account.jid, name: account.name, username: null }
-    },
+    me: async () => toAccount(await translated(engine.me())),
 
     resolve: async (query: string): Promise<Chat> => {
       if (query.includes("@"))

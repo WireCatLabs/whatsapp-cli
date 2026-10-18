@@ -242,7 +242,6 @@ describe("commands WhatsApp has no counterpart for", () => {
   const card = join(mkdtempSync(join(tmpdir(), "wa-vcard-")), "people.vcf")
   writeFileSync(card, "BEGIN:VCARD\nVERSION:3.0\nFN:Synthetic Person\nTEL:+10000000000\nEND:VCARD\n")
   it.each([
-    ["account", "update", "--first-name", "Synthetic"],
     ["account", "sessions", "list"],
     ["account", "sessions", "end", "--others"],
     ["chats", "inspect", "https://chat.whatsapp.com/FAKE0000000000000000AA"],

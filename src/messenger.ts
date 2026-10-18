@@ -203,7 +203,6 @@ export const WHATSAPP: Messenger = {
   autoReplies: false,
   chatMute: true,
   lacks: [
-    "updateProfile",
     "sessions",
     "endOtherSessions",
     "chatEvents",

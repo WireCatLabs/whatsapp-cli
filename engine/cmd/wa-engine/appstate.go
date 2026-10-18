@@ -15,6 +15,9 @@ import (
 type settingsFields struct {
 	// mute: "forever", an RFC 3339 time, or null to unmute.
 	Until *string `json:"until"`
+	// updateProfile: the name everyone sees and the "about" line; either may be left out.
+	PushName *string `json:"pushName,omitempty"`
+	About    *string `json:"about,omitempty"`
 }
 
 var keysMissing = because("settings.keys-missing", "provider_unavailable",
@@ -40,7 +43,6 @@ func (e *engine) sendAppState(patch appstate.PatchInfo) error {
 }
 
 func appStateFailure(err error) error {
-	var disconnected *whatsmeow.DisconnectedError
 	switch {
 	case err == nil:
 		return nil
@@ -49,17 +51,26 @@ func appStateFailure(err error) error {
 		return nil
 	case errors.Is(err, appstate.ErrKeyNotFound), strings.HasPrefix(err.Error(), noKeysYet):
 		return keysMissing
-	case errors.Is(err, whatsmeow.ErrIQTimedOut), errors.Is(err, context.DeadlineExceeded),
-		errors.Is(err, context.Canceled), errors.As(err, &disconnected):
+	case unanswered(err):
 		return unconfirmed
 	}
 	return err
+}
+
+// unanswered: the request left and no answer came, so WhatsApp may have acted on it (WC-LIFE-9).
+func unanswered(err error) bool {
+	var disconnected *whatsmeow.DisconnectedError
+	return errors.Is(err, whatsmeow.ErrIQTimedOut) || errors.Is(err, context.DeadlineExceeded) ||
+		errors.Is(err, context.Canceled) || errors.As(err, &disconnected)
 }
 
 func (e *engine) dispatchSettings(req request) (any, bool, error) {
 	switch req.Op {
 	case "mute":
 		return nil, true, e.mute(req)
+	case "updateProfile":
+		value, err := e.updateProfile(req)
+		return value, true, err
 	}
 	return nil, false, nil
 }

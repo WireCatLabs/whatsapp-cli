@@ -1,6 +1,13 @@
-import type { Attachment, Chat, ChatKind, Member, Message } from "@wirecat/cli-core"
+import type { Account, Attachment, Chat, ChatKind, Member, Message } from "@wirecat/cli-core"
 import * as v from "valibot"
-import { type WaAttachment, type WaChat, type WaContact, type WaMessage, waAttachment } from "../engine/contract.js"
+import {
+  type WaAccount,
+  type WaAttachment,
+  type WaChat,
+  type WaContact,
+  type WaMessage,
+  waAttachment,
+} from "../engine/contract.js"
 
 const KINDS: Record<WaChat["kind"], ChatKind> = {
   dm: "dialog",
@@ -23,6 +30,9 @@ export const toChat = (chat: WaChat): Chat => ({
   ...(chat.parent === undefined ? {} : { parentChatId: chat.parent }),
   ...(chat.community ? { providerMetadata: { community: true } } : {}),
 })
+
+// WhatsApp has no public handle, and the engine never answers the phone number.
+export const toAccount = (account: WaAccount): Account => ({ id: account.jid, name: account.name, username: null })
 
 export const toMember = (contact: WaContact): Member => ({ id: contact.jid, name: contact.name, username: null })
 
