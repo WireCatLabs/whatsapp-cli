@@ -32,7 +32,8 @@ Open work, most important first. The plan in flight is
    the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
    reported to the lead for cli-core to decide.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
-   profiles, blocking, number lookup, Markdown, polls, message pins and chat mute are built; what they left open:
+   profiles, blocking, number lookup, Markdown, polls, message pins, chat mute and the own name and about are built;
+   what they left open:
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
      them (cli-core 0.322.0); a live vote whose poll the store does not hold yet is passed over.
    - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and
@@ -73,6 +74,14 @@ Open work, most important first. The plan in flight is
      reads no live mute events, so `inbox` leaves the chat in until the next history push. That push may read it
      wrong too: `convert.go` takes `muteEndTime > 0` as seconds, while a mute for good is -1 in app state and the
      history field is unsigned — whether the phone writes it as all ones, and in which unit, is not checked.
+   - **The own profile photo** (`account update --photo`) is refused. whatsmeow has no own-photo call, but
+     `SetGroupPhoto(ctx, types.EmptyJID, jpeg)` sends the request Baileys' `updateProfilePicture` sends for the own
+     picture (no `target`). It needs the square-JPEG check `groupPhoto` from `chats update --photo` (PR #55); build it
+     on that once both are in.
+   - **Live checks of `account update`**: not run against WhatsApp. Open: when others see a new name, since `wa`
+     sends no presence and WhatsApp learns a name from one; whether `SetStatusMessage` with no duration keeps the
+     about for good (whatsmeow sends `ephemeral_duration_sec: 0`, and none of its callers sets one); whether the
+     phone refuses an empty about (the engine refuses it first).
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
      `messages delete` without `--for-everyone` is refused rather than built from a guessed patch. Until it is built,
      `WHATSAPP.deleteForMe` is `false`, so an agent's MCP delete is refused; building it means setting that to `true`.

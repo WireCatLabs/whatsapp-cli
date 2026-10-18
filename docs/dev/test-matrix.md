@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**212 ✅ · 525 ⛔ · 0 ❌** — 231 commands, 506 options.
+**215 ✅ · 522 ⛔ · 0 ❌** — 231 commands, 506 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -23,9 +23,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `account show` | `--show-phone` | ✅ |  |
 | `account update` |  | ✅ |  |
 | `account update` | `--first-name` | ✅ |  |
-| `account update` | `--last-name` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
-| `account update` | `--description` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
-| `account update` | `--photo` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `account update` | `--last-name` | ✅ |  |
+| `account update` | `--description` | ✅ |  |
+| `account update` | `--photo` | ✅ |  |
 | `account sessions list` |  | ✅ |  |
 | `account sessions end` |  | ✅ |  |
 | `account sessions end` | `--others` | ✅ |  |
