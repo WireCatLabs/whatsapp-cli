@@ -482,14 +482,13 @@ describe("an agent's messages delete over MCP, by permission level", () => {
     expect(actions).toMatchObject([{ op: "deleteForMe", key: { id: atLevel.default.id } }])
   })
 
-  // The server does not offer a write the level forbids, so the agent hears "no such command", not exit 5.
+  // The server does not offer a write the level forbids; asked for it anyway, it answers with the level's refusal.
   it.each(["readonly", "deny"] as const)("is not offered at %s, and the owner's own call exits 5", async (level) => {
     const profile = `mcp-${level}`
     const message = atLevel[level]
     expect((await wa([profile, "config", "set", "permissions.messages.delete", level])).code).toBe(0)
     const { body, actions } = await agentDeletes(profile, message)
-    expect(body.error).toMatchObject({ code: "validation_error", reason: "input.invalid" })
-    expect(body.error?.message).toContain('no command "messages delete" here')
+    expect(body.error).toMatchObject({ code: "permission_error", reason: "access.denied" })
     expect(actions).toEqual([])
 
     let engine: FakeEngine | undefined
