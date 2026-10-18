@@ -111,6 +111,19 @@ describe("wa channels", () => {
     expect(result.engine?.channelActions ?? []).toEqual([])
   })
 
+  it("posts text to a channel the account runs", async () => {
+    const result = await acting(["messages", "send", CHANNEL, "synthetic post"], "admin")
+    expect(result.code).toBe(0)
+    expect(result.engine?.sends).toEqual([expect.objectContaining({ chat: CHANNEL, text: "synthetic post" })])
+  })
+
+  it("refuses a post where the account only follows, and sends nothing", async () => {
+    const result = await acting(["messages", "send", CHANNEL, "synthetic post"], "subscriber")
+    expect(result.code).toBe(5)
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.sends).toEqual([])
+  })
+
   it("unfollows a channel with chats leave", async () => {
     const result = await acting(["chats", "leave", CHANNEL], "subscriber")
     expect(result.code).toBe(0)

@@ -39,7 +39,7 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
-import { channelAdapter, channelHistory, isChannel } from "./channels.js"
+import { channelAdapter, channelHistory, isChannel, refuseChannelPost } from "./channels.js"
 import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
@@ -291,6 +291,11 @@ export const whatsAppAdapter = (
         )
       if (upload?.kind === "voice" && text.trim() !== "")
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
+      if (isChannel(chatId))
+        await refuseChannelPost(engine, translated, chatId, {
+          file: upload !== undefined,
+          reply: options.replyTo !== undefined,
+        })
       // A reply to a message the store lacks still goes, with its id alone.
       const answered = options.replyTo === undefined ? undefined : await stored.message(chatId, options.replyTo)
       const request = {

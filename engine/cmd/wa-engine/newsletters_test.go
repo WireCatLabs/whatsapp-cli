@@ -80,6 +80,15 @@ func TestChannelInviteTakesTheCodeOfAChannelLinkOnly(t *testing.T) {
 	}
 }
 
+func TestASentPostReadsAsTheChannelsWithItsServerID(t *testing.T) {
+	e := &engine{chats: map[string]waChat{}, channels: []waChat{channelOf(channelMeta("")).Chat}}
+	message := &waMessage{ID: "3EB0000000000000000201", Sender: str(selfLID.String()), FromMe: true}
+	e.asChannelPost(message, channel, 201)
+	if *message.Sender != channel.String() || *message.SenderName != "Synthetic news" || *message.ServerID != 201 {
+		t.Fatalf("got %+v", message)
+	}
+}
+
 func TestChannelFailureReadsGraphQLCodes(t *testing.T) {
 	cases := map[int]string{404: "not_found", 403: "permission_error", 429: "rate_limited", 500: "provider_error"}
 	for code, want := range cases {

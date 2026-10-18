@@ -154,7 +154,9 @@ Open work, most important first. The plan in flight is
      The 50 posts per read is wa's choice: whatsmeow sets no limit and WhatsApp's own is not known. **Live checks**
      (read-only, then the owner's own channel): `GetSubscribedNewsletters` and `GetNewsletterMessages` on a linked
      web device, whether a followed channel's new posts arrive live without `NewsletterSubscribeLiveUpdates`, and
-     whether a post's message id from a read equals the one a live post carries.
+     whether a post's message id from a read equals the one a live post carries, and a text post in the owner's own
+     channel (whether a `Conversation` message is what WhatsApp's apps show, and whether the next read returns it under
+     the id it was sent with).
    - **Albums: only the first file is stored.** An album goes as an `AlbumMessage`, then each file as a plain photo
      or video tied to it by `MessageAssociation` (`MEDIA_ALBUM`), but cli-core's `Sent` holds one message, so the
      store keeps the photo's message and not the others; WhatsApp is not seen to echo a device's own sends back to

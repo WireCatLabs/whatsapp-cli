@@ -59,6 +59,23 @@ export const channelHistory = async (
   return { items, hasMore: page.more }
 }
 
+/**
+ * Only a channel's owner and admins post, and WhatsApp says the account's role only when asked, so a post asks first.
+ * Text only so far: a channel's files are uploaded unencrypted, which the engine does not do yet.
+ */
+export const refuseChannelPost = async (
+  engine: WhatsAppEngine,
+  translated: <T>(work: Promise<T>) => Promise<T>,
+  chatId: string,
+  { file, reply }: { file: boolean; reply: boolean },
+): Promise<void> => {
+  if (file) throw new CliError("validation_error", "wa posts text only to a WhatsApp channel so far")
+  if (reply) throw new CliError("validation_error", "a WhatsApp channel post cannot be a reply")
+  const { role } = await translated(engine.channel(chatId))
+  if (role !== "owner" && role !== "admin")
+    throw new CliError("permission_error", "only a channel's owner and admins may post in it")
+}
+
 export interface ChannelDeps {
   engine: WhatsAppEngine
   resolve: (reference: string) => Promise<Chat>
