@@ -77,7 +77,7 @@ also say the phone answered the LID chat under another id, such as its phone num
 
 ## Scripts the owner runs
 
-Three checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;
+Four checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;
 an agent never does (`WC-TEST-18`). Each takes the profile as its one argument and never picks one: without it, or
 with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
@@ -94,6 +94,7 @@ Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are i
 | `bin/live-oneshot-drop <profile>` | [BACKLOG](BACKLOG.md) item 9: does a one-shot connection take a queued message that then never reaches the store? | stops `serve`; two messages from the phone to the own chat | starts `serve` again on every exit path; the owner deletes the two messages from the phone |
 | `bin/live-poll-vote <profile>` | BACKLOG item 5, a vote cast by `wa`; W-style, own chat only | a poll and a vote in the own chat, through the running `serve` | the poll is deleted for everyone at the end; if the script stops early, it says to delete it from the phone |
 | `bin/live-fresh-link <new-profile>` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes` | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
+| `bin/live-chat-state <profile>` | BACKLOG item 5, the chat-state writes: privacy read back, mute, pin, delete for the owner alone (W6); own chat only | a 1-hour mute of the own chat, a marker message pinned and unpinned, through the running `serve` | unmuted and unpinned in the script; the marker deleted for the owner (or for everyone where that is not built); if it stops early, it says what to undo from the phone |
 
 **`live-oneshot-drop`**, step by step:
 
@@ -145,8 +146,40 @@ profile: the push would otherwise land in the owner's store. It prints `already_
 (chats, messages, people). On every exit, Ctrl-C included, it removes the throwaway store and, while the new
 profile has device keys, says how to unlink it.
 
-**`live-delete-for-me`** is not written yet: it waits until wa can delete a message for the owner only
-(`messages delete` without `--for-everyone`).
+**`live-chat-state`** needs `serve` running, and works in the own chat only, by its LID id from `account list`,
+never printed. After each step it asks the owner what the phone shows and records yes or no:
+
+1. `account privacy show`, read only. It prints each setting that came back with its value (`everyone`,
+   `contacts`, `true`, `false`: no person's data) and the phone screen to compare it with, under Settings >
+   Privacy.
+2. `chats mute --until 1h`, then `chats unmute`: muted on the phone, then not.
+3. `messages send` of a marker with a fresh run number, `messages pin --notify` on it, then `messages unpin`.
+4. `messages delete` of the marker without `--for-everyone`, scenario W6: gone from the owner's devices.
+
+A step whose command the build lacks is skipped with "not built in this checkout yet". `chats mute`, `chats unmute`
+and `account privacy show` are looked up in `commands`. `messages pin` and `messages delete` are listed in every
+build, so the script reads their refusal: cli-core's "this messenger cannot pin a message", or wa's delete that is
+only for everyone so far, both exit 2 before anything is sent. Without delete for the owner, it deletes the marker
+for everyone (W4) after an Enter. On a failure it prints the exit code and the error's code, never its message,
+which can quote the chat. It ends with a table of step, answer (yes, no, failed or skipped) and the BACKLOG item 5
+line a yes settles:
+
+| Step | Settles, when yes |
+|---|---|
+| privacy show | "Live checks of `account privacy`", the `show` half; a match of `calls` says whether `calladd` `known` is the phone's "silence unknown callers" |
+| mute, unmute | "Live checks of `chats mute`": a one-to-one chat addressed by its LID. How soon the settings keys arrive after a fresh link stays open |
+| pin, unpin | "Message pins": the pin and unpin in the own chat. A group addressed by phone numbers stays open |
+| delete for you only | "Live check of delete for the owner alone": the owner's own message. Someone else's message in a group, a one-to-one chat with another person, and the saved files stay open |
+
+Left out on purpose: each changes what other people see, or destroys history, so the owner checks it by hand if
+wanted.
+
+- `account update` changes the name everyone sees. By hand: `bin/wa <profile> account update --first-name
+  "<the same first name>"`, and the phone's profile screen shows it.
+- `chats delete` and `chats clear` destroy the own chat's history on the owner's devices. By hand, only on a chat
+  the owner can lose: `bin/wa <profile> chats clear <chat>`, and the phone shows it empty.
+- `account privacy set` changes who can reach the owner. By hand: set one setting to the value `privacy show`
+  printed (`bin/wa <profile> account privacy set --calls contacts`), so nothing changes, and see the phone agree.
 
 ## Not run, and why
 
