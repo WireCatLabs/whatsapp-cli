@@ -61,14 +61,24 @@ describe("startGoEngine", () => {
     const copy = await engine.forward({ chat: "100000000000003@lid", id: "3EB0AC", text: "", attachment })
     expect(copy.attachments).toEqual([attachment])
     const path = join(mkdtempSync(join(tmpdir(), "wa-stub-")), "file")
-    await engine.download(attachment, path, {
+    const answer = await engine.download(attachment, path, {
       chat: "100000000000003@lid",
       id: "3EB0AC",
       fromMe: true,
       sender: "100000000000001@lid",
     })
+    expect(answer).toBeNull()
     expect(readFileSync(path, "utf8")).toBe("synthetic photo bytes")
     assertPrivate(path, 0o600)
+    await engine.close()
+  })
+
+  it("reads the new path of a file the phone uploaded again", async () => {
+    const engine = await stub("ok")
+    const attachment: WaAttachment = { kind: "photo", ref: { media: "image", directPath: "/v/stub" } }
+    const path = join(mkdtempSync(join(tmpdir(), "wa-stub-")), "file")
+    const key = { chat: "reuploaded@stub", id: "3EB0AE", fromMe: true, sender: "100000000000001@lid" }
+    expect(await engine.download(attachment, path, key)).toEqual({ directPath: "/v/stub-reuploaded" })
     await engine.close()
   })
 

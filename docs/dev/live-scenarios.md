@@ -99,7 +99,7 @@ Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are i
 | `bin/live-fresh-link <new-profile>` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes` | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
 | `bin/live-chat-state <profile>` | BACKLOG item 5, the chat-state writes: privacy read back, mute, message pin, star (W7), chat pin, archive, mark-unread and mark-read, delete for the owner alone (W6); own chat only | a 1-hour mute of the own chat, a marker message pinned for 24 hours and starred, the own chat pinned, archived and marked unread, through the running `serve` | each undone in the script; the marker deleted for the owner (or for everyone where that is not built); if it stops early, it says what to undo from the phone |
 | `bin/live-album <profile> [--video <file.mp4>]` | BACKLOG item 5, an album and a photo's preview; own chat only | one album of a test photo and a short video in the own chat, through the running `serve` | not undone by the script, which keeps only the photo's message: the owner deletes the album from the phone |
-| `bin/live-expired-file <profile> [<message-id>]` | BACKLOG item 5, a download of a file WhatsApp no longer keeps, through the phone's new upload; own chat only | one download into a throwaway folder; if the file is gone from WhatsApp, a receipt from this device to the own phone | the folder is deleted at the end |
+| `bin/live-expired-file <profile> [<message-id>]` | BACKLOG item 5, a download of a file WhatsApp no longer keeps, through the phone's new upload; own chat only | one download into a throwaway folder, and a second one after the phone's new upload; if the file is gone from WhatsApp, a receipt from this device to the own phone | the folder is deleted at the end |
 | `bin/live-forward-card <profile>` | BACKLOG item 5, forwarding a place and a contact card; own chat only | a place and a card the owner sends from the phone, and `wa`'s forward of each, all in the own chat, through the running `serve` | not undone by the script: the owner deletes the four messages from the phone |
 
 **`live-oneshot-drop`**, step by step:
@@ -252,7 +252,9 @@ failure in `batch.failures`, so it reads the failure's registered reason (WC-OUT
 
 The `media.reuploaded` line is the engine's only sign that a saved file came from the phone's new upload: cli-core's
 download answer has no field for it. The script reads `WA_ENGINE_LOG` from the running engine and counts those lines
-before and after the download, never the log's other lines. To see it, start `serve` with `WA_ENGINE_LOG` set to a
+before and after the download, never the log's other lines. After a download the phone's new upload served, it
+downloads the file once more and prints whether that asked the phone again: it must not, since the store keeps the new
+path. To see it, start `serve` with `WA_ENGINE_LOG` set to a
 file kept like `private.db`.
 
 **`live-forward-card`** needs `serve` running, which stores what the phone sends. It notes the newest place and

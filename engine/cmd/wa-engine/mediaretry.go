@@ -143,25 +143,32 @@ func (e *engine) reupload(req request, ref *waMediaRef) (string, error) {
 	}
 }
 
-// fetchAgain downloads a file WhatsApp no longer keeps once more, from the path the phone's new upload has. The new
-// path is not kept: the download answers nothing, so the next download asks again. A success is the one sign the
-// retry ran, so it goes to WA_ENGINE_LOG, in fixed words.
-func (e *engine) fetchAgain(req request, ref *waMediaRef, media whatsmeow.MediaType, file *os.File) error {
+// refreshed is a download's answer after the phone uploaded the file again: the new copy's path, which the adapter
+// keeps in the stored ref so a later download or a forward does not use the dead one. Only the path changes: the phone
+// uploads the same encrypted file, as mautrix-whatsapp takes it (connector/directmedia.go, receiveDirectMediaRetry,
+// sets DirectPath alone). A download WhatsApp still served answers nil, which goes out as null.
+type refreshed struct {
+	DirectPath string `json:"directPath"`
+}
+
+// fetchAgain downloads a file WhatsApp no longer keeps once more, from the path the phone's new upload has, and
+// answers that path. A success is the one sign the retry ran, so it goes to WA_ENGINE_LOG, in fixed words.
+func (e *engine) fetchAgain(req request, ref *waMediaRef, media whatsmeow.MediaType, file *os.File) (*refreshed, error) {
 	path, err := e.reupload(req, ref)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if err := file.Truncate(0); err != nil {
-		return err
+		return nil, err
 	}
 	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return err
+		return nil, err
 	}
 	again := *ref
 	again.DirectPath = path
 	if err := e.fetch(&again, media, file); err != nil {
-		return againFailed
+		return nil, againFailed
 	}
 	e.client.Log.Warnf("media.reuploaded: the phone uploaded a file WhatsApp no longer kept, and the new copy downloaded")
-	return nil
+	return &refreshed{DirectPath: path}, nil
 }

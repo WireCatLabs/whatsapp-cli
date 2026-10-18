@@ -83,8 +83,8 @@ wa personal messages download "Book club" --all --output-dir ./book-club
 A download fetches the file with the keys in the store; the message must be there, so keep `serve` running. A place,
 a contact card or a file without keys is named in `skipped` and nothing is saved for it. A file WhatsApp no longer
 keeps is asked of your phone again. The phone has about 20 seconds to answer, so with a slow phone give the command a
-longer `--timeout`. Each later download asks again, since the store cannot keep the new copy's address. If the phone
-no longer has the file, the download ends with exit `6`; ask the sender to send it again. `--all` saves every file of
+longer `--timeout`. The store keeps the new copy's address, so a later download and `messages forward` use it
+without asking the phone again. If the phone no longer has the file, the download ends with exit `6`; ask the sender to send it again. `--all` saves every file of
 the chat, newest first; run it again to continue where it stopped. While `serve` runs, a download goes through its
 connection ([one connection per device](sessions.md#one-connection-per-device)).
 

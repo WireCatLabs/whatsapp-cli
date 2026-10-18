@@ -78,6 +78,15 @@ const UPLOADED: Record<string, { kind: WaAttachment["kind"]; media: "image" | "v
 /** The bytes the fake engine "downloads": synthetic, named after the file's kind. */
 export const syntheticBytes = (attachment: WaAttachment): Buffer => Buffer.from(`synthetic ${attachment.kind} bytes`)
 
+/**
+ * Files WhatsApp no longer keeps, by their direct path, and each time the phone was asked to upload one again. Shared
+ * by the engines of several runs, as the phone and WhatsApp's servers outlive each one.
+ */
+export interface ExpiredFiles {
+  paths: Set<string>
+  asked: WaKey[]
+}
+
 export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, FakeChannels {
   /** Pushes an event as the engine would, checked against the contract first. */
   push(event: EngineEvent): void
@@ -125,7 +134,7 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, Fak
  * right after linking, and drops a repeated message id as WhatsApp does. `phone` is what the phone still holds and
  * sends when asked for older history; without it the phone is offline and every such request times out. With
  * `channel`, the account follows one channel in that role; the directory names it, and connecting pushes it as the
- * Go engine does.
+ * Go engine does. A download of a path in `expired` asks the phone, which uploads it again under a new path.
  */
 export const fakeEngine = (
   seed: Seed,
@@ -135,12 +144,14 @@ export const fakeEngine = (
     privacy,
     settingsKeys = true,
     channel,
+    expired,
   }: {
     linked?: boolean
     phone?: WaMessage[]
     privacy?: WaPrivacy
     settingsKeys?: boolean
     channel?: WaChannel["role"]
+    expired?: ExpiredFiles
   } = {},
 ): FakeEngine => {
   const hub = eventHub()
@@ -323,6 +334,9 @@ export const fakeEngine = (
       downloads.push(attachment)
       downloadKeys.push(key)
       writeFileSync(path, syntheticBytes(attachment), { mode: 0o600, flag: "wx" })
+      if (!expired?.paths.has(attachment.ref.directPath)) return null
+      expired.asked.push(key)
+      return { directPath: `${attachment.ref.directPath}-reuploaded` }
     },
     forward: async (request) => {
       const again = sent.find((message) => message.id === request.id && message.chat === request.chat)
