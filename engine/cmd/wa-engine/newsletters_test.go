@@ -84,7 +84,7 @@ func TestASentPostReadsAsTheChannelsWithItsServerID(t *testing.T) {
 	e := &engine{chats: map[string]waChat{}, channels: []waChat{channelOf(channelMeta("")).Chat}}
 	message := &waMessage{ID: "3EB0000000000000000201", Sender: str(selfLID.String()), FromMe: true}
 	e.asChannelPost(message, channel, 201)
-	if *message.Sender != channel.String() || *message.SenderName != "Synthetic news" || *message.ServerID != 201 {
+	if *message.Sender != channel.String() || *message.SenderName != "Synthetic news" || *message.ServerID != 201 || message.FromMe {
 		t.Fatalf("got %+v", message)
 	}
 }

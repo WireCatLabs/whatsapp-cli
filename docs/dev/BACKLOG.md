@@ -148,8 +148,10 @@ Open work, most important first. The plan in flight is
      posts. A live edit or deletion of a post is passed over: WhatsApp addresses it by the server id, which the
      store keeps only in `providerMetadata`. Reactions and view counts (`NewsletterSendReaction`,
      `NewsletterMarkViewed`) are not built. The owner's own posts read back as the channel's (`outgoing: false`):
-     whatsmeow does not say. A channel's settings (`chats show`, `chats update`) are refused as "not a group". A
-     one-shot `chats join` stores no chat row: the push has no `feed` to land in. A history push that
+     whatsmeow does not say, so a post wa sends answers so too. Marking a channel read (`chats read`, `--mark-read`)
+     goes out only when typed, as whatsmeow's `MarkRead`, which turns it into a `read-self` receipt naming the
+     channel as the sender; whether WhatsApp takes that shape is unverified. A channel's settings (`chats show`,
+     `chats update`) are refused as "not a group". A one-shot `chats join` stores no chat row: the push has no `feed` to land in. A history push that
      carries a channel stores its posts without a server id, so `messages sync` cannot count back from one of them.
      The 50 posts per read is wa's choice: whatsmeow sets no limit and WhatsApp's own is not known. **Live checks**
      (read-only, then the owner's own channel): `GetSubscribedNewsletters` and `GetNewsletterMessages` on a linked

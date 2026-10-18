@@ -241,8 +241,8 @@ wa personal chats leave 120363000000000001@newsletter                     # unfo
 - **A channel's posts are kept on WhatsApp's servers**, unlike a chat's messages, so `messages sync` reads them from
   there and not from your phone: the newest first, then further back, 50 at a time. `messages list` then shows them
   from the local store.
-- **The channel is the sender** of every post, and a post you made reads as the channel's, not as yours
-  (`outgoing: false`): WhatsApp does not say which posts are your own.
+- **The channel is the sender** of every post, and a post you made, one `wa` just sent included, reads as the
+  channel's, not as yours (`outgoing: false`): WhatsApp does not say which posts are your own.
 - **Only the channel's owner and admins post.** `messages send` asks WhatsApp for your role first and refuses
   anyone else (exit `5`). A post is text only, and not a reply; the followers see it at once. A poll, a forward, an
   edit or a deletion in a channel is refused.

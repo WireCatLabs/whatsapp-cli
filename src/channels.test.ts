@@ -137,6 +137,19 @@ describe("wa channels", () => {
     expect(forward.engine?.forwards).toEqual([])
   })
 
+  it("refuses an edit or a deletion in a channel, and sends nothing", async () => {
+    const post = CHANNEL_POSTS.at(-1)?.id ?? ""
+    const edit = await acting(["messages", "edit", CHANNEL, post, "fixed text"], "admin")
+    expect(edit.code).toBe(2)
+    expect(edit.stderr).toContain("in a WhatsApp channel")
+    expect(edit.engine?.actions).toEqual([])
+
+    const remove = await acting(["messages", "delete", CHANNEL, post, "--for-everyone", "--allow-dangerous"], "admin")
+    expect(remove.code).toBe(2)
+    expect(remove.stderr).toContain("in a WhatsApp channel")
+    expect(remove.engine?.actions).toEqual([])
+  })
+
   it("unfollows a channel with chats leave", async () => {
     const result = await acting(["chats", "leave", CHANNEL], "subscriber")
     expect(result.code).toBe(0)
