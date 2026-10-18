@@ -3,7 +3,7 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## 0.1.0 — 17.10.2026
+## Unreleased
 
 ### Changed — may break callers
 
@@ -21,6 +21,18 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   link without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds; a command path given as one
   quoted argument (`wa 'chats list'`) fails with `validation_error`. `wa mcp` no longer offers `chats link create`,
   `metadata get` or `metadata refresh`, which `wa` does not have and which failed.
+
+### Fixed
+
+- **A command cut off when WhatsApp ended the connection says why**: a command relayed through `serve` while another
+  process took the login over answered `network_error`, which invites a retry; it now answers `device.replaced`, and
+  after a ban or a logout `account.banned` or `device.logged-out`.
+- **The phone-number and agent prompts of `session start` and `setup` go to the run's own stderr** (cli-core's
+  `secretInputOf`), so a test or an embedding program that captures the run sees them.
+
+## 0.1.0 — 17.10.2026
+
+### Changed — may break callers
 
 - **The engine dying during a write answers `outcome_unknown`** (WC-LIFE-9): exit 14, `retry.safe: false`, the
   `operation_id` kept, reason `engine.stopped-mid-write`. It answered `provider_unavailable` (exit 12), which
@@ -103,12 +115,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   networking advisory paths while retaining the current Go release branch.
 
 ### Fixed
-
-- **A command cut off when WhatsApp ended the connection says why**: a command relayed through `serve` while another
-  process took the login over answered `network_error`, which invites a retry; it now answers `device.replaced`, and
-  after a ban or a logout `account.banned` or `device.logged-out`.
-- **The phone-number and agent prompts of `session start` and `setup` go to the run's own stderr** (cli-core's
-  `secretInputOf`), so a test or an embedding program that captures the run sees them.
 
 - **`session end` no longer runs through a running `serve`**: it logged out `serve`'s own connection and then
   deleted the device keys under it. It now refuses with `provider_unavailable`, reason `device.in-use` (exit 12),
