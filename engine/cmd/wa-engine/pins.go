@@ -10,8 +10,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// pinDurations are the lengths WhatsApp's apps offer, in seconds (Baileys lists the same three). Without one a pin
-// lasts 7 days: cli-core has no default, and 7 days is what wa sent before a length could be chosen.
+// pinDurations are the lengths WhatsApp's apps offer, in seconds (Baileys lists the same three). cli-core sends one
+// since 0.339.0, but a wa built on an older cli-core can still drive this engine (a checkout's JS and engine are built
+// apart, and the protocol did not change), so a pin without one keeps lasting 7 days, the default it meant.
 var pinDurations = []uint32{86400, 604800, 2592000}
 
 const defaultPinFor = uint32(604800)

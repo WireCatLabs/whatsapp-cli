@@ -199,6 +199,7 @@ export const WHATSAPP: Messenger = {
   // A pin is for the whole chat and tells its members; it ends after one of the lengths WhatsApp's apps offer.
   quietPins: false,
   pinDurations: [86_400, 604_800, 2_592_000],
+  pinDefaultDuration: 604_800,
   // Nothing sends unless a typed command asked: WhatsApp bans accounts that answer like a bot.
   autoReplies: false,
   chatMute: true,

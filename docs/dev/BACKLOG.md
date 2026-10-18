@@ -115,9 +115,9 @@ Open work, most important first. The plan in flight is
      Web's `WAWebStarMessageSync`, Cobalt and whatsapp-rust, but not yet sent to WhatsApp. Open: that the phone shows
      and drops the star on someone else's message in a group (the participant field), one in a one-to-one chat, and the
      owner's own. A chat the store holds by phone number may be dropped, as with delete for the owner alone.
-   - **The store does not know what is starred.** cli-core's `Message` has no star and the engine ignores whatsmeow's
-     `events.Star`, so neither a star from `wa` nor one from the phone reaches the store, and nothing lists starred
-     messages. Both need cli-core first.
+   - **A star set on the phone does not reach the store.** cli-core 0.339.0 stores a star from `messages star` and
+     takes a `star` watch event, `HistoryBatch.stars` and `Message.starred`; the engine does not map whatsmeow's
+     `events.Star` or a pushed message's starred flag to them yet.
    - **A delete for the owner alone made on the phone does not reach the store.** The engine ignores whatsmeow's
      `events.DeleteForMe`, so `messages list` and `search` still show the message. cli-core already takes an
      incoming deletion event and marks the message deleted; the engine only has to map this one to it.
@@ -148,8 +148,7 @@ Open work, most important first. The plan in flight is
      library does not decode WEBP. The preview ignores a JPEG's EXIF orientation, so a phone photo taken on its side
      may show a turned preview until the photo downloads.
    - **Message pins**: a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned.
-     Over MCP, an `expire_time` WhatsApp does not offer is refused only after the engine started (cli-core checks it
-     inside the tool's online step). Live check open: a pin and an unpin in the own chat and in a group addressed by
+     Live check open: a pin and an unpin in the own chat and in a group addressed by
      phone numbers, and that a 24-hour pin ends on the phone.
    - **Live checks** (with item 1): a reaction and a revoke in a group addressed by phone numbers (the own LID chat
      works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
@@ -170,8 +169,7 @@ Open work, most important first. The plan in flight is
    wa test and 525 are waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
-   goes. A `store gaps repair --background` job never runs: cli-core 0.336.0 hands it `--timeout 0`, which the job
-   refuses. `src/older-history.test.ts` asserts that refusal, so it fails once cli-core is fixed.
+   goes.
 11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
     history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
     decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup

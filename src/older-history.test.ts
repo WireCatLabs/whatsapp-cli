@@ -375,23 +375,10 @@ describe("store gaps repair --background", () => {
   it("the job asks the phone for the gap, within its bounds, and closes the engine", async () => {
     const { own, job, child } = await backgrounded("bgrepair", 11)
     const engine = fakeEngine(own, { phone: onPhone })
-    // cli-core 0.336.0 hands the job `--timeout 0`, which the job refuses (the test below); any value it accepts will do.
-    const argv = (child?.argv ?? []).map((word, at, all) => (all[at - 1] === "--timeout" ? "1m" : word))
-    const ran = await wa(argv, () => engine, undefined, { env: child?.env ?? {} })
+    const ran = await wa(child?.argv ?? [], () => engine, undefined, { env: child?.env ?? {} })
     expect(ran.code, ran.stderr).toBe(0)
     expect(engine.olderAsked.map((asked) => asked.anchor.id)).toEqual([oldest?.id, onPhone[9]?.id, onPhone[19]?.id])
     expect(engine.closed).toBe(true)
     expect(await jobOf("bgrepair", job)).toMatchObject({ state: "done" })
-  })
-
-  // cli-core's gaps-command.ts starts the job with `--timeout 0`, which the job's own option parser refuses. Turns red
-  // once cli-core passes an accepted value: then drive the unswapped argv as the test above does, and drop the swap.
-  it("the job dies at once on the argv cli-core hands it, which says `--timeout 0`", async () => {
-    const { child } = await backgrounded("bggaps", 9)
-    const ran = await wa(child?.argv ?? [], never, undefined, { env: child?.env ?? {} })
-    expect(ran.code).toBe(2)
-    expect(JSON.parse(ran.stderr).error.message).toContain(
-      '--timeout takes a duration with a unit — 500ms, 30s, 2m, 4h or 1d — not "0"',
-    )
   })
 })

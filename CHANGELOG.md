@@ -112,10 +112,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   covers both. Engine protocol 18, op `mute`.
 - **`messages pin` and `messages unpin`** (cli-core 0.336.0's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is sent
   as WhatsApp's `PinInChatMessage`, addressed by the message's key in the local store; a message the store lacks is
-  `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies, with or without `--notify`,
-  and counts toward the hourly limit; an agent's `messages_pin` takes no `notify`. `--expire-time 24h`, `7d` or `30d`
-  (MCP `expire_time`) says how long it lasts; without it `wa` pins for 7 days, its own choice; any other length is
-  `validation_error`. Engine protocol 16, ops `pin` (with an optional `duration` in seconds) and `unpin`.
+  `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies and counts toward the hourly
+  limit; `messages pin` takes no `--notify` (cli-core 0.339.0) and an agent's `messages_pin` no `notify`.
+  `--expire-time 24h`, `7d` or `30d` (MCP `expire_time`) says how long it lasts; without it the pin lasts 7 days, as
+  the help says; any other length is `validation_error`, over MCP before it connects. Engine protocol 16, ops `pin`
+  (with an optional `duration` in seconds) and `unpin`.
 - **`wa <profile> account privacy show` and `account privacy set`** (cli-core 0.336.0's; max offers five of them): who
   sees last seen (`--last-seen`), the profile photo (`--profile-photo`) and the about text (`--about-text`), whether
   online and last seen are hidden (`--hide-online`), whether read receipts go (`--read-receipts`; off also hides others'
@@ -187,8 +188,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   devices; nobody in the chat is told. The message must be in the local store, since WhatsApp names it by its sender;
   one the store lacks is exit 6 and nothing is sent. A channel's post is starred on the phone. It goes through the
   profile's permissions (`messages.star`, `messages.unstar`), an agent can do it over MCP (`wa_write` with
-  `messages star`), and it answers `settings.keys-missing` as `chats mute` does. The local store does not record the
-  star, and a star set on the phone does not reach it. Not yet checked live on the phone. Engine protocol 22, op `star`.
+  `messages star`), and it answers `settings.keys-missing` as `chats mute` does. The local store keeps a star set with
+  `wa` (cli-core 0.339.0), so `messages list <chat> starred:true` and `search messages is:starred` find it; a star set
+  on the phone does not reach the store yet. Not yet checked live on the phone. Engine protocol 22, op `star`.
 - **`wa <profile> chats archive` and `unarchive`, `chats pin` and `unpin`, and `chats mark-unread`** (cli-core
   0.336.0's): move a chat into WhatsApp's archive and back, keep it at the top of the chat list, or mark it unread, on
   the account's devices; nobody in the chat is told. `chats pin` pins the chat, not a message (`messages pin` does
