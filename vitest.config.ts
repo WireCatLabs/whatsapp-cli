@@ -20,9 +20,9 @@ export default defineConfig({
         "src/bin/**",
       ],
       reporter: ["text-summary", "json-summary", "html"],
-      // Just under what the suite reaches (2026-10-18: 96.1/95.3/92.2/85.2), so coverage can rise and not fall.
-      // Functions move by one between runs (92.3 to 92.7), hence the extra room there.
-      thresholds: { lines: 95.8, statements: 95, functions: 91.8, branches: 85, perFile: { lines: 50 } },
+      // Half a point under the lowest of three local runs and main's CI (2026-10-18: 96.4/95.59/93.21/88.05), so
+      // open feature PRs, which PR CI does not measure, can land without tripping it. Statements stay at 95.
+      thresholds: { lines: 95.9, statements: 95, functions: 92.7, branches: 87.5, perFile: { lines: 50 } },
     },
   },
 })
