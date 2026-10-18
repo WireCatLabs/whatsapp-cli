@@ -241,15 +241,16 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   would take the login back. A request already on the way that fails as "not connected" answers that reason too
   (`refusalFor` in `engine/cmd/wa-engine/errors.go`): a relayed command on `serve`'s connection never asks to
   connect, so it would otherwise read `network_error` and retry. The client rejects a write still waiting when the
-  engine process ends with `outcome_unknown`, a read with `provider_unavailable` (`WRITES` in
-  [`go-engine.ts`](../../src/engine/go-engine.ts)).
+  engine process ends with `outcome_unknown`, a read with `provider_unavailable`. `ENGINE_OPS` in
+  [`contract.ts`](../../src/engine/contract.ts) classifies every op as a read or a write; a new op fails typecheck and
+  the engine's tests until it is classified there and, for a write, in the engine's `writes`.
 - **A dropped connection comes back by itself; a write it cut is `outcome_unknown`.** whatsmeow reconnects after a
   network drop and sends a frame still waiting once more; the engine reports `disconnected`, then `connected` (also
   when a keepalive recovers), and `watch` and `feed` listen on through both, so `serve` keeps saving. A write that
   was on its way when the socket broke (whatsmeow's `DisconnectedError` or `ErrNotConnected` after its retry, a timed
   out info query, or the engine stopping) answers `outcome_unknown`, even after `replaced`: it may have reached
   WhatsApp, and a retry would send it twice (`refusalFor` and `writes` in `engine/cmd/wa-engine/errors.go`, the same
-  list as `WRITES`). The engine connects with its own context, which whatsmeow hands to its reconnect loop, so stdin
+  writes as `ENGINE_OPS`). The engine connects with its own context, which whatsmeow hands to its reconnect loop, so stdin
   closing ends a dial or a reconnect at once instead of holding the device lock past the CLI.
 - **`serve` does not restart the engine itself; its unit restarts `serve`.** An engine that dies, or a connection
   WhatsApp ends, ends `serve` with the reason, as tg's `serve` ends when Telegram's updates stop. cli-core's unit
