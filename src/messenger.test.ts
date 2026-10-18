@@ -287,35 +287,45 @@ describe("automatic replies", () => {
   })
 })
 
+// serve offers no relay on Windows, so there the lock's listeningAt is the sign it is up.
+const listening = (lock: string): unknown => {
+  const held = JSON.parse(readFileSync(lock, "utf8"))
+  return process.platform === "win32" ? held.listeningAt : held.relay
+}
+
 describe("serve and the commands it runs for others", () => {
-  it("keeps its engine open while a relayed command runs, and closes it when serve stops", async () => {
-    const profile = "relaying"
-    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
-    const controller = new AbortController()
-    const opened: FakeEngine[] = []
-    const serving = wa([profile, "serve", "--json"], {
-      signal: controller.signal,
-      engine: () => {
-        const engine = fakeEngine(seed)
-        opened.push(engine)
-        return engine
-      },
-    })
-    await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+  // serve offers no relay on Windows.
+  it.skipIf(process.platform === "win32")(
+    "keeps its engine open while a relayed command runs, and closes it when serve stops",
+    async () => {
+      const profile = "relaying"
+      const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
+      const controller = new AbortController()
+      const opened: FakeEngine[] = []
+      const serving = wa([profile, "serve", "--json"], {
+        signal: controller.signal,
+        engine: () => {
+          const engine = fakeEngine(seed)
+          opened.push(engine)
+          return engine
+        },
+      })
+      await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
 
-    const relayed = await wa([profile, "account", "show", "--json"], {
-      engine: () => {
-        throw new Error("a relayed command must not open its own engine")
-      },
-    })
-    expect(relayed.code, relayed.stderr).toBe(0)
-    expect(opened).toHaveLength(1)
-    expect(opened[0]?.closed).toBe(false)
+      const relayed = await wa([profile, "account", "show", "--json"], {
+        engine: () => {
+          throw new Error("a relayed command must not open its own engine")
+        },
+      })
+      expect(relayed.code, relayed.stderr).toBe(0)
+      expect(opened).toHaveLength(1)
+      expect(opened[0]?.closed).toBe(false)
 
-    controller.abort()
-    expect((await serving).code).toBe(0)
-    expect(opened[0]?.closed).toBe(true)
-  })
+      controller.abort()
+      expect((await serving).code).toBe(0)
+      expect(opened[0]?.closed).toBe(true)
+    },
+  )
 
   it("stops with the reason when WhatsApp hands the login to another connection", async () => {
     const profile = "replaced"
@@ -327,7 +337,7 @@ describe("serve and the commands it runs for others", () => {
         return engine
       },
     })
-    await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+    await vi.waitFor(() => expect(listening(lock)).toBeDefined(), { timeout: 5000 })
     engine?.push({ event: "connection", state: "replaced" })
 
     const result = await serving
