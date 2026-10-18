@@ -1,8 +1,11 @@
 import { createHash } from "node:crypto"
+import { mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { beforeAll, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it } from "vitest"
 import type { EngineEvent, WaVote, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
@@ -30,11 +33,15 @@ const seed = { ...base, messages: [...base.messages, poll, counted] }
 const self = base.account?.id ?? ""
 const other = "100000000000088@lid"
 
+// Each test gets a store of its own: votes one test casts would otherwise show up in the next one's poll.
+let store = ""
+
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
   const code = await run(argv, {
     streams,
     tty: false,
+    env: { ...process.env, MESSAGING_STORE: store },
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
   })
@@ -88,7 +95,8 @@ const vote = (voter: string, answers: string[], votedAt: string, extra: Partial<
   },
 })
 
-beforeAll(async () => {
+beforeEach(async () => {
+  store = join(mkdtempSync(join(tmpdir(), "wa-polls-")), "messages.db")
   await watching()
 })
 
@@ -201,13 +209,15 @@ describe("wa polls show and vote", () => {
 
 describe("votes from WhatsApp", () => {
   const show = async () => JSON.parse((await polling(["show", base.busy, counted.id])).stdout).item
-
-  it("passes each vote on as `watch` reads it, by answer id, and counts it in `polls show`", async () => {
-    const events = await watching([
+  const twoVoted = () =>
+    watching([
       vote(base.person, ["Monday"], "2026-09-01T10:01:00.000Z"),
       vote(other, ["Tuesday"], "2026-09-01T10:02:00.000Z", { voterName: "Synthetic Voter", poll: whichDay }),
       vote(other, ["Lunch"], "2026-09-01T10:03:00.000Z"),
     ])
+
+  it("passes each vote on as `watch` reads it, by answer id, and counts it in `polls show`", async () => {
+    const events = await twoVoted()
     expect(events.filter((event) => event.event === "vote")).toMatchObject([
       {
         chatId: base.busy,
@@ -226,6 +236,7 @@ describe("votes from WhatsApp", () => {
   })
 
   it("lists who voted for what with `polls voters`, newest first", async () => {
+    await twoVoted()
     const all = await polling(["voters", base.busy, counted.id])
     expect(all.code, all.stderr).toBe(0)
     expect(JSON.parse(all.stdout).items.map((one: { person_id: string }) => one.person_id)).toEqual([
@@ -289,6 +300,7 @@ describe("votes from WhatsApp", () => {
   })
 
   it("counts the account's own vote once, whether this command or the phone cast it", async () => {
+    await twoVoted()
     const voted = await polling(["vote", base.busy, counted.id, answerId("Monday")])
     expect(JSON.parse(voted.stdout).item.poll).toMatchObject({
       answers: [
