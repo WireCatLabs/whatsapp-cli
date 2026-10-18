@@ -37,6 +37,10 @@ export interface SettingsEngine {
   archiveChat(last: WaAnchor, archived: boolean): Promise<void>
   /** Pins the chat at the top of the account's chat list, or unpins it. Not a message pin. */
   pinChat(jid: string, pinned: boolean): Promise<void>
+  /**
+   * Marks `last`'s chat read on the account's devices up to `last`, which takes a mark-unread off; no receipt is sent.
+   */
+  markChatRead(last: WaAnchor): Promise<void>
   /** Marks `last`'s chat unread on the account's devices; no receipt is sent or taken back. */
   markChatUnread(last: WaAnchor): Promise<void>
 }
@@ -69,6 +73,9 @@ export const goSettings = (request: EngineRequest): SettingsEngine => ({
   },
   pinChat: async (jid, pinned) => {
     await request(pinned ? "pinChat" : "unpinChat", { jid }, nothing)
+  },
+  markChatRead: async (last) => {
+    await request("markChatRead", { ...keyFields(last), timestamp: last.timestamp }, nothing)
   },
   markChatUnread: async (last) => {
     await request("markChatUnread", { ...keyFields(last), timestamp: last.timestamp }, nothing)

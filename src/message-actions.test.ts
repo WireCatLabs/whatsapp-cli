@@ -73,8 +73,26 @@ const [partlyDeleted, partlyRefused] = ["3EB0000000000000000F09", "3EB0000000000
   id,
   timestamp: `2026-08-01T09:0${6 + at}:00.000Z`,
 })) as [Message, Message]
+const ownChat = base.account?.id as string
+const toSelf: Message = {
+  ...fresh,
+  chatId: ownChat,
+  id: "3EB0000000000000000F13",
+  timestamp: "2026-08-01T09:20:00.000Z",
+}
 const seed = {
   ...base,
+  chats: [
+    ...base.chats,
+    {
+      id: ownChat,
+      title: "Owner",
+      kind: "saved" as const,
+      unreadCount: 0,
+      lastMessageAt: toSelf.timestamp,
+      participantsCount: null,
+    },
+  ],
   messages: [
     ...base.messages,
     fresh,
@@ -88,6 +106,7 @@ const seed = {
     phoneStarred,
     phonePushed,
     phoneDeleted,
+    toSelf,
   ],
 }
 const inBusy = seed.messages.filter((message) => message.chatId === seed.busy)
@@ -116,13 +135,19 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
   return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
 }
 
-const acting = async (argv: string[]) => {
+const acting = async (argv: string[], { settingsKeys = true } = {}) => {
   let engine: FakeEngine | undefined
   const result = await wa(["actions", ...argv, "--json"], () => {
-    engine = fakeEngine(seed)
+    engine = fakeEngine(seed, { settingsKeys })
     return engine
   })
-  return { ...result, actions: engine?.actions ?? [], closed: engine?.closed, started: engine !== undefined }
+  return {
+    ...result,
+    actions: engine?.actions ?? [],
+    markedRead: engine?.markedRead ?? [],
+    closed: engine?.closed,
+    started: engine !== undefined,
+  }
 }
 
 // A command that reads the store may first warn that no `wa serve` keeps it up to date.
@@ -626,17 +651,49 @@ describe("wa messages star", () => {
 
 describe("marking read", () => {
   const newestTheirs = { op: "read", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId } }
+  const upTo = (message: Message) => ({
+    chat: message.chatId,
+    id: message.id,
+    fromMe: message.outgoing === true,
+    sender: message.senderId,
+    timestamp: message.timestamp,
+  })
 
-  it("sends one read receipt, for the newest message from someone else", async () => {
+  it("sends the read patch up to the newest message, then one receipt for the newest from someone else", async () => {
     const result = await acting(["chats", "mark-read", seed.busy])
     expect(result.code).toBe(0)
+    expect(result.markedRead).toEqual([upTo(fresh)])
     expect(result.actions).toEqual([newestTheirs])
   })
 
   it("with --until-id on the account's own message, marks the newest one from someone else before it", async () => {
     const result = await acting(["chats", "mark-read", seed.busy, "--until-id", fresh.id])
     expect(result.code).toBe(0)
+    expect(result.markedRead).toEqual([upTo(fresh)])
     expect(result.actions).toEqual([newestTheirs])
+  })
+
+  it("with --until-id, bounds the read patch by that message", async () => {
+    const result = await acting(["chats", "mark-read", seed.busy, "--until-id", theirs.id])
+    expect(result.code).toBe(0)
+    expect(result.markedRead).toEqual([upTo(theirs)])
+    expect(result.actions).toEqual([newestTheirs])
+  })
+
+  it("in the own chat sends the read patch alone, as the account's own messages have no receipt", async () => {
+    const result = await acting(["chats", "mark-read", ownChat])
+    expect(result.code).toBe(0)
+    expect(result.markedRead).toEqual([upTo(toSelf)])
+    expect(result.actions).toEqual([])
+  })
+
+  it("sends no receipt when WhatsApp has not sent the settings keys the read patch needs", async () => {
+    const result = await acting(["chats", "mark-read", seed.busy], { settingsKeys: false })
+    expect(result.code).not.toBe(0)
+    const { error } = JSON.parse(result.stderr.slice(result.stderr.indexOf('{"error"')))
+    expect(error).toMatchObject({ reason: "settings.keys-missing", retry: { safe: true } })
+    expect(result.markedRead).toEqual([])
+    expect(result.actions).toEqual([])
   })
 
   it("marks read from messages list only with --mark-read", async () => {
@@ -644,6 +701,7 @@ describe("marking read", () => {
     expect(plain.actions).toEqual([])
     const marked = await acting(["messages", "list", seed.busy, "--mark-read"])
     expect(marked.code).toBe(0)
+    expect(marked.markedRead).toHaveLength(1)
     expect(marked.actions).toEqual([newestTheirs])
   })
 
@@ -652,6 +710,7 @@ describe("marking read", () => {
     expect((await acting(["review", "--all", "--no-mark-read"])).actions).toEqual([])
     const marked = await acting(["review", "--all", "--mark-read"])
     expect(marked.code).toBe(0)
+    expect(marked.markedRead.map((last) => last.chat)).toEqual([seed.busy])
     expect(marked.actions).toEqual([newestTheirs])
   })
 
@@ -665,7 +724,7 @@ describe("marking read", () => {
         engine = fakeEngine(other)
         return engine
       })
-      return { ...result, actions: engine?.actions ?? [] }
+      return { ...result, actions: engine?.actions ?? [], markedRead: engine?.markedRead ?? [] }
     }
 
     expect((await inbox()).actions).toEqual([])
@@ -677,6 +736,7 @@ describe("marking read", () => {
       { op: "read", key: { chat: shown.chat_id, id: expect.any(String), fromMe: false, sender: expect.any(String) } },
     ])
     expect(marked.actions[0]?.key.id).toBe(shown.ref.split("/").at(-1))
+    expect(marked.markedRead).toMatchObject([{ chat: shown.chat_id, id: shown.ref.split("/").at(-1) }])
   })
 })
 

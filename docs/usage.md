@@ -105,9 +105,13 @@ These are your own settings too, synced to your other devices; nobody in the cha
 chat, not a message. Archiving a chat also unpins it (whatsmeow's archive patch does both). WhatsApp's apps keep
 three pinned chats; `wa` does not count them, and what the phone does with a fourth has not been checked. Archive,
 unarchive and mark-unread name the chat's newest message in the local store, as `chats delete` does, so a chat the
-store holds nothing of is refused. A chat marked unread sends no read receipt. `chats mark-read` sends a read receipt,
-not the settings change, so it may leave a mark-unread on the phone; clear it there. Channels are refused. None of
-this has been checked on a phone yet.
+store holds nothing of is refused. Channels are refused. A chat marked unread sends no read receipt. In your own chat
+the phone shows pin, unpin, archive, unarchive and mark-unread (checked 2026-10-18); other chats are not checked yet.
+
+`chats mark-read` first sends the same settings change with "read", up to the newest stored message (or
+`--until-id`), then the read receipt; a receipt alone leaves a mark-unread on the phone. Until WhatsApp has sent the
+settings keys it is refused and sends neither. A channel gets the receipt only. That the phone takes the mark off
+this way is not checked yet.
 
 A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local store holds shows the quoted text
 and its sender on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's

@@ -14,8 +14,8 @@ var writes = map[string]bool{
 	"leave": true, "updateGroup": true, "resetLink": true, "setGroupPhoto": true, "participants": true,
 	"answerRequest": true, "block": true, "setPrivacy": true, "logout": true, "mute": true,
 	"updateProfile": true, "deleteChat": true, "clearChat": true, "deleteForMe": true, "star": true,
-	"archiveChat": true, "unarchiveChat": true, "pinChat": true, "unpinChat": true, "markChatUnread": true,
-	"followChannel": true, "unfollowChannel": true,
+	"archiveChat": true, "unarchiveChat": true, "pinChat": true, "unpinChat": true, "markChatRead": true,
+	"markChatUnread": true, "followChannel": true, "unfollowChannel": true,
 }
 
 // rateLimited answers the write after a 429 a background lookup met, in the words classify gives WhatsApp's own.

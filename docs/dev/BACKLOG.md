@@ -67,9 +67,10 @@ Open work, most important first. The plan in flight is
      for the name, so such a group is found by its `…@g.us` id only.
    - ~~**Removing a group's photo**~~ — built: `chats update --remove-photo` (cli-core 0.340.0).
    - **Stickers from a file: live check and the limits.** `messages send --sticker-file` (cli-core 0.340.0) uploads
-     the `.webp` as an image and sends a `StickerMessage`, with the canvas read from the file's first chunk; not run
-     against WhatsApp yet (own chat only; the owner runs `bin/live-chat-state <profile> --sticker <file.webp>`,
-     step 9). One cap, 500 KiB, lets an animated sticker through: Meta's Cloud API caps a
+     the `.webp` as an image and sends a `StickerMessage`, with the canvas read from the file's first chunk. A square
+     512×512 still sticker of 7.6 KB shows on the phone as a sticker, at the right size and shape (own chat,
+     2026-10-18, `bin/live-chat-state` step 9); a non-square one, a still one over 100 KB and an animated one are not
+     checked. One cap, 500 KiB, lets an animated sticker through: Meta's Cloud API caps a
      still one at 100 KB, and whether a phone shows a larger still sticker is unknown. `isAnimated` is not set.
      The `.webp` goes as it is: mautrix-whatsapp pads a non-square one to a square and adds a PNG thumbnail before
      sending, and whether a phone shows a non-square sticker well is unknown.
@@ -84,15 +85,16 @@ Open work, most important first. The plan in flight is
      and a store upsert that can clear a parent once a group is unlinked.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
-   - **Live checks of the chat-state writes** in the own chat: `account privacy show`, `chats mute` and `unmute`,
-     `messages pin --expire-time 24h` and `unpin`, `messages star` and `unstar` (W7), `chats pin` and `unpin`,
-     `chats archive` and `unarchive`, `chats mark-unread` then `mark-read`, and delete for the owner alone (W6).
-     The owner runs `bin/live-chat-state` for them;
-     its last table names the line of this item each answer settles, and it skips what is not built yet.
-   - **Live checks of `chats mute`**: not run against WhatsApp. Open: whether the phone applies a mute addressed
-     to a one-to-one chat by its LID when it keys that chat by phone number (whatsmeow maps neither way), and how
-     soon after a fresh link the settings keys arrive. Channels are refused; whatsmeow's `NewsletterToggleMute`
-     would mute one, without an end time.
+   - **Live checks of the chat-state writes** in the own chat (2026-10-18, `bin/live-chat-state`): `account privacy
+     show`, `chats mute` and `unmute` of the own chat by its LID, `messages pin --expire-time 24h` and `unpin`,
+     `messages star` and `unstar` of the owner's own message, `chats pin` and `unpin`, `chats archive` and `unarchive`,
+     `chats mark-unread` and delete for the owner alone all show on the phone. `chats mark-read` did not take the
+     mark-unread off: it sent no read patch, and in the own chat no receipt either. It now sends the patch first;
+     a live re-check (step 7) is open.
+   - **Live checks of `chats mute`**: the own chat, addressed by its LID, mutes and unmutes (2026-10-18). Open:
+     whether the phone applies a mute addressed to a one-to-one chat with someone else by its LID when it keys that
+     chat by phone number (whatsmeow maps neither way), and how soon after a fresh link the settings keys arrive.
+     Channels are refused; whatsmeow's `NewsletterToggleMute` would mute one, without an end time.
    - **The store does not learn of a mute.** Nothing updates a chat's `muted` after `chats mute`, and the engine
      reads no live mute events, so `inbox` leaves the chat in until the next history push. That push now reads any
      end past the year 9999 (a -1 in the unsigned field) as a mute for good; whether the phone writes it as all ones,
@@ -109,19 +111,19 @@ Open work, most important first. The plan in flight is
    - **Live checks of `chats delete` and `chats clear`**: not run against WhatsApp. Open, as for mute: a one-to-one
      chat addressed by its LID; and whether the phone deletes up to the named message when newer ones arrived
      that the store has not heard of yet (the patch should leave those).
-   - **Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`**: not run against WhatsApp.
-     Open, as for mute: a one-to-one chat addressed by its LID. Also: whether the phone shows a fourth pinned chat
-     (its apps keep three; the server cannot read a patch to refuse one); whether pinning an archived chat unarchives
-     it (whatsmeow's, Baileys' and whatsapp-rust's pin patches carry no unarchive); whether `chats mark-read`, which
-     sends a read receipt and no app-state patch, clears a mark-unread on the phone; and whether an archived chat comes
-     back when a message newer than the patch's range arrives.
-   - **`chats mark-read` after a `mark-unread`.** `mark-read` sends a read receipt only; the app-state patch that
-     undoes a mark-unread is the same one with read true (whatsmeow's `BuildMarkChatAsRead`). If a live check
-     shows the receipt leaves the mark, `mark-read` also sends that patch. `bin/live-chat-state` (step 7) cannot
-     answer it: in the own chat `mark-read` sends nothing, since the account's own messages have no receipt, so it
-     shows only that `wa` cannot undo a mark-unread there; the receipt needs a chat with someone else.
-     Open then: a second write that can fail with `settings.keys-missing` after the receipt went out, and
-     `inbox`/`review --mark-read` doing it per chat.
+   - **Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`**: the own chat works
+     (2026-10-18). Open, as for mute: a one-to-one chat with someone else addressed by its LID, and a group. Also:
+     whether the phone shows a fourth pinned chat (its apps keep three; the server cannot read a patch to refuse one);
+     whether pinning an archived chat unarchives it (whatsmeow's, Baileys' and whatsapp-rust's pin patches carry no
+     unarchive); and whether an archived chat comes back when a message newer than the patch's range arrives.
+   - **`chats mark-read` sends the read patch, then the receipt.** The live check showed a read receipt does not take
+     a mark-unread off (2026-10-18), so `mark-read` first sends whatsmeow's `BuildMarkChatAsRead` with read true, up to
+     `--until-id` or the newest stored message, then the receipt as before. A refusal for missing settings keys comes
+     before the receipt, so nothing goes out; `inbox` and `review --mark-read` stop on it too, where they marked read
+     before the keys arrived. Each chat they mark costs one more write, whether or not the phone held it unread: the
+     store does not know. A chat the store holds nothing of gets neither. Open: the live re-check, in the own chat
+     and in a chat with someone else, and whether the phone drops the read when newer messages arrived than the range
+     names (Baileys skips such a patch on its first sync).
    - **An archive or mark-unread with nothing stored.** Baileys accepts an empty message range, whatsapp-rust calls
      one safe, and whatsmeow fills in the current time; `wa` still refuses a chat the store holds nothing of, as
      `chats delete` does. Sending an empty range is an option once a live check shows the phone takes it.
@@ -129,16 +131,16 @@ Open work, most important first. The plan in flight is
      so `messages list` and `search` still show what was deleted (queued to cli-core); the engine also ignores
      whatsmeow's `DeleteChat` and `ClearChat` events, so a deletion made on the phone does not reach the store either.
    - **Live check of delete for the owner alone.** `messages delete` without `--for-everyone` sends a hand-built
-     `deleteMessageForMe` patch, pinned against WhatsApp Web's own module, Cobalt and whatsapp-rust, but not yet sent
-     to WhatsApp. Open: that the phone drops a message from someone else in a group (the participant field), one in a
-     one-to-one chat, and the owner's own; and that it keeps the saved files. wa sends the chat id the store holds as
-     it is. WhatsApp Web, once the account's one-to-one chats moved to LIDs, writes a chat stored by phone number as
-     its LID instead (`WAWebSyncdGetChat.getChatJidMutationIndexForChat`), so a chat the store holds by phone number
-     may be dropped; one held by its LID matches.
+     `deleteMessageForMe` patch, pinned against WhatsApp Web's own module, Cobalt and whatsapp-rust. The phone drops
+     the owner's own message in the own chat (2026-10-18). Open: that it drops a message from someone else in a group
+     (the participant field) and one in a one-to-one chat; and that it keeps the saved files. wa sends the chat id
+     the store holds as it is. WhatsApp Web, once the account's one-to-one chats moved to LIDs, writes a chat stored
+     by phone number as its LID instead (`WAWebSyncdGetChat.getChatJidMutationIndexForChat`), so a chat the store
+     holds by phone number may be dropped; one held by its LID matches.
    - **Live check of starring.** `messages star` and `unstar` send a hand-built `star` patch, pinned against WhatsApp
-     Web's `WAWebStarMessageSync`, Cobalt and whatsapp-rust, but not yet sent to WhatsApp. Open: that the phone shows
-     and drops the star on someone else's message in a group (the participant field), one in a one-to-one chat, and the
-     owner's own. A chat the store holds by phone number may be dropped, as with delete for the owner alone.
+     Web's `WAWebStarMessageSync`, Cobalt and whatsapp-rust. The phone shows and drops the star on the owner's own
+     message in the own chat (2026-10-18). Open: someone else's message in a group (the participant field) and one in
+     a one-to-one chat. A chat the store holds by phone number may be dropped, as with delete for the owner alone.
    - **Live check of stars and deletes for the owner alone made on the phone.** The engine passes whatsmeow's
      `events.Star` and `events.DeleteForMe` on as `star` and `delete` events, and a pushed message's starred flag as
      `starred`, but none has come from a real phone yet. Open: that a star set and taken off on the phone reaches
@@ -203,12 +205,13 @@ Open work, most important first. The plan in flight is
      library does not decode WEBP. The preview ignores a JPEG's EXIF orientation, so a phone photo taken on its side
      may show a turned preview until the photo downloads.
    - **Message pins**: a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned.
-     Live check open: a pin and an unpin in the own chat and in a group addressed by
-     phone numbers, and that a 24-hour pin ends on the phone.
+     A 24-hour pin and an unpin in the own chat show on the phone (2026-10-18). Open: a group addressed by phone
+     numbers, and that a 24-hour pin ends on the phone.
    - **Live checks** (with item 1): a reaction and a revoke in a group addressed by phone numbers (the own LID chat
      works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.
-   - **Live checks of `account privacy`**: `show` and `set` have run only against the fake engine. Open: whether
+   - **Live checks of `account privacy`**: `show` reads the phone's settings (2026-10-18); `set` has run only against
+     the fake engine. Open: whether
      `calladd` `known` is the phone's "silence unknown callers" (Baileys says "mute unknown calls",
      WhiskeySockets/Baileys#872), and whether WhatsApp really refuses `groupadd` `none` (Baileys#966 says so, so
      `--chat-invites nobody` is refused up front; whatsmeow still lists it).

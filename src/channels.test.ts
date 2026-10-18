@@ -89,6 +89,19 @@ describe("wa channels", () => {
     expect(items.find((message) => message.id === post?.id)?.provider_metadata).toEqual({ serverId: post?.serverId })
   })
 
+  it("marks a channel read with the receipt alone, which needs no settings keys", async () => {
+    const argv = ["messages", "sync", CHANNEL, "--limit", "10", "--pause", "1ms", "--no-catch-up"]
+    expect((await acting(argv, "subscriber")).code).toBe(0)
+    let engine: FakeEngine | undefined
+    const result = await wa([PROFILE, "chats", "mark-read", CHANNEL, "--json"], () => {
+      engine = fakeEngine(seed, { channel: "subscriber", settingsKeys: false })
+      return engine
+    })
+    expect(result.code).toBe(0)
+    expect(engine?.markedRead).toEqual([])
+    expect(engine?.actions).toEqual([{ op: "read", key: expect.objectContaining({ chat: CHANNEL }) }])
+  })
+
   it("reads a channel the store holds nothing of yet", async () => {
     const argv = ["messages", "sync", CHANNEL, "--limit", "10", "--pause", "1ms", "--no-catch-up"]
     const synced = await acting(argv, "subscriber", "fresh-channel")

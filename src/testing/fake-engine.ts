@@ -129,6 +129,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, Fak
   chatPins: { jid: string; pinned: boolean }[]
   /** Each chat marked unread, by the newest message it was bounded by. */
   markedUnread: WaAnchor[]
+  /** Each read patch, by the message it was bounded by; the read receipts are in `actions`. */
+  markedRead: WaAnchor[]
   closed: boolean
   loggedOut: boolean
 }
@@ -196,6 +198,7 @@ export const fakeEngine = (
   const archives: FakeEngine["archives"] = []
   const chatPins: FakeEngine["chatPins"] = []
   const markedUnread: WaAnchor[] = []
+  const markedRead: WaAnchor[] = []
   const keysMissing = () =>
     new EngineError(
       "provider_unavailable",
@@ -243,6 +246,7 @@ export const fakeEngine = (
     archives,
     chatPins,
     markedUnread,
+    markedRead,
     closed: false,
     loggedOut: false,
     push,
@@ -422,6 +426,10 @@ export const fakeEngine = (
     pinChat: async (jid, pinned) => {
       if (!settingsKeys) throw keysMissing()
       chatPins.push({ jid, pinned })
+    },
+    markChatRead: async (last) => {
+      if (!settingsKeys) throw keysMissing()
+      markedRead.push(last)
     },
     markChatUnread: async (last) => {
       if (!settingsKeys) throw keysMissing()

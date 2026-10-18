@@ -201,6 +201,7 @@ describe("startGoEngine", () => {
     const engine = await stub("ok")
     await expect(engine.archiveChat(last, true)).resolves.toBeUndefined()
     await expect(engine.archiveChat(last, false)).resolves.toBeUndefined()
+    await expect(engine.markChatRead(last)).resolves.toBeUndefined()
     await expect(engine.markChatUnread(last)).resolves.toBeUndefined()
     await expect(engine.pinChat(last.chat, true)).resolves.toBeUndefined()
     await expect(engine.pinChat(last.chat, false)).resolves.toBeUndefined()
@@ -209,6 +210,12 @@ describe("startGoEngine", () => {
       reason: "engine.stopped-mid-write",
     })
     await engine.close()
+    const reading = await stub("ok")
+    await expect(reading.markChatRead({ ...last, chat: "crash@stub" })).rejects.toMatchObject({
+      code: "outcome_unknown",
+      reason: "engine.stopped-mid-write",
+    })
+    await reading.close()
   })
 
   it("rejects at start when the lock is held, naming the holder", async () => {

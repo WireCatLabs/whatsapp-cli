@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 33, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 34, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -200,6 +200,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "deleteForMe":
     case "archiveChat":
     case "unarchiveChat":
+    case "markChatRead":
     case "markChatUnread":
       if (fields.chat === "crash@stub") process.exit(3)
       if (!fields.chat || !fields.message || !fields.timestamp || typeof fields.fromMe !== "boolean")
