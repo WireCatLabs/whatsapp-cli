@@ -1,6 +1,6 @@
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
@@ -38,15 +38,17 @@ describe("wa chats mute", () => {
     expect(result.closed).toBe(true)
   })
 
-  it("mutes until a time, to the minute", async () => {
-    const before = Date.now()
-    const result = await muting(["mute", seed.busy, "--until", "2h"])
-    expect(result.code).toBe(0)
-    const until = result.mutes[0]?.until as string
-    expect(Date.parse(until) - before).toBeGreaterThan(2 * 3_600_000 - 60_000)
-    expect(Date.parse(until) - before).toBeLessThanOrEqual(2 * 3_600_000)
-    expect(until).toMatch(/:00\.000Z$/)
-    expect(result.item).toMatchObject({ muted_until: until })
+  it("mutes until a time, to the minute, even a millisecond before the minute turns", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] })
+    vi.setSystemTime(new Date("2026-10-18T09:14:59.999Z"))
+    try {
+      const result = await muting(["mute", seed.busy, "--until", "2h"])
+      expect(result.code).toBe(0)
+      expect(result.mutes).toEqual([{ jid: seed.busy, until: "2026-10-18T11:14:00.000Z" }])
+      expect(result.item).toMatchObject({ muted_until: "2026-10-18T11:14:00.000Z" })
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("unmutes", async () => {
