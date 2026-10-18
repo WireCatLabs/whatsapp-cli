@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <title>wa — WhatsApp CLI for AI agents</title>
   <!-- social-preview.sh renders this to social-preview.png. The WireCat lockup below is
        cli-docs design/logo/wirecat-lockup-dark.svg. -->
   <defs>
