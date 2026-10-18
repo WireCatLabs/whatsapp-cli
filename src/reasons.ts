@@ -17,6 +17,7 @@ export const REASONS: ErrorReason[] = defineReasons(
       ["media.phone-failed", "provider_error", "the phone could not upload this file again"],
       ["media.phone-timeout", "timeout", "the phone did not upload this file again in time"],
       ["media.retry-failed", "provider_error", "the phone uploaded this file again, but the new copy did not download"],
+      ["media.channel-file-forward", "validation_error", "a file from a WhatsApp channel cannot be forwarded"],
       ["engine.stopped", "provider_unavailable", "the WhatsApp engine stopped unexpectedly"],
       ["engine.stopped-mid-write", "outcome_unknown", "the WhatsApp engine stopped before WhatsApp confirmed a change"],
     ] satisfies [string, ErrorReason["code"], string][]

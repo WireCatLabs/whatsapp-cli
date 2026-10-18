@@ -197,6 +197,21 @@ describe("wa channels", () => {
     expect(forward.engine?.forwards).toEqual([])
   })
 
+  it("refuses to forward a channel's file into a chat, where it would not open, and sends nothing", async () => {
+    const path = join(mkdtempSync(join(tmpdir(), "wa-channel-file-")), "synthetic.png")
+    writeFileSync(path, "synthetic png bytes")
+    const posted = await acting(["messages", "send", CHANNEL, "synthetic caption", "--photo", path], "admin")
+    expect(posted.code).toBe(0)
+
+    const argv = ["messages", "forward", CHANNEL, posted.body.item.message.id, "--to", seed.dialog]
+    const forward = await acting(argv, "admin")
+    expect(forward.code).toBe(2)
+    const { error } = JSON.parse(forward.stderr.slice(forward.stderr.indexOf('{"error"')))
+    expect(error).toMatchObject({ code: "validation_error", reason: "media.channel-file-forward" })
+    expect(error.message).toContain("send it as a new file")
+    expect(forward.engine?.forwards).toEqual([])
+  })
+
   it("refuses an edit or a deletion in a channel, and sends nothing", async () => {
     const post = CHANNEL_POSTS.at(-1)?.id ?? ""
     const edit = await acting(["messages", "edit", CHANNEL, post, "fixed text"], "admin")

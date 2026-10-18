@@ -289,7 +289,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   --photo/--file/--voice <path>`, the text as the caption. The role is asked first, as for a text post, so a channel
   you only follow is refused (exit 5) before anything is uploaded. A channel's files are not encrypted: `wa` uploads
   them as WhatsApp's apps do for channels, and the post carries no file key. One file per post; an album to a channel
-  is refused (exit 2). Not yet checked live: that needs a channel you own or administer.
+  is refused (exit 2). A forward of a channel's file into a chat is refused too (exit 2,
+  `media.channel-file-forward`), since it would arrive as a file that does not open. Not yet checked live: that needs
+  a channel you own or administer.
 
 ## 0.1.0 — 17.10.2026
 

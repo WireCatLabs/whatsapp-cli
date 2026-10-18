@@ -147,8 +147,8 @@ Open work, most important first. The plan in flight is
      to a channel the owner runs, uploaded unencrypted (`UploadNewsletterReader`) and posted with its media handle.
      An album to a channel is refused: whatsmeow's newsletter send has no album handling. The fields follow whatsmeow's
      `UploadNewsletter` example (URL, direct path, the plain file's SHA-256, no media key); mautrix-whatsapp posts no
-     files to channels, so nothing else confirms them. A channel file's stored ref has no media key, so forwarding
-     it into an encrypted chat would send a file that does not open (forwards from a channel are not refused yet).
+     files to channels, so nothing else confirms them. A channel file has no media key, so `messages forward` of one
+     into a chat is refused (`media.channel-file-forward`): it would arrive as a file that does not open.
      **Live check needs a channel the owner owns or administers**; none is known, so there is no `bin/live-*` for
      it: whether the apps show the photo with its preview and caption, and whether the next `messages sync` returns
      it under the same id.
