@@ -133,6 +133,27 @@ describe("wa setup", () => {
     for (let step = 1; step <= 5; step++) expect(result.stderr).toContain(`${step}/5`)
   })
 
+  it("a cancel during the history wait ends only the wait, and setup finishes with exit 0", async () => {
+    const qrFile = join(env.WA_CACHE_DIR ?? "", "early.png")
+    mkdirSync(dirname(qrFile), { recursive: true })
+    const stop = new AbortController()
+    const engine = unlinked()
+    const listen = engine.listen
+    engine.listen = (kinds, onEvent) => {
+      const unlisten = listen(kinds, onEvent)
+      if (kinds.includes("history")) setImmediate(() => stop.abort())
+      return unlisten
+    }
+    const result = await execute(
+      ["setup", "--qr-file", qrFile, "--agent", "none", "--json"],
+      { signal: stop.signal, historyWait: { firstMs: 60_000, quietMs: 60_000 } },
+      engine,
+    )
+    expect(result.code, result.stderr).toBe(0)
+    expect(JSON.parse(result.stdout).item.history.messages).toBe(seed.messages.length)
+    expect(result.engine.closed).toBe(true)
+  })
+
   it("a cancel after the history wait still ends setup and closes the engine", async () => {
     const qrFile = join(env.WA_CACHE_DIR ?? "", "cut.png")
     mkdirSync(dirname(qrFile), { recursive: true })
@@ -310,6 +331,27 @@ describe("wa setup", () => {
     expect(result.stderr).toMatch(/timeout|did not finish within/)
     expect(asked).toBe(2)
     expect(closedWhileAsking).toBe(true)
+    expect(installSkill).not.toHaveBeenCalled()
+  })
+
+  it("gives the steps after the history wait a deadline of their own", async () => {
+    const qrFile = join(env.WA_CACHE_DIR ?? "", "stall.png")
+    mkdirSync(dirname(qrFile), { recursive: true })
+    input.wait = true
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    const running = execute(
+      ["setup", "--qr-file", qrFile, "--timeout", "2s"],
+      { tty: true, stdin: terminal() },
+      unlinked(),
+    )
+    for (let step = 0; step < 300 && !input.signal; step++) await vi.advanceTimersByTimeAsync(10)
+    expect(input.signal?.aborted).toBe(false)
+    await vi.advanceTimersByTimeAsync(2_100)
+    const result = await running
+    expect(result.code).toBe(9)
+    expect(result.stderr).toContain("did not finish within 2000ms")
+    expect(input.signal?.aborted).toBe(true)
+    expect(result.engine.closed).toBe(true)
     expect(installSkill).not.toHaveBeenCalled()
   })
 

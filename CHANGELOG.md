@@ -8,19 +8,33 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Changed — may break callers
 
 - **A temporary ban WhatsApp dates holds writes until its end** (WC-PERM-18): the engine passes the ban's expiry
-  (engine protocol 11), the error says when it ends, and `standing.until` is that time. A ban without an end still
-  holds writes until `wa <profile> doctor --online` connects again.
+  (engine protocol 11), the error says when it ends, and `standing.until` is that time.
 - **`session start`, `session end` and `setup` are refused under `WA_READ_ONLY` before they act** (cli-core 0.328.0,
   `logsInOrOut`), with "this process is read-only (WA_READ_ONLY) — it cannot log in or out" and exit 5. `session
   start` and `setup` on a profile linked before used to go ahead.
 - **Ctrl+C or `--timeout` during the history wait after linking ends the wait, not the command**: `session start`
-  keeps what arrived, counts it and exits 0. It exited 130 or 9, though the device was linked. `setup` still ends on
-  Ctrl+C, since its later steps would otherwise have nothing to stop them.
+  keeps what arrived, counts it and exits 0. It exited 130 or 9, though the device was linked. `setup` goes on to
+  its account, chat and agent steps, which get a deadline of their own (cli-core 0.334.0, WC-LIFE-5, WC-LIFE-8); a
+  Ctrl+C after the wait ends setup (130). With `--timeout`, the link and the wait share that one deadline, and the
+  steps after it get that long again.
 - **cli-core 0.328.0's command changes**: `chats list` and `chats show` declare a local read and never connect, so
   they run here while `serve` runs; `recipients add` runs through `serve` instead of being refused with exit 12; a
   link without a terminal (`--qr-file`) waits 5 minutes by default, not 30 seconds; a command path given as one
   quoted argument (`wa 'chats list'`) fails with `validation_error`. `wa mcp` no longer offers `chats link create`,
   `metadata get` or `metadata refresh`, which `wa` does not have and which failed.
+- **A hold on writes stops every write** (cli-core 0.334.0, WC-PERM-18): while WhatsApp has the account banned or
+  rate-limited, a reaction, `chats mark-read` and a group title change are refused with exit `5`
+  too, not only sends and edits. Reads still work; `inbox` and `review` with `--mark-read` still show what they read
+  and warn that nothing was marked read.
+- **A ban with no end holds writes until it is lifted** (WC-PERM-18): `standing.state` is `banned`, not `frozen`,
+  and the hold has `until: null` in `doctor --json`, `flood clear --json` and `server status --json`, where it held
+  for a year before. `wa <profile> flood clear` or a `doctor --online` that connects lifts it. A ban WhatsApp dates
+  still ends then.
+- **An older client's `session end` relayed into `serve` is refused by cli-core** (WC-LIFE-11) with
+  `permission_error`, exit `5`, `sent: false`, naming `server stop`; it was `provider_unavailable`, exit `12`,
+  `device.in-use`. `serve`'s connection and the keys stay as they were.
+- **`conversations embed` counts as a write to an outside service** (cli-core 0.334.0, WC-CMD-17): a failed run is
+  not marked safe to retry, and under `WA_READ_ONLY` it refuses before sending chat text to a remote provider.
 
 ### Fixed
 
@@ -29,6 +43,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   after a ban or a logout `account.banned` or `device.logged-out`.
 - **The phone-number and agent prompts of `session start` and `setup` go to the run's own stderr** (cli-core's
   `secretInputOf`), so a test or an embedding program that captures the run sees them.
+- **`WA_READ_ONLY` guards the message store** (cli-core 0.334.0, WC-PERM-12): `store reset`, `restore`, `clear`,
+  `migrate`, `repair`, `decrypt` and `copies delete` refuse with exit `5`; `--dry-run` still previews.
+- **A rate limit or a ban that ends `watch` or `serve`'s feed holds the next command's writes** as a one-shot
+  command meeting it would.
 
 ## 0.1.0 — 17.10.2026
 

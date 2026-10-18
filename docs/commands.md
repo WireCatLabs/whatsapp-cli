@@ -2271,7 +2271,7 @@ wa conversations consents revoke [options]
 
 compute a vector for each chunk of a chat's conversations for search by meaning — on this machine, or with --provider through a service and your key; resumes where it stopped; without --chat, every built chat with chunks left, on this machine only
 
-**Changes something on this computer only.**
+**Changes something in WhatsApp.**
 
 ```sh
 wa conversations embed [options]
