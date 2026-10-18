@@ -99,10 +99,11 @@ const errorCode = (stderr: string) => failure(stderr).code
 
 const folder = () => mkdtempSync(join(tmpdir(), "wa-media-test-"))
 
-beforeAll(async () => {
+// The phone pushes its history again on each link, with each file's path as the phone knows it.
+const pushHistory = async (pushed: typeof seed) => {
   const controller = new AbortController()
   const filling = () => {
-    const engine = fakeEngine(seed)
+    const engine = fakeEngine(pushed)
     const listen = engine.listen
     engine.listen = (kinds, onEvent) => {
       const stop = listen(kinds, onEvent)
@@ -112,7 +113,9 @@ beforeAll(async () => {
     return engine
   }
   expect((await wa(["media", "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
-})
+}
+
+beforeAll(() => pushHistory(seed))
 
 describe("attachments in the store", () => {
   it("lists a message's attachments and keeps the file's keys out of the answer", async () => {
@@ -581,6 +584,47 @@ describe("a file the phone uploaded again", () => {
       expect.objectContaining({ attachment: expect.objectContaining({ kind: "photo", ref: reuploaded }) }),
     ])
     expect(result.stdout).not.toContain("reuploaded")
+  })
+})
+
+describe("a history push after the phone uploaded a file again", () => {
+  const relinked: Message = {
+    ...theirs(13, "", [{ kind: "photo", mime: "image/jpeg", providerRef: ref("image", 13) }]),
+    chatId: base.dialog,
+  }
+  const fresh: Message = {
+    ...theirs(14, "", [{ kind: "photo", mime: "image/jpeg", providerRef: ref("image", 14) }]),
+    chatId: base.dialog,
+  }
+  const expired: ExpiredFiles = { paths: new Set([ref("image", 13).directPath]), asked: [] }
+  const before = { ...seed, messages: [...seed.messages, relinked] }
+  const after = { ...seed, messages: [...seed.messages, relinked, fresh] }
+  const downloading = async (pushed: typeof seed, message: Message) => {
+    let engine: FakeEngine | undefined
+    const result = await wa(
+      ["media", "messages", "download", message.chatId, message.id, "--output-dir", folder(), "--json"],
+      () => {
+        engine = fakeEngine(pushed, { expired })
+        return engine
+      },
+    )
+    expect(result.code).toBe(0)
+    return engine as FakeEngine
+  }
+
+  it("keeps the new path, and takes the path of a message the store did not hold", async () => {
+    await pushHistory(before)
+    await downloading(before, relinked)
+    expect(expired.asked).toHaveLength(1)
+
+    await pushHistory(after)
+    const again = await downloading(after, relinked)
+    expect(expired.asked).toHaveLength(1)
+    expect(again.downloads.map((attachment) => attachment.ref)).toEqual([
+      { ...ref("image", 13), directPath: `${ref("image", 13).directPath}-reuploaded` },
+    ])
+    const added = await downloading(after, fresh)
+    expect(added.downloads.map((attachment) => attachment.ref)).toEqual([ref("image", 14)])
   })
 })
 

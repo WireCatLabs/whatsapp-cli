@@ -225,6 +225,22 @@ export const whatsAppAdapter = (
       )
     return message
   }
+  // A push after a re-link carries the path the file had then, and the store may hold the one the phone uploaded
+  // again. cli-core keeps a stored ref only when the pushed file has none, so the pushed one is left off. Only a
+  // message with a ref costs a store read; one that fails hands the message on as pushed, never loses it.
+  const withoutKeptRefs = async (message: Message): Promise<Message> => {
+    if (!message.attachments.some((file) => file.providerRef)) return message
+    const kept = await stored.message(message.chatId, message.id).catch(() => undefined)
+    if (!kept?.attachments.some((file) => file.providerRef)) return message
+    return {
+      ...message,
+      attachments: message.attachments.map((file, position) => {
+        if (!kept.attachments[position]?.providerRef) return file
+        const { providerRef: _pushed, ...rest } = file
+        return rest
+      }),
+    }
+  }
   // A deletion for the account alone and a star are changes to its synced settings, not messages.
   const synced = settingsWrite(translated, words)
 
@@ -511,7 +527,9 @@ export const whatsAppAdapter = (
     },
 
     feed: async (onBatch, signal) => {
-      const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, (event) => {
+      // In arrival order: a push waits for its store reads, and a re-key after it must not overtake it.
+      let queue = Promise.resolve()
+      const handed = async (event: EngineEvent) => {
         if (event.event === "rekey") onBatch({ rekeys: [{ from: event.from, to: event.to }] })
         if (event.event !== "history") return
         const { rekeys, chats, contacts, messages, votes } = event.history
@@ -519,14 +537,18 @@ export const whatsAppAdapter = (
           rekeys: rekeys ?? [],
           chats: chats.map(toChat),
           people: contacts.map(toMember),
-          messages: messages.map(toMessage),
+          messages: await Promise.all(messages.map((message) => withoutKeptRefs(toMessage(message)))),
           votes: votes.flatMap((vote) => toHistoryVote(vote) ?? []),
         })
+      }
+      const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, (event) => {
+        queue = queue.then(() => handed(event))
       })
       try {
         await pushes.done
       } finally {
         pushes.stop()
+        await queue
       }
     },
   }

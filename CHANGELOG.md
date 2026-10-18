@@ -136,6 +136,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `messages download` of it no longer asks the phone again, and `messages forward` sends a file that opens instead of
   the expired one. The same holds for `attachments extract --download`, `messages transcribe --local` and the
   picture index (`images embed`).
+- **A history push after linking again keeps that address.** The phone pushes each file with the address it had
+  before, and the store used to save it over the new one, so the next download asked the phone again. A message the
+  store does not hold yet still takes the pushed address.
 - **A download your phone could not give back says why, in its `reason`**, not only in its words. A file
   WhatsApp no longer keeps fails, per file in `batch.failures`, with `media.not-on-phone` (the phone has it no more),
   `media.phone-cannot-decrypt` (the phone could not read the request), `media.phone-failed` or

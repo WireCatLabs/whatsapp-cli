@@ -72,6 +72,9 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   it. The `download` request then answers the new path (`waDownloaded`; `null` when WhatsApp still kept the file),
   and the adapter sets the whole ref with that path as the file's `providerRef`, which cli-core saves on the stored
   attachment, so a later download and `messages forward` use it. Only the path changes, as mautrix-whatsapp takes it.
+  A history push carries the path the phone knew, and cli-core's upsert keeps a stored ref only when the pushed file
+  has none, so `feed` leaves the ref off a file whose stored copy has one: one store read per pushed message with a
+  ref, as `StoredMessages` reads one message at a time.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
   the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete`,
   `messages star`, `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store
