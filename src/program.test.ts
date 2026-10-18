@@ -255,8 +255,6 @@ describe("commands WhatsApp has no counterpart for", () => {
     ["contacts", "remove", seed.person],
     ["contacts", "rename", seed.person, "Synthetic"],
     ["contacts", "import", card],
-    ["messages", "pin", seed.busy, message],
-    ["messages", "unpin", seed.busy, message],
   ])("refuses `%s %s` before starting the engine", async (...argv) => {
     const result = await wa(["unsupported", ...argv, "--json"], () => {
       throw new Error("a command WhatsApp lacks must never start the engine")

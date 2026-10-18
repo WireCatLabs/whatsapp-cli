@@ -99,6 +99,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`messages pin` and `messages unpin`** (cli-core 0.336.0's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is sent
+  as WhatsApp's `PinInChatMessage`, addressed by the message's key in the local store; a message the store lacks is
+  `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies, with or without `--notify`,
+  and counts toward the hourly limit; an agent's `messages_pin` takes no `notify`. `--expire-time 24h`, `7d` or `30d`
+  (MCP `expire_time`) says how long it lasts; without it `wa` pins for 7 days, its own choice; any other length is
+  `validation_error`. Engine protocol 16, ops `pin` (with an optional `duration` in seconds) and `unpin`.
 - **`wa <profile> account privacy show` and `account privacy set`** (cli-core 0.336.0's; max offers five of them): who
   sees last seen (`--last-seen`), the profile photo (`--profile-photo`) and the about text (`--about-text`), whether
   online and last seen are hidden (`--hide-online`), whether read receipts go (`--read-receipts`; off also hides others'

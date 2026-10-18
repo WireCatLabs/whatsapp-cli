@@ -88,13 +88,14 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   forwards: WaForward[]
   /** Each request for older history, by the anchor and count it was asked with. */
   olderAsked: { anchor: WaAnchor; count: number }[]
-  /** Every edit, deletion, reaction and read receipt, in order, with the key it was addressed by. */
+  /** Every edit, deletion, reaction, read receipt, vote and pin, in order, with the key it was addressed by. */
   actions: {
-    op: "edit" | "revoke" | "react" | "read" | "vote"
+    op: "edit" | "revoke" | "react" | "read" | "vote" | "pin" | "unpin"
     key: WaKey
     text?: string
     emoji?: string | null
     answers?: string[]
+    duration?: number
   }[]
   closed: boolean
   loggedOut: boolean
@@ -269,6 +270,12 @@ export const fakeEngine = (
     },
     vote: async (key, answers) => {
       actions.push({ op: "vote", key, answers })
+    },
+    pin: async (key, duration) => {
+      actions.push({ op: "pin", key, ...(duration === undefined ? {} : { duration }) })
+    },
+    unpin: async (key) => {
+      actions.push({ op: "unpin", key })
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

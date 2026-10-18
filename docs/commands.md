@@ -1349,7 +1349,7 @@ wa messages forward <chat> <message> [options]
 
 ### `wa messages pin`
 
-pin a message in a chat, quietly unless --notify
+pin a message in a chat; its members are told
 
 **Changes something in WhatsApp.**
 
@@ -1364,7 +1364,8 @@ wa messages pin <chat> <message> [options]
 
 | Option | What it does |
 |---|---|
-| `--notify` | tell the chat's members about the pin. |
+| `--notify` | tell the chat's members; every pin here does. |
+| `--expire-time <time>` | the pin ends by itself then: 24h, 7d or 30d from now. |
 
 ### `wa messages unpin`
 

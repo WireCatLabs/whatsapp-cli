@@ -196,6 +196,9 @@ export const WHATSAPP: Messenger = {
   silentSends: false,
   sendAs: false,
   scheduledSends: false,
+  // A pin is for the whole chat and tells its members; it ends after one of the lengths WhatsApp's apps offer.
+  quietPins: false,
+  pinDurations: [86_400, 604_800, 2_592_000],
   // Nothing sends unless a typed command asked: WhatsApp bans accounts that answer like a bot.
   autoReplies: false,
   lacks: [
@@ -212,8 +215,6 @@ export const WHATSAPP: Messenger = {
     "removeContact",
     "renameContact",
     "importContacts",
-    "pin",
-    "unpin",
   ],
   // Every delete wa makes is for everyone, which an agent may never do: the MCP delete refuses up front instead of
   // answering with an "add --for-everyone" that only the owner can act on.

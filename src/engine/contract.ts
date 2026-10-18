@@ -12,7 +12,7 @@ import type { PrivacyEngine } from "./privacy.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 15
+export const PROTOCOL = 16
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -334,6 +334,12 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine {
   createPoll(request: WaNewPoll): Promise<WaMessage>
   /** The account's vote in a poll, by the answers' texts; none takes it back. Everyone in the chat sees it. */
   vote(key: WaKey, answers: string[]): Promise<void>
+  /**
+   * Pins the message for everyone in the chat: WhatsApp has no pin only the account sees. `duration` is 86400,
+   * 604800 or 2592000 seconds; the engine pins for 7 days without one.
+   */
+  pin(key: WaKey, duration?: number): Promise<void>
+  unpin(key: WaKey): Promise<void>
   /**
    * Asks the phone for up to `count` of the chat's messages sent before `anchor`, and waits for its answer. WhatsApp
    * keeps no history on its servers: the phone answers only while it is online, and a phone that does not answer in

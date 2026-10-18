@@ -10,9 +10,9 @@ import (
 // writes are the requests that change something on WhatsApp; WRITES in src/engine/go-engine.ts is the same list.
 var writes = map[string]bool{
 	"send": true, "sendMedia": true, "forward": true, "edit": true, "revoke": true, "react": true, "read": true,
-	"createPoll": true, "vote": true, "createGroup": true, "join": true, "leave": true, "updateGroup": true,
-	"resetLink": true, "setGroupPhoto": true, "participants": true, "answerRequest": true, "block": true,
-	"logout": true,
+	"createPoll": true, "vote": true, "pin": true, "unpin": true, "createGroup": true, "join": true, "leave": true,
+	"updateGroup": true, "resetLink": true, "setGroupPhoto": true, "participants": true, "answerRequest": true,
+	"block": true, "logout": true,
 }
 
 var cutWrite = &refusal{failure: failure{"outcome_unknown",

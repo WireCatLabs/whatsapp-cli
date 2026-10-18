@@ -56,13 +56,13 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   message up and hand the engine the stored attachment; `messages forward` sends the same keys again marked forwarded,
   as WhatsApp's own apps do, and refuses a message whose file the store has no keys for. A contact card is stored by its
   name only: the card holds a phone number.
-- **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it
-  is the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
-  `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store first (cli-core's
-  `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing is found) and
-  send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not refused by
-  WhatsApp, it is dropped without a word. A reply is the exception: it goes either way, and only carries the quoted
-  sender and text when the store has them. A live edit carries only the new text, stamped with the edit's time;
+- **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
+  the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
+  `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store
+  first (cli-core's `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing
+  is found) and send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not
+  refused by WhatsApp, it is dropped without a word. A reply is the exception: it goes either way, and only carries the
+  quoted sender and text when the store has them. A live edit carries only the new text, stamped with the edit's time;
   `watch` hands it on as it came, and cli-core's store keeps the message's own time, reply and reactions.
 
 ## 4. The engine
@@ -153,6 +153,14 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   have reached this device). Every poll message carries `poll`: the question, `multiple`, and each answer with an id,
   the start of the SHA-256 of its text that a vote names. The adapter keeps it in the message's `providerMetadata`,
   so `polls show`, `polls vote` and `polls voters` read the poll from the store.
+- **Pin requests** (`engine/cmd/wa-engine/pins.go`): `pin` and `unpin`, each addressed by a stored message's key,
+  send a `PinInChatMessage` (`PIN_FOR_ALL` or `UNPIN_FOR_ALL`, the target's key, the sender's time) with
+  `messageAddOnDurationInSecs`: the request's `duration` (86400, 604800 or 2592000 seconds, from `--expire-time`; the
+  engine refuses any other), 7 days without one, 0 on an unpin. cli-core has no default length, so 7 days is wa's.
+  whatsmeow sends it with the pin edit attribute. Every WhatsApp pin is for the whole chat and its members see it, so
+  `WHATSAPP` sets `quietPins: false` and cli-core sends each pin with `notify` and counts it; `pinDurations` lists the
+  three lengths. cli-core's CLI checks a length before it connects; over MCP only after the engine started
+  (BACKLOG). A pin that arrives is not stored: it has no text.
 - **Votes** arrive once each, as a message of their own, and nothing on WhatsApp's side counts them. The engine
   decrypts a live one (`DecryptPollVote`, with the poll's secret whatsmeow keeps for every poll this device saw) and
   takes the ones a history push carries already decrypted (`WebMessageInfo.pollUpdates`). Each carries the voter

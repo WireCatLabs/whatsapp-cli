@@ -57,7 +57,7 @@ const acting = async (argv: string[]) => {
     engine = fakeEngine(seed)
     return engine
   })
-  return { ...result, actions: engine?.actions ?? [], closed: engine?.closed }
+  return { ...result, actions: engine?.actions ?? [], closed: engine?.closed, started: engine !== undefined }
 }
 
 // A command that reads the store may first warn that no `wa serve` keeps it up to date.
@@ -103,6 +103,77 @@ describe("wa reactions", () => {
     expect(errorCode(result.stderr)).toBe("not_found")
     expect(result.actions).toEqual([])
   })
+})
+
+describe("wa messages pin", () => {
+  it("pins someone else's message for the chat, addressed by its stored sender, for the engine's default length", async () => {
+    const result = await acting(["messages", "pin", seed.busy, theirs.id])
+    expect(result.code).toBe(0)
+    expect(result.actions).toEqual([
+      { op: "pin", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId } },
+    ])
+    expect(JSON.parse(result.stdout).item).toMatchObject({ chat_id: seed.busy, message_id: theirs.id, pinned: true })
+    expect(result.closed).toBe(true)
+  })
+
+  it("unpins the account's own message", async () => {
+    const result = await acting(["messages", "unpin", seed.busy, fresh.id])
+    expect(result.code).toBe(0)
+    expect(result.actions).toEqual([
+      { op: "unpin", key: { chat: seed.busy, id: fresh.id, fromMe: true, sender: fresh.senderId } },
+    ])
+  })
+
+  it.each([
+    ["24h", 86_400],
+    ["7d", 604_800],
+    ["30d", 2_592_000],
+  ])("pins for %s with --expire-time", async (length, seconds) => {
+    const result = await acting(["messages", "pin", seed.busy, theirs.id, "--expire-time", length])
+    expect(result.code).toBe(0)
+    expect(result.actions).toEqual([
+      { op: "pin", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId }, duration: seconds },
+    ])
+  })
+
+  it("refuses a length WhatsApp does not offer before it starts the engine", async () => {
+    const result = await acting(["messages", "pin", seed.busy, theirs.id, "--expire-time", "1h"])
+    expect(result.code).toBe(2)
+    expect(errorCode(result.stderr)).toBe("validation_error")
+    expect(result.stderr).toContain("24h, 7d or 30d")
+    expect(result.started).toBe(false)
+  })
+
+  it("refuses an agent's quiet pin over MCP before it starts the engine", async () => {
+    let starts = 0
+    const neverConnect = (): never => {
+      starts += 1
+      throw new Error("a refused pin must never connect")
+    }
+    const mcp = await mcpOverStdio((streams) =>
+      run(["agent", "mcp"], { streams: captureStreams(), tty: false, ...streams, engine: neverConnect }),
+    )
+    const answer = await mcp.call("wa_write", {
+      command: "messages pin",
+      arguments: { chat: seed.busy, message: theirs.id, notify: false },
+    })
+    await mcp.close()
+    expect((answer.body as { error: unknown }).error).toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("notify"),
+    })
+    expect(starts).toBe(0)
+  })
+
+  it.each([["pin", "--notify"], ["unpin"]])(
+    "refuses to %s a message the store does not hold, and sends nothing",
+    async (verb, ...options) => {
+      const result = await acting(["messages", verb, seed.busy, "3EB0000000000000000DEAD", ...options])
+      expect(result.code).toBe(6)
+      expect(errorCode(result.stderr)).toBe("not_found")
+      expect(result.actions).toEqual([])
+    },
+  )
 })
 
 describe("wa messages edit", () => {

@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 15, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 16, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -99,6 +99,14 @@ createInterface({ input: process.stdin }).on("line", (line) => {
           ],
         },
       })
+      break
+    case "pin":
+      if (fields.duration !== undefined && ![86400, 604800, 2592000].includes(fields.duration))
+        say({ id, error: { code: "validation_error", message: "a pin lasts 24 hours, 7 days or 30 days" } })
+      else say({ id, ok: null })
+      break
+    case "unpin":
+      say({ id, ok: null })
       break
     case "download":
       writeFileSync(fields.path, `synthetic ${fields.attachment.kind} bytes`, { mode: 0o600, flag: "wx" })
