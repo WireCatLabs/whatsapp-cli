@@ -1,13 +1,7 @@
 import { existsSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
 import { checkWords } from "@wirecat/cli-core"
-import {
-  type BaseContext,
-  type BaseEnvironment,
-  type Closeable,
-  environmentOf,
-  type Messenger,
-} from "@wirecat/cli-core/cli"
+import { type BaseContext, type BaseEnvironment, environmentOf, type Messenger } from "@wirecat/cli-core/cli"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { whatsAppAdapter } from "./adapter/adapter.js"
@@ -122,19 +116,15 @@ export const linkDevice = async (
     phone,
     onCode,
     beforeLink,
-    track,
   }: {
     method: "qr" | "phone"
     phone: () => Promise<string>
     onCode: (code: LinkCode) => void
     /** Throws when nobody could answer: a store can exist without a device, after a link that did not finish. */
     beforeLink?: () => void
-    /** Closed by the caller's deadline as well. */
-    track?: (engine: Closeable) => void
   },
 ): Promise<Linked> => {
   const engine = await openEngine(command, base, { link: true, listen: true })
-  track?.(engine)
   let keep = false
   try {
     const alreadyLinked = engine.self() !== null

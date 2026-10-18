@@ -62,7 +62,7 @@ const agentFor = async (
   context: MessengerContext,
   given: Agent | undefined,
   pad: number,
-  signal?: AbortSignal,
+  signal: AbortSignal,
 ): Promise<Agent> => {
   if (given) return given
   if (context.format !== "pretty" || !context.stdin.isTTY || inputPolicy(context.stdin).noInput) return "none"
@@ -71,7 +71,7 @@ const agentFor = async (
       await readSecret(`${" ".repeat(pad)}Agent [codex/cursor/claude/gemini/all/none] (none): `, {
         ...secretInputOf(command),
         echo: true,
-        ...(signal === undefined ? {} : { signal }),
+        signal,
       })
     )
       .trim()
@@ -150,7 +150,7 @@ export const setupCommand = () =>
           ? `npm${platform === "win32" ? ".cmd" : ""} exec --yes --package=${PACKAGE} -- ${prefix}`
           : prefix
       // The command's own signal, not a phase's: Ctrl+C during the history wait ends the wait, not setup.
-      const signal = environment.commandSignal ?? environment.signal ?? new AbortController().signal
+      const signal = environment.commandSignal ?? new AbortController().signal
       const screen = screenFor(context, this.optsWithGlobals().quiet === true)
       const linkContext: MessengerContext = { ...context, renderer: { ...context.renderer, note: screen.detail } }
       screen.title(
