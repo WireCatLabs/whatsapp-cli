@@ -131,7 +131,7 @@ describe("wa session start", () => {
     expect(existsSync(qrFile)).toBe(false)
   })
 
-  it("**fails the link, without crashing, when the --qr-file path cannot be written**", async () => {
+  it("fails the link, without crashing, when the --qr-file path cannot be written", async () => {
     const engine = fakeEngine(seed, { linked: false })
     // As the real engine does: the code arrives from a stream listener, outside the link's promise.
     engine.link = (_request, onCode) => {
