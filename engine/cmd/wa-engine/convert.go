@@ -311,8 +311,8 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 }
 
 // muteHorizon is whatsmeow's own "muted forever", the end of year 9999. A mute for good is -1 in app state and this
-// history field is unsigned, so it probably arrives as all ones: past the horizon it is no time, and time.Unix
-// overflows on it.
+// history field is unsigned, so it probably arrives as all ones, which the int64 cast in fromUnix turns back into
+// -1, a time in 1969.
 var muteHorizon = uint64(store.MutedForever.Unix())
 
 func mutedAt(end uint64, now time.Time) bool {
