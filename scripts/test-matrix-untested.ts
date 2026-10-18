@@ -43,6 +43,7 @@ const cliCore = (tests: string, rows: string[][]): Untested[] =>
   }))
 
 // The waiver must exist exactly while cli-core offers the flag: 0.338.0 does, the release after #1541 drops it.
+// A static entry fails both ways (missing before, stale after); delete this switch in the bump past #1541.
 const program: Command = (await import(new URL("../dist/program.js", import.meta.url).href)).createProgram()
 const pinTakesNotify =
   program.commands
