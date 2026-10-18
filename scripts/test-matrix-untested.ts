@@ -27,7 +27,6 @@ const SHARED: Record<string, string> = {
   "sends *": "src/cli/messenger/messenger.test.ts and src/sends/journal.test.ts",
   "runs *": "src/cli/runs/command.test.ts and search.test.ts",
   "config *": "src/cli/config-command.test.ts",
-  commands: "src/cli/commands-command.test.ts",
   "commands *": "src/cli/commands-command.test.ts",
   complete: "src/cli/messenger/complete-command.test.ts",
   "mcp *": "src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts",
@@ -159,7 +158,8 @@ export const UNTESTED: Untested[] = [
     command: "config show",
     option: "--bot",
     reason:
-      "a shared cli-core option; src/update.test.ts runs `config show` only to see the update notice after a command",
+      "a shared cli-core option, over the config file only; cli-core's src/cli/config-command.test.ts drives " +
+      "`config show` (not yet --bot); src/update.test.ts runs it only to see the update notice after a command",
   },
   ...["--limit", "--cursor"].map((option) => ({
     command: "messages list",
@@ -205,11 +205,6 @@ export const UNTESTED: Untested[] = [
       "cli-core runs the sync as a store job, tested in cli-core (src/cli/messenger/backfill.test.ts); the job's " +
       "sync reaches wa as src/older-history.test.ts drives it",
   },
-  {
-    command: "messages forward",
-    option: "--operation-id",
-    reason: "a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/guard.test.ts)",
-  },
   ...["--new", "--limit", "--kind"].map((option) => ({
     command: "inbox",
     option,
@@ -246,16 +241,16 @@ export const UNTESTED: Untested[] = [
     command: "config set",
     option,
     reason:
-      "cli-core's shared config command, tested in cli-core; src/groups.test.ts uses `config set` only to deny a " +
-      "permission",
+      "cli-core's shared config command, over the config file only, tested in cli-core " +
+      "(src/cli/config-command.test.ts drives --defaults; --personal and --bot not yet); src/groups.test.ts uses " +
+      "`config set` only to deny a permission",
   })),
   ...(
     [
       ["--verbose", "src/cli/messenger/messenger.test.ts (-v)"],
-      ["--quiet", "src/cli/program.test.ts"],
       ["--trace", "src/cli/messenger/messenger.test.ts"],
       ["--debug", "src/errors/reasons.test.ts"],
-      ["--max-input-bytes", "no test of its own yet"],
+      ["--max-input-bytes", "src/cli/input-policy.test.ts (the limit it sets)"],
       ["--max-output-bytes", "src/cli/agent-contract.test.ts"],
       ["--brief", "src/output-detail.test.ts"],
       ["--full", "src/output-detail.test.ts"],
