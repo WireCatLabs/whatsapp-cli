@@ -115,7 +115,8 @@ The message id `3EB0A1B2C3D4E5F6A7B8` is made up; take a real one from `messages
 
 - **Read.** Chats and messages from the local store, one message with its neighbours, other people's unread
   messages (`wa personal inbox`), everything since the last review (`wa personal review`), new messages as they
-  arrive (`wa personal watch`), and older messages of one chat asked of your phone (`wa personal messages sync`).
+  arrive (`wa personal watch`), older messages of one chat asked of your phone (`wa personal messages sync`), and
+  the posts of the channels you follow (`wa personal chats join` with a channel link).
 - **Write.** Markdown, replies, one file, photo, video or voice note per message, a photo and a video as one album,
   edits of your own messages within 20 minutes, forwards, reactions, polls and votes, pins (each one tells the
   members), deleting for you or for everyone, and marking a chat read.

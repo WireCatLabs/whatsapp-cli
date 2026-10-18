@@ -46,6 +46,8 @@ joined or left between member fetches. A group in a WhatsApp community names it 
 community itself is a group with `provider_metadata.community: true`; only the answers of `chats create|join|update`
 carry them, not the store. `chats mark-read` sends a read receipt only and may not clear a
 `chats mark-unread`.
+A channel (`…@newsletter`) is followed with `chats join <whatsapp.com/channel link>` and left with `chats leave`;
+`messages sync <channel>` reads its posts from WhatsApp's servers, and every post's sender is the channel.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
