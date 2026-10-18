@@ -36,32 +36,39 @@ stopped=no
 started=""
 logging=no
 put_back() {
-  if [ "$logging" = yes ]; then
-    logging=no
-    if [ -n "$started" ] && kill -0 "$started" 2>/dev/null; then
-      logged=$started
-      tries=0
-      until serve_running "$profile"; do
-        tries=$((tries + 1))
-        [ "$tries" -le 60 ] || {
-          echo "the logging serve (pid $logged) does not hold the lock — stop it yourself" >&2
-          return 1
-        }
-        sleep 1
-      done
-      find_serve "$profile" || return 1
-      [ "$serve" = "$logged" ] || {
-        echo "serve (pid $serve) is not the one this script started — stopping nothing; stop it yourself" >&2
+  if [ "$logging" = yes ] && [ -n "$started" ] && kill -0 "$started" 2>/dev/null; then
+    logged=$started
+    tries=0
+    until serve_running "$profile"; do
+      tries=$((tries + 1))
+      [ "$tries" -le 60 ] || {
+        echo "the logging serve (pid $logged) does not hold the lock — stop it yourself" >&2
         return 1
       }
-      stop_serve "$profile" || return 1
-    fi
+      sleep 1
+    done
+    find_serve "$profile" || return 1
+    [ "$serve" = "$logged" ] || {
+      echo "serve (pid $serve) is not the one this script started — stopping nothing; stop it yourself" >&2
+      return 1
+    }
+    stop_serve "$profile" || return 1
   fi
+  logging=no
   [ "$stopped" = yes ] || return 0
+  if kill -0 "$serve" 2>/dev/null; then
+    echo "serve (pid $serve) is still running — not starting a second one" >&2
+    return 0
+  fi
   stopped=no
   start_serve "$profile"
 }
+# Uninterruptible: a second Ctrl-C half-way through would leave the owner without serve, or with the logging one.
+hold_signals() {
+  trap '' HUP INT QUIT TERM
+}
 finish() {
+  hold_signals
   put_back || echo "then start $wa $profile serve again" >&2
   rm -f -- "$log"
   [ -n "$started" ] || return 0
@@ -108,6 +115,7 @@ shape="$shape, session id is the request id: [a-z]*, original id is the request 
 lines=$(grep -o -- "$shape" "$log" || true)
 
 back=0
+hold_signals
 put_back || back=1
 
 echo
@@ -126,25 +134,28 @@ echo "$lines" | awk -F', ' -v code="$code" -v fetched="${fetched:-?}" '
     session = flag($5); original = flag($6)
     printf "answer %d: matched by %s, %d messages credited, chunk %d, progress %d, ", NR, how, credited[1], chunk[2],
       progress[2]
-    printf "session id is the request id: %s, original id is the request id: %s\n", session, original
+    printf "session id is the id of the waiting ask: %s, ", session
+    printf "original id is the id of the waiting ask: %s\n", original
     total += credited[1]; kinds[how]++; seen[session]++; first[original]++
-    if (how == "session" || how == "session-other-chat" || how == "chat") asks++
-    if (chunk[2] > 1) parts++
   }
   END {
-    printf "\nanswers: %d, to %d asks; messages credited: %d (messages sync exited %s, fetched %s)\n",
-      NR, asks, total, code, fetched
+    asks = kinds["session"] + kinds["chat"]
+    printf "\nanswers: %d, %d of them credited to the waiting ask; messages credited: %d ", NR, asks, total
+    printf "(messages sync exited %s, fetched %s)\n", code, fetched
     printf "matched by: session %d, session-other-chat %d, chat %d, late %d, none %d\n",
       kinds["session"], kinds["session-other-chat"], kinds["chat"], kinds["late"], kinds["none"]
-    printf "session id is the request id, as logged: yes %d, no %d\n", seen["yes"], seen["no"]
-    printf "original id is the request id, as logged: yes %d, no %d\n", first["yes"], first["no"]
+    printf "session id is the id of the waiting ask, as logged: yes %d, no %d\n", seen["yes"], seen["no"]
+    printf "original id is the id of the waiting ask, as logged: yes %d, no %d\n", first["yes"], first["no"]
+    # late: the session id is that of an earlier request, logged false only because that request no longer waits.
     named = kinds["session"] + kinds["session-other-chat"] + kinds["late"]
-    printf "named its request by the session id (session, session-other-chat and late): yes %d, no %d\n",
+    printf "session id is one of the request ids this device sent (session, session-other-chat, late): yes %d, no %d\n",
       named, NR - named
-    if (asks == 0) print "No verdict on chunks: no answer was credited to an ask."
-    else if (kinds["late"] + kinds["none"] > 0 || parts > 0)
-      print "Several notifications: part of an answer came after the first, or as a later chunk."
-    else print "One notification per ask: none came after the first, and no chunk order is above 1."
-    print "Progress is shown as the phone sent it; whether an ON_DEMAND answer sets it is part of what this records."
+    extra = kinds["late"] + kinds["none"]
+    if (asks == 0) print "No verdict on notifications per ask: no answer was credited to a waiting ask."
+    else if (extra > 0)
+      printf "Several notifications: %d line(s) came for an ask already answered or no longer waiting (late), %s\n",
+        extra, "or matched no ask (none)."
+    else print "One notification per ask: no line came late or matched no ask."
+    print "Chunk order and progress are shown as the phone sent them; their base is not known yet."
   }'
 [ "$back" = 0 ]

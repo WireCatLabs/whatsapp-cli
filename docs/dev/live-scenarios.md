@@ -70,7 +70,7 @@ Every command runs with `--json` and a timeout.
 
 Record counts and yes/no only. The engine's log line per `ON_DEMAND` batch carries exactly that: how it was matched
 (`session`, `session-other-chat`, `chat`, `late`, `none`), how many messages, the chunk and progress, and whether the
-notification's `PeerDataRequestSessionID` and `OriginalMessageID` are the request's id. `session-other-chat` would
+notification's `PeerDataRequestSessionID` and `OriginalMessageID` are the id of the request waiting at that moment. `session-other-chat` would
 also say the phone answered the LID chat under another id, such as its phone number.
 
 | Id | What | Commands | Puts back |
@@ -154,13 +154,16 @@ and checks `serve` as `live-oneshot-drop` does (the helpers are shared in `bin/l
    `fetched`.
 4. It waits 30 s for later notifications and reads the log. Then it stops the logging `serve` (only if the lock
    names the PID it started) and starts `serve` as it was, without the log. The `EXIT` trap does the same on any
-   earlier exit. The result below is printed even when this fails.
-5. It prints the log's `on-demand history` lines in order, one row each, then the totals: answers and asks
-   (lines matched by `session`, `session-other-chat` or `chat`), messages credited, the count per match, both yes/no
-   values as logged, and how many lines named their request by the session id. A `late` line counts as named: it
-   matched an earlier ask's id, though its logged flag is `false`, since no ask was waiting by then. Several
-   notifications means a `late` or `none` line, or a chunk order above 1. No line at all is no verdict: the store
-   may already hold the chat's start, or the phone was offline.
+   earlier exit. Signals are ignored while it puts `serve` back, so a second Ctrl-C cannot leave it half done. The
+   result below is printed even when this fails.
+5. It prints the log's `on-demand history` lines in order, one row each, then the totals: answers, how many of them
+   were credited to the waiting ask (`session` or `chat`), messages credited, the count per match, both yes/no values
+   as logged, and how many lines carry a session id equal to one of the request ids this device sent (`session`,
+   `session-other-chat` and `late`). The logged yes/no compares only with the ask waiting at that moment, so a
+   `late` line logs `false` although its session id is an earlier request's: one already answered (a second
+   notification for it) or one that stopped waiting. Several notifications means a `late` or `none` line. Chunk order
+   and progress are printed as the phone sent them, without a verdict, since their base is not known. No line at all
+   is no verdict: the store may already hold the chat's start, or the phone was offline.
 6. The `EXIT` trap deletes the log.
 
 **`live-fresh-link`** refuses a profile that `account list` shows or that has device keys. It says plainly that it
