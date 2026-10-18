@@ -86,20 +86,75 @@ wa personal mcp config              # the entry for Claude Desktop, Cursor and o
 
 More: [the MCP server](docs/mcp.md) · [from the browser](docs/remote.md)
 
-## How it differs from tg and max
+## Why wa?
 
-`wa` is part of the [WireCat](https://wirecat.dev) family, beside [tg](https://github.com/WireCatLabs/tg-cli) for
-Telegram and [max](https://github.com/WireCatLabs/max-cli) for MAX. All three share their commands, their store and
-their agent tools, so what you learn in one works in the others. WhatsApp is different in three ways:
+- **Your own account, as a linked device.** `wa` links the way WhatsApp Web does. It sees your chats, groups and
+  contacts, and speaks as you, not as a business account or a bot.
+- **Local-first search.** Everything received is kept on your computer. Every read and search answers from there and
+  never connects.
+- **Made for agents.** One operation per call, the same JSON shape every time with `--json`, a fixed exit code for
+  each kind of failure, an MCP server and a skill.
+- **Safe by default.** Reading marks nothing read and sends no "online" or "typing". A profile decides which actions
+  an agent may take, which chats it may send to, and how many messages an hour (30 by default). When a send's outcome
+  is unknown, `wa` says so and never repeats it by itself.
 
-- **History comes from your phone.** WhatsApp's servers keep no history to ask for. Your phone sends your recent
-  chats once, when `wa` links, and `wa serve` keeps receiving new ones. Older messages of one chat can be asked of the
-  phone, 50 at a time, while WhatsApp is open on it (`wa personal messages sync`). Every read answers from the local
-  store and never connects.
-- **One connection per device.** WhatsApp allows one. While `wa serve` runs, other commands for the same profile,
-  a send included, run through its connection. On Windows they are refused until `serve` stops, for now.
-- **Unofficial.** WhatsApp's terms forbid unofficial clients, and WhatsApp may ban an account that uses one. `wa`
-  never sends in bulk or to strangers, never sends "online" or "typing", and marks nothing read unless you ask.
+## Your account
+
+`wa` works in your name, as one more linked device of your WhatsApp account.
+
+```sh
+wa personal chats list --limit 5
+wa personal messages list "Book club" --limit 20
+wa personal messages send "Book club" "The minutes" --file minutes.pdf
+wa personal polls create "Book club" "Which day?" Monday Tuesday
+wa personal messages download "Book club" 3EB0A1B2C3D4E5F6A7B8 --output-dir ~/Downloads
+wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local  # a voice note as text
+```
+
+The message id `3EB0A1B2C3D4E5F6A7B8` is made up; take a real one from `messages list -v`.
+
+- **Read.** Chats and messages from the local store, one message with its neighbours, other people's unread
+  messages (`wa personal inbox`), everything since the last review (`wa personal review`), new messages as they
+  arrive (`wa personal watch`), and older messages of one chat asked of your phone (`wa personal messages sync`).
+- **Write.** Markdown, replies, one file, photo, video or voice note per message, edits of your own messages within
+  20 minutes, forwards, reactions, polls and votes, deleting for everyone, and marking a chat read.
+- **Voice on your computer.** WhatsApp has no speech recognition of its own, so `wa` runs a speech model on this
+  machine, downloaded only when you ask.
+- **People.** A person's profile, blocking, whether a number has WhatsApp, the phone's address book into the store,
+  and your own names and notes for people.
+
+Pinning, several files in one message and deleting for yourself alone are not built yet:
+[not in wa yet](docs/usage.md#not-in-wa-yet).
+
+More: [using wa](docs/usage.md) · [one person](docs/people.md)
+
+## Log in and profiles
+
+`wa` links to your account as a device, the way WhatsApp Web does. There is no password and no app to register: you
+link once, from the phone, and the device keys go to one file only your user can read.
+
+```sh
+wa personal session start               # a QR code: WhatsApp → Settings → Linked devices → Link a device
+wa personal session start phone         # or your number, then a pairing code you type on the phone
+wa personal session start --qr-file login.png  # the QR code as a picture, for an agent to show you
+wa personal account show                # who this profile is linked as
+wa account list                         # every profile here, and who each is linked as
+wa personal session end                 # unlink, and delete the device keys here
+```
+
+Several accounts are several profiles, and the profile is **the first word**, not an option:
+
+```sh
+wa personal chats list     # profile "personal"
+wa work chats list         # profile "work"
+export WA_PROFILE=work     # or for the whole shell session
+```
+
+`wa` never picks a profile for you, not even the only one: a command that uses an account and has no profile named
+stops and lists the profiles on this computer. Name one or set `WA_PROFILE`. Each profile is a linked device of its
+own, with its own one connection.
+
+More: [linking, devices and profiles](docs/sessions.md) · [profiles](docs/profiles.md)
 
 ## The local store and search
 
@@ -134,6 +189,29 @@ your address book or that you have written to: WhatsApp bans accounts that add s
 
 More: [groups](docs/groups.md)
 
+## Agent setup in detail
+
+**The skill.** Claude Code reads `~/.claude/skills/whatsapp-cli/`; Codex and Gemini CLI read
+`~/.agents/skills/whatsapp-cli/`. Start a new agent session if it does not see the skill.
+
+```sh
+wa skill install --for all        # both folders, without linking
+wa skill show                     # the complete instructions, without installing them
+```
+
+**The MCP server.** The profile's `permissions` decide which tools it offers. `readonly` stops the agent from
+changing anything; at `ask` the server shows no form, so set up approval in your agent app.
+
+```sh
+claude mcp add wa -- wa personal mcp  # Claude Code, by hand
+wa personal mcp doctor                # check the local MCP server
+```
+
+**From the browser.** ChatGPT or Claude in the browser reach `wa personal mcp --http --public-url` behind your tunnel,
+after a login with a one-time access code from your terminal.
+
+More: [the MCP server](docs/mcp.md) · [from the browser](docs/remote.md)
+
 ## Output for scripts and agents
 
 With `--json` a command prints only data, as one JSON value. `--jsonl` prints one object per line. Every list has
@@ -148,34 +226,6 @@ profile, `5` the profile may not do this, `6` chat or message not found, `8` a l
 device, `14` unknown whether a message went. `wa commands --json` is the whole command tree.
 
 More: [CLI contract](docs/cli-contract.md) · [every command and exit code](docs/commands.md)
-
-## Log in and profiles
-
-`wa` links to your account as a device, the way WhatsApp Web does. There is no password and no app to register: you
-link once, from the phone, and the device keys go to one file only your user can read.
-
-```sh
-wa personal session start               # a QR code: WhatsApp → Settings → Linked devices → Link a device
-wa personal session start phone         # or your number, then a pairing code you type on the phone
-wa personal session start --qr-file login.png  # the QR code as a picture, for an agent to show you
-wa personal account show                # who this profile is linked as
-wa account list                         # every profile here, and who each is linked as
-wa personal session end                 # unlink, and delete the device keys here
-```
-
-Several accounts are several profiles, and the profile is **the first word**, not an option:
-
-```sh
-wa personal chats list     # profile "personal"
-wa work chats list         # profile "work"
-export WA_PROFILE=work     # or for the whole shell session
-```
-
-`wa` never picks a profile for you, not even the only one: a command that uses an account and has no profile named
-stops and lists the profiles on this computer. Name one or set `WA_PROFILE`. Each profile is a linked device of its
-own, with its own one connection.
-
-More: [linking, devices and profiles](docs/sessions.md) · [profiles](docs/profiles.md)
 
 ## Settings and permissions
 
@@ -219,6 +269,26 @@ wa personal runs list       # recorded runs
 ```
 
 More: [troubleshooting by symptom](docs/troubleshooting.md) · [diagnostics](docs/diagnostics.md)
+
+## How it differs
+
+`wa` shares its commands, its store and its agent tools with tg and max, so what you learn in one works in the
+others. WhatsApp is different in three ways:
+
+- **History comes from your phone.** WhatsApp's servers keep no history to ask for. Your phone sends your recent
+  chats once, when `wa` links, and `wa serve` keeps receiving new ones. Older messages of one chat can be asked of the
+  phone, 50 at a time, while WhatsApp is open on it (`wa personal messages sync`). Every read answers from the local
+  store and never connects.
+- **One connection per device.** WhatsApp allows one. While `wa serve` runs, other commands for the same profile,
+  a send included, run through its connection. On Windows they are refused until `serve` stops, for now.
+- **Unofficial.** WhatsApp's terms forbid unofficial clients, and WhatsApp may ban an account that uses one. `wa`
+  never sends in bulk or to strangers, never sends "online" or "typing", and marks nothing read unless you ask.
+
+## Part of WireCat
+
+[WireCat](https://wirecat.dev) is an open-source, local-first context layer for AI agents. `wa` sits beside
+[tg](https://github.com/WireCatLabs/tg-cli) for Telegram and [max](https://github.com/WireCatLabs/max-cli) for MAX, in
+the same local store.
 
 ## Technical docs
 

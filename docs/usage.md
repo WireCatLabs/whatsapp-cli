@@ -126,12 +126,38 @@ WhatsApp keeps no history on its servers, so older messages can only come from y
 WhatsApp is open on it: `wa personal messages sync "Book club"` asks for them, one chat at a time
 ([how](archive.md#older-history-from-your-phone)).
 
+## Not in wa yet
+
+`wa` shares its command tree with tg and max, so some commands are there that WhatsApp cannot run. Each one stops
+with exit code `2` and says why. Nothing reaches WhatsApp.
+
+Not built yet:
+
+- pinning a message (`messages pin`, `messages unpin`);
+- several files in one message: a message carries one file;
+- deleting a message for yourself alone: delete it on the phone;
+- who joined and left a group, as WhatsApp records it (`chats events`);
+- a group's photo, and communities;
+- where an invite link leads, without joining (`chats inspect`);
+- your own name, about line or photo (`account update`);
+- the list of linked devices, and ending the others (`account sessions`);
+- making a channel (`chats create --channel`).
+
+WhatsApp has no such thing, or keeps it on the phone:
+
+- forum topics, chat folders (`chats folders`) and comments under channel posts (`messages comments`);
+- more than one invite link per group: `chats link reset` replaces the one there is;
+- admins with only some rights: every admin has all of them;
+- polls that close, quizzes and anonymous polls;
+- silent, scheduled or send-as messages;
+- your address book: `contacts add`, `remove`, `rename` and `import` are refused.
+
+`wa` never answers by itself: there are no automatic replies, as WhatsApp bans accounts that answer like a bot.
+What is planned is on the [roadmap](roadmap.md).
+
 ## Keep wa up to date
 
-`wa upgrade` installs the newest version with the package manager that installed `wa`, and restarts each running
-server. `wa upgrade --check` only says what it would run. Once a day `wa` says on stderr when a newer version exists;
-`WA_NO_UPDATE_CHECK=1` or `update_check: false` in the settings turns that off. The engine comes as a package of
-`wa`, so it updates with it.
+`wa upgrade` installs the newest version and restarts each running server ([upgrade](installation.md#upgrade)).
 
 ## Where to go next
 

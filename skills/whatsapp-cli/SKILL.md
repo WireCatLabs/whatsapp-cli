@@ -27,8 +27,10 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
-Not built yet: pinning, albums; `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the
-address book on the phone). `chats show` answers from the store; `chats members list` asks WhatsApp, and with
+Not built yet: `messages pin|unpin`, several files in one message, deleting for the owner alone, `chats events`,
+`chats inspect`, the group photo, `account update`, `account sessions`, `chats create --channel`. WhatsApp has no
+`chats folders`, no `messages comments`, no second invite link and no partial admin rights, and keeps the address
+book on the phone, so `contacts add|remove|rename|import` are refused. `chats show` answers from the store; `chats members list` asks WhatsApp, and with
 `--offline` shows the stored members.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`

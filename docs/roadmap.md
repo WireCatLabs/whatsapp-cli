@@ -10,10 +10,17 @@ listing its members ([groups](groups.md#run-a-group)), a person's profile, block
 ([people](people.md#ask-whatsapp-about-a-person)), older history asked of your phone
 ([the local store](archive.md#older-history-from-your-phone)), and writes while `serve` runs
 ([one connection per device](sessions.md#one-connection-per-device)) are in `wa` already ([using wa](usage.md)).
+What is not: [not in wa yet](usage.md#not-in-wa-yet).
 
 ## Next
 
-1. **The group photo**: setting a group's picture.
+- **The group photo**: setting a group's picture.
 
-What each released version changed is in the
-[changelog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).
+## Later
+
+- **Deleting a message for yourself alone.** Until then, delete it on the phone.
+- **Several files in one message**, and thumbnails on sent photos and videos.
+- **Files WhatsApp no longer keeps**: asking the sender's phone to upload an expired file again.
+- **Communities.**
+
+What each released version changed is in the [changelog](../CHANGELOG.md).
