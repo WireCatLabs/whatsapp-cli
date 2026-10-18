@@ -237,6 +237,19 @@ export const fakeEngine = (
       const ref = { media, directPath: `/v/fake/${id}`, mediaKey: Buffer.from(id).toString("base64") }
       return post(chat, id, text, [{ kind, size, ...(kind === "document" ? { name: file.name } : {}), ref }], replyTo)
     },
+    sendAlbum: async (request) => {
+      const { chat, text, id, replyTo, files } = request
+      sends.push(request)
+      const again = sent.find((message) => message.id === id && message.chat === chat)
+      if (again) return again
+      const attachments = files.map((file, position) => {
+        const size = statSync(file.path).size
+        uploads.push({ kind: file.kind, name: file.name, size })
+        const { kind, media } = UPLOADED[file.kind] as (typeof UPLOADED)[string]
+        return { kind, size, ref: { media, directPath: `/v/fake/${id}/${position}`, mediaKey: "AAAA" } }
+      })
+      return post(chat, id, text, attachments.slice(0, 1), replyTo)
+    },
     download: async (attachment, path) => {
       if (!attachment.ref) throw new EngineError("validation_error", "the store does not hold this file's keys")
       downloads.push(attachment)

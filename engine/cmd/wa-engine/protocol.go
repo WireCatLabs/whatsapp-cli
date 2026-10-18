@@ -39,8 +39,9 @@ type request struct {
 	Timestamp string `json:"timestamp,omitempty"`
 	Count     int    `json:"count,omitempty"`
 
-	// Files: sendMedia, download, forward.
+	// Files: sendMedia, sendAlbum, download, forward.
 	File       *waUpload     `json:"file,omitempty"`
+	Files      []waUpload    `json:"files,omitempty"`
 	Attachment *waAttachment `json:"attachment,omitempty"`
 	Path       string        `json:"path,omitempty"`
 

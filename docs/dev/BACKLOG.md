@@ -74,8 +74,19 @@ Open work, most important first. The plan in flight is
    - **Files WhatsApp no longer keeps.** A download of an expired file is `not_found`; WhatsApp's apps ask the sender's
      phone to upload it again (whatsmeow's `SendMediaRetryReceipt`), which is not built. A forward of one reaches the
      recipient as a file that will not open.
-   - **Media leftovers**: albums (one file per message here), thumbnails on sent photos and videos, files to
-     channels, forwarding a place or a contact card, `metadata` (needs the group read).
+   - **Media leftovers**: files to channels, forwarding a place or a contact card, `metadata` (needs the group read).
+   - **Albums: only the first file is stored.** An album goes as an `AlbumMessage`, then each file as a plain photo
+     or video tied to it by `MessageAssociation` (`MEDIA_ALBUM`), but cli-core's `Sent` holds one message, so the
+     store keeps the photo's message and not the others; WhatsApp is not seen to echo a device's own sends back to
+     it. The fix is in cli-core (a send that answers several messages). cli-core also passes at most one `--photo`
+     and one `--file`, so an album has two files. Receiving: an album's announcement is dropped, and each file is
+     stored as its own message if the apps send it unwrapped; one wrapped in `associatedChildMessage` would be dropped.
+   - **Live check of an album**: whether WhatsApp accepts the album and its apps group the files has not been run;
+     the shape of the files is taken from the proto (no sender-side example in whatsmeow or mautrix-whatsapp), and
+     whatsmeow sends the `AlbumMessage` with stanza type `text`.
+   - **No preview on a sent video.** A photo carries a 72-pixel JPEG preview; a video needs a frame decoder, and the
+     engine has no pure-Go one (no cgo, no ffmpeg), so a video goes without one. A WEBP photo too: the standard
+     library does not decode WEBP.
    - **Message pins**: a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned.
      Over MCP, an `expire_time` WhatsApp does not offer is refused only after the engine started (cli-core checks it
      inside the tool's online step). Live check open: a pin and an unpin in the own chat and in a group addressed by
