@@ -218,9 +218,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
-- **`chats list` and `chats show` say which WhatsApp community a group is in.** The history the phone pushes now
-  carries it, so the store keeps a group's `parent_chat_id` and the community's `provider_metadata.community: true`,
-  as the answers of `chats create|join|update` already did. A group taken out of its community keeps naming it.
 - **`wa <profile> chats events <group>` lists who joined, left, was added, removed, promoted or demoted, and each new
   title**, from the local store, without connecting. `wa` keeps the group service messages the phone pushes with the
   history and, under `wa serve` and `wa watch`, each change as it happens; a change seen both ways is kept once.
@@ -320,9 +317,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   Removing a group's photo is not built.
 - **A group says which WhatsApp community it is in.** A group linked to a community answers with `parent_chat_id`,
   the community's id; the community itself is a group with `provider_metadata.community: true`. They come with the
-  group as WhatsApp gives it: the answers of `chats update`, `chats create` and `chats join`. The local store does
-  not hold them yet, so `chats list` and `chats show` do not show them. Listing a community's groups, and linking or
-  unlinking one, are not built.
+  group as WhatsApp gives it: the answers of `chats update`, `chats create` and `chats join`. `wa` also reads them
+  from the history the phone pushes, so the local store keeps them and `chats list` and `chats show` show them; a
+  group taken out of its community keeps naming it there. Listing a community's groups, and linking or unlinking
+  one, are not built.
 - **A photo and a video in one send go as an album** (`messages send --photo … --file clip.mp4`): one message that
   announces the album, then each file tied to it. The text is the photo's caption and the answer is the photo's
   message, under the send id. A repeat with the same `--operation-id` after an unknown outcome sends the same message
