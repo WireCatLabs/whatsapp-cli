@@ -154,7 +154,8 @@ narrows a level for this server process only; one that would loosen the profile 
 | `wa_read` | Run a read command that search offered |
 | `wa_write` | Run a write command that search offered |
 
-Both run tools take `{command, arguments}`. Use the command path that search returned:
+Both run tools take `{command, arguments}`. Use the command path that search returned; the arguments are the
+command's own arguments and options in snake_case (`search messages` takes `query`, `polls create` takes `question`):
 
 ```json
 {"command":"messages list","arguments":{"chat":"120363000000000001@g.us","limit":20}}

@@ -7,6 +7,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **The MCP server's `wa_read` and `wa_write` take each command's own arguments, in snake_case.** `search messages`
+  takes `query` (not `text`) and no `ast`; `polls create` takes `question`; `wa_tools_search` shows each command's
+  fields. The agent is offered every command the profile's permissions allow, including some it was not offered
+  before; marking read, `--as-owner` and `--allow-any-file` stay off MCP. An agent's runs are named `mcp <command>`
+  in run history and the send journal. `conversations rebuild` replaces the agent-only `conversations_refresh`.
 - **`messages delete` without `--for-everyone` deletes the message for you only, where it used to be refused** (exit
   2). `wa` asks WhatsApp to take the messages from this account's devices, to leave them with the
   others in the chat, and to keep the photos and files the phone saved from them. Each message must be in the local
@@ -126,6 +131,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `media.retry-failed` (the new copy did not download) or `engine.stopped`; branch on those, never on the message.
   A download the phone's new upload served writes one line, `media.reuploaded`, to the engine's log when
   `WA_ENGINE_LOG` is set: the download's answer has no field for it.
+- **Node 22 no longer prints `ExperimentalWarning: SQLite is an experimental feature`** on every command that opens
+  the store. Other warnings still print.
+- **`wa mcp --help` and the root help suggest `claude mcp add wa -- wa <profile> mcp`**, where they suggested a
+  command without a profile that always failed.
+- **The commands page labels `conversations embed`, `conversations build`, `search conversations` and the model
+  downloads as sending text to, or reading from, an outside service**, not as changes in WhatsApp.
 - **A chat muted for good on the phone is stored as muted**, so `inbox` leaves it out. The history the phone sends
   marks such a mute with an end no clock can read (WhatsApp writes -1 into an unsigned field), and `wa` took that for
   a mute that had already ended. Any end past the year 9999 now reads as muted with no end, as whatsmeow reads it in
@@ -164,6 +175,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> conversations rebuild`** builds, then embeds on this machine, the chats that changed and the group
+  chats never built, or only `--chat`, bounded by `--max-chats` and `--max-chunks`. It sends nothing anywhere.
 - **`wa <profile> chats mute` and `chats unmute`**: stop a chat's notifications for good or `--until` a time (`2h`,
   `7d`, `2026-09-25T09:00`), and hear it again; agents get `chats_mute` and `chats_unmute`. It is the account's own
   setting, which WhatsApp syncs to the other devices; nobody in the chat is told (not yet checked live on the phone).

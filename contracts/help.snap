@@ -110,7 +110,8 @@ Commands:
   upgrade [options]            upgrade wa with the package manager that
                                installed it; --check only looks
   mcp [options]                serve this profile to an agent over MCP, on stdin
-                               and stdout — `claude mcp add wa -- wa mcp`
+                               and stdout — `claude mcp add wa -- wa <profile>
+                               mcp`
   skill                        the instructions an agent is given for this tool
   help [command]               display help for command
 
