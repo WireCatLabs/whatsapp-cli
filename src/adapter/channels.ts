@@ -62,15 +62,15 @@ export const channelHistory = async (
 
 /**
  * Only a channel's owner and admins post, and WhatsApp says the account's role only when asked, so a post asks first.
- * Text only so far: a channel's files are uploaded unencrypted, which the engine does not do yet.
+ * The role is asked before anything is uploaded. One file per post: whatsmeow sends no album to a channel.
  */
 export const refuseChannelPost = async (
   engine: WhatsAppEngine,
   translated: <T>(work: Promise<T>) => Promise<T>,
   chatId: string,
-  { file, reply }: { file: boolean; reply: boolean },
+  { files, reply }: { files: number; reply: boolean },
 ): Promise<void> => {
-  if (file) throw new CliError("validation_error", "wa posts text only to a WhatsApp channel so far")
+  if (files > 1) throw new CliError("validation_error", "wa posts one file at a time to a WhatsApp channel")
   if (reply) throw new CliError("validation_error", "a WhatsApp channel post cannot be a reply")
   const { role } = await translated(engine.channel(chatId))
   if (role !== "owner" && role !== "admin")
@@ -105,7 +105,7 @@ export const channelAdapter = ({
 type ChannelWrites = Pick<MessageEditing, "edit" | "delete" | "forward"> & Pick<PollAdapter, "createPoll" | "vote">
 
 const NOT_IN_CHANNELS = () =>
-  new CliError("validation_error", "wa does not do that in a WhatsApp channel yet; it posts text only")
+  new CliError("validation_error", "wa does not do that in a WhatsApp channel yet; it posts text and single files only")
 
 /**
  * The writes wa has not built for a channel are refused before anything is sent: whatsmeow would send each of them

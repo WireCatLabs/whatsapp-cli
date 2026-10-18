@@ -233,6 +233,7 @@ wa personal chats list 'kind:channel' --offline                            # the
 wa personal messages sync 120363000000000001@newsletter --limit 100         # read its posts into the local store
 wa personal messages list 120363000000000001@newsletter
 wa personal messages send 120363000000000001@newsletter "Meeting moved to 8"   # in a channel you run
+wa personal messages send 120363000000000001@newsletter "New menu" --photo ~/menu.jpg
 wa personal chats leave 120363000000000001@newsletter                     # unfollow it
 ```
 
@@ -244,8 +245,9 @@ wa personal chats leave 120363000000000001@newsletter                     # unfo
 - **The channel is the sender** of every post, and a post you made, one `wa` just sent included, reads as the
   channel's, not as yours (`outgoing: false`): WhatsApp does not say which posts are your own.
 - **Only the channel's owner and admins post.** `messages send` asks WhatsApp for your role first and refuses
-  anyone else (exit `5`). A post is text only, and not a reply; the followers see it at once. A poll, a forward, an
-  edit or a deletion in a channel is refused.
+  anyone else (exit `5`), before anything is uploaded. A post is text or one file (`--photo`, `--file`, `--voice`,
+  the text as its caption), and not a reply; the followers see it at once. A channel's files are not encrypted, as
+  in WhatsApp's apps. An album, a poll, a forward, an edit or a deletion in a channel is refused.
 - `chats join` and `chats leave` go through the profile's [permissions](permissions.md) like a group's: the
   channel's admins see that you followed. A follower count stands in for the member list, which WhatsApp does not
   show.

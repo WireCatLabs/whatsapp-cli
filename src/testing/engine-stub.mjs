@@ -80,6 +80,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "sendMedia":
     case "sendAlbum":
     case "forward":
+      if (fields.text === "crash before the answer") process.exit(3)
       say({
         id,
         ok: {

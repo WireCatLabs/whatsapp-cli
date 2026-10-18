@@ -63,7 +63,7 @@ func (e *engine) sendAlbum(req request) (*waMessage, error) {
 			return nil, partly(err)
 		}
 		content.MessageContextInfo = inAlbum(to, parent)
-		sent, err := e.post(to, ids[i], content, caption, replyTo)
+		sent, err := e.post(to, whatsmeow.SendRequestExtra{ID: ids[i]}, content, caption, replyTo)
 		if err != nil {
 			return nil, partly(err)
 		}

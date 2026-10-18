@@ -124,14 +124,45 @@ describe("wa channels", () => {
     expect(result.engine?.sends).toEqual([])
   })
 
-  it("refuses a photo or a reply posted to a channel, and sends nothing", async () => {
-    const photo = join(dirname(store), "post.jpg")
-    writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0]))
-    const withPhoto = await acting(["messages", "send", CHANNEL, "synthetic post", "--photo", photo], "admin")
-    expect(withPhoto.code).toBe(2)
-    expect(withPhoto.stderr).toContain("text only")
-    expect(withPhoto.engine?.sends ?? []).toEqual([])
+  it("posts a photo, its text the caption, to a channel the account runs", async () => {
+    const path = join(mkdtempSync(join(tmpdir(), "wa-channel-file-")), "synthetic.png")
+    writeFileSync(path, "synthetic png bytes")
+    const result = await acting(["messages", "send", CHANNEL, "synthetic caption", "--photo", path], "admin")
+    expect(result.code).toBe(0)
+    expect(result.engine?.uploads).toEqual([{ kind: "photo", name: "synthetic.png", size: 19 }])
+    expect(result.engine?.sends).toEqual([expect.objectContaining({ chat: CHANNEL, text: "synthetic caption" })])
+  })
 
+  it("posts a document to a channel the account owns", async () => {
+    const path = join(mkdtempSync(join(tmpdir(), "wa-channel-file-")), "synthetic.pdf")
+    writeFileSync(path, "synthetic pdf bytes")
+    const result = await acting(["messages", "send", CHANNEL, "--file", path], "owner")
+    expect(result.code).toBe(0)
+    expect(result.engine?.uploads).toEqual([{ kind: "document", name: "synthetic.pdf", size: 19 }])
+  })
+
+  it("refuses a file where the account only follows, before anything is uploaded", async () => {
+    const path = join(mkdtempSync(join(tmpdir(), "wa-channel-file-")), "synthetic.png")
+    writeFileSync(path, "synthetic png bytes")
+    const result = await acting(["messages", "send", CHANNEL, "--photo", path], "subscriber")
+    expect(result.code).toBe(5)
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.uploads).toEqual([])
+    expect(result.engine?.sends).toEqual([])
+  })
+
+  it("refuses an album to a channel, and uploads nothing", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "wa-channel-file-"))
+    writeFileSync(join(dir, "a.png"), "synthetic png")
+    writeFileSync(join(dir, "clip.mp4"), "synthetic mp4")
+    const argv = ["messages", "send", CHANNEL, "--photo", join(dir, "a.png"), "--file", join(dir, "clip.mp4")]
+    const result = await acting(argv, "admin")
+    expect(result.code).toBe(2)
+    expect(result.stderr).toContain("one file at a time")
+    expect(result.engine?.uploads).toEqual([])
+  })
+
+  it("refuses a reply posted to a channel, and sends nothing", async () => {
     const post = CHANNEL_POSTS.at(-1)?.id ?? ""
     const reply = await acting(["messages", "send", CHANNEL, "synthetic post", "--reply-to", post], "admin")
     expect(reply.code).toBe(2)

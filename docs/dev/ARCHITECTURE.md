@@ -213,6 +213,9 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `chats join` and `chats leave` branch on a channel link or id (`src/adapter/channels.ts`) and hand the rest to the
   group requests. A `send` to a channel first reads it with `channel` and goes only for its owner or an admin; the
   engine's `send` answers it with the channel as the sender and the post's server id (`SendResponse.ServerID`).
+  A file to a channel is the same check, then `sendMedia`, which uploads it unencrypted (`UploadNewsletterReader`) and
+  posts it with the upload's handle (`SendRequestExtra.MediaHandle`) and no file key (`postToChannel` in
+  `newsletters.go`). An album or a forward to a channel is refused by the engine (`recipient` in `media.go`).
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

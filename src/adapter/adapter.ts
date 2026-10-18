@@ -293,7 +293,7 @@ export const whatsAppAdapter = (
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
       if (isChannel(chatId))
         await refuseChannelPost(engine, translated, chatId, {
-          file: upload !== undefined,
+          files: files.length,
           reply: options.replyTo !== undefined,
         })
       // A reply to a message the store lacks still goes, with its id alone.

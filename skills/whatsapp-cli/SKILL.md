@@ -48,8 +48,9 @@ carry them, not the store. `chats mark-read` sends a read receipt only and may n
 `chats mark-unread`.
 A channel (`…@newsletter`) is followed with `chats join <whatsapp.com/channel link>` and left with `chats leave`;
 `messages sync <channel>` reads its posts from WhatsApp's servers, and every post's sender is the channel.
-`messages send <channel> <text>` posts, only where the owner is the channel's owner or an admin (else exit 5), and
-every follower sees it at once: text only, no reply, file, poll, forward, edit or deletion in a channel.
+`messages send <channel> <text>` posts, with one file (`--photo`, `--file`, `--voice`) or none, only where the owner
+is the channel's owner or an admin (else exit 5), and every follower sees it at once: no reply, album, poll, forward,
+edit or deletion in a channel.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add

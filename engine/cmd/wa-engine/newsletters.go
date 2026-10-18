@@ -2,11 +2,14 @@ package main
 
 import (
 	"errors"
+	"io"
 	"regexp"
 
 	"go.mau.fi/whatsmeow"
+	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
+	"google.golang.org/protobuf/proto"
 )
 
 // WhatsApp channels are whatsmeow's newsletters. Unlike chats, their posts live on WhatsApp's servers, so they are
@@ -321,4 +324,46 @@ func (e *engine) asChannelPost(message *waMessage, jid types.JID, serverID types
 		id := int64(serverID)
 		message.ServerID = &id
 	}
+}
+
+// postToChannel uploads and posts one file to a channel. A channel's files go unencrypted (whatsmeow's
+// UploadNewsletter): no media key, and the post names the upload by the handle WhatsApp gave it.
+func (e *engine) postToChannel(to types.JID, req request, s *staged) (*waMessage, error) {
+	if _, err := s.file.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	uploaded, err := e.client.UploadNewsletterReader(e.ctx, s.file, mediaTypes[s.media])
+	if err != nil {
+		return nil, err
+	}
+	content, err := channelFile(s, uploaded, req.Text)
+	if err != nil {
+		return nil, err
+	}
+	extra := whatsmeow.SendRequestExtra{ID: req.SendID, MediaHandle: uploaded.Handle}
+	return e.post(to, extra, content, req.Text, "")
+}
+
+// channelFile builds a channel post's file as whatsmeow's UploadNewsletter example does: the URL, the direct path and
+// the plain file's hash, and no key.
+func channelFile(s *staged, uploaded whatsmeow.UploadResponse, caption string) (*waE2E.Message, error) {
+	s.described.Size = uploaded.FileLength
+	s.described.Ref = &waMediaRef{Media: s.media, DirectPath: uploaded.DirectPath, FileSHA256: uploaded.FileSHA256}
+	content, err := contentOf(s.described, caption, nil)
+	if err != nil {
+		return nil, err
+	}
+	url := proto.String(uploaded.URL)
+	switch {
+	case uploaded.URL == "":
+	case content.ImageMessage != nil:
+		content.ImageMessage.URL = url
+	case content.VideoMessage != nil:
+		content.VideoMessage.URL = url
+	case content.AudioMessage != nil:
+		content.AudioMessage.URL = url
+	case content.DocumentMessage != nil:
+		content.DocumentMessage.URL = url
+	}
+	return content, nil
 }

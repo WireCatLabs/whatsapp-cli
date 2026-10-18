@@ -249,13 +249,19 @@ func nonZero(n uint32) *uint32 {
 	return proto.Uint32(n)
 }
 
+// recipient is where an album or a forward goes: never a channel, where neither is built.
 func (e *engine) recipient(raw, sendID string) (types.JID, error) {
+	to, err := addressee(raw, sendID)
+	if err == nil && to.Server == types.NewsletterServer {
+		return types.JID{}, &failure{"validation_error", "albums and forwards to channels are not supported yet"}
+	}
+	return to, err
+}
+
+func addressee(raw, sendID string) (types.JID, error) {
 	to, err := types.ParseJID(raw)
 	if err != nil || to.User == "" {
 		return types.JID{}, &failure{"validation_error", "not a WhatsApp chat id"}
-	}
-	if to.Server == types.NewsletterServer {
-		return types.JID{}, &failure{"validation_error", "sending files to channels is not supported yet"}
 	}
 	if sendID == "" {
 		return types.JID{}, &failure{"validation_error", "a send needs its message id"}
@@ -265,9 +271,12 @@ func (e *engine) recipient(raw, sendID string) (types.JID, error) {
 
 // sendMedia uploads one file and sends it. The upload comes first: a failure there means nothing was sent.
 func (e *engine) sendMedia(req request) (*waMessage, error) {
-	to, err := e.recipient(req.Chat, req.SendID)
+	to, err := addressee(req.Chat, req.SendID)
 	if err != nil {
 		return nil, err
+	}
+	if to.Server == types.NewsletterServer && req.ReplyTo != "" {
+		return nil, &failure{"validation_error", "a channel post cannot be a reply"}
 	}
 	s, err := stage(req.File)
 	if err != nil {
@@ -277,6 +286,9 @@ func (e *engine) sendMedia(req request) (*waMessage, error) {
 	if err := e.connect(); err != nil {
 		return nil, err
 	}
+	if to.Server == types.NewsletterServer {
+		return e.postToChannel(to, req, s)
+	}
 	if err := e.upload(s); err != nil {
 		return nil, err
 	}
@@ -284,7 +296,7 @@ func (e *engine) sendMedia(req request) (*waMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return e.post(to, req.SendID, content, req.Text, req.ReplyTo)
+	return e.post(to, whatsmeow.SendRequestExtra{ID: req.SendID}, content, req.Text, req.ReplyTo)
 }
 
 // staged is a file to send, opened and described, not uploaded yet.
@@ -402,11 +414,13 @@ func (e *engine) forward(req request) (*waMessage, error) {
 	if err := e.connect(); err != nil {
 		return nil, err
 	}
-	return e.post(to, req.SendID, content, req.Text, "")
+	return e.post(to, whatsmeow.SendRequestExtra{ID: req.SendID}, content, req.Text, "")
 }
 
-func (e *engine) post(to types.JID, sendID string, content *waE2E.Message, text, replyTo string) (*waMessage, error) {
-	sent, err := e.client.SendMessage(e.ctx, to, content, whatsmeow.SendRequestExtra{ID: sendID})
+func (e *engine) post(
+	to types.JID, extra whatsmeow.SendRequestExtra, content *waE2E.Message, text, replyTo string,
+) (*waMessage, error) {
+	sent, err := e.client.SendMessage(e.ctx, to, content, extra)
 	if err != nil {
 		return nil, err
 	}
@@ -422,6 +436,9 @@ func (e *engine) post(to types.JID, sendID string, content *waE2E.Message, text,
 	if me, _ := e.me(); me != nil {
 		message.Sender = &me.JID
 		message.SenderName = me.Name
+	}
+	if to.Server == types.NewsletterServer {
+		e.asChannelPost(message, to, sent.ServerID)
 	}
 	e.phones.note(e.ctx, message.Chat)
 	return message, nil
