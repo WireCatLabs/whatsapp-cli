@@ -72,7 +72,7 @@ output too.
 | `2` | `validation_error` | bad input: an unknown command or option, no profile named, a chat name that fits several chats, or something WhatsApp cannot do yet |
 | `3` | `configuration_error` | the settings are wrong |
 | `4` | `authentication_error` | the profile is not linked, or WhatsApp logged the device out (`device.logged-out`); link with `session start` |
-| `5` | `permission_error` | the profile's `permissions` refuse it, `WA_PROFILE_LOCK` names another profile, or WhatsApp banned or restricted the account (`account.banned`): counted writes are then held until `doctor --online` connects |
+| `5` | `permission_error` | the profile's `permissions` refuse it, `WA_PROFILE_LOCK` names another profile, or WhatsApp banned or restricted the account (`account.banned`): counted writes are then held until the ban's end when WhatsApp gives one, otherwise until `doctor --online` connects |
 | `6` | `not_found` | no such chat or message; a change to a message the local store does not hold |
 | `7` | `confirmation_required` | an `ask` level got no answer, or the chat is not on the recipient list |
 | `8` | `rate_limited` | the hourly send limit, the profile's pace ([limits](limits.md)), or WhatsApp asked the account to slow down (`account.rate-limited`): counted writes are then held for 15 minutes |
@@ -99,7 +99,8 @@ A write at the `ask` permission level needs an explicit `--yes`; a deletion need
 only answer the question. All other permission checks still apply.
 
 A one-shot command has 30 seconds. `--timeout 2m` changes that, and the time spent waiting for stdin counts too.
-Persistent commands and an interactive link do not have this short default limit. Ctrl-C (SIGINT) stops a one-shot
+Persistent commands and a link at a terminal have no default limit; a link without a terminal (an agent's
+`session start --qr-file`) has 5 minutes, for a person to scan the code elsewhere. Ctrl-C (SIGINT) stops a one-shot
 command with exit code 130 and normally ends a persistent command with 0. SIGTERM exits with 143. If the program
 reading the output closes the pipe, `wa` ends quietly. Whatever started the engine stops it on every exit path, so
 no engine outlives the command.

@@ -11,7 +11,7 @@ import type { GroupEngine } from "./groups.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 10
+export const PROTOCOL = 11
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -135,7 +135,8 @@ export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("edit"), message: waMessage }),
   v.strictObject({ event: v.literal("delete"), chat: jid, id: v.string() }),
   v.strictObject({ event: v.literal("vote"), vote: waVote }),
-  v.strictObject({ event: v.literal("connection"), state: connectionState }),
+  /** `until`: when a temporary ban ends, if WhatsApp said. */
+  v.strictObject({ event: v.literal("connection"), state: connectionState, until: v.optional(time) }),
 ])
 
 export const engineErrorCode = v.picklist([
@@ -170,6 +171,8 @@ export const engineError = v.strictObject({
   code: engineErrorCode,
   message: v.string(),
   reason: v.optional(engineReason),
+  /** When a temporary ban ends, if WhatsApp said. */
+  until: v.optional(time),
 })
 
 /** The engine's first line: its protocol and the linked account (`self()`), or `null` before a login. */
@@ -284,6 +287,8 @@ export class EngineError extends Error {
     readonly code: EngineErrorCode,
     message: string,
     readonly reason?: WaReason,
+    /** When a temporary ban ends, if WhatsApp said. */
+    readonly until?: string,
   ) {
     super(message)
   }

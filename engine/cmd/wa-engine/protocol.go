@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 10
+const protocol = 11
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -59,10 +59,12 @@ func (f *failure) Error() string { return f.Message }
 type refusal struct {
 	failure
 	Reason string `json:"reason,omitempty"`
+	// When a temporary ban ends, if WhatsApp said: the CLI holds writes until then.
+	Until string `json:"until,omitempty"`
 }
 
 func because(reason, code, message string) *refusal {
-	return &refusal{failure{code, message}, reason}
+	return &refusal{failure: failure{code, message}, Reason: reason}
 }
 
 type waChat struct {
@@ -135,8 +137,12 @@ func (w *wire) refuse(f error)           { w.send(map[string]any{"refused": f}) 
 func (w *wire) ok(id int, value any)     { w.send(map[string]any{"id": id, "ok": value}) }
 func (w *wire) fail(id int, f *refusal)  { w.send(map[string]any{"id": id, "error": f}) }
 func (w *wire) event(name string, f any) { w.send(map[string]any{"event": name, fieldOf(name): f}) }
-func (w *wire) connection(state string) {
-	w.send(map[string]any{"event": "connection", "state": state})
+func (w *wire) connection(state, until string) {
+	line := map[string]any{"event": "connection", "state": state}
+	if until != "" {
+		line["until"] = until
+	}
+	w.send(line)
 }
 func (w *wire) loginCode(kind, code string) { w.send(map[string]any{"login": kind, "code": code}) }
 func (w *wire) deleted(chat, id string) {

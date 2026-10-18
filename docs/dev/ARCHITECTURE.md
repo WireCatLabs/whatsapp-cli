@@ -162,11 +162,15 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   released, and pnpm cannot lock a package npm does not have.
 - **Why the connection ended is kept, and a cut write is never "stopped".** When WhatsApp ends the connection (logged
   out, replaced by another connection, banned, outdated), the engine keeps why and answers every later request with
-  it, with its reason, instead of connecting again: after "replaced" a reconnect would take the login back. The
+  it, with its reason, instead of connecting again: after "replaced" a reconnect would take the login back. A request
+  already on the way that fails as "not connected" answers that reason too (`refusalFor` in `engine.go`): a relayed
+  command on `serve`'s connection never asks to connect, so it would otherwise read `network_error` and retry. The
   client rejects a write still waiting when the engine process ends with `outcome_unknown`, a read with
   `provider_unavailable` (`WRITES` in [`go-engine.ts`](../../src/engine/go-engine.ts)).
 - **Holds on writes are cli-core's.** `fromEngine` ([`src/adapter/errors.ts`](../../src/adapter/errors.ts)) gives
-  WhatsApp's 429 a `standing: limited` ending 15 minutes on, and a ban a `standing: frozen` a year on; cli-core's
+  WhatsApp's 429 a `standing: limited` ending 15 minutes on, and a ban a `standing: frozen` ending when WhatsApp's
+  temporary ban does (the engine passes whatsmeow's `TemporaryBan.Expire` as `until`, protocol 11), or a year on
+  when it gives no end; cli-core's
   `flooded` turns either into a hold on counted writes, reads go on, and `doctor --online` (the adapter's `health`,
   which connects) lifts the frozen one. Not `retry_after_ms` alone: cli-core's pace would then hold reads too.
 - **Early events are kept.** An event nobody listens for yet is handed to the first listener of its kind
@@ -213,8 +217,11 @@ finds the address there and runs inside `serve`, on `serve`'s connection, instea
 The send guard and the permissions run in `serve` with the client's environment. Linking, `mcp --http` and
 `--offline` or `--dry-run` runs stay in their own process. cli-core's `relay-route` picks what goes through `serve`;
 its `serve-relay` is `serve`'s side. On Windows the relay is off for now, so there the lock refuses as in §6. Nothing
-in `src/adapter/` or `engine/` knows about the relay. `session end` is the one command that refuses when relayed
-(`device.in-use`): its logout would end `serve`'s own connection and delete the keys under it.
+in `src/adapter/` or `engine/` knows about the relay. `session start`, `session end` and `setup` are marked
+`logsInOrOut`: cli-core never relays them (a relayed logout would end `serve`'s own connection and delete the keys
+under it) and refuses them under `WA_READ_ONLY` before they act. Run here, `session end` meets the device lock
+`serve` holds (`device.in-use`) and says to stop `serve` first. cli-core's `serve` does not refuse a login relayed to
+it, which a client of an older `wa` still does, so `session end` keeps refusing a relayed run itself.
 
 ## 7. What is on disk
 

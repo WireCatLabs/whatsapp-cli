@@ -61,7 +61,7 @@ Open work, most important first. The plan in flight is
    npm's trusted publishing is set per package, and I think a package must exist on npm before it can trust a
    workflow, so the six `@wirecat/whatsapp-engine-*` names probably need a first publish by hand
    (`bin/release --local`) before `release.yml` can publish them.
-8. **Replace the test-matrix waivers with tests.** On 2026-10-17, 138 commands and options have a wa test and 638 are
+8. **Replace the test-matrix waivers with tests.** On 2026-10-18, 132 commands and options have a wa test and 591 are
    waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
@@ -87,20 +87,20 @@ Open work, most important first. The plan in flight is
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so
       both name their entry points the same way.
-    - **`engine/cmd/wa-engine/engine.go` holds six jobs in 496 lines** (WC-LAY-8): request dispatch, linking, the chat
+    - **`engine/cmd/wa-engine/engine.go` holds six jobs in 573 lines** (WC-LAY-8): request dispatch, linking, the chat
       directory, sends, event handling and error sorting. Split linking, the directory and events into their own files
       when the next change touches one of them. Nothing caps a Go file's length, as Biome caps a TypeScript file.
-    - **Shared code kept here** (WC-ARCH-4, WC-ARCH-10): `src/commands/answer.ts` is tg's file word for word, the
-      test-matrix argv log in `src/program.ts` is max's, and `setup` reads `process.platform` because cli-core's
-      `BaseEnvironment` has no platform field. Each belongs in cli-core.
+    - **The test-matrix argv log misses `--version`** (WC-ARCH-4): cli-core's `run()` logs each parsed command from a
+      `preAction` hook, which `--version` never reaches, so `run()` in `src/program.ts` still appends that one line.
+      It belongs in cli-core.
 14. **How long WhatsApp's rate limit and a ban hold writes is the owner's to set** (WC-PERM-18). WhatsApp's 429 says
     neither how long to wait nor whether reads count, and a ban says nothing about the account's standing. The lead's
     default, under the owner's autonomy mandate: after a 429, counted writes are held 15 minutes and reads go on; after
-    a ban, writes are held until `doctor --online` connects again (`src/adapter/errors.ts`). Open:
+    a ban, writes are held until the end WhatsApp gives it, or until `doctor --online` connects again when it gives
+    none (`src/adapter/errors.ts`). Open:
     - the 15 minutes, and whether reads should pause too;
     - a ban is reported as cli-core's `frozen` (the only standing that both holds writes and is lifted by
       `doctor --online`), not `banned`, which cli-core never holds on;
-    - cli-core keeps no hold without an end, so the ban's hold ends a year on; whatsmeow's `TemporaryBan.Expire` could
-      give the real end instead.
+    - cli-core keeps no hold without an end, so a ban WhatsApp gives no end for is held a year on;
     - cli-core holds only the writes it counts toward the send limit: a reaction or a read receipt still goes during a
       hold (seen in a test on 2026-10-17), though WhatsApp probably counts them against a limited account too.

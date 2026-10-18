@@ -8,8 +8,8 @@ import type { EngineError } from "../engine/contract.js"
  */
 export const RATE_LIMIT_HOLD_MS = 15 * 60_000
 /**
- * A ban says nothing about the account's standing, so writes stay held until `doctor --online` connects again. cli-core
- * keeps no hold without an end, so the end is set past any ban WhatsApp gives.
+ * A ban WhatsApp gives no end for holds writes until `doctor --online` connects again. cli-core keeps no hold without
+ * an end, so the end is set past any ban WhatsApp gives.
  */
 export const BAN_HOLD_MS = 365 * 24 * 60 * 60_000
 
@@ -31,14 +31,17 @@ export const fromEngine = (error: EngineError, now = Date.now()): CliError => {
         until: at(now + RATE_LIMIT_HOLD_MS),
       } satisfies AccountStanding,
     })
-  if (error.reason === "account.banned")
-    return new CliError(error.code, error.message, {
+  if (error.reason === "account.banned") {
+    const ends = error.until === undefined ? Number.NaN : Date.parse(error.until)
+    const dated = ends > now
+    return new CliError(error.code, dated ? `${error.message}; the ban ends ${at(ends)}` : error.message, {
       ...reason,
       standing: {
         state: "frozen",
         hint: "WhatsApp banned or restricted this account",
-        until: at(now + BAN_HOLD_MS),
+        until: at(dated ? ends : now + BAN_HOLD_MS),
       } satisfies AccountStanding,
     })
+  }
   return new CliError(error.code, error.message, reason)
 }

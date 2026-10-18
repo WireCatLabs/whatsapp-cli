@@ -156,7 +156,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       greet?.resolve()
     } else if ("refused" in value) {
       const refused = v.parse(engineError, value.refused)
-      greet?.reject(new EngineError(refused.code, refused.message, refused.reason))
+      greet?.reject(new EngineError(refused.code, refused.message, refused.reason, refused.until))
     } else if ("login" in value) {
       onCode?.(v.parse(loginCode, value))
     } else if ("event" in value) {
@@ -169,7 +169,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       if (!waiting) return
       if ("error" in value) {
         const refused = v.parse(engineError, value.error)
-        waiting.reject(new EngineError(refused.code, refused.message, refused.reason))
+        waiting.reject(new EngineError(refused.code, refused.message, refused.reason, refused.until))
       } else waiting.resolve(value.ok)
     }
   }

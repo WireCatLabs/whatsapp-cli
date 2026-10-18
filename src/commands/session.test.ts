@@ -1,9 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { PassThrough } from "node:stream"
+import { fileURLToPath } from "node:url"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
+import { whatsAppAdapter } from "../adapter/adapter.js"
 import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
@@ -11,6 +13,7 @@ import { run } from "../program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
+const STUB = fileURLToPath(new URL("../testing/engine-stub.mjs", import.meta.url))
 // The fake phone pushes its history in one batch, so the wait can end the moment it lands.
 const QUICK = { firstMs: 5_000, quietMs: 0 }
 
@@ -46,6 +49,28 @@ describe("wa session start", () => {
     const listed = await wa(["fresh", "chats", "list", "--json"], never)
     expect(listed.code).toBe(0)
     expect(JSON.parse(listed.stdout).items.length).toBe(seed.chats.length)
+  })
+
+  it("ends the history wait on a cancel, keeps what came, and still answers with exit 0", async () => {
+    const stop = new AbortController()
+    const engine = fakeEngine(seed, { linked: false })
+    const listen = engine.listen
+    engine.listen = (kinds, onEvent) => {
+      const unlisten = listen(kinds, onEvent)
+      if (kinds.includes("history")) setImmediate(() => stop.abort())
+      return unlisten
+    }
+    const result = await wa(
+      ["cancelled", "session", "start", "--qr-file", `${process.env.TMPDIR}/c.png`, "--json"],
+      () => engine,
+      {
+        signal: stop.signal,
+        historyWait: { firstMs: 60_000, quietMs: 60_000 },
+      },
+    )
+    expect(result.code, result.stderr).toBe(0)
+    expect(JSON.parse(result.stdout).item.received.messages).toBe(seed.messages.length)
+    expect(engine.closed).toBe(true)
   })
 
   it("asks nothing and counts nothing when the profile is already linked", async () => {
@@ -113,13 +138,19 @@ describe("wa session start", () => {
 
   it("refuses to link under WA_READ_ONLY", async () => {
     const engine = fakeEngine(seed, { linked: false })
+    let opened = false
     const qrFile = `${process.env.TMPDIR}/locked.png`
-    const result = await wa(["unlinked", "session", "start", "--qr-file", qrFile, "--json"], () => engine, {
+    const opening = () => {
+      opened = true
+      return engine
+    }
+    const result = await wa(["unlinked", "session", "start", "--qr-file", qrFile, "--json"], opening, {
       env: { ...process.env, WA_READ_ONLY: "1" },
     })
     expect(result.code).toBe(5)
+    expect(JSON.parse(result.stderr).error.message).toContain("cannot log in or out")
     expect(engine.self()).toBeNull()
-    expect(engine.closed).toBe(true)
+    expect(opened).toBe(false)
   })
 
   it("refuses --qr-file with the phone method", async () => {
@@ -218,6 +249,7 @@ describe("wa session end", () => {
       env: { ...process.env, WA_READ_ONLY: "1" },
     })
     expect(result.code).toBe(5)
+    expect(JSON.parse(result.stderr).error.message).toContain("cannot log in or out")
     expect(engine.loggedOut).toBe(false)
     expect(existsSync(store)).toBe(true)
   })
@@ -230,8 +262,9 @@ describe("wa session end", () => {
     const serving = wa(["serving", "serve", "--json"], () => served, { signal: controller.signal })
     await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
 
-    const result = await wa(["serving", "session", "end", "--json"], () => {
-      throw new Error("session end must not open an engine of its own while serve holds the device")
+    // Never relayed: run here, it meets the device lock serve holds, as the Go engine refuses it.
+    const result = await wa(["serving", "session", "end", "--json"], undefined, {
+      engineCommand: { file: process.execPath, args: [STUB, "--mode", "refuse"] },
     })
     expect(result.code).toBe(12)
     expect(JSON.parse(result.stderr).error).toMatchObject({
@@ -245,6 +278,18 @@ describe("wa session end", () => {
 
     controller.abort()
     expect((await serving).code).toBe(0)
+  })
+
+  it("refuses when an older client relays it into serve, and leaves serve's connection alone", async () => {
+    const store = linkedProfile("relayedend")
+    const served = fakeEngine(seed)
+    const result = await wa(["relayedend", "session", "end", "--json"], never, {
+      relayed: { profile: "relayedend", cwd: process.cwd(), connection: () => whatsAppAdapter(served) },
+    })
+    expect(result.code).toBe(12)
+    expect(JSON.parse(result.stderr).error.reason).toBe("device.in-use")
+    expect(served.loggedOut).toBe(false)
+    expect(existsSync(store)).toBe(true)
   })
 
   it("says nothing was ended for a profile that was never linked", async () => {

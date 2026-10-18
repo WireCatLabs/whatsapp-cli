@@ -58,7 +58,8 @@ WA_REQUESTS_PER_MINUTE=30 wa personal messages send 100000000000001@lid "on my w
 - **A recipient list**, when it is on, refuses a send to any other chat with exit code `7`
   ([permissions](permissions.md#restrict-recipients-and-repeated-sends)).
 - **A banned or restricted account** holds sends, edits and the other writes counted toward the send limit with exit
-  code `5` until `wa personal doctor --online` connects again; see the phone. Reads from the local store still work.
+  code `5`: until the ban ends, when WhatsApp says when (the error names the time), otherwise until
+  `wa personal doctor --online` connects again; see the phone. Reads from the local store still work.
 - **When WhatsApp asks the account to slow down**, the same writes are held for 15 minutes (exit code `8`, then `5`
   while the hold lasts). Reads go on. Neither hold stops a reaction or a read receipt, so send none while one lasts.
   `wa personal flood clear` lifts a hold once you know it is over.

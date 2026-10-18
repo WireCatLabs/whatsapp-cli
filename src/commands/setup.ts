@@ -9,12 +9,15 @@ import {
   commandWords,
   environmentOf,
   inputPolicy,
+  logsInOrOut,
   type MessengerContext,
   messengerContext,
+  printItem,
   REMOTE_WRITE,
   refuseCommandName,
   rootOf,
   runtime,
+  secretInputOf,
   withDeadline,
 } from "@wirecat/cli-core/cli"
 import { levelFor } from "@wirecat/cli-core/sends"
@@ -23,7 +26,6 @@ import { WA } from "../app.js"
 import { type Environment, SKILL, WHATSAPP } from "../messenger.js"
 import { pathsFor, privateStore } from "../paths.js"
 import { installer, PACKAGE } from "../update.js"
-import { printItem } from "./answer.js"
 import { startSession } from "./session.js"
 
 const AGENTS = ["none", "codex", "cursor", "claude", "gemini", "all"] as const
@@ -58,6 +60,7 @@ const screenFor = (context: MessengerContext, quiet: boolean) => {
 }
 
 const agentFor = async (
+  command: Command,
   context: MessengerContext,
   given: Agent | undefined,
   pad: number,
@@ -68,7 +71,7 @@ const agentFor = async (
   const answer =
     (
       await readSecret(`${" ".repeat(pad)}Agent [codex/cursor/claude/gemini/all/none] (none): `, {
-        input: context.stdin,
+        ...secretInputOf(command),
         echo: true,
         ...(signal === undefined ? {} : { signal }),
       })
@@ -82,7 +85,7 @@ const agentFor = async (
 }
 
 export const setupCommand = () =>
-  annotate(new Command("setup"), {
+  annotate(logsInOrOut(new Command("setup")), {
     effects: REMOTE_WRITE,
     lifetime: "interactive",
     mcp: false,
@@ -141,10 +144,11 @@ export const setupCommand = () =>
           "wa setup needs a terminal to link a device — run it locally, or pass --qr-file for an agent",
           { reason: "input.required" },
         )
+      const { platform } = environmentOf(this)
       const prefix = `wa ${asFirstWord(context.profile)}`
       const command =
         installer(environmentOf<Environment>(this).update) === "npx"
-          ? `npm${process.platform === "win32" ? ".cmd" : ""} exec --yes --package=${PACKAGE} -- ${prefix}`
+          ? `npm${platform === "win32" ? ".cmd" : ""} exec --yes --package=${PACKAGE} -- ${prefix}`
           : prefix
       const cancellation = new AbortController()
       const closeables: Closeable[] = [
@@ -170,7 +174,7 @@ export const setupCommand = () =>
           accessSync(path, constants.W_OK)
         }
         screen.detail("✓ local directories ready")
-        if (process.platform === "win32")
+        if (platform === "win32")
           screen.detail(
             "Windows: use wa.cmd or npm.cmd if PowerShell blocks scripts. Open a new terminal after installing Node.js.",
           )
@@ -209,7 +213,7 @@ export const setupCommand = () =>
         if (chats.items.length === 0) screen.detail(`nothing kept yet — \`${command}server install\` starts receiving`)
 
         screen.step(5, "Agent")
-        const agent = await agentFor(context, options.agent, screen.indent, cancellation.signal)
+        const agent = await agentFor(this, context, options.agent, screen.indent, cancellation.signal)
         screen.detail(agent === "none" ? "✓ no agent skill installed" : `✓ ${agent}`)
         const targets: readonly SkillTarget[] =
           agent === "all" ? ["claude", "agents"] : [agent === "claude" ? "claude" : "agents"]

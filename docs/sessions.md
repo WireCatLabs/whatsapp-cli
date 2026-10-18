@@ -39,8 +39,9 @@ number goes to the engine on its input, never as an argument, so other programs 
 the list of processes.
 
 Right after either, the phone pushes your history. `session start` keeps the same connection open, saves what
-arrives into the local store, and stops when the phone has been quiet for 45 seconds, or at Ctrl+C. Then keep
-receiving with `wa personal server install` ([the local store](archive.md)).
+arrives into the local store, and stops when the phone has been quiet for 45 seconds, or at Ctrl+C. Ctrl+C there,
+or `--timeout`, ends only this wait: the device stays linked, what arrived is kept and counted, and the command ends
+with exit code `0`. Then keep receiving with `wa personal server install` ([the local store](archive.md)).
 
 ### When an agent runs the link
 
@@ -85,7 +86,8 @@ server `wa <profile> mcp`. The send guard and the profile's permissions still ap
 asks: a write at permission level `ask` needs `--yes` (`--allow-dangerous` for a deletion), or it is refused and
 says so.
 
-- **Not through `serve`:** linking (`session start`, `setup`) and `mcp --http`. `--offline` and `--dry-run` runs do
+- **Not through `serve`:** linking and unlinking (`session start`, `session end`, `setup`) and `mcp --http`.
+  `chats list` and `chats show` read the local store, so they never connect. `--offline` and `--dry-run` runs do
   not connect at all.
 - **`serve` is starting or does not answer:** the command fails. It never opens a second connection.
 - **`wa` was upgraded and `serve` not restarted:** the command runs inside the older `serve`, with its code. When the

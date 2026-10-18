@@ -1477,7 +1477,7 @@ wa polls show <chat> <message>
 
 ### `wa polls voters`
 
-who voted for what, newest first; not in an anonymous poll
+who voted for what, newest first
 
 ```sh
 wa polls voters <chat> <message> [query] [options]
@@ -1496,7 +1496,7 @@ wa polls voters <chat> <message> [query] [options]
 
 ### `wa polls vote`
 
-vote in a poll, or take your vote back; the others see it unless the poll is anonymous
+vote in a poll, or take your vote back; the others see it
 
 **Changes something in WhatsApp.**
 
@@ -3201,7 +3201,7 @@ wa tasks unmerge <dup>
 
 ### `wa tasks agenda`
 
-what needs a look today, from the local store and without message text: tasks overdue, due or to check, chats where you owe an answer, chats where you wait for one
+what needs a look today, from the local store and without message text: tasks overdue, due or to check, chats where you owe an answer, chats where you wait for one, open tasks someone else does
 
 ```sh
 wa tasks agenda [query] [options]

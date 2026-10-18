@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
+import { checkWords } from "@wirecat/cli-core"
 import {
-  asFirstWord,
   type BaseContext,
   type BaseEnvironment,
   type Closeable,
@@ -11,7 +11,7 @@ import {
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { whatsAppAdapter } from "./adapter/adapter.js"
-import type { Check, Words } from "./adapter/checks.js"
+import type { Check } from "./adapter/checks.js"
 import { fromEngine } from "./adapter/errors.js"
 import { ADMIN_RIGHTS, GROUP_SETTINGS } from "./adapter/groups.js"
 import { resolveSettings, WA } from "./app.js"
@@ -45,13 +45,8 @@ const holderOf = (command: Command): string => {
   return words.join(" ") || "wa"
 }
 
-const COMMANDS: Record<Check, string> = { "chats.list": "chats list", serve: "serve", "session.start": "session start" }
-
 /** The commands the adapter's messages send a person to, with this profile named first. */
-const wordsFor =
-  (profile: string): Words =>
-  (check) =>
-    `\`wa ${asFirstWord(profile)}${COMMANDS[check]}\``
+const wordsFor = (profile: string) => checkWords<Check>("wa", profile)
 
 const loginHint = (profile: string) => wordsFor(profile)("session.start")
 

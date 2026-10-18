@@ -104,6 +104,17 @@ describe("whatsAppAdapter", () => {
     await expect(watched).rejects.toMatchObject({ code, details: { reason } })
   })
 
+  it("ends watch on a temporary ban with the hold until the end WhatsApp gave", async () => {
+    const until = "2099-01-01T00:00:00.000Z"
+    const engine = fakeEngine(seed)
+    const watched = whatsAppAdapter(engine).watch(
+      () => {},
+      new AbortController().signal,
+      () => engine.push({ event: "connection", state: "banned", until }),
+    )
+    await expect(watched).rejects.toMatchObject({ details: { reason: "account.banned", standing: { until } } })
+  })
+
   it("keeps watching through a dropped connection; the engine reconnects", async () => {
     const { done, events } = await watching((engine) => {
       engine.push({ event: "connection", state: "disconnected" })

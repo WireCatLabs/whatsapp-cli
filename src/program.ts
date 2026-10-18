@@ -72,44 +72,43 @@ const definition: ProgramDefinition = {
           "To install instructions separately: `wa skill install --for all`.\n",
       )
   },
-  commands: () =>
-    loggingArgv([
-      sessionCommand(),
-      setupCommand(),
-      accountCommand(WHATSAPP),
-      chatsCommand(WHATSAPP),
-      contactsCommand(WHATSAPP),
-      messagesCommand(WHATSAPP),
-      reactionsCommand(WHATSAPP),
-      pollsCommand(WHATSAPP),
-      modelsCommand(WHATSAPP),
-      inboxCommand(WHATSAPP),
-      reviewCommand(WHATSAPP),
-      watchCommand(WHATSAPP),
-      serveCommand(WHATSAPP),
-      serverCommand(WHATSAPP, { unit: { noRestartOn: NO_RESTART_ON } }),
-      storeCommand(WHATSAPP),
-      conversationsCommand(WHATSAPP),
-      attachmentsCommand(WHATSAPP),
-      tagsCommand(WHATSAPP),
-      mentionsCommand(WHATSAPP),
-      imagesCommand(WHATSAPP),
-      statsCommand(WHATSAPP),
-      tasksCommand(WHATSAPP),
-      searchCommand(WHATSAPP),
-      searchesCommand(WHATSAPP),
-      floodCommand(WHATSAPP),
-      recipientsCommand(WHATSAPP),
-      sendsCommand(WHATSAPP),
-      runsCommand(WA),
-      configCommand(WA, CONFIG),
-      doctorCommand(WHATSAPP),
-      commandsCommand(WA),
-      completeCommand(WHATSAPP, CONFIG),
-      upgradeCommand(),
-      mcpCommand(WHATSAPP),
-      skillCommand(WA, SKILL),
-    ]),
+  commands: () => [
+    sessionCommand(),
+    setupCommand(),
+    accountCommand(WHATSAPP),
+    chatsCommand(WHATSAPP),
+    contactsCommand(WHATSAPP),
+    messagesCommand(WHATSAPP),
+    reactionsCommand(WHATSAPP),
+    pollsCommand(WHATSAPP),
+    modelsCommand(WHATSAPP),
+    inboxCommand(WHATSAPP),
+    reviewCommand(WHATSAPP),
+    watchCommand(WHATSAPP),
+    serveCommand(WHATSAPP),
+    serverCommand(WHATSAPP, { unit: { noRestartOn: NO_RESTART_ON } }),
+    storeCommand(WHATSAPP),
+    conversationsCommand(WHATSAPP),
+    attachmentsCommand(WHATSAPP),
+    tagsCommand(WHATSAPP),
+    mentionsCommand(WHATSAPP),
+    imagesCommand(WHATSAPP),
+    statsCommand(WHATSAPP),
+    tasksCommand(WHATSAPP),
+    searchCommand(WHATSAPP),
+    searchesCommand(WHATSAPP),
+    floodCommand(WHATSAPP),
+    recipientsCommand(WHATSAPP),
+    sendsCommand(WHATSAPP),
+    runsCommand(WA),
+    configCommand(WA, CONFIG),
+    doctorCommand(WHATSAPP),
+    commandsCommand(WA),
+    completeCommand(WHATSAPP, CONFIG),
+    upgradeCommand(),
+    mcpCommand(WHATSAPP),
+    skillCommand(WA, SKILL),
+  ],
 }
 
 export const createProgram = (): Command => create(definition)
@@ -124,34 +123,9 @@ export const run = async (argv: string[], environment: Environment = {}): Promis
   const code = await runCli(argv, definition, environment as Record<string, unknown>)
   const line = await notice
   const argvLog = process.env.WA_TEST_ARGV_LOG
-  // --version ends before any action, so the preAction hook never sees it.
+  // cli-core's run() logs each parsed command; --version ends before any, so it is logged here.
   if (argvLog && code === 0 && argv.some((word) => word === "--version" || word === "-V"))
     appendFileSync(argvLog, `${JSON.stringify({ command: "", options: ["--version"] })}\n`)
   if (line && code === 0) (environment.streams ?? processStreams).diagnostic(line)
   return code
-}
-
-/**
- * Under vitest only: which command a test drove and the option names it gave, never a value
- * (`pnpm test:matrix`). The hook sits on each top-level command because the root program is built
- * inside cli-core; commander runs an ancestor's preAction hook for every subcommand.
- */
-function loggingArgv(commands: Command[]): Command[] {
-  const file = process.env.WA_TEST_ARGV_LOG
-  if (file) for (const command of commands) command.hook("preAction", (_self, action) => logParsed(file, action))
-  return commands
-}
-
-const logParsed = (file: string, action: Command): void => {
-  const words: string[] = []
-  const options: string[] = []
-  for (let at: Command | null = action; at; at = at.parent) {
-    if (at.parent) words.unshift(at.name())
-    for (const option of at.options) {
-      const key = option.attributeName()
-      if (at.getOptionValueSource(key) !== "cli" || !option.long) continue
-      if (option.negate === (at.getOptionValue(key) === false)) options.push(option.long)
-    }
-  }
-  appendFileSync(file, `${JSON.stringify({ command: words.join(" "), options })}\n`)
 }

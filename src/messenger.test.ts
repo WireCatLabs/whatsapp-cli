@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
-import { repliesPathFor } from "@wirecat/cli-core/cli"
+import { COMMAND_NEEDS, repliesPathFor } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "./adapter/adapter.js"
@@ -161,29 +161,12 @@ describe("wa doctor", () => {
 })
 
 describe("what WhatsApp lacks", () => {
-  // cli-core's COMMAND_NEEDS: a method here that the adapter has would refuse a command that works.
-  const COMMAND_NEEDS = [
-    "updateProfile",
-    "sessions",
-    "endOtherSessions",
-    "chatEvents",
-    "inspect",
-    "folders",
-    "createFolder",
-    "updateFolder",
-    "deleteFolder",
-    "addContact",
-    "removeContact",
-    "renameContact",
-    "importContacts",
-    "pin",
-    "unpin",
-  ]
+  const needed = [...new Set(Object.values(COMMAND_NEEDS).map(([method]) => method))]
 
   it("names exactly the methods of COMMAND_NEEDS the adapter does not have", () => {
     const adapter = whatsAppAdapter(fakeEngine(seed))
     for (const method of WHATSAPP.lacks ?? []) expect(adapter).not.toHaveProperty(method)
-    expect([...(WHATSAPP.lacks ?? [])].sort()).toEqual(COMMAND_NEEDS.filter((method) => !(method in adapter)).sort())
+    expect([...(WHATSAPP.lacks ?? [])].sort()).toEqual(needed.filter((method) => !(method in adapter)).sort())
   })
 })
 
@@ -214,6 +197,7 @@ describe("automatic replies", () => {
     let engine: FakeEngine | undefined
     const result = await wa([profile, "serve", "--json"], {
       signal: controller.signal,
+      handled: () => controller.abort(),
       engine: () => {
         engine = fakeEngine(seed)
         const listen = engine.listen
@@ -235,7 +219,6 @@ describe("automatic replies", () => {
                   replyTo: null,
                 },
               })
-              setImmediate(() => controller.abort())
             })
           return stop
         }

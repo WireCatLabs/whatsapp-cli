@@ -135,7 +135,8 @@ never pick one.
   in their own terminal. It checks the computer, links, reads the account and shows five chats.
 - **You have no terminal:** `wa personal setup --qr-file login.png --agent claude --json`. Show the image to the
   owner to scan in WhatsApp → Settings → Linked devices → Link a device. Setup removes it when linking ends.
-  `wa personal session start --qr-file login.png` links without the other steps.
+  `wa personal session start --qr-file login.png` links without the other steps. Either waits up to 5 minutes for
+  the scan without a terminal.
 - **Never ask for the phone number or a pairing code in the chat.** A pairing-code link (`--method phone`, or
   `session start phone`) is for the owner to run in their own terminal.
 

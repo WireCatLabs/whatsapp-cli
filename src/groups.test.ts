@@ -336,6 +336,34 @@ describe("wa doctor --online", () => {
     expect((await send(() => fakeEngine(seed))).code).toBe(0)
   })
 
+  it("holds writes until the end WhatsApp gives a temporary ban", async () => {
+    const ends = new Date(Date.now() + 2 * 60 * 60_000).toISOString()
+    const refused = await wa(["dated", "messages", "send", seed.dialog, "synthetic text", "--json"], () => {
+      const engine = fakeEngine(seed)
+      engine.send = async () => {
+        throw new EngineError(
+          "permission_error",
+          "WhatsApp has banned or restricted this account",
+          "account.banned",
+          ends,
+        )
+      }
+      return engine
+    })
+    const error = errorOf(refused.stderr)
+    expect(error.message).toContain(`the ban ends ${ends}`)
+    expect(error.details.standing).toMatchObject({ state: "frozen", until: ends })
+
+    let held: FakeEngine | undefined
+    const meanwhile = await wa(["dated", "messages", "send", seed.dialog, "synthetic text", "--json"], () => {
+      held = fakeEngine(seed)
+      return held
+    })
+    expect(errorOf(meanwhile.stderr).message).toContain("holds its writes")
+    expect(held?.sent ?? []).toEqual([])
+    expect((await wa(["dated", "messages", "list", seed.dialog, "--json"], () => fakeEngine(seed))).code).toBe(0)
+  })
+
   it("holds writes for 15 minutes after WhatsApp's rate limit; reads go on, and flood clear lifts it", async () => {
     const profile = "slowed"
     const limited = await wa([profile, "messages", "send", seed.dialog, "synthetic text", "--json"], () => {
