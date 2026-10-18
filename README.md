@@ -4,7 +4,7 @@ Your personal WhatsApp in the terminal, searchable on your computer, and ready f
 agent — within limits you set.
 
 > **Early.** `wa` links, reads into its local store, sends text and files, edits, deletes for everyone, reacts and
-> runs groups. What comes next is on the [roadmap](docs/roadmap.md).
+> runs groups. What comes next is on the [roadmap](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/roadmap.md).
 
 An example conversation (invented people, illustrative output):
 
@@ -34,7 +34,7 @@ chats and installs the agent skill.
 It needs **Node 22.16+ or 24+** on macOS, Linux or Windows. npm also installs the engine, the small program that
 speaks WhatsApp's protocol, as a separate package for your system.
 
-More: [installation guide](docs/installation.md) · [linking](docs/sessions.md)
+More: [installation guide](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/installation.md) · [linking](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/sessions.md)
 
 ## What can you do?
 
@@ -69,12 +69,12 @@ wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8 --for-everyone
 wa personal chats mark-read "Book club"   # the other side sees it
 ```
 
-More: [recipes, with a schedule for each](docs/recipes.md) · [using wa](docs/usage.md)
+More: [recipes, with a schedule for each](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/recipes.md) · [using wa](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md)
 
 ## Built for AI agents
 
 - **Agents with a terminal** (Claude Code, Codex, Gemini CLI) run `wa` commands themselves. The bundled
-  [skill](skills/whatsapp-cli/SKILL.md) tells them how: `wa personal setup --agent …` or `wa skill install` puts it in
+  [skill](https://github.com/WireCatLabs/whatsapp-cli/blob/main/skills/whatsapp-cli/SKILL.md) tells them how: `wa personal setup --agent …` or `wa skill install` puts it in
   place, and `wa skill show` prints it before linking. An agent links with `--qr-file` and shows you the picture; it
   never asks for your phone number or a code.
 - **Apps without a terminal** (Claude Desktop, Cursor and other MCP clients) connect to `wa personal mcp`.
@@ -84,7 +84,7 @@ wa personal mcp setup claude-code   # or: wa personal mcp setup codex
 wa personal mcp config              # the entry for Claude Desktop, Cursor and others
 ```
 
-More: [the MCP server](docs/mcp.md) · [from the browser](docs/remote.md)
+More: [the MCP server](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md) · [from the browser](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/remote.md)
 
 ## Why wa?
 
@@ -124,9 +124,9 @@ The message id `3EB0A1B2C3D4E5F6A7B8` is made up; take a real one from `messages
   and your own names and notes for people.
 
 Pinning, several files in one message and deleting for yourself alone are not built yet:
-[not in wa yet](docs/usage.md#not-in-wa-yet).
+[not in wa yet](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md#not-in-wa-yet).
 
-More: [using wa](docs/usage.md) · [one person](docs/people.md)
+More: [using wa](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md) · [one person](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/people.md)
 
 ## Log in and profiles
 
@@ -154,7 +154,7 @@ export WA_PROFILE=work     # or for the whole shell session
 stops and lists the profiles on this computer. Name one or set `WA_PROFILE`. Each profile is a linked device of its
 own, with its own one connection.
 
-More: [linking, devices and profiles](docs/sessions.md) · [profiles](docs/profiles.md)
+More: [linking, devices and profiles](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/sessions.md) · [profiles](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/profiles.md)
 
 ## The local store and search
 
@@ -169,7 +169,7 @@ wa personal messages evidence "Project Alpha" --json   # bounded evidence for a 
 wa personal store backup ~/wa-backup.db   # a copy, safe while the store is in use
 ```
 
-More: [search](docs/search.md) · [the local store](docs/archive.md) · [query language](docs/query-language.md)
+More: [search](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/search.md) · [the local store](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/archive.md) · [query language](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/query-language.md)
 
 ## Groups you run
 
@@ -187,7 +187,7 @@ Renaming a group, members and admins, the invite link, join requests and who may
 too. The members see each change, so each passes the profile's permissions and hourly limit. `wa` adds only people in
 your address book or that you have written to: WhatsApp bans accounts that add strangers.
 
-More: [groups](docs/groups.md)
+More: [groups](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/groups.md)
 
 ## Agent setup in detail
 
@@ -210,7 +210,7 @@ wa personal mcp doctor                # check the local MCP server
 **From the browser.** ChatGPT or Claude in the browser reach `wa personal mcp --http --public-url` behind your tunnel,
 after a login with a one-time access code from your terminal.
 
-More: [the MCP server](docs/mcp.md) · [from the browser](docs/remote.md)
+More: [the MCP server](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md) · [from the browser](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/remote.md)
 
 ## Output for scripts and agents
 
@@ -225,7 +225,7 @@ An error goes to stderr as one line, with stdout empty, and the command exits wi
 profile, `5` the profile may not do this, `6` chat or message not found, `8` a limit, `12` another command holds the
 device, `14` unknown whether a message went. `wa commands --json` is the whole command tree.
 
-More: [CLI contract](docs/cli-contract.md) · [every command and exit code](docs/commands.md)
+More: [CLI contract](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/cli-contract.md) · [every command and exit code](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/commands.md)
 
 ## Settings and permissions
 
@@ -237,8 +237,8 @@ wa personal recipients add "Book club"                 # the first add turns the
 wa personal sends list                                 # every attempt: sent, refused, failed or not known
 ```
 
-More: [permissions](docs/permissions.md) · [profiles](docs/profiles.md) · [configuration](docs/configuration.md) ·
-[limits](docs/limits.md)
+More: [permissions](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/permissions.md) · [profiles](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/profiles.md) · [configuration](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/configuration.md) ·
+[limits](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/limits.md)
 
 ## Limits
 
@@ -247,7 +247,7 @@ from what WhatsApp bans. A profile sends at most 30 messages an hour by default.
 profile; another one is refused with exit code `12` and names the holder, unless `serve` runs and carries it on its
 connection. There is nothing to download in bulk: reads answer from the local store.
 
-More: [limits and waits](docs/limits.md)
+More: [limits and waits](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/limits.md)
 
 ## Security
 
@@ -258,7 +258,7 @@ More: [limits and waits](docs/limits.md)
   text.
 - Nothing `wa` sends to WhatsApp names this tool: it links as a desktop browser.
 
-To report a vulnerability: [SECURITY.md](SECURITY.md). More: [security](docs/security.md)
+To report a vulnerability: [SECURITY.md](https://github.com/WireCatLabs/whatsapp-cli/blob/main/SECURITY.md). More: [security](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/security.md)
 
 ## When something goes wrong
 
@@ -268,7 +268,7 @@ wa personal doctor --online # also connect once and read the account
 wa personal runs list       # recorded runs
 ```
 
-More: [troubleshooting by symptom](docs/troubleshooting.md) · [diagnostics](docs/diagnostics.md)
+More: [troubleshooting by symptom](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/troubleshooting.md) · [diagnostics](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/diagnostics.md)
 
 ## How it differs
 
@@ -292,36 +292,36 @@ the same local store.
 
 ## Technical docs
 
-Every page is in [`docs/`](docs/README.md):
+Every page is in [`docs/`](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/README.md):
 
 | Page | Answers |
 |---|---|
-| [index](docs/index.md) | The docs site's start page: what `wa` is, the first minute, where to go next |
-| [installation](docs/installation.md) | How do I install it, and what does it need? |
-| [usage](docs/usage.md) | How do I link, read, send and change a message — in that order? |
-| [sessions](docs/sessions.md) | How does linking work: QR or pairing code, one connection per device, profiles, unlinking? |
-| [archive](docs/archive.md) | What does the local store keep, how is it filled, and how do I export and back it up? |
-| [search](docs/search.md) | How do I find a message by its words, sender, chat, date, file or label, save a search and count? |
-| [attachments](docs/attachments.md) | Sending, saving and forwarding files; their text, and voice notes as text |
-| [query-language](docs/query-language.md) | Every search field, operator, preset, limit and the JSON answer |
-| [groups](docs/groups.md) | How do I keep up with a group, and run one? |
-| [people](docs/people.md) | One person: what the store holds about them, your own names and notes |
-| [mcp](docs/mcp.md) | How do I connect Claude Desktop, Cursor or another client without a terminal? |
-| [remote](docs/remote.md) | ChatGPT or Claude in the browser, through a login and a tunnel |
-| [recipes](docs/recipes.md) | What can an agent do for me every day, and how do I run it on a schedule? |
-| [commands](docs/commands.md) | Every command, option and exit code — **generated** from the program |
-| [configuration](docs/configuration.md) | How do I configure common behaviour? |
-| [permissions](docs/permissions.md) | What a profile may read, what asks first, and what may go ahead |
-| [profiles](docs/profiles.md) | Several accounts on one computer, and how a command picks one |
-| [configuration-reference](docs/configuration-reference.md) | Every key, default, scope and variable |
-| [cli-contract](docs/cli-contract.md) | Invocation, output, errors, headless runs, bounds and previews |
-| [limits](docs/limits.md) | Limits, waits and the one connection per device |
-| [diagnostics](docs/diagnostics.md) | What did a command do, and what is never recorded? |
-| [troubleshooting](docs/troubleshooting.md) | Something does not work: what the screen says, and what to do |
-| [security](docs/security.md) | What does `wa` keep on my computer, and what can go wrong? |
-| [roadmap](docs/roadmap.md) | What is coming next? |
+| [index](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/index.md) | The docs site's start page: what `wa` is, the first minute, where to go next |
+| [installation](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/installation.md) | How do I install it, and what does it need? |
+| [usage](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md) | How do I link, read, send and change a message — in that order? |
+| [sessions](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/sessions.md) | How does linking work: QR or pairing code, one connection per device, profiles, unlinking? |
+| [archive](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/archive.md) | What does the local store keep, how is it filled, and how do I export and back it up? |
+| [search](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/search.md) | How do I find a message by its words, sender, chat, date, file or label, save a search and count? |
+| [attachments](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/attachments.md) | Sending, saving and forwarding files; their text, and voice notes as text |
+| [query-language](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/query-language.md) | Every search field, operator, preset, limit and the JSON answer |
+| [groups](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/groups.md) | How do I keep up with a group, and run one? |
+| [people](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/people.md) | One person: what the store holds about them, your own names and notes |
+| [mcp](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md) | How do I connect Claude Desktop, Cursor or another client without a terminal? |
+| [remote](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/remote.md) | ChatGPT or Claude in the browser, through a login and a tunnel |
+| [recipes](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/recipes.md) | What can an agent do for me every day, and how do I run it on a schedule? |
+| [commands](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/commands.md) | Every command, option and exit code — **generated** from the program |
+| [configuration](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/configuration.md) | How do I configure common behaviour? |
+| [permissions](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/permissions.md) | What a profile may read, what asks first, and what may go ahead |
+| [profiles](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/profiles.md) | Several accounts on one computer, and how a command picks one |
+| [configuration-reference](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/configuration-reference.md) | Every key, default, scope and variable |
+| [cli-contract](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/cli-contract.md) | Invocation, output, errors, headless runs, bounds and previews |
+| [limits](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/limits.md) | Limits, waits and the one connection per device |
+| [diagnostics](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/diagnostics.md) | What did a command do, and what is never recorded? |
+| [troubleshooting](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/troubleshooting.md) | Something does not work: what the screen says, and what to do |
+| [security](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/security.md) | What does `wa` keep on my computer, and what can go wrong? |
+| [roadmap](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/roadmap.md) | What is coming next? |
 
-What each version changed: [CHANGELOG.md](CHANGELOG.md).
+What each version changed: [CHANGELOG.md](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).
 
 ## Development
 
@@ -336,7 +336,7 @@ bin/wa personal chats list              # everything under .wa/ in this checkout
 Everything that is not specific to WhatsApp — the commands, the store, the send guard, the MCP server — lives in
 [cli-core](https://github.com/WireCatLabs/cli-core), shared with tg and max.
 
-More: [ARCHITECTURE](docs/dev/ARCHITECTURE.md) · [TESTING](docs/dev/TESTING.md)
+More: [ARCHITECTURE](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/dev/ARCHITECTURE.md) · [TESTING](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/dev/TESTING.md)
 
 ## Contributing
 
@@ -346,8 +346,8 @@ Custom automation with WhatsApp, other messengers and AI agents: [info@neirox.ai
 
 ## License
 
-The CLI is [Apache-2.0](LICENSE). The engine is not: the Go program in [`engine/`](engine/) and the
-`@wirecat/whatsapp-engine-*` packages that carry it are [GPL-3.0-only](engine/LICENSE), because the engine links
+The CLI is [Apache-2.0](https://github.com/WireCatLabs/whatsapp-cli/blob/main/LICENSE). The engine is not: the Go program in [`engine/`](https://github.com/WireCatLabs/whatsapp-cli/tree/main/engine) and the
+`@wirecat/whatsapp-engine-*` packages that carry it are [GPL-3.0-only](https://github.com/WireCatLabs/whatsapp-cli/blob/main/engine/LICENSE), because the engine links
 go.mau.fi/libsignal, which is under the GNU General Public License 3.0, through whatsmeow. The two are separate
 programs: `wa` starts the engine as a child process and talks to it only over stdin and stdout. Each engine package
 says where its source is and lists every Go module it links in `THIRD_PARTY_NOTICES`.
