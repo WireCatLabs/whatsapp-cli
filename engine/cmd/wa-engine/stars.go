@@ -48,5 +48,5 @@ func (c *converter) appStateMessage(chat types.JID, id string) (string, bool) {
 	if chat.IsEmpty() || id == "" || chat == types.StatusBroadcastJID {
 		return "", false
 	}
-	return c.canonical(chat, known{}).String(), true
+	return c.canonical(chat, nil).String(), true
 }
