@@ -13,7 +13,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   receipt as before. The same goes for `--mark-read` on `messages list`, `inbox` and `review`, one more write per
   chat. Right after linking, before WhatsApp has sent the settings keys, these now fail with
   `settings.keys-missing` (safe to retry) and send no receipt, where they used to send it; keep `serve` running a few
-  minutes and run them again.
+  minutes and run them again. Engine protocol 34.
 - **The MCP server's `wa_read` and `wa_write` take each command's own arguments, in snake_case.** `search messages`
   takes `query` (not `text`) and no `ast`; `polls create` takes `question`; `wa_tools_search` shows each command's
   fields. The agent is offered every command the profile's permissions allow, including some it was not offered
