@@ -58,6 +58,9 @@ export const GROUP_SETTINGS = [
 /** The timers WhatsApp's apps offer, in seconds; its server refuses any other in a group. */
 const DISAPPEARING_SECONDS = [0, 86_400, 604_800, 7_776_000]
 
+/** WhatsApp refuses a longer group name; the engine's `groupNameLimit`. */
+const GROUP_NAME_LIMIT = 25
+
 const isPerson = (id: string) => id.endsWith("@lid") || id.endsWith("@s.whatsapp.net")
 
 /** A group as `chats update` and `chats create` answer it. */
@@ -216,6 +219,9 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: G
         ...(typeof onlyAdminsEditInfo === "boolean" ? { locked: onlyAdminsEditInfo } : {}),
         ...(typeof disappearingSeconds === "number" ? { ephemeral: disappearingSeconds } : {}),
       }
+      // The engine checks the name too, but only after the photo is set: a refusal then would hide that it changed.
+      if (title !== undefined && [...title].length > GROUP_NAME_LIMIT)
+        throw new CliError("validation_error", "WhatsApp takes a group name of 1 to 25 characters")
       const jid = await groupId(chatId)
       // The photo goes first: the engine refuses one WhatsApp would not take, and then nothing else has changed.
       const pictured =

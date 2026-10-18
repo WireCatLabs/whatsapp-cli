@@ -181,6 +181,10 @@ describe("wa chats create, join, leave, update, link", () => {
       { op: "setGroupPhoto", jid: seed.busy },
       { op: "updateGroup", jid: seed.busy, change: { title: "Synthetic club" } },
     ])
+
+    const long = await acting("chats", "update", seed.busy, "--photo", photo, "--title", "x".repeat(26))
+    expect(long.code).toBe(2)
+    expect(long.done).toEqual([])
   })
 
   it("sets no photo when the profile denies chats update", async () => {

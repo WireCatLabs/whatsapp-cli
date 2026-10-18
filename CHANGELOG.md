@@ -67,7 +67,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   protocol 12, op `setGroupPhoto`). WhatsApp takes only a square JPEG of 190 to 720 pixels a side, and `wa` does not
   convert one: anything else is refused with `validation_error` before WhatsApp is asked, a PNG or WebP by its bytes
   whatever its name. The photo is set before the title, description or settings given with it, so a refused photo
-  leaves the group unchanged. It runs under the same permission and hourly limit as the rest of `chats update`.
+  leaves the group unchanged, and a `--title` over 25 characters is refused before the photo is set. It runs under the same permission and hourly limit as the rest of `chats update`.
   Removing a group's photo is not built: cli-core's `chats update` has no option for it.
 
 ## 0.1.0 — 17.10.2026
