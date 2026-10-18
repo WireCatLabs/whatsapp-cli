@@ -44,8 +44,12 @@ import { upgradeCommand } from "./commands/update.js"
 import { type Environment, SKILL, WHATSAPP } from "./messenger.js"
 import { updateNotice } from "./update.js"
 
-/** A revoked or missing login fails the same on every retry. */
-export const NO_RESTART_ON = [exitCodeFor("authentication_error")]
+/**
+ * A revoked or missing login fails the same on every retry, and a restart during a ban would connect to WhatsApp
+ * again while it holds the account. `device.replaced` and `client.outdated` exit 12 with a crashed engine, which
+ * should restart, so an exit code cannot keep them from it.
+ */
+export const NO_RESTART_ON = [exitCodeFor("authentication_error"), exitCodeFor("permission_error")]
 
 const definition: ProgramDefinition = {
   app: WA,

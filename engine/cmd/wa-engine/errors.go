@@ -7,14 +7,39 @@ import (
 	"go.mau.fi/whatsmeow"
 )
 
+// writes are the requests that change something on WhatsApp; WRITES in src/engine/go-engine.ts is the same list.
+var writes = map[string]bool{
+	"send": true, "sendMedia": true, "forward": true, "edit": true, "revoke": true, "react": true, "read": true,
+	"createPoll": true, "vote": true, "createGroup": true, "join": true, "leave": true, "updateGroup": true,
+	"resetLink": true, "participants": true, "answerRequest": true, "block": true, "logout": true,
+}
+
+var cutWrite = &refusal{failure: failure{"outcome_unknown",
+	"the connection to WhatsApp broke before it confirmed the change; it may have gone through — check first"}}
+
 // refusalFor answers a request cut off by WhatsApp ending the connection with why it ended: "not connected" would
-// send an agent to retry into a login another process now holds, or into a ban.
-func (e *engine) refusalFor(err error) *refusal {
+// send an agent to retry into a login another process now holds, or into a ban. A write cut off on its way may have
+// reached WhatsApp already, so that comes first: a retry could send it twice.
+func (e *engine) refusalFor(op string, err error) *refusal {
+	if writes[op] && cutOff(err) {
+		return cutWrite
+	}
 	refused := classify(err)
 	if ended := e.endedBy(); ended != nil && refused.Code == "network_error" {
 		return ended
 	}
 	return refused
+}
+
+// cutOff says the request may have left before the connection or the engine stopped. whatsmeow sends a frame again
+// after a reconnect and gives up with DisconnectedError, or ErrNotConnected when the socket is gone by then; a group
+// write is an info query, which WhatsApp may have applied when its answer timed out. The engine's own refusals
+// (*failure, *refusal) all come before anything is sent.
+func cutOff(err error) bool {
+	var disconnected *whatsmeow.DisconnectedError
+	return errors.As(err, &disconnected) || errors.Is(err, whatsmeow.ErrNotConnected) ||
+		errors.Is(err, whatsmeow.ErrIQTimedOut) || errors.Is(err, context.Canceled) ||
+		errors.Is(err, context.DeadlineExceeded)
 }
 
 // classify puts any error into the contract's closed list, in fixed wording: whatsmeow's own text can carry a JID.

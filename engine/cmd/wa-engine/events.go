@@ -56,6 +56,8 @@ func (e *engine) handle(raw any) {
 		e.end("connected", nil)
 	case *events.Disconnected, *events.KeepAliveTimeout:
 		e.out.connection("disconnected", "")
+	case *events.KeepAliveRestored:
+		e.out.connection("connected", "")
 	case *events.LoggedOut:
 		e.end("logged_out", loggedOut)
 	case *events.StreamReplaced:

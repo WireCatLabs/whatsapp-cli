@@ -112,7 +112,7 @@ func (e *engine) answer(req request) {
 	}()
 	value, err := e.dispatch(req)
 	if err != nil {
-		e.out.fail(req.ID, e.refusalFor(err))
+		e.out.fail(req.ID, e.refusalFor(req.Op, err))
 		return
 	}
 	e.out.ok(req.ID, value)
@@ -168,7 +168,9 @@ func (e *engine) connect() error {
 		return ended
 	}
 	if !e.client.IsConnected() {
-		if err := e.client.Connect(); err != nil && !errors.Is(err, whatsmeow.ErrAlreadyConnected) {
+		// The engine's context, not whatsmeow's background one: whatsmeow hands it on to its reconnect loop, so closing
+		// stdin ends a dial or a reconnect that would otherwise hold the device lock past the CLI.
+		if err := e.client.ConnectContext(e.ctx); err != nil && !errors.Is(err, whatsmeow.ErrAlreadyConnected) {
 			return err
 		}
 	}
@@ -177,6 +179,9 @@ func (e *engine) connect() error {
 	for !e.client.WaitForConnection(250 * time.Millisecond) {
 		if ended := e.endedBy(); ended != nil {
 			return ended
+		}
+		if err := e.ctx.Err(); err != nil {
+			return err
 		}
 		if time.Now().After(deadline) {
 			return &failure{"network_error", "could not connect to WhatsApp in time"}

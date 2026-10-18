@@ -96,14 +96,14 @@ func TestABanWithAnEndCarriesItOnTheWireAndOneWithoutDoesNot(t *testing.T) {
 func TestARequestCutOffByAnEndedConnectionAnswersWhyItEnded(t *testing.T) {
 	var out bytes.Buffer
 	e := &engine{out: newWire(&out)}
-	if got := e.refusalFor(whatsmeow.ErrNotConnected); got.Code != "network_error" {
+	if got := e.refusalFor("chat", whatsmeow.ErrNotConnected); got.Code != "network_error" {
 		t.Errorf("before anything ended, not connected became %+v", got)
 	}
 	e.handle(&events.StreamReplaced{})
-	if got := e.refusalFor(whatsmeow.ErrNotConnected); got.Reason != "device.replaced" {
+	if got := e.refusalFor("chat", whatsmeow.ErrNotConnected); got.Reason != "device.replaced" {
 		t.Errorf("after the login was taken over, not connected became %+v", got)
 	}
-	if got := e.refusalFor(&failure{"not_found", "WhatsApp has no such chat"}); got.Code != "not_found" {
+	if got := e.refusalFor("chat", &failure{"not_found", "WhatsApp has no such chat"}); got.Code != "not_found" {
 		t.Errorf("a refusal of its own was replaced by why the connection ended: %+v", got)
 	}
 }

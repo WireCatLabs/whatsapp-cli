@@ -179,6 +179,20 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   connect, so it would otherwise read `network_error` and retry. The client rejects a write still waiting when the
   engine process ends with `outcome_unknown`, a read with `provider_unavailable` (`WRITES` in
   [`go-engine.ts`](../../src/engine/go-engine.ts)).
+- **A dropped connection comes back by itself; a write it cut is `outcome_unknown`.** whatsmeow reconnects after a
+  network drop and sends a frame still waiting once more; the engine reports `disconnected`, then `connected` (also
+  when a keepalive recovers), and `watch` and `feed` listen on through both, so `serve` keeps saving. A write that
+  was on its way when the socket broke (whatsmeow's `DisconnectedError` or `ErrNotConnected` after its retry, a timed
+  out info query, or the engine stopping) answers `outcome_unknown`, even after `replaced`: it may have reached
+  WhatsApp, and a retry would send it twice (`refusalFor` and `writes` in `engine/cmd/wa-engine/errors.go`, the same
+  list as `WRITES`). The engine connects with its own context, which whatsmeow hands to its reconnect loop, so stdin
+  closing ends a dial or a reconnect at once instead of holding the device lock past the CLI.
+- **`serve` does not restart the engine itself; its unit restarts `serve`.** An engine that dies, or a connection
+  WhatsApp ends, ends `serve` with the reason, as tg's `serve` ends when Telegram's updates stop. cli-core's unit
+  restarts it 30 s later (`Restart=on-failure`), except on the exit codes in `NO_RESTART_ON`
+  ([`src/program.ts`](../../src/program.ts)): 4 (logged out) and 5 (banned: a restart would connect during the ban).
+  `device.replaced` and `client.outdated` exit 12 like a crashed engine, so the unit still restarts on them
+  (BACKLOG). A one-shot command never restarts anything: it exits with the engine's code.
 - **Holds on writes are cli-core's.** `fromEngine` ([`src/adapter/errors.ts`](../../src/adapter/errors.ts)) gives
   WhatsApp's 429 a `standing: limited` ending 15 minutes on, and a ban a `standing: banned` ending when WhatsApp's
   temporary ban does (the engine passes whatsmeow's `TemporaryBan.Expire` as `until`, protocol 11), or with no

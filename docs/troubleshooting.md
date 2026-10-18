@@ -70,6 +70,15 @@ whether it finds the engine, and where it looked.
 The device was removed on the phone, or WhatsApp ended it. Run `wa <profile> session end`, then
 `wa <profile> session start`.
 
+## `serve` stopped by itself
+
+`wa <profile> server logs` says why. A network drop does not stop it: it connects again and goes on saving. It stops
+when the engine dies (exit 12), and when WhatsApp ends the connection: logged out (exit 4), banned (exit 5), another
+connection took the login over or WhatsApp no longer accepts this version (exit 12). Its unit starts it again 30
+seconds later, except after exit 4 or 5: for 4, run `wa <profile> session start`, then `wa <profile> server start`;
+for 5, see the phone, and start it again once the ban ends. After a takeover, stop the other connection first. On
+macOS the unit does not restart it after any failure, since launchd cannot leave out one exit code.
+
 ## "wa setup needs a terminal to link a device"
 
 Linking shows a code to scan or type. Run `setup` in a terminal, or pass `--qr-file <png>` and scan the image it
