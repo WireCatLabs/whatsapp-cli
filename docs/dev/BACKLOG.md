@@ -7,6 +7,10 @@ Open work, most important first. The plan in flight is
    2026-10-17: `serve` receiving a message from the phone and saving it; send, `--md` send, edit, reaction add and
    remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
    `session start` keeping the history push, `self()` set right after pairing.
+9. **A one-shot connection may take messages and drop them.** If WhatsApp hands each queued message to a linked
+   device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
+   and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
+   starts.
 3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
@@ -62,10 +66,6 @@ Open work, most important first. The plan in flight is
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
    goes.
-9. **A one-shot connection may take messages and drop them.** If WhatsApp hands each queued message to a linked
-   device once, a one-shot `messages send` with no `serve` running receives and acknowledges them, and only `serve`
-   and `watch` save to the store. Unverified: check live — a message arrives during a one-shot send, then `serve`
-   starts.
 11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
     history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
     decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup
