@@ -190,6 +190,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> chats events <group>` lists who joined, left, was added, removed, promoted or demoted, and each new
+  title**, from the local store, without connecting. `wa` keeps the group service messages the phone pushes with the
+  history and, under `wa serve` and `wa watch`, each change as it happens; a change seen both ways is kept once.
+  `wa watch --events` prints them as `chat_event` lines, and `stats chats show` counts the joins and leaves in
+  `members`, where it used to leave them out. Changes from before the link that the phone did not push are not
+  there. Engine protocol 33.
 - **`wa <profile> messages send <chat> --sticker-file <file.webp>`** sends a `.webp` as a WhatsApp sticker, alone,
   with no text; agents send `sticker_file` through `wa_write` (`command: "messages send"`). It is a message like any
   other: the profile's permissions, the send journal and `--operation-id` apply, and so does the file guard

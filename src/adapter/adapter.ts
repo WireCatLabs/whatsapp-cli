@@ -45,7 +45,7 @@ import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
-import { isFile, sameFile, toAccount, toChat, toMember, toMessage, toWaAttachment } from "./map.js"
+import { isFile, sameFile, toAccount, toChat, toChatEvent, toMember, toMessage, toWaAttachment } from "./map.js"
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
@@ -512,13 +512,19 @@ export const whatsAppAdapter = (
         else if (event.event === "vote") {
           const vote = await toVoteEvent(event.vote, stored)
           if (vote) onEvent(vote)
-        }
+        } else if (event.event === "chat_event")
+          onEvent({
+            event: "chat_event",
+            chatId: event.change.chat,
+            chatTitle: null,
+            change: toChatEvent(event.change),
+          })
       }
       // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
       let queue = Promise.resolve()
       const live = listening(
         engine,
-        ["message", "edit", "delete", "vote", "star", "connection"],
+        ["message", "edit", "delete", "vote", "star", "chat_event", "connection"],
         signal,
         words,
         (event) => {
@@ -541,13 +547,14 @@ export const whatsAppAdapter = (
       const handed = async (event: EngineEvent) => {
         if (event.event === "rekey") onBatch({ rekeys: [{ from: event.from, to: event.to }] })
         if (event.event !== "history") return
-        const { rekeys, chats, contacts, messages, votes } = event.history
+        const { rekeys, chats, contacts, messages, votes, events } = event.history
         onBatch({
           rekeys: rekeys ?? [],
           chats: chats.map(toChat),
           people: contacts.map(toMember),
           messages: await Promise.all(messages.map((message) => withoutKeptRefs(toMessage(message)))),
           votes: votes.flatMap((vote) => toHistoryVote(vote) ?? []),
+          events: (events ?? []).map((change) => ({ chatId: change.chat, change: toChatEvent(change) })),
         })
       }
       const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, (event) => {

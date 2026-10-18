@@ -5,7 +5,7 @@ import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
-import { EngineError, type WaChat, type WhatsAppEngine } from "./engine/contract.js"
+import { EngineError, type EngineEvent, type WaChat, type WaChatEvent, type WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { REQUESTER } from "./testing/fake-groups.js"
@@ -635,6 +635,76 @@ describe("wa watch", () => {
     )
     expect(result.code).toBe(0)
     expect(JSON.parse(result.stdout)).toMatchObject({ chatId: seed.busy, chatTitle: "Book club" })
+  })
+})
+
+describe("wa chats events", () => {
+  const joined: WaChatEvent = {
+    chat: seed.busy,
+    id: "0123456789abcdef0123456789abcdef",
+    timestamp: new Date(Math.floor(Date.now() / 1000 - 3600) * 1000).toISOString(),
+    event: "add",
+    by: seed.person,
+    byName: "Ann Lee",
+    people: [{ jid: stranger, name: null }],
+  }
+
+  /** `wa watch` while the engine pushes `events` once it is ready. */
+  const watching = async (events: EngineEvent[]) => {
+    const controller = new AbortController()
+    const result = await wa(
+      [PROFILE, "watch", "--events", "--jsonl"],
+      () => {
+        const engine = fakeEngine(seed)
+        engine.ready = async () => {
+          setImmediate(() => {
+            for (const event of events) engine.push(event)
+            setImmediate(() => controller.abort())
+          })
+        }
+        return engine
+      },
+      controller.signal,
+    )
+    expect(result.code, result.stderr).toBe(0)
+    return result.stdout
+  }
+
+  const offline = async (...argv: string[]) => {
+    const result = await wa([PROFILE, ...argv, "--offline", "--json"], () => {
+      throw new Error("a stored read must never start the engine")
+    })
+    expect(result.code, result.stderr).toBe(0)
+    return JSON.parse(result.stdout)
+  }
+
+  it("keeps an add seen under watch, lists it once offline though a history push repeats it, and counts it", async () => {
+    const printed = await watching([{ event: "chat_event", change: joined }])
+    expect(JSON.parse(printed)).toMatchObject({ event: "chat_event", chatId: seed.busy, chatTitle: "Book club" })
+    await watching([
+      {
+        event: "history",
+        history: { kind: "recent", chats: [], contacts: [], messages: [], votes: [], events: [joined] },
+      },
+    ])
+
+    const listed = await offline("chats", "events", seed.busy)
+    expect(listed.items).toHaveLength(1)
+    expect(listed.items[0]).toMatchObject({ type: "add", by: { id: seed.person }, people: [{ id: stranger }] })
+
+    const stats = await offline(
+      "stats",
+      "chats",
+      "show",
+      seed.busy,
+      "--since-time",
+      "30d",
+      "--by",
+      "day",
+      "--timezone",
+      "UTC",
+    )
+    expect(stats.item.members).toMatchObject({ joined: 1, left: 0 })
   })
 })
 

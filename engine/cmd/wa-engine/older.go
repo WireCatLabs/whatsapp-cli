@@ -141,7 +141,7 @@ func (w *olderWaiter) deliver(h waHistory, session string) (waHistory, olderMatc
 	w.forget(ask)
 	oldest, more := h.oldest[ask.chat]
 	batch := olderBatch{Messages: []waMessage{}, More: more, oldest: oldest, sent: h.sent[ask.chat]}
-	rest := waHistory{Kind: h.Kind, Chats: []waChat{}, Contacts: h.Contacts, Messages: []waMessage{}, Votes: h.Votes}
+	rest := waHistory{Kind: h.Kind, Chats: []waChat{}, Contacts: h.Contacts, Messages: []waMessage{}, Votes: h.Votes, Events: h.Events}
 	for _, chat := range h.Chats {
 		if chat.JID != ask.chat {
 			rest.Chats = append(rest.Chats, chat)
@@ -192,7 +192,7 @@ func names(h waHistory, chat string) bool {
 }
 
 func (h waHistory) empty() bool {
-	return len(h.Chats) == 0 && len(h.Contacts) == 0 && len(h.Messages) == 0 && len(h.Votes) == 0
+	return len(h.Chats) == 0 && len(h.Contacts) == 0 && len(h.Messages) == 0 && len(h.Votes) == 0 && len(h.Events) == 0
 }
 
 // olderAnchor reads the message the phone counts back from. whatsmeow keeps no messages, so it comes from the CLI's

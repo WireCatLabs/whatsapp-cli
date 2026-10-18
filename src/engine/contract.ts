@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 32
+export const PROTOCOL = 33
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -209,8 +209,26 @@ export const waVote = v.strictObject({
 export const waRekey = v.strictObject({ from: jid, to: jid })
 
 /**
+ * Who joined, left, was added, removed, promoted or demoted in a group, or its new title, live or from the group's
+ * service message in a history push. WhatsApp gives a live change no id, so `id` is derived from the chat, the time in
+ * seconds, the action and the sorted people: both paths give one change the same id, and the store keeps it once.
+ * `by` and `people` are in LID form like a sender; `by` is `null` where WhatsApp did not say who.
+ */
+export const waChatEvent = v.strictObject({
+  chat: jid,
+  id: v.pipe(v.string(), v.nonEmpty()),
+  timestamp: time,
+  event: v.picklist(["join", "leave", "add", "remove", "promote", "demote", "title"]),
+  by: v.nullable(jid),
+  byName: v.nullable(v.string()),
+  people: v.array(waContact),
+  title: v.optional(v.string()),
+})
+
+/**
  * One push from the phone. `kind` follows whatsmeow's sync types; the adapter treats them all alike. `votes` are the
- * votes in the pushed polls, which the store saves with the push, not as `vote` events. `rekeys` apply first.
+ * votes in the pushed polls, which the store saves with the push, not as `vote` events. `events` are the groups'
+ * service messages in the push, which come as no message. `rekeys` apply first.
  */
 export const waHistory = v.strictObject({
   kind: v.picklist(["bootstrap", "recent", "full", "on_demand", "push_name", "other"]),
@@ -219,6 +237,7 @@ export const waHistory = v.strictObject({
   messages: v.array(waMessage),
   votes: v.array(waVote),
   rekeys: v.optional(v.array(waRekey)),
+  events: v.optional(v.array(waChatEvent)),
 })
 
 /**
@@ -245,6 +264,7 @@ export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("edit"), message: waMessage }),
   v.strictObject({ event: v.literal("delete"), chat: jid, id: v.string() }),
   v.strictObject({ event: v.literal("vote"), vote: waVote }),
+  v.strictObject({ event: v.literal("chat_event"), change: waChatEvent }),
   /** The owner starred a message or took the star off on another device. */
   v.strictObject({ event: v.literal("star"), chat: jid, id: v.pipe(v.string(), v.nonEmpty()), starred: v.boolean() }),
   /** A re-key outside a history push, sent before the first message under the new id. */
@@ -322,6 +342,7 @@ export type WaContact = v.InferOutput<typeof waContact>
 export type WaMessage = v.InferOutput<typeof waMessage>
 export type WaPoll = v.InferOutput<typeof waPoll>
 export type WaVote = v.InferOutput<typeof waVote>
+export type WaChatEvent = v.InferOutput<typeof waChatEvent>
 export type WaMediaRef = v.InferOutput<typeof waMediaRef>
 export type WaDownloaded = v.InferOutput<typeof waDownloaded>
 export type WaPlaceRef = v.InferOutput<typeof waPlaceRef>

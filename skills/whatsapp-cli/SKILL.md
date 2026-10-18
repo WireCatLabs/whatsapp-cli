@@ -46,9 +46,9 @@ Not built yet:
 `newAccount` rule in `chats rules set` is refused), and keeps the address book on the phone, so
 `contacts add|remove|rename|import` are refused. `chats show` answers from the store;
 `chats members list` asks WhatsApp, and with `--offline` shows the stored members. `chats events` answers from the
-store, which holds no joins or leaves yet: its empty list does not mean nobody joined, and `stats chats show` leaves
-`members` out and says in `missing` that joins and leaves are not recorded yet; `chats members history` shows who
-joined or left between member fetches. A group in a WhatsApp community names it in `parent_chat_id`, and the
+store: the joins, leaves, adds, removals, admin changes and titles the phone pushed and `serve` saw, which
+`stats chats show` counts in `members`; one from before the link the phone did not push is missing. `chats members
+history` shows who joined or left between member fetches. A group in a WhatsApp community names it in `parent_chat_id`, and the
 community itself is a group with `provider_metadata.community: true`; only the answers of `chats create|join|update`
 carry them, not the store. `chats mark-read` sends a read receipt only and may not clear a
 `chats mark-unread`.

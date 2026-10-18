@@ -49,9 +49,11 @@ Open work, most important first. The plan in flight is
    - **Live checks** of `polls vote` from `wa` (one-to-one, group, phone-addressed group): `polls create` in the own
      chat and `--md` sends work (2026-10-17); a vote cast by `wa` has not been run against WhatsApp
      (the owner runs `bin/live-poll-vote` for it, in the own chat).
-   - **`chats events`.** WhatsApp's joins and leaves come as live notifications, not as history the engine can
-     read back. cli-core 0.336.0 answers `chats events` from the store (`HistoryBatch.events`, the `chat_event`
-     watch event); the engine does not push them yet, so it always shows nothing.
+   - ~~**`chats events`**~~ — built: live `events.GroupInfo` and the history push's group service messages go to
+     cli-core's store (engine protocol 33). Still open: a live check that a push's service messages carry the people
+     as the protobuf says (the owner runs `bin/live-chat-events`), the owner's own join or add, which whatsmeow
+     sends live as `events.JoinedGroup` (only a history push records it), and `member_stays`, which cli-core does
+     not fill from events yet.
    - **Names of groups the store lacks, in a one-shot command.** cli-core finds a stored group by name (0.337.0);
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
