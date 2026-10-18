@@ -24,7 +24,9 @@ var cutWrite = &refusal{failure: failure{"outcome_unknown",
 // send an agent to retry into a login another process now holds, or into a ban. A write cut off on its way may have
 // reached WhatsApp already, so that comes first: a retry could send it twice.
 func (e *engine) refusalFor(op string, err error) *refusal {
-	if writes[op] && cutOff(err) {
+	// whatsmeow answers ErrNotConnected both before a frame leaves and when it sends one again after a reconnect, so
+	// only here, for a write, does it count as maybe sent.
+	if writes[op] && (unanswered(err) || errors.Is(err, whatsmeow.ErrNotConnected)) {
 		return cutWrite
 	}
 	refused := classify(err)
@@ -34,15 +36,14 @@ func (e *engine) refusalFor(op string, err error) *refusal {
 	return refused
 }
 
-// cutOff says the request may have left before the connection or the engine stopped. whatsmeow sends a frame again
-// after a reconnect and gives up with DisconnectedError, or ErrNotConnected when the socket is gone by then; a group
-// write is an info query, which WhatsApp may have applied when its answer timed out. The engine's own refusals
-// (*failure, *refusal) all come before anything is sent.
-func cutOff(err error) bool {
+// unanswered: the request left and no answer came, so WhatsApp may have acted on it (WC-LIFE-9). whatsmeow sends a
+// frame again after a reconnect and gives up with DisconnectedError; an info query (a group write, an app-state patch)
+// may have been applied when its answer timed out. The engine's own refusals (*failure, *refusal) all come before
+// anything is sent.
+func unanswered(err error) bool {
 	var disconnected *whatsmeow.DisconnectedError
-	return errors.As(err, &disconnected) || errors.Is(err, whatsmeow.ErrNotConnected) ||
-		errors.Is(err, whatsmeow.ErrIQTimedOut) || errors.Is(err, context.Canceled) ||
-		errors.Is(err, context.DeadlineExceeded)
+	return errors.As(err, &disconnected) || errors.Is(err, whatsmeow.ErrIQTimedOut) ||
+		errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
 }
 
 // classify puts any error into the contract's closed list, in fixed wording: whatsmeow's own text can carry a JID.
