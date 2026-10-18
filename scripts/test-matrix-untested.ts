@@ -200,23 +200,20 @@ export const UNTESTED: Untested[] = [
       "needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, " +
       "and cli-core's src/speech tests drive the local model",
   })),
-  ...[
-    "--page-size",
-    "--since-time",
-    "--last",
-    "--catch-up",
-    "--catch-up-chunks",
-    "--catch-up-messages",
-    "--catch-up-time",
-    "--background",
-    "--dry-run",
-  ].map((option) => ({
+  ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
     command: "messages sync",
     option,
     reason:
-      "cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through " +
-      "run() and its older-history paging are tested in src/older-history.test.ts",
+      "local search preparation after the sync, over the store; tested in cli-core " +
+      "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself",
   })),
+  {
+    command: "messages sync",
+    option: "--background",
+    reason:
+      "cli-core runs the sync as a store job, tested in cli-core (src/cli/messenger/backfill.test.ts); the job's " +
+      "sync reaches wa as src/older-history.test.ts drives it",
+  },
   {
     command: "messages forward",
     option: "--operation-id",

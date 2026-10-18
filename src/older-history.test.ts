@@ -53,10 +53,11 @@ const stored: StoredMessages = {
   pollVotes: async () => [],
 }
 
-beforeAll(async () => {
+// Fills the store as the phone's first history push does, then stops watching.
+const filled = async (profile: string, from: typeof seed) => {
   const controller = new AbortController()
   const filling = () => {
-    const engine = fakeEngine(seed)
+    const engine = fakeEngine(from)
     const listen = engine.listen
     engine.listen = (kinds, onEvent) => {
       const stop = listen(kinds, onEvent)
@@ -65,8 +66,10 @@ beforeAll(async () => {
     }
     return engine
   }
-  expect((await wa(["older", "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
-})
+  expect((await wa([profile, "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
+}
+
+beforeAll(() => filled("older", seed))
 
 afterAll(async () => (await opened).close())
 
@@ -141,5 +144,44 @@ describe("older history from the phone", () => {
     expect(result.code).toBe(2)
     expect(JSON.parse(result.stderr).error.message).toContain("name one chat")
     expect(engine.olderAsked).toEqual([])
+  })
+})
+
+// Each on an account of its own, so the pages the tests above stored do not move its anchor.
+describe("when messages sync stops", () => {
+  const ownAccount = async (profile: string, n: number) => {
+    const own = { ...seed, account: { id: `1000000000000${80 + n}@lid`, name: "Synthetic owner", username: null } }
+    await filled(profile, own)
+    return own
+  }
+  const sync = async (profile: string, engine: WhatsAppEngine, ...options: string[]) => {
+    const argv = [profile, "messages", "sync", seed.busy, ...options, "--pause", "1ms", "--no-catch-up", "--json"]
+    const result = await wa(argv, () => engine)
+    expect(result.code).toBe(0)
+    return JSON.parse(result.stdout).item
+  }
+
+  it("with --since-time, stops asking the phone once its pages reach that time", async () => {
+    const engine = fakeEngine(await ownAccount("since", 1), { phone: onPhone })
+    const item = await sync("since", engine, "--since-time", onPhone[4]?.timestamp ?? "", "--page-size", "3")
+    expect(engine.olderAsked.map((asked) => asked.count)).toEqual([3, 3])
+    expect(item).toMatchObject({ fetched: 6, reached_since: true })
+  })
+
+  it("with --last, stops once the chat's newest n messages are held", async () => {
+    const engine = fakeEngine(await ownAccount("last", 2), { phone: onPhone })
+    const item = await sync("last", engine, "--last", String(inBusy.length + 4), "--page-size", "4")
+    expect(engine.olderAsked.map((asked) => asked.count)).toEqual([4])
+    expect(item).toMatchObject({ fetched: 4, reached_last: true })
+  })
+
+  it("refuses --dry-run without starting the engine: the phone pushes history, so there is nothing to estimate", async () => {
+    const result = await wa(["older", "messages", "sync", seed.busy, "--dry-run", "--json"], () => {
+      throw new Error("a dry run must never start the engine")
+    })
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.message).toContain(
+      "pushes its history instead",
+    )
   })
 })

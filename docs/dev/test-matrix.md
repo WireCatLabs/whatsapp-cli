@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**139 ✅ · 584 ⛔ · 0 ❌** — 227 commands, 496 options.
+**142 ✅ · 581 ⛔ · 0 ❌** — 227 commands, 496 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -195,15 +195,15 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages sync` | `--limit` | ✅ |  |
 | `messages sync` | `--page-size` | ✅ |  |
 | `messages sync` | `--pause` | ✅ |  |
-| `messages sync` | `--since-time` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
-| `messages sync` | `--last` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
-| `messages sync` | `--catch-up` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--since-time` | ✅ |  |
+| `messages sync` | `--last` | ✅ |  |
+| `messages sync` | `--catch-up` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--no-catch-up` | ✅ |  |
-| `messages sync` | `--catch-up-chunks` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
-| `messages sync` | `--catch-up-messages` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
-| `messages sync` | `--catch-up-time` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
-| `messages sync` | `--background` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
-| `messages sync` | `--dry-run` | ⛔ | cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through run() and its older-history paging are tested in src/older-history.test.ts |
+| `messages sync` | `--catch-up-chunks` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
+| `messages sync` | `--catch-up-messages` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
+| `messages sync` | `--catch-up-time` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
+| `messages sync` | `--background` | ⛔ | cli-core runs the sync as a store job, tested in cli-core (src/cli/messenger/backfill.test.ts); the job's sync reaches wa as src/older-history.test.ts drives it |
+| `messages sync` | `--dry-run` | ✅ |  |
 | `reactions add` |  | ✅ |  |
 | `reactions remove` |  | ✅ |  |
 | `polls show` |  | ✅ |  |
