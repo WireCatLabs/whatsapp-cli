@@ -1,10 +1,10 @@
-import { mkdtempSync } from "node:fs"
+import { cpSync, mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
 import { contractSeed, mcpOverStdio } from "@wirecat/cli-core/testing"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import {
   EngineError,
   type EngineEvent,
@@ -99,8 +99,9 @@ const [deletedOwn, deletedTheirs] = [
   inBusy.find((message) => !message.outgoing) as Message,
 ]
 
-// Each test gets a store of its own: a message one test deletes would otherwise be missing from the next.
+// Each test gets a copy of one filled store: a message one test deletes would otherwise be missing from the next.
 let store = ""
+let filledStore = ""
 const env = () => ({ ...process.env, MESSAGING_STORE: store })
 
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
@@ -143,9 +144,16 @@ const filled = async (profile: string, from: typeof seed) => {
   expect((await wa([profile, "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
 }
 
-beforeEach(async () => {
+beforeAll(async () => {
   store = join(mkdtempSync(join(tmpdir(), "wa-actions-")), "messages.db")
   await filled("actions", seed)
+  filledStore = store
+})
+
+beforeEach(() => {
+  const copy = mkdtempSync(join(tmpdir(), "wa-actions-"))
+  cpSync(dirname(filledStore), copy, { recursive: true })
+  store = join(copy, "messages.db")
 })
 
 describe("wa reactions", () => {
