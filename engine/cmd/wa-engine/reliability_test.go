@@ -33,7 +33,7 @@ func TestAWriteCutOffOnItsWayIsOutcomeUnknownAndAReadStaysRetryable(t *testing.T
 	}
 	e := &engine{out: newWire(io.Discard)}
 	for _, err := range cut {
-		for _, op := range []string{"send", "updateGroup", "logout"} {
+		for _, op := range []string{"send", "updateGroup", "setPrivacy", "logout"} {
 			if got := e.refusalFor(op, err); got.Code != "outcome_unknown" {
 				t.Errorf("%s cut by %v became %+v", op, err, got)
 			}

@@ -221,6 +221,14 @@ describe("privacy wire contracts", () => {
       await engine.close()
     }
   })
+
+  it("answers a privacy change the engine died during as outcome_unknown", async () => {
+    const engine = await stub("ok")
+    await expect(engine.setPrivacy([{ name: "calladd", value: "crash@stub" }])).rejects.toMatchObject({
+      code: "outcome_unknown",
+      reason: "engine.stopped-mid-write",
+    })
+  })
 })
 
 describe("group wire contracts", () => {
