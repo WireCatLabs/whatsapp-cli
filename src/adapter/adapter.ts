@@ -132,20 +132,42 @@ const ENDED: Partial<Record<ConnectionState, (words: Words, until?: string) => C
     fromEngine(new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly", "engine.stopped")),
 }
 
-/** Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why. */
+const ENDING = new Set(Object.values(ENDED).map((end) => end(bareCheck).details.reason))
+
+/** A failure that means the connection is gone, not that one event was odd: it ends the listening. */
+const ends = (error: unknown) =>
+  (error instanceof EngineError && ENDING.has(error.reason)) ||
+  (error instanceof CliError && ENDING.has(error.details.reason))
+
+/**
+ * Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why. Events are handled one at
+ * a time in arrival order. One whose handling fails is skipped and said once on `warn` — kind and code only, never
+ * its content — and the next still runs: a stalled queue would keep every later push out of the store until a
+ * restart. `drained` settles when the handling caught up.
+ */
 const listening = (
   engine: WhatsAppEngine,
   kinds: readonly EngineEvent["event"][],
   signal: AbortSignal,
   words: Words,
-  onEvent: (event: EngineEvent) => void,
-): { done: Promise<void>; stop: () => void } => {
+  warn: (message: string) => void,
+  handle: (event: EngineEvent) => void | Promise<void>,
+): { done: Promise<void>; stop: () => void; drained: () => Promise<void> } => {
   let stop = () => {}
+  let queue = Promise.resolve()
+  let warned = false
   const done = new Promise<void>((resolve, reject) => {
+    const failed = (kind: string, error: unknown) => {
+      if (ends(error)) return reject(error)
+      if (warned) return
+      warned = true
+      const code = error instanceof CliError ? error.code : error instanceof Error ? error.name : "error"
+      warn(`a pushed ${kind} event could not be handled and was skipped (${code}); the ones after it go on`)
+    }
     const unlisten = engine.listen(kinds, (event) => {
       const ended = event.event === "connection" ? ENDED[event.state]?.(words, event.until) : undefined
       if (ended) reject(ended)
-      else onEvent(event)
+      else queue = queue.then(() => handle(event)).catch((error: unknown) => failed(event.event, error))
     })
     const aborted = () => resolve()
     signal.addEventListener("abort", aborted, { once: true })
@@ -155,7 +177,7 @@ const listening = (
     }
     if (signal.aborted) resolve()
   })
-  return { done, stop }
+  return { done, stop, drained: () => queue }
 }
 
 const VIDEO = new Set([".mp4", ".m4v", ".mov"])
@@ -214,6 +236,8 @@ export const whatsAppAdapter = (
   engine: WhatsAppEngine,
   stored: StoredMessages = NOTHING_STORED,
   words: Words = bareCheck,
+  /** Where a skipped pushed event is said — a warning, so `--quiet` drops it. The diagnostic stream if not given. */
+  warn: (message: string) => void = (line) => process.stderr.write(`${line}\n`),
 ): WhatsAppAdapter => {
   // A guessed key would make WhatsApp drop the change without a word, so a message the store lacks is refused.
   const held = async (chatId: string, messageId: string): Promise<Message> => {
@@ -527,15 +551,13 @@ export const whatsAppAdapter = (
           })
       }
       // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
-      let queue = Promise.resolve()
       const live = listening(
         engine,
         ["message", "edit", "delete", "vote", "star", "chat_event", "connection"],
         signal,
         words,
-        (event) => {
-          queue = queue.then(() => handed(event))
-        },
+        warn,
+        handed,
       )
       try {
         await translated(engine.ready(signal))
@@ -543,13 +565,12 @@ export const whatsAppAdapter = (
         await live.done
       } finally {
         live.stop()
-        await queue
+        await live.drained()
       }
     },
 
     feed: async (onBatch, signal) => {
       // In arrival order: a push waits for its store reads, and a re-key after it must not overtake it.
-      let queue = Promise.resolve()
       const handed = async (event: EngineEvent) => {
         if (event.event === "rekey") onBatch({ rekeys: [{ from: event.from, to: event.to }] })
         if (event.event !== "history") return
@@ -563,14 +584,12 @@ export const whatsAppAdapter = (
           events: (events ?? []).map((change) => ({ chatId: change.chat, change: toChatEvent(change) })),
         })
       }
-      const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, (event) => {
-        queue = queue.then(() => handed(event))
-      })
+      const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, warn, handed)
       try {
         await pushes.done
       } finally {
         pushes.stop()
-        await queue
+        await pushes.drained()
       }
     },
   }
