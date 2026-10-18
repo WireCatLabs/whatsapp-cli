@@ -76,7 +76,7 @@ describe("whatsAppAdapter", () => {
     await expect(whatsAppAdapter(engine).me()).rejects.toMatchObject({ code: "rate_limited", message: "slow down" })
   })
 
-  it("hands new, edited and deleted messages to watch, titled from the chat", async () => {
+  it("hands new, edited and deleted messages to watch untitled, for cli-core to title from the store", async () => {
     const { done, events } = await watching((engine) => {
       engine.push({ event: "message", message: incoming() })
       engine.push({ event: "edit", message: incoming({ editedAt: "2026-09-01T10:05:00.000Z" }) })
@@ -84,8 +84,8 @@ describe("whatsAppAdapter", () => {
     })
     await done
     expect(events.map((event) => event.event)).toEqual(["message", "edit", "delete"])
-    expect(events[0]).toMatchObject({ message: { chatTitle: "Book club", text: "synthetic text" } })
-    expect(events[2]).toMatchObject({ chatId: seed.busy, chatTitle: "Book club" })
+    expect(events[0]).toMatchObject({ message: { chatTitle: null, text: "synthetic text" } })
+    expect(events[2]).toMatchObject({ chatId: seed.busy, chatTitle: null })
   })
 
   it.each([

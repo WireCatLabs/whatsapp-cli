@@ -47,14 +47,10 @@ const toPollVote = (vote: WaVote, poll: WaPoll): PollVote | undefined => {
 }
 
 /** A live vote, for a poll the store holds; one for a poll it does not hold is dropped. */
-export const toVoteEvent = async (
-  vote: WaVote,
-  chatTitle: string | null,
-  stored: StoredMessages,
-): Promise<PollVoteEvent | undefined> => {
+export const toVoteEvent = async (vote: WaVote, stored: StoredMessages): Promise<PollVoteEvent | undefined> => {
   const poll = pollIn(await stored.message(vote.chat, vote.message).catch(() => undefined))
   const counted = poll && toPollVote(vote, poll)
-  return counted && { event: "vote", chatId: vote.chat, chatTitle, messageId: vote.message, vote: counted }
+  return counted && { event: "vote", chatId: vote.chat, chatTitle: null, messageId: vote.message, vote: counted }
 }
 
 /** A vote from a history push, counted by the poll it carries. */

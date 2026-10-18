@@ -33,14 +33,16 @@ Not built yet: `messages pin|unpin`, several files in one message, deleting for 
 `chats folders`, no `messages comments`, no second invite link and no partial admin rights, and keeps the address
 book on the phone, so `contacts add|remove|rename|import` are refused. `chats show` answers from the store;
 `chats members list` asks WhatsApp, and with `--offline` shows the stored members. `chats events` answers from the
-store, which holds no joins or leaves yet: its empty list and the `0` joins in `stats chats show` do not mean nobody
-joined; `chats members history` shows who joined or left between member fetches.
+store, which holds no joins or leaves yet: its empty list does not mean nobody joined, and `stats chats show` leaves
+`members` out and says in `missing` that joins and leaves are not recorded yet; `chats members history` shows who
+joined or left between member fetches.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
 strangers; never work round it. `admins add` takes no `--can`: a WhatsApp admin has every right.
-`chats update --disappear-time` takes 24h, 7d, 90d or off, nothing else. A command that connects knows a group by
-its `…@g.us` id, not by its name.
+`chats update --disappear-time` takes 24h, 7d, 90d or off, nothing else. A chat or person named by name is looked up
+in the store first (part of the name is enough; several matches are refused), then in WhatsApp's chat list; a group
+the store does not hold yet needs its `…@g.us` id.
 `contacts lookup` takes one number on stdin, at most one every 10 seconds per profile; never loop it.
 `contacts list`, `contacts show`, `contacts context` and `stats chats show` are marked as reading from WhatsApp: add
 `--offline` to keep them on the store.

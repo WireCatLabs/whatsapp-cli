@@ -168,8 +168,9 @@ wa personal stats chats show 120363000000000001@g.us --offline --since-time 30d 
 Messages, active members, replies, reactions and questions answered, counted from the local store for a period,
 7 days unless `--since-time` says otherwise. A count covers only what the store holds; a stretch before `wa` linked
 is not there, so a number is a minimum, never a proof of silence. `wa` does not record joins and leaves yet, so the
-JSON's `members.joined` and `members.left` read `0` whatever happened; `chats members history` shows who joined or
-left between member fetches.
+JSON leaves `members` out, sets `complete` to `false` and says in `missing` that joins and leaves are not recorded
+for this chat yet; text mode says so on stderr. `chats members history` shows who joined or left between member
+fetches.
 
 ## One group and who is in it
 
@@ -224,7 +225,10 @@ wa personal chats leave 120363000000000001@g.us
   group photo. `wa` does not convert or crop one: export it as a JPEG first. A PNG or WebP is refused by its content,
   whatever its name. The photo is set first: if the title, description or a setting given with it then fails, the
   error says the photo was set. Removing the photo is done on the phone.
-- **Name a group by its id** here: a command that connects knows group names only after it connects.
+- **A group's name works too**, as in every command that names a chat: `wa` looks it up in the local store first,
+  where part of the name is enough, and asks WhatsApp's chat list only for a name the store does not hold. A name
+  that matches several stored chats is refused; name one by its `…@g.us` id. A group the store does not hold yet
+  is found by its `…@g.us` id only: a command that connects learns the joined groups after it looks the name up.
 - `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
 
 With `--offline`, `chats members list` shows the members stored before instead of asking WhatsApp.
