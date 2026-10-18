@@ -9,8 +9,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// pinFor is how long a pin lasts. WhatsApp's apps offer 24 hours, 7 days or 30 days and preselect 7 days; a pin
-// without a duration is not one the apps send.
+// pinFor is how long a pin lasts. WhatsApp's pins last 24 hours, 7 days or 30 days (Baileys lists the three and
+// falls back to 24 hours); wa sends 7 days because cli-core's command has no duration to choose one.
 const pinFor = 7 * 24 * time.Hour
 
 func (e *engine) dispatchPins(req request) (any, bool, error) {

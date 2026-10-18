@@ -71,6 +71,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   revoke` and `tasks reject`, and their MCP tools, now refuse with exit `5`. Under the lock `tasks close` only
   suggests the close.
 
+### Added
+
+- **`messages pin --notify` and `messages unpin`** (cli-core's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is
+  sent as WhatsApp's `PinInChatMessage` and lasts 7 days, which is what `wa` sends (WhatsApp's pins last 24 hours,
+  7 days or 30 days, and cli-core's command has no duration to choose), addressed by the message's key in the local
+  store; a message the store lacks is `not_found`. WhatsApp tells the chat's members about every pin, so
+  `messages pin` without `--notify` is refused with `validation_error` instead of pinning loudly. Engine requests
+  `pin` and `unpin`.
+
 ### Fixed
 
 - **`images embed` runs inside `serve` when `serve` holds the connection** (cli-core 0.337.0, WC-LIFE-11): it
@@ -240,11 +249,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
-- **`messages pin --notify` and `messages unpin`** (cli-core's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is
-  sent as WhatsApp's `PinInChatMessage` for 7 days, the duration WhatsApp's apps preselect, addressed by the
-  message's key in the local store; a message the store lacks is `not_found`. WhatsApp tells the chat's members
-  about every pin, so `messages pin` without `--notify` is refused with `validation_error` instead of pinning
-  loudly. Engine requests `pin` and `unpin`.
 - **`wa <profile> flood clear`** (cli-core's, as in tg and max): forgets the waits WhatsApp asked for and lifts the
   hold on writes. The refusal during a hold already named it; `wa` did not have it.
 - **`session`, `session start`, `session end` and `setup` carry `mcp: false`** in `commands --json` (WC-CMD-21):
