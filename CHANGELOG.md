@@ -139,6 +139,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **One pushed event that `wa` cannot handle no longer stops the ones after it.** `serve` and `watch` handle what
+  WhatsApp pushes one event at a time, in order. A history push or a live message whose handling failed used to stop
+  the queue, so no later history reached the local store until `wa` restarted. Now that event is skipped, a warning
+  on stderr names its kind and error code (never its content), and the next event goes on. A failure that means the
+  engine or the connection is gone still ends the listening, as before.
 - **A file your phone uploaded again stays downloadable.** `wa` keeps the new copy's address in the store, so a later
   `messages download` of it no longer asks the phone again, and `messages forward` sends a file that opens instead of
   the expired one. The same holds for `attachments extract --download`, `messages transcribe --local` and the
