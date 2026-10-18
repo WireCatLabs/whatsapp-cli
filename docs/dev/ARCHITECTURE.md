@@ -165,10 +165,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   out, replaced by another connection, banned, outdated), the engine keeps why (`engine/cmd/wa-engine/events.go`) and
   answers every later request with it, with its reason, instead of connecting again: after "replaced" a reconnect
   would take the login back. A request already on the way that fails as "not connected" answers that reason too
-  (`refusalFor` in `engine/cmd/wa-engine/errors.go`): a relayed
-  command on `serve`'s connection never asks to connect, so it would otherwise read `network_error` and retry. The
-  client rejects a write still waiting when the engine process ends with `outcome_unknown`, a read with
-  `provider_unavailable` (`WRITES` in [`go-engine.ts`](../../src/engine/go-engine.ts)).
+  (`refusalFor` in `engine/cmd/wa-engine/errors.go`): a relayed command on `serve`'s connection never asks to
+  connect, so it would otherwise read `network_error` and retry. The client rejects a write still waiting when the
+  engine process ends with `outcome_unknown`, a read with `provider_unavailable` (`WRITES` in
+  [`go-engine.ts`](../../src/engine/go-engine.ts)).
 - **Holds on writes are cli-core's.** `fromEngine` ([`src/adapter/errors.ts`](../../src/adapter/errors.ts)) gives
   WhatsApp's 429 a `standing: limited` ending 15 minutes on, and a ban a `standing: banned` ending when WhatsApp's
   temporary ban does (the engine passes whatsmeow's `TemporaryBan.Expire` as `until`, protocol 11), or with no
