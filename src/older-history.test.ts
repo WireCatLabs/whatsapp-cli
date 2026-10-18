@@ -372,9 +372,20 @@ describe("store gaps repair --background", () => {
     for (const bound of ["--limit", "--max-gaps", "--repair-time"]) expect(value(bound)).toMatch(/^\d+\w*$/)
   })
 
-  // cli-core 0.336.0 hands the job `--timeout 0`, which the job's own parser refuses, so the job never runs. This
-  // passes once cli-core starts the job with a timeout it accepts; then drop `.fails`.
-  it.fails("the job asks the phone for the gap and closes the engine", async () => {
+  it("the job asks the phone for the gap, within its bounds, and closes the engine", async () => {
+    const { own, job, child } = await backgrounded("bgrepair", 11)
+    const engine = fakeEngine(own, { phone: onPhone })
+    // cli-core 0.336.0 hands the job `--timeout 0`, which the job refuses (the test below); any accepted value will do.
+    const argv = (child?.argv ?? []).map((word, at, all) => (all[at - 1] === "--timeout" ? "1m" : word))
+    const ran = await wa(argv, () => engine, undefined, { env: child?.env ?? {} })
+    expect(ran.code, ran.stderr).toBe(0)
+    expect(engine.olderAsked.map((asked) => asked.anchor.id)).toEqual([oldest?.id, onPhone[9]?.id, onPhone[19]?.id])
+    expect(engine.closed).toBe(true)
+    expect(await jobOf("bgrepair", job)).toMatchObject({ state: "done" })
+  })
+
+  // Passes once cli-core starts the job with a timeout the job accepts; then drop `.fails` and the swap above.
+  it.fails("the job runs from the argv cli-core hands it", async () => {
     const { own, job, child } = await backgrounded("bggaps", 9)
     const engine = fakeEngine(own, { phone: onPhone })
     const ran = await wa(child?.argv ?? [], () => engine, undefined, { env: child?.env ?? {} })
