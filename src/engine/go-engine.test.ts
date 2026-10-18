@@ -120,7 +120,7 @@ describe("startGoEngine", () => {
     const engine = await stub("unlinked")
     expect(engine.self()).toBeNull()
     const codes: LoginCode[] = []
-    await engine.link({ method: "phone", phone: "+7 123" }, (code) => codes.push(code))
+    await engine.link({ method: "phone", phone: "+7 000" }, (code) => codes.push(code))
     expect(codes).toEqual([{ login: "pair", code: "ABCD-EFGH" }])
     expect(engine.self()).toBe("100000000000001@lid")
     await engine.close()
@@ -206,7 +206,7 @@ describe("group wire contracts", () => {
         code: "validation_error",
       })
       await expect(engine.leave(group.chat.jid)).rejects.toMatchObject({ code: "validation_error" })
-      await expect(engine.lookup("+71234567890")).rejects.toMatchObject({ code: "validation_error" })
+      await expect(engine.lookup("+70000000001")).rejects.toMatchObject({ code: "validation_error" })
       await expect(engine.contacts()).rejects.toMatchObject({ code: "validation_error" })
       await expect(engine.createGroup("synthetic", [])).rejects.toMatchObject({ code: "validation_error" })
       await expect(engine.join("synthetic")).rejects.toMatchObject({ code: "validation_error" })

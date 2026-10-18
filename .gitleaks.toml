@@ -39,8 +39,8 @@ description = "Synthetic values used by tests and documentation"
 regexTarget = "match"
 regexes = [
   # Fixtures and examples must use obviously fake values; these are the ones we sanction.
-  '''\+?71234567890''',
-  '''71234567890(?::\d+)?@s\.whatsapp\.net''',
+  '''\+?7000000000\d''',
+  '''7000000000\d(?::\d+)?@s\.whatsapp\.net''',
   '''^10000000000\d{4}(?::\d+)?@lid$''',
 ]
 paths = ['''pnpm-lock\.yaml''']
