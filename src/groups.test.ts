@@ -608,6 +608,14 @@ describe("wa recipients add", () => {
     expect(JSON.parse(list.stdout).items).toEqual([])
   })
 
+  it("takes the id of a group the store does not hold without asking WhatsApp's chat list", async () => {
+    const unstored = "120363000000000099@g.us"
+    const added = await naming("unstored", "recipients", "add", unstored)
+    expect(added.code).toBe(0)
+    expect(added.body).toMatchObject({ id: unstored, added: true })
+    expect(added.listed).toBe(0)
+  })
+
   it("asks WhatsApp's chat list for a name the store does not hold", async () => {
     const newcomer: WaChat = {
       jid: "100000000000098@lid",
