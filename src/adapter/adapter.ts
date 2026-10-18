@@ -43,6 +43,7 @@ import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
+import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
@@ -54,7 +55,8 @@ export type WhatsAppAdapter = MessengerCore &
   Pick<ServerReads, "history"> &
   MarkdownFormatting &
   PollAdapter &
-  GroupAdapter
+  GroupAdapter &
+  PrivacyAdapter
 
 // WhatsApp addresses a message by its sender and by whether it is the account's own, and the engine keeps no
 // messages, so an edit, a deletion, a reaction or a read receipt looks the message up in cli-core's store first.
@@ -216,7 +218,7 @@ export const whatsAppAdapter = (
     }
   }
 
-  const core: Omit<WhatsAppAdapter, keyof GroupAdapter | keyof PollAdapter> = {
+  const core: Omit<WhatsAppAdapter, keyof GroupAdapter | keyof PollAdapter | keyof PrivacyAdapter> = {
     formatMarkdown: async (text) => parseMarkdownSpans(text),
 
     self: () => engine.self(),
@@ -444,5 +446,6 @@ export const whatsAppAdapter = (
       onDisk,
     }),
     ...pollAdapter({ engine, stored, held, keyOf, translated }),
+    ...privacyAdapter({ engine, translated }),
   }
 }

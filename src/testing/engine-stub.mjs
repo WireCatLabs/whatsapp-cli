@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 12, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 13, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -146,6 +146,16 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       process.stdout.write(
         `{"id":${id},"ok":{"jid":"100000000000002@lid","name":"Ann Lee","about":"synthetic about","business":false,` +
           `"verified":false,"contact":true,"photo":null}}\n`,
+      )
+      break
+    case "privacy":
+    case "setPrivacy":
+      if (op === "setPrivacy" && !fields.privacy?.every((change) => change.name && change.value)) {
+        say({ id, error: { code: "validation_error", message: "no privacy setting to change" } })
+        break
+      }
+      process.stdout.write(
+        `{"id":${id},"ok":{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known"}}\n`,
       )
       break
     case "participants":

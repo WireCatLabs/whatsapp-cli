@@ -162,6 +162,36 @@ wa account sessions end [options]
 |---|---|
 | `--others` | every session but this one. |
 
+### `wa account privacy`
+
+who may find, call or add the account
+
+#### `wa account privacy show`
+
+the account's privacy settings; reading changes nothing
+
+```sh
+wa account privacy show
+```
+
+#### `wa account privacy set`
+
+change who may find, call or add the account; the settings not named stay
+
+**Changes something in WhatsApp.**
+
+```sh
+wa account privacy set [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--find-by-phone <who>` | who finds the account by its number: everyone, contacts or nobody. |
+| `--phone-number <who>` | who sees the number: everyone, contacts or nobody. |
+| `--calls <who>` | whose calls ring: everyone, contacts or nobody. |
+| `--chat-invites <who>` | who may add the account to groups and channels: everyone, contacts or nobody. |
+| `--hide-online <on\|off>` | hide online status and last seen. |
+
 ## `wa chats`
 
 the account's chats

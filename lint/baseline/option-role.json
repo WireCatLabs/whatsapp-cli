@@ -1,4 +1,9 @@
 [
+  "account privacy set --calls",
+  "account privacy set --chat-invites",
+  "account privacy set --find-by-phone",
+  "account privacy set --hide-online",
+  "account privacy set --phone-number",
   "chats update --disappear-time",
   "chats update --only-admins-edit-info",
   "chats update --only-admins-send",

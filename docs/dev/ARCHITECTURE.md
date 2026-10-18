@@ -132,6 +132,13 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `private.db.lookup`) and `contacts` (the address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
   maps them onto cli-core's `onlyAdminsSend`, `onlyAdminsEditInfo` and `disappearingSeconds`, beside `onlyAdminsAdd`
   and `joinApproval`.
+- **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
+  [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
+  skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and
+  values, each checked against whatsmeow's, less `groupadd` `none`, before the first `SetPrivacySetting`, then read
+  again; a failure after the first request says the earlier ones changed). Answers stay in
+  WhatsApp's terms (`groupadd`, `last`, `online`, `calladd`); the adapter (`src/adapter/privacy.ts`) maps them onto
+  cli-core's `chatInvites`, `calls` and `hideOnline`, and refuses what WhatsApp has no setting for.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

@@ -157,6 +157,9 @@ func (e *engine) dispatch(req request) (any, error) {
 	if value, handled, err := e.dispatchPolls(req); handled {
 		return value, err
 	}
+	if value, handled, err := e.dispatchPrivacy(req); handled {
+		return value, err
+	}
 	return nil, &failure{"validation_error", "the engine has no such request"}
 }
 

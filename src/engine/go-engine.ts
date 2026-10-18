@@ -22,6 +22,7 @@ import {
 } from "./contract.js"
 import { eventHub } from "./events.js"
 import { goGroups } from "./groups.js"
+import { goPrivacy } from "./privacy.js"
 
 export interface GoEngineOptions {
   /** The profile's `private.db`. */
@@ -265,6 +266,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     listen: (kinds, onEvent) => hub.listen(kinds, onEvent),
     close,
     ...goGroups(request),
+    ...goPrivacy(request),
   }
 }
 

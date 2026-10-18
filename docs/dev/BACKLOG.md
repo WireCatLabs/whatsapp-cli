@@ -69,6 +69,12 @@ Open work, most important first. The plan in flight is
    - **Live checks** (with item 1): a reaction and a revoke in a group addressed by phone numbers (the own LID chat
      works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.
+   - **Live checks of `account privacy`**: `show` and `set` have run only against the fake engine. Open: whether
+     `calladd` `known` is the phone's "silence unknown callers" (Baileys says "mute unknown calls",
+     WhiskeySockets/Baileys#872), and whether WhatsApp really refuses `groupadd` `none` (Baileys#966 says so, so
+     `--chat-invites nobody` is refused up front; whatsmeow still lists it).
+     cli-core's `PrivacySettings` has no read receipts, profile photo, about or last-seen audience, and no
+     "contacts except", so `wa` cannot show or set those; asked of cli-core (upstream queue, S1).
 6. **Distribution — releases from CI.** 0.1.0 of `@wirecat/whatsapp-cli` and the six `@wirecat/whatsapp-engine-*`
    packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). Next, the owner
    sets npm's trusted publishing on each of the seven packages, so later releases go through `release.yml`, which has
