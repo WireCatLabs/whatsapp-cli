@@ -12,6 +12,23 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+func TestTheLockMakesANewProfilesFolderOwnerOnly(t *testing.T) {
+	defer unix.Umask(unix.Umask(0o022))
+	folder := filepath.Join(t.TempDir(), "profiles", "new")
+	lock, refused := holdLock(filepath.Join(folder, "private.db"), "session start")
+	if refused != nil {
+		t.Fatal(refused)
+	}
+	defer lock.Close()
+	info, err := os.Stat(folder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if mode := info.Mode().Perm(); mode != 0o700 {
+		t.Errorf("the profile folder is %o, want 700", mode)
+	}
+}
+
 func TestDeviceKeysAndTheirJournalsAreOwnerOnly(t *testing.T) {
 	defer unix.Umask(unix.Umask(0o022))
 	ownerOnly()

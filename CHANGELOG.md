@@ -146,6 +146,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`session start` and `setup` link a new profile.** They failed before showing a code with "cannot open the lock
+  beside the device store": nothing made the profile's own folder before the engine opened its lock there. The engine
+  now makes it, mode 700, before it takes the lock.
 - **One pushed event that `wa` cannot handle no longer stops the ones after it.** `serve` and `watch` handle what
   WhatsApp pushes one event at a time, in order. A history push or a live message whose handling failed used to stop
   the queue, so no later history reached the local store until `wa` restarted. Now that event is skipped, a warning
