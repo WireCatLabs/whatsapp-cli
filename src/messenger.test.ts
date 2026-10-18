@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
-import { COMMAND_NEEDS, repliesPathFor } from "@wirecat/cli-core/cli"
+import { COMMAND_NEEDS, listRuns, repliesPathFor, runsDirFor } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "./adapter/adapter.js"
@@ -181,6 +181,32 @@ describe("wa doctor report", () => {
       lock: { holder: null, running: false },
     })
     expect(JSON.stringify(report)).not.toContain("synthetic device key marker")
+  })
+})
+
+describe("wa doctor report create --run", () => {
+  it("reports on the run wa failed, with the account's id as a label, without starting the engine", async () => {
+    // An account of its own, whose store holds nothing of the chat whatever ran before.
+    const own = { ...seed, account: { id: "100000000000059@lid", name: "Synthetic owner", username: null } }
+    const failed = await wa(["failing", "messages", "sync", seed.busy, "--no-catch-up", "--json"], {
+      engine: () => fakeEngine(own),
+    })
+    expect(failed.code, failed.stderr).toBe(6)
+    const run = listRuns(runsDirFor(WA, process.env)).find((one) => one.profile === "failing")
+    expect(run).toMatchObject({ command: "messages sync", status: "failed", errorCode: "not_found" })
+
+    const output = join(process.env.TMPDIR ?? "", "wa-run-report.json")
+    const created = await wa(["failing", "doctor", "report", "create", "--run", run?.runId ?? "", "--output", output], {
+      engine: () => {
+        throw new Error("a problem report must never start the engine")
+      },
+    })
+    expect(created.code, created.stderr).toBe(0)
+    const text = readFileSync(output, "utf8")
+    const report = JSON.parse(text)
+    expect(report.run.metadata).toMatchObject({ runId: run?.runId, errorCode: "not_found" })
+    expect(report.doctor.account.remembered).toMatch(/^id:[0-9a-f]{12}$/)
+    for (const id of [seed.busy, own.account.id, seed.person]) expect(text).not.toContain(id)
   })
 })
 
