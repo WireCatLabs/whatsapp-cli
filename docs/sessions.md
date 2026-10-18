@@ -4,6 +4,10 @@ Read this page when you connect `wa` to your WhatsApp account for the first time
 when `wa` says a profile is not linked. At the end you know how to link, how to check who a profile is, how to
 unlink, and where `wa` keeps what it needs to stay linked.
 
+> ⚠️ **`wa` is an unofficial client of your real WhatsApp account.** WhatsApp may ban an account that uses one, and
+> bans accounts that send in bulk or write to strangers. `wa` writes only when a command asks, limits sends and holds
+> every write when WhatsApp says to slow down. Do not send in bulk or to strangers ([limits](limits.md)).
+
 First, the words this page uses:
 
 - **Linked device**: `wa` on this computer, as WhatsApp sees it. You link it from the phone, the way you link
@@ -21,7 +25,8 @@ First, the words this page uses:
 `wa personal setup` guides a first run in five steps: this computer's folders, the link, the account, five chats
 from the local store, and the agent skill (`--agent codex`, `cursor`, `claude`, `gemini`, `all` or `none`). Allow
 about five minutes, most of it the history push. Run it in a terminal. A profile linked before is checked without
-linking again, and nothing is asked. `wa personal session start` is the command for the link alone.
+linking again, and nothing is asked. Before the QR code or the pairing code, setup and `session start` print the
+warning above on stderr, once per link. `wa personal session start` is the command for the link alone.
 
 ## Linking
 

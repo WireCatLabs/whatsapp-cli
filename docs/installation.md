@@ -3,6 +3,10 @@
 Use this page to install `wa` from npm, keep it up to date, or remove it. You need Node.js 22.16 or a newer 22, or
 24 or newer.
 
+> ⚠️ **`wa` is an unofficial client of your real WhatsApp account.** WhatsApp may ban an account that uses one, and
+> bans accounts that send in bulk or write to strangers. `wa` writes only when a command asks, limits sends and holds
+> every write when WhatsApp says to slow down. Do not send in bulk or to strangers ([limits](limits.md)).
+
 ## Install
 
 ```sh
