@@ -1,9 +1,10 @@
-import type { Account, Attachment, Chat, ChatKind, Member, Message } from "@wirecat/cli-core"
+import type { Account, Attachment, Chat, ChatEvent, ChatKind, Member, Message } from "@wirecat/cli-core"
 import * as v from "valibot"
 import {
   type WaAccount,
   type WaAttachment,
   type WaChat,
+  type WaChatEvent,
   type WaContact,
   type WaMediaRef,
   type WaMessage,
@@ -37,6 +38,15 @@ export const toChat = (chat: WaChat): Chat => ({
 export const toAccount = (account: WaAccount): Account => ({ id: account.jid, name: account.name, username: null })
 
 export const toMember = (contact: WaContact): Member => ({ id: contact.jid, name: contact.name, username: null })
+
+export const toChatEvent = ({ id, timestamp, event, by, byName, people, title }: WaChatEvent): ChatEvent => ({
+  messageId: id,
+  timestamp,
+  event,
+  by: { id: by, name: byName },
+  people: people.map(({ jid, name }) => ({ id: jid, name })),
+  ...(title === undefined ? {} : { title }),
+})
 
 // In the domain type's order, so an answer from the store prints byte for byte the same.
 export const toAttachment = ({ kind, url, width, height, title, name, size, mime, duration, ref }: WaAttachment) => {

@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 32
+const protocol = 33
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -120,6 +120,8 @@ type waHistory struct {
 	Votes    []waVote    `json:"votes"`
 	// Chats emitted before in phone form whose person now has a LID; the CLI applies them first.
 	Rekeys []waRekey `json:"rekeys,omitempty"`
+	// Joins, leaves, admin changes and new titles, from the groups' service messages.
+	Events []waChatEvent `json:"events,omitempty"`
 
 	oldest  map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
 	sent    map[string]int    // per chat, how many messages the phone sent, kept or skipped
@@ -174,6 +176,8 @@ func fieldOf(event string) string {
 	switch event {
 	case "history", "vote":
 		return event
+	case "chat_event":
+		return "change"
 	}
 	return "message"
 }

@@ -203,6 +203,16 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   emits neither during a full app-state sync, and `EmitAppStateEventsOnFullSync` stays off (it would write the
   address book one contact at a time and emit every mute, pin and archive), so the stars from before the link come
   on the history push's messages as `starred`, only ever `true`: a push may be older than a star taken off since.
+  Who joined, left, was added, removed, promoted or demoted in a group, and a new title, arrive live as whatsmeow's
+  `events.GroupInfo` and in a history push as the group's service messages (`MessageStubType` `GROUP_PARTICIPANT_*`
+  and `GROUP_CHANGE_SUBJECT`, the people in `MessageStubParameters`). `engine/cmd/wa-engine/chatevents.go` maps both
+  to one `chat_event` shape, sent live as a `chat_event` event and in the push's `events`; the adapter hands them to
+  cli-core as `ChatEventNotice` and `HistoryBatch.events`, and cli-core's store answers `chats events` and the
+  `members` of `stats chats show`. whatsmeow folds joined and added into one list, and left and removed into another,
+  so both paths tell them apart by who made the change: nobody named, or the one person it is about, joined or left.
+  WhatsApp gives a live change no id, so the event's id is a hash of the chat, the time in seconds, the action and the
+  sorted people in `canonical` form: the same change from both paths is stored once. A service message becomes no
+  message.
   `archiveChat`, `unarchiveChat` and `markChatUnread` (`engine/cmd/wa-engine/chatlist.go`; the same newest-message
   key and `timestamp`) send `BuildArchive`, whose archive also unpins the chat, and `BuildMarkChatAsRead` with read
   false. `pinChat` and `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server

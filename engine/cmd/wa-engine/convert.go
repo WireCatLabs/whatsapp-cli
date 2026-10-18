@@ -279,6 +279,10 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 
 		for _, item := range conv.GetMessages() {
 			out.noteOldest(chat.JID, item.GetMessage())
+			if event, ok := c.stubEvent(raw, item.GetMessage(), k); ok {
+				out.Events = append(out.Events, event)
+				continue
+			}
 			evt, err := parse(raw, item.GetMessage())
 			if err != nil {
 				continue

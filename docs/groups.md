@@ -169,9 +169,9 @@ wa personal stats chats show 120363000000000001@g.us --offline --since-time 30d 
 
 Messages, active members, replies, reactions and questions answered, counted from the local store for a period,
 7 days unless `--since-time` says otherwise. A count covers only what the store holds; a stretch before `wa` linked
-is not there, so a number is a minimum, never a proof of silence. `wa` does not record joins and leaves yet, so the
-JSON leaves `members` out, sets `complete` to `false` and says in `missing` that joins and leaves are not recorded
-for this chat yet; text mode says so on stderr. `chats members history` shows who joined or left between member
+is not there, so a number is a minimum, never a proof of silence. `members` counts the joins and leaves the store
+holds, the ones `chats events` lists; for a group the store holds none of yet, the JSON leaves `members` out, sets
+`complete` to `false` and says so in `missing`. `chats members history` shows who joined or left between member
 fetches.
 
 ## One group and who is in it
@@ -238,9 +238,19 @@ wa personal chats leave 120363000000000001@g.us
 
 With `--offline`, `chats members list` shows the members stored before instead of asking WhatsApp.
 `chats members fetch` keeps the member list in the local store. `chats members history` shows what the fetches
-recorded: everyone present at the first fetch, then who joined or left at each later one. `chats events` answers from
-the local store and never connects, but `wa` does not record WhatsApp's joins and leaves there yet, so it shows
-nothing. An empty list does not mean nobody joined.
+recorded: everyone present at the first fetch, then who joined or left at each later one.
+
+```sh
+wa personal chats events 120363000000000001@g.us --offline
+wa personal chats events 120363000000000001@g.us 'time>=30d' --json
+```
+
+`chats events` lists who joined, left, was added, removed, promoted or demoted, and each new title, oldest first,
+for 7 days unless the query names a time (`time>=30d`). It answers from the local store and never connects. `wa`
+keeps there what the phone pushes with a group's history (the service messages it shows in the chat) and, while
+`wa serve` or `wa watch` runs, each change as it happens; a change seen both ways is kept once. Someone who came in
+or went out on their own `join`s or `leave`s; anyone else's doing `add`s or `remove`s them. A change from before the
+link that the phone did not push is not there, so an empty list does not prove nobody joined.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's
 [permissions](permissions.md) allow.
