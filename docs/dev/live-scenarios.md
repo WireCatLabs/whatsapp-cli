@@ -134,6 +134,8 @@ The last lines give the verdict:
 | exit 0 | either | missing | no verdict: `serve` is not saving messages at all |
 | other | any | any | no verdict: the one-shot may never have connected; also when a store read failed |
 
+The owner's run on 2026-10-18 gave the first row; [BACKLOG](BACKLOG.md) item 9 has the result.
+
 `serve` is started in its own session (`setsid`, where there is one), so a Ctrl-C at a later prompt does not stop
 it; the last line says whether `serve` holds the lock. A one-shot `messages send` stays connected longer than
 `doctor --online`, so a found marker leaves the send case open. The marker is sent
