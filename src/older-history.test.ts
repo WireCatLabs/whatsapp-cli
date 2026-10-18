@@ -1,8 +1,10 @@
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import type { StoredMessages } from "@wirecat/cli-core/cli"
 import { openStore } from "@wirecat/cli-core/store"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { afterAll, beforeAll, describe, expect, it } from "vitest"
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "./adapter/adapter.js"
 import type { WaMessage, WhatsAppEngine } from "./engine/contract.js"
 
@@ -27,9 +29,17 @@ const onPhone: WaMessage[] = Array.from({ length: 60 }, (_, n) => ({
   replyTo: null,
 }))
 
-const wa = async (argv: string[], engine: () => WhatsAppEngine, signal?: AbortSignal) => {
+// cli-core's seam for starting a job's process; wa's own Environment does not name it.
+type SpawnJob = (argv: string[], env: NodeJS.ProcessEnv, log: string) => number
+
+const wa = async (
+  argv: string[],
+  engine: () => WhatsAppEngine,
+  signal?: AbortSignal,
+  more: { env?: NodeJS.ProcessEnv; spawnJob?: SpawnJob } = {},
+) => {
   const streams = captureStreams()
-  const code = await run(argv, { streams, tty: false, engine, ...(signal ? { signal } : {}) })
+  const code = await run(argv, { streams, tty: false, engine, ...(signal ? { signal } : {}), ...more })
   return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
 }
 
@@ -233,5 +243,144 @@ describe("store gaps repair", () => {
       requests: 3,
     })
     expect(engine.closed).toBe(true)
+  })
+})
+
+const never = () => {
+  throw new Error("the command that starts a job must not connect")
+}
+
+// The job's process is this test's next run(); the PID is this one's, so the job reads as running until it ends.
+const jobLauncher = () => {
+  const spawned: { argv: string[]; env: NodeJS.ProcessEnv }[] = []
+  const spawnJob: SpawnJob = (argv, env) => {
+    spawned.push({ argv, env })
+    return process.pid
+  }
+  return { spawned, spawnJob }
+}
+
+const jobOf = async (profile: string, id: string) => {
+  const shown = await wa([profile, "store", "jobs", "show", id, "--json"], never)
+  expect(shown.code, shown.stderr).toBe(0)
+  return JSON.parse(shown.stdout).item
+}
+
+// Each on an account of its own: a job still running on a chat refuses a second one there.
+describe("messages sync --background", () => {
+  it("starts the job without connecting; the job asks the phone, stores the page and closes the engine", async () => {
+    const own = await ownAccount("bgsync", 6)
+    const { spawned, spawnJob } = jobLauncher()
+    const argv = ["bgsync", "messages", "sync", seed.busy, "--limit", "10", "--page-size", "5", "--pause", "1ms"]
+    const started = await wa([...argv, "--no-catch-up", "--background", "--json"], never, undefined, { spawnJob })
+    expect(started.code, started.stderr).toBe(0)
+    const { job } = JSON.parse(started.stdout).item
+    expect(spawned).toHaveLength(1)
+    const [child] = spawned
+    expect(child?.env.WA_PROFILE).toBe("bgsync")
+    expect(child?.env.WA_BACKFILL_JOB).toBe(job)
+
+    const engine = fakeEngine(own, { phone: onPhone })
+    const ran = await wa(child?.argv ?? [], () => engine, undefined, { env: child?.env ?? {} })
+    expect(ran.code, ran.stderr).toBe(0)
+    expect(engine.olderAsked.map((asked) => asked.count)).toEqual([5, 5])
+    expect(engine.closed).toBe(true)
+    expect(await lookups(own.account.id).message(seed.busy, onPhone[9]?.id ?? "")).toMatchObject({ id: onPhone[9]?.id })
+    expect(await jobOf("bgsync", job)).toMatchObject({ state: "done", fetched: 10 })
+  })
+
+  it("records the phone's silence as the job's failure, and still closes the engine", async () => {
+    const own = await ownAccount("bgsilent", 7)
+    const { spawned, spawnJob } = jobLauncher()
+    const argv = ["bgsilent", "messages", "sync", seed.busy, "--pause", "1ms", "--no-catch-up", "--background"]
+    const started = await wa([...argv, "--json"], never, undefined, { spawnJob })
+    expect(started.code, started.stderr).toBe(0)
+    const { job } = JSON.parse(started.stdout).item
+
+    const engine = fakeEngine(own)
+    const ran = await wa(spawned[0]?.argv ?? [], () => engine, undefined, { env: spawned[0]?.env ?? {} })
+    expect(ran.code).not.toBe(0)
+    expect(engine.olderAsked).toHaveLength(1)
+    expect(engine.closed).toBe(true)
+    expect(await jobOf("bgsilent", job)).toMatchObject({ state: "failed", error: { code: "timeout" } })
+  })
+
+  // serve offers no relay on Windows. A `--background` typed while serve runs is relayed too, and serve starts the
+  // job from its own environment, which has no test seam; so the job here is started before serve.
+  it.skipIf(process.platform === "win32")(
+    "runs the job on serve's connection once serve holds the device, never on one of its own",
+    async () => {
+      const own = await ownAccount("bgserved", 10)
+      const { spawned, spawnJob } = jobLauncher()
+      const argv = ["bgserved", "messages", "sync", seed.busy, "--limit", "5", "--page-size", "5", "--pause", "1ms"]
+      const started = await wa([...argv, "--no-catch-up", "--background", "--json"], never, undefined, { spawnJob })
+      expect(started.code, started.stderr).toBe(0)
+      const { job } = JSON.parse(started.stdout).item
+
+      const lock = join(process.env.WA_STATE_DIR ?? "", "serve", "bgserved.lock")
+      const controller = new AbortController()
+      const served = fakeEngine(own, { phone: onPhone })
+      const serving = wa(["bgserved", "serve", "--json"], () => served, controller.signal)
+      await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+
+      const ran = await wa(spawned[0]?.argv ?? [], never, undefined, { env: spawned[0]?.env ?? {} })
+      expect(ran.code, ran.stderr).toBe(0)
+      expect(served.olderAsked.map((asked) => asked.count)).toEqual([5])
+      expect(served.closed).toBe(false)
+      expect(await jobOf("bgserved", job)).toMatchObject({ state: "done", fetched: 5 })
+
+      controller.abort()
+      expect((await serving).code).toBe(0)
+      expect(served.closed).toBe(true)
+    },
+  )
+
+  it("refuses --all before starting a job: there is no chat list to walk", async () => {
+    const { spawned, spawnJob } = jobLauncher()
+    const result = await wa(["older", "messages", "sync", "--all", "--background", "--json"], never, undefined, {
+      spawnJob,
+    })
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr).error.message).toContain("name one chat")
+    expect(spawned).toEqual([])
+  })
+})
+
+describe("store gaps repair --background", () => {
+  const backgrounded = async (profile: string, n: number) => {
+    const own = await ownAccount(profile, n)
+    const key = { provider: "whatsapp", account: own.account.id }
+    const at = (message?: { timestamp: string }) => Date.parse(message?.timestamp ?? "")
+    const store = await opened
+    await store.sync.markRange(key, seed.busy, at(oldest), at(inBusy.at(-1)))
+    await store.sync.markRange(key, seed.busy, at(onPhone[30]), at(onPhone[20]))
+    const { spawned, spawnJob } = jobLauncher()
+    const argv = [profile, "store", "gaps", "repair", seed.busy, "--page-size", "10", "--pause", "1ms"]
+    const started = await wa([...argv, "--no-catch-up", "--background", "--json"], never, undefined, { spawnJob })
+    expect(started.code, started.stderr).toBe(0)
+    return { own, job: JSON.parse(started.stdout).item.job, child: spawned[0] }
+  }
+
+  it("plans the gap from the store without connecting, and hands the job its bounds and the plan's fingerprint", async () => {
+    const { job, child } = await backgrounded("bgplan", 8)
+    expect(child?.env).toMatchObject({ WA_PROFILE: "bgplan", WA_BACKFILL_JOB: job })
+    const argv = child?.argv ?? []
+    const value = (option: string) => argv[argv.indexOf(option) + 1]
+    expect(argv.slice(0, 4)).toEqual(["store", "gaps", "repair", seed.busy])
+    expect(value("--page-size")).toBe("10")
+    expect(value("--fingerprint")).toMatch(/\w/)
+    for (const bound of ["--limit", "--max-gaps", "--repair-time"]) expect(value(bound)).toMatch(/^\d+\w*$/)
+  })
+
+  // cli-core 0.336.0 hands the job `--timeout 0`, which the job's own parser refuses, so the job never runs. This
+  // passes once cli-core starts the job with a timeout it accepts; then drop `.fails`.
+  it.fails("the job asks the phone for the gap and closes the engine", async () => {
+    const { own, job, child } = await backgrounded("bggaps", 9)
+    const engine = fakeEngine(own, { phone: onPhone })
+    const ran = await wa(child?.argv ?? [], () => engine, undefined, { env: child?.env ?? {} })
+    expect(ran.code, ran.stderr).toBe(0)
+    expect(engine.olderAsked.map((asked) => asked.anchor.id)).toEqual([oldest?.id, onPhone[9]?.id, onPhone[19]?.id])
+    expect(engine.closed).toBe(true)
+    expect(await jobOf("bggaps", job)).toMatchObject({ state: "done" })
   })
 })
