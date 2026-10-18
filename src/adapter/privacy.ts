@@ -42,9 +42,9 @@ const audienceOf = <A extends string>(values: Values<A>, value: string): A | und
 const hidden = (privacy: WaPrivacy) => privacy.last === "none" && privacy.online === "match_last_seen"
 
 /**
- * What WhatsApp has of cli-core's settings. Who may add or call the account has no "contacts except" in cli-core, so
- * such a value is left out there, never rounded to the nearest. Hidden online means last seen to nobody and online
- * only to those who see last seen.
+ * What WhatsApp has of cli-core's settings. Who may add the account has no "contacts except" in cli-core, so such a
+ * value is left out there, never rounded to the nearest; calls have none in WhatsApp. Hidden online means last seen
+ * to nobody and online only to those who see last seen.
  */
 export const toPrivacy = (privacy: WaPrivacy): PrivacySettings => {
   const settings: PrivacySettings = {
