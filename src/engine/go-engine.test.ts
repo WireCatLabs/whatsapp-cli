@@ -332,3 +332,21 @@ describe("group wire contracts", () => {
     }
   })
 })
+
+describe("channel wire contracts", () => {
+  it("follows, reads and unfollows a channel through the real JSON-lines client", async () => {
+    const engine = await stub("ok")
+    const jid = "120363000000000001@newsletter"
+    try {
+      expect(await engine.channel(jid)).toMatchObject({ chat: { jid, kind: "newsletter" }, role: "guest" })
+      expect(await engine.followChannel("https://whatsapp.com/channel/FAKE0000000000000000AA")).toMatchObject({
+        role: "subscriber",
+      })
+      expect(await engine.channelMessages(jid, 20)).toMatchObject({ messages: [{ serverId: 20 }], more: true })
+      expect(await engine.channelMessages(jid, 20, 1)).toEqual({ messages: [], more: false })
+      await expect(engine.unfollowChannel(jid)).resolves.toBeUndefined()
+    } finally {
+      await engine.close()
+    }
+  })
+})

@@ -215,6 +215,52 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "participants":
       process.stdout.write(`{"id":${id},"ok":{"notAdded":[]}}\n`)
       break
+    case "channel":
+    case "followChannel":
+      say({
+        id,
+        ok: {
+          chat: {
+            jid: "120363000000000001@newsletter",
+            name: "Synthetic news",
+            kind: "newsletter",
+            unread: null,
+            lastMessageAt: null,
+            participants: 42,
+          },
+          description: null,
+          link: "https://whatsapp.com/channel/FAKE0000000000000000AA",
+          role: op === "followChannel" ? "subscriber" : "guest",
+        },
+      })
+      break
+    case "channelMessages":
+      if (fields.before !== undefined) say({ id, ok: { messages: [], more: false } })
+      else
+        say({
+          id,
+          ok: {
+            messages: [
+              {
+                id: "3EB00000000000000C0001",
+                chat: fields.jid,
+                sender: fields.jid,
+                senderName: "Synthetic news",
+                fromMe: false,
+                timestamp: "2026-09-01T00:00:00.000Z",
+                editedAt: null,
+                text: "synthetic post",
+                replyTo: null,
+                serverId: fields.count,
+              },
+            ],
+            more: true,
+          },
+        })
+      break
+    case "unfollowChannel":
+      say({ id, ok: null })
+      break
     case "close":
       say({ id, ok: null })
       process.exit(0)
