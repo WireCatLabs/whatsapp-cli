@@ -349,4 +349,16 @@ describe("channel wire contracts", () => {
       await engine.close()
     }
   })
+
+  it("answers a follow cut by the engine's end as a write that may have gone through", async () => {
+    const engine = await stub("ok")
+    try {
+      await expect(engine.followChannel("crash@stub")).rejects.toMatchObject({
+        code: "outcome_unknown",
+        reason: "engine.stopped-mid-write",
+      })
+    } finally {
+      await engine.close()
+    }
+  })
 })
