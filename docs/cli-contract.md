@@ -69,7 +69,7 @@ output too.
 |---|---|---|
 | `0` | `ok` | success |
 | `1` | `internal_error` | a fault in `wa`; report it |
-| `2` | `validation_error` | bad input: an unknown command or option, no profile named, a chat name that fits several chats, or something WhatsApp cannot do yet |
+| `2` | `validation_error` | bad input: an unknown command or option, no profile named, a chat name that fits several chats, or something WhatsApp cannot do yet; a forward of a channel's file into a chat, where it would not open (`media.channel-file-forward`) |
 | `3` | `configuration_error` | the settings are wrong |
 | `4` | `authentication_error` | the profile is not linked, or WhatsApp logged the device out (`device.logged-out`); link with `session start` |
 | `5` | `permission_error` | the profile's `permissions` refuse it, `WA_PROFILE_LOCK` names another profile, or WhatsApp banned or restricted the account (`account.banned`): every write, reactions and read receipts too, is then held until the ban's end when WhatsApp gives one, otherwise until `flood clear` or a `doctor --online` that connects |

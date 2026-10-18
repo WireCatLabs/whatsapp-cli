@@ -293,7 +293,7 @@ export const whatsAppAdapter = (
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
       if (isChannel(chatId))
         await refuseChannelPost(engine, translated, chatId, {
-          file: upload !== undefined,
+          files: files.length,
           reply: options.replyTo !== undefined,
         })
       // A reply to a message the store lacks still goes, with its id alone.
@@ -336,6 +336,14 @@ export const whatsAppAdapter = (
         )
       if (!attachment && original.text === "")
         throw new CliError("validation_error", "that message has nothing to forward")
+      // A channel's files carry no key, and a chat's recipient cannot open a file without one.
+      if (isChannel(fromChatId) && attachment?.ref && "directPath" in attachment.ref)
+        throw new CliError(
+          "validation_error",
+          "a WhatsApp channel's file is not encrypted, so a forward would arrive as a file that does not open; " +
+            "save it on the phone and send it as a new file",
+          { reason: "media.channel-file-forward" },
+        )
       const copy = await translated(
         engine.forward({ chat: toChatId, id: sendId, text: original.text, attachment: attachment ?? null }),
       )

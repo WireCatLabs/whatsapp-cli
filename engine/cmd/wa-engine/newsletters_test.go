@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -86,6 +88,38 @@ func TestASentPostReadsAsTheChannelsWithItsServerID(t *testing.T) {
 	e.asChannelPost(message, channel, 201)
 	if *message.Sender != channel.String() || *message.SenderName != "Synthetic news" || *message.ServerID != 201 || message.FromMe {
 		t.Fatalf("got %+v", message)
+	}
+}
+
+func TestAChannelFileCarriesNoKeyAndKeepsItsPreview(t *testing.T) {
+	uploaded := whatsmeow.UploadResponse{URL: "https://mmg.example/n/synthetic", DirectPath: "/n/synthetic",
+		Handle: "synthetic-handle", FileSHA256: syntheticSum, FileLength: 19, MediaKey: syntheticKey,
+		FileEncSHA256: syntheticEnc}
+	photo := &staged{media: "image", described: waAttachment{Kind: "photo", Mime: "image/png", Width: 3, Height: 2,
+		thumb: []byte{0xff, 0xd8}}}
+	content, err := channelFile(photo, uploaded, "synthetic caption")
+	if err != nil {
+		t.Fatal(err)
+	}
+	x := content.GetImageMessage()
+	if x.MediaKey != nil || x.FileEncSHA256 != nil || x.GetURL() != uploaded.URL || x.GetDirectPath() != "/n/synthetic" ||
+		!bytes.Equal(x.GetFileSHA256(), syntheticSum) || x.GetFileLength() != 19 || x.GetCaption() != "synthetic caption" ||
+		!bytes.Equal(x.GetJPEGThumbnail(), []byte{0xff, 0xd8}) || x.GetWidth() != 3 {
+		t.Fatalf("got %+v", x)
+	}
+
+	document := &staged{media: "document", described: waAttachment{Kind: "document", Name: "synthetic.pdf",
+		Mime: "application/pdf"}}
+	content, err = channelFile(document, uploaded, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d := content.GetDocumentMessage()
+	if d.MediaKey != nil || d.GetURL() != uploaded.URL || d.GetFileName() != "synthetic.pdf" || d.Caption != nil {
+		t.Fatalf("got %+v", d)
+	}
+	if ref := attachmentsOf(content)[0].Ref; ref == nil || ref.MediaKey != nil || ref.DirectPath != "/n/synthetic" {
+		t.Fatalf("stored %+v", ref)
 	}
 }
 

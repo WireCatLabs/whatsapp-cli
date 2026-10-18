@@ -384,4 +384,20 @@ describe("channel wire contracts", () => {
       await engine.close()
     }
   })
+
+  it("answers a channel file post cut by the engine's end as a write that may have gone through", async () => {
+    const engine = await stub("ok")
+    try {
+      await expect(
+        engine.sendMedia({
+          chat: "120363000000000099@newsletter",
+          text: "crash before the answer",
+          id: "3EB0C2",
+          file: { kind: "photo", path: "/nowhere/synthetic.png", name: "synthetic.png" },
+        }),
+      ).rejects.toMatchObject({ code: "outcome_unknown", reason: "engine.stopped-mid-write" })
+    } finally {
+      await engine.close()
+    }
+  })
 })

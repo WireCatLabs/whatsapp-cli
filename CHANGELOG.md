@@ -282,9 +282,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   made shows `outgoing: false`. See [channels](docs/usage.md#channels).
 - **`wa` posts to a WhatsApp channel you run**: `messages send <channel> <text>` asks WhatsApp for your role in the
   channel first and refuses anyone but its owner and admins with `permission_error` (exit 5) before anything is sent.
-  The channel's followers see the post at once. Text only, and not a reply; a file, a poll, a forward, an edit or a
-  deletion in a channel is refused before anything is sent. A refused post still passes the profile's send
-  permissions first, so under `ask` it asks before it is refused. Not yet checked live.
+  The channel's followers see the post at once. Not a reply; a poll, a forward, an edit or a deletion in a channel is
+  refused before anything is sent. A refused post still passes the profile's send permissions first, so under `ask`
+  it asks before it is refused. Not yet checked live.
+- **`wa` posts a photo, a video, a voice note or a file to a WhatsApp channel you run**: `messages send <channel>
+  --photo/--file/--voice <path>`, the text as the caption. The role is asked first, as for a text post, so a channel
+  you only follow is refused (exit 5) before anything is uploaded. A channel's files are not encrypted: `wa` uploads
+  them as WhatsApp's apps do for channels, and the post carries no file key. One file per post; an album to a channel
+  is refused (exit 2). A forward of a channel's file into a chat is refused too (exit 2,
+  `media.channel-file-forward`), since it would arrive as a file that does not open. Not yet checked live: that needs
+  a channel you own or administer.
 
 ## 0.1.0 — 17.10.2026
 

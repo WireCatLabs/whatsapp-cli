@@ -11,7 +11,7 @@ and listing its members ([groups](groups.md#run-a-group)), the community a group
 number lookup ([people](people.md#ask-whatsapp-about-a-person)), your own name, about line and photo, the account's
 privacy
 ([usage](usage.md#privacy)), older history asked of your phone ([the local
-store](archive.md#older-history-from-your-phone)), following, reading and posting to channels
+store](archive.md#older-history-from-your-phone)), following, reading and posting text and files to channels
 ([channels](usage.md#channels)), and writes while `serve` runs ([one connection per
 device](sessions.md#one-connection-per-device)) are in `wa` already ([using wa](usage.md)).
 What is not: [not in wa yet](usage.md#not-in-wa-yet).
@@ -19,7 +19,7 @@ What is not: [not in wa yet](usage.md#not-in-wa-yet).
 ## Next
 
 - **Removing a group's photo**: `chats update --photo` sets one; taking it away is done on the phone for now.
-- **Files in channels**: sending a photo or a file to a channel you run, and saving one from a post.
+- **Files in channels**: saving one from a post, and an album to a channel you run.
 
 ## Later
 
