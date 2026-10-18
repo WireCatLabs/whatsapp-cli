@@ -177,12 +177,10 @@ Open work, most important first. The plan in flight is
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
    goes.
-11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
-    history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
-    decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup
-    that stores a new mapping (`GetUserInfo`, `IsOnWhatsApp`, `UpdateBlocklist` already do, through `contacts
-    profile`, `lookup` and `block`) turns a person's later chats to the LID form; the engine then re-keys the chat
-    stored before in phone form (item 3).
+11. **The LID lookups: live check.** The engine asks WhatsApp for the LIDs of its phone-form chats in small paced
+    batches (ARCHITECTURE §5), built and tested with a fake clock only. Unverified: that a batched `GetUserInfo` on
+    phone JIDs answers with their LIDs, and that WhatsApp says nothing about five at a time, 20 a run. Check it on the
+    owner's number with one phone-form chat.
 13. **Standards gaps left by the 2026-10-17 audit** (the handbook's areas, where a fix needs design):
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so
@@ -191,7 +189,8 @@ Open work, most important first. The plan in flight is
     neither how long to wait nor whether reads count, and a ban says nothing about the account's standing. The lead's
     default, under the owner's autonomy mandate: after a 429, every write is held 15 minutes and reads go on; after a
     ban, writes are held until the end WhatsApp gives it, or until `flood clear` or a `doctor --online` that connects
-    when it gives none (`src/adapter/errors.ts`). Open: the 15 minutes, and whether reads should pause too.
+    when it gives none (`src/adapter/errors.ts`). A 429 also stops the background LID lookups for a week (ARCHITECTURE
+    §5). Open: the 15 minutes, the week, and whether reads should pause too.
 15. **`serve`'s restarts need cli-core** (found 2026-10-18, ARCHITECTURE §4). A unit restarts `serve` by exit code
     only (cli-core's `noRestartOn`), and `device.replaced`, `client.outdated` and a crashed engine all exit 12. So
     after another connection takes the login over, the unit starts `serve` again 30 s later and takes it back, and

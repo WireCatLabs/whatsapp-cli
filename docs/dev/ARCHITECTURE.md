@@ -293,6 +293,22 @@ never senders or contacts. Once re-keyed, a chat is never emitted in phone form 
 history push, a send's result or the chat directory: the engine takes its LID from the table wherever whatsmeow's
 store does not answer, and keeps the row after the 30 days of repeats.
 
+For a chat still in phone form the engine asks WhatsApp itself, with the request `contacts profile` makes
+(`GetUserInfo`), whose answer whatsmeow stores with the LID. Many such requests in a row are what a scraper sends,
+so they are bounded: only for chats already in the account (the table above), five people per request, one request
+per 10 seconds (the number lookup's gap, with a pace of their own so the owner's `lookup` is never refused for
+them), at most 20 people per run, each person at most once a week (`wa_lid_asks` in `private.db`, written before
+the request goes out; a request that cannot be recorded is not sent), and a request that fails ends the run. The
+10 seconds hold within one process; after a restart the minute's wait below keeps them apart. A run starts a minute
+after the last history push, so the pushes after connecting have settled and a one-shot command, which ends sooner,
+never makes one; the on-demand pushes that answer `messages sync` start none, and the run that links the device makes
+none. Each LID found goes out as a re-key.
+
+WhatsApp's 429, on a lookup or on any other request, stops the lookups for a week, across restarts (a row of
+`wa_lid_asks`). A 429 a lookup met has no command to refuse, so the engine refuses the next write with
+`account.rate-limited`, and the CLI holds the profile's writes from there as after any 429 (WC-PERM-18). `serve` goes
+on: ending it would make its unit start it again, and a new run with it.
+
 ## 6. One connection per linked device
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot
@@ -346,8 +362,9 @@ One device per `private.db`: the engine opens the one device in the file, refuse
 an empty one as not linked. The engine runs with umask 077, so SQLite's `-wal` and `-shm` beside it are 0600 too.
 Only the engine writes `private.db`; it holds keys and device state, never messages. Beside whatsmeow's tables the
 engine keeps one of its own, `wa_phone_chats`: the one-to-one chats it emitted in phone form and, once re-keyed, their
-LID (§5). whatsmeow's LID map already holds those numbers in the same file. `session end` deletes the file; a logout
-from WhatsApp's side leaves it, so the engine empties its table when it opens a device not yet linked.
+LID (§5); and `wa_lid_asks`, when the engine last asked WhatsApp for each one's LID. whatsmeow's LID map already holds
+those numbers in the same file. `session end` deletes the file; a logout from WhatsApp's side leaves it, so the engine
+empties both tables when it opens a device not yet linked.
 
 ## 8. On the wire
 

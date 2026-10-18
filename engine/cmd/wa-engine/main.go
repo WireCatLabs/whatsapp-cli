@@ -63,6 +63,15 @@ func main() {
 		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep the phone-form chats in the device store; they will not be re-keyed")
 	}
 	e.phones = phones
+	// Right after pairing the phone pushes the whole history; no lookup goes out in that run.
+	if phones != nil {
+		asks, err := openLidAsker(e.ctx, db, device.ID == nil, e.askLIDs)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "wa-engine: cannot keep the LID lookups in the device store; none will be made")
+		} else if !*linking {
+			e.asks = asks
+		}
+	}
 	out.hello(hello{Protocol: protocol, Engine: "whatsmeow", Version: version, Self: e.self()})
 	e.announce()
 	go func() {
