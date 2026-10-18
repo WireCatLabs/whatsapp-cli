@@ -1,11 +1,1 @@
-[
-  "contacts alias rm",
-  "contacts alias set",
-  "contacts notes add",
-  "contacts notes edit",
-  "contacts notes list",
-  "contacts notes remove",
-  "contacts notes show",
-  "conversations consents list",
-  "conversations consents revoke"
-]
+[]
