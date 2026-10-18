@@ -237,3 +237,22 @@ func TestWebPSizeReadsEachKindOfFirstChunk(t *testing.T) {
 		}
 	}
 }
+
+func TestWebPSizeNeverReadsPastATruncatedOrHostileHead(t *testing.T) {
+	lossless := []byte{0x2f, 0xff, 0xff, 0xff, 0xff}
+	lossy := []byte{0, 0, 0, 0x9d, 0x01, 0x2a, 0xff, 0xff, 0xff, 0xff}
+	for _, whole := range [][]byte{
+		syntheticWebP("VP8X", bytes.Repeat([]byte{0xff}, 10)),
+		syntheticWebP("VP8L", lossless),
+		syntheticWebP("VP8 ", lossy),
+	} {
+		for n := range len(whole) + 1 {
+			webpSize(whole[:n])
+			corrupt := bytes.Clone(whole[:n])
+			for i := 12; i < len(corrupt); i++ {
+				corrupt[i] ^= 0xff
+				webpSize(corrupt)
+			}
+		}
+	}
+}
