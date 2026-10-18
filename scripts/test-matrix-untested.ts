@@ -9,33 +9,30 @@ export interface Untested {
   reason: string
 }
 
-const SHARED = [
-  "inbox",
-  "review",
-  "watch",
-  "serve",
-  "server *",
-  "store *",
-  "conversations *",
-  "attachments *",
-  "tags *",
-  "mentions *",
-  "images *",
-  "models *",
-  "stats *",
-  "tasks *",
-  "search *",
-  "searches *",
-  "recipients *",
-  "sends *",
-  "runs *",
-  "config *",
-  "commands",
-  "commands *",
-  "complete",
-  "mcp *",
-  "skill *",
-]
+/** A shared cli-core group mounted unchanged, and the cli-core tests that drive it over the store or the system. */
+const SHARED: Record<string, string> = {
+  "server *": "src/cli/messenger/server.test.ts",
+  "store *": "src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts",
+  "conversations *": "src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts",
+  "attachments *": "src/cli/messenger/attachments.test.ts",
+  "tags *": "src/cli/messenger/tags.test.ts",
+  "mentions *": "src/cli/messenger/mentions.test.ts",
+  "images *": "src/cli/messenger/images-command.test.ts",
+  "models *": "src/cli/messenger/models-command.test.ts",
+  "stats *": "src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts",
+  "tasks *": "src/cli/messenger/tasks.test.ts",
+  "search *": "src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts",
+  "searches *": "src/cli/messenger/searches.test.ts",
+  "recipients *": "src/cli/messenger/messenger.test.ts («recipients»)",
+  "sends *": "src/cli/messenger/messenger.test.ts and src/sends/journal.test.ts",
+  "runs *": "src/cli/runs/command.test.ts and search.test.ts",
+  "config *": "src/cli/config-command.test.ts",
+  commands: "src/cli/commands-command.test.ts",
+  "commands *": "src/cli/commands-command.test.ts",
+  complete: "src/cli/messenger/complete-command.test.ts",
+  "mcp *": "src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts",
+  "skill *": "src/cli/skill-command.test.ts",
+}
 
 /** Answered from the local store by cli-core's shared command; wa adds nothing to it. */
 const cliCore = (tests: string, rows: string[][]): Untested[] =>
@@ -46,12 +43,10 @@ const cliCore = (tests: string, rows: string[][]): Untested[] =>
   }))
 
 export const UNTESTED: Untested[] = [
-  // A shared cli-core command mounted unchanged: cli-core's suite drives every option over its fake adapter. wa's own
-  // tests replace these entries one group at a time, as each gets an engine path (docs/dev/BACKLOG.md).
-  ...SHARED.map((command) => ({
+  // wa's own tests replace these one command at a time, as each is found to reach the engine.
+  ...Object.entries(SHARED).map(([command, tests]) => ({
     command,
-    reason:
-      "shared cli-core command mounted unchanged; tested in cli-core (src/cli/messenger/*.test.ts) over its fake adapter",
+    reason: `shared cli-core command mounted unchanged, over the store; tested in cli-core (${tests})`,
   })),
   // The messages, chats, contacts, account and doctor groups are listed command by command, so a new subcommand shows
   // up as missing instead of being waived unseen.
@@ -84,19 +79,6 @@ export const UNTESTED: Untested[] = [
     ["chats documents list", "--limit"],
     ["chats documents list", "--page"],
   ]),
-  ...cliCore(
-    "src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which " +
-      "src/groups.test.ts drives through `chats members list`",
-    [
-      ["chats members history"],
-      ["chats members fetch"],
-      ["chats members fetch", "--track"],
-      ["chats members fetch", "--max-pages"],
-      ["chats members audit"],
-      ["chats members audit", "--max-pages"],
-      ["chats members audit", "--deep"],
-    ],
-  ),
   ...cliCore("src/cli/messenger/messenger.test.ts", [
     ["chats tracking list"],
     ["chats tracking show"],
@@ -122,8 +104,6 @@ export const UNTESTED: Untested[] = [
     ["contacts context", "--limit"],
     ["contacts context", "--since-time"],
     ["contacts context", "--chat"],
-    ["contacts check"],
-    ["contacts check", "--no-registries"],
     ["contacts link"],
     ["contacts unlink"],
   ]),
@@ -165,23 +145,12 @@ export const UNTESTED: Untested[] = [
     ["messages links"],
   ]),
   ...cliCore("src/services/messages-link.test.ts", [["messages link"]]),
-  ...cliCore("src/cli/messenger/doctor-command.test.ts", [
-    ["doctor report"],
-    ["doctor report create"],
-    ["doctor report create", "--run"],
-    ["doctor report create", "--output"],
-  ]),
+  ...cliCore("src/cli/messenger/doctor-command.test.ts", [["doctor report create", "--run"]]),
   {
     command: "config show",
     option: "--bot",
     reason:
       "a shared cli-core option; src/update.test.ts runs `config show` only to see the update notice after a command",
-  },
-  {
-    command: "",
-    option: "--dry-run",
-    reason:
-      "a dry run ends before the preAction hook that logs argv; src/program.test.ts checks a dry-run send starts no engine",
   },
   ...["--limit", "--cursor", "--transcribe", "--model"].map((option) => ({
     command: "messages list",
@@ -190,13 +159,6 @@ export const UNTESTED: Untested[] = [
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); " +
       "src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine",
   })),
-  ...["--all", "--pause", "--extract"].map((option) => ({
-    command: "messages download",
-    option,
-    reason:
-      "cli-core's shared command walks the chat and extracts text itself, tested in cli-core " +
-      "(src/services/file-download.test.ts); src/media.test.ts drives the one-message download that reaches the engine",
-  })),
   ...["--local", "--model"].map((option) => ({
     command: "messages transcribe",
     option,
@@ -204,53 +166,56 @@ export const UNTESTED: Untested[] = [
       "needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, " +
       "and cli-core's src/speech tests drive the local model",
   })),
-  ...[
-    "--page-size",
-    "--since-time",
-    "--last",
-    "--catch-up",
-    "--catch-up-chunks",
-    "--catch-up-messages",
-    "--catch-up-time",
-    "--background",
-    "--dry-run",
-  ].map((option) => ({
+  ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
     command: "messages sync",
     option,
     reason:
-      "cli-core's paging and stopping rules, tested in cli-core (src/services/archive.test.ts); wa's sync through " +
-      "run() and its older-history paging are tested in src/older-history.test.ts",
+      "local search preparation after the sync, over the store; tested in cli-core " +
+      "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself",
   })),
+  {
+    command: "messages sync",
+    option: "--background",
+    reason:
+      "cli-core runs the sync as a store job, tested in cli-core (src/cli/messenger/backfill.test.ts); the job's " +
+      "sync reaches wa as src/older-history.test.ts drives it",
+  },
   {
     command: "messages forward",
     option: "--operation-id",
     reason: "a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/guard.test.ts)",
   },
-  {
-    command: "messages send",
-    option: "--allow-any-file",
-    reason: "cli-core's file check, tested in cli-core (src/sends/upload.test.ts); wa receives the file it allowed",
-  },
-  {
-    command: "contacts profile",
-    option: "--show-phone",
+  ...["--new", "--limit", "--kind", "--transcribe", "--model"].map((option) => ({
+    command: "inbox",
+    option,
     reason:
-      "wa's profile never carries a phone number (the engine leaves it out), so there is nothing to unmask; " +
-      "cli-core tests the masking",
-  },
-  ...["--kind", "--all", "--transcribe", "--model", "--new", "--mark-read", "--no-mark-read"].map((option) => ({
+      "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in " +
+      "src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives " +
+      "--mark-read, the option that reaches the engine",
+  })),
+  ...["--kind", "--transcribe", "--model", "--new"].map((option) => ({
     command: "review",
     option,
     reason:
-      "a store read of cli-core's shared command, tested in cli-core; src/groups.test.ts drives only --unanswered, " +
-      "the one option that could reach the engine (for group admins)",
+      "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); " +
+      "src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach " +
+      "the engine",
+  })),
+
+  ...["--from-dir", "--cursor", "--limit", "--ocr", "--concurrency"].map((option) => ({
+    command: "attachments extract",
+    option,
+    reason:
+      "reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); " +
+      "src/media.test.ts drives --download, the option that reaches the engine",
   })),
   ...["--permission", "--http", "--port", "--public-url", "--revoke"].map((option) => ({
     command: "mcp",
     option,
     reason:
-      "cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command*.test.ts); " +
-      "src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused",
+      "cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; " +
+      "--revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and " +
+      "stdout only to see wa's delete refused",
   })),
   ...["--defaults", "--personal", "--bot"].map((option) => ({
     command: "config set",
@@ -259,24 +224,23 @@ export const UNTESTED: Untested[] = [
       "cli-core's shared config command, tested in cli-core; src/groups.test.ts uses `config set` only to deny a " +
       "permission",
   })),
-  ...[
-    "--verbose",
-    "--quiet",
-    "--trace",
-    "--debug",
-    "--timeout",
-    "--no-input",
-    "--max-input-bytes",
-    "--max-output-bytes",
-    "--brief",
-    "--full",
-    "--yes",
-    "--record",
-    "--no-record",
-  ].map((option) => ({
+  ...(
+    [
+      ["--verbose", "src/cli/messenger/messenger.test.ts (-v)"],
+      ["--quiet", "src/cli/program.test.ts"],
+      ["--trace", "src/cli/messenger/messenger.test.ts"],
+      ["--debug", "src/errors/reasons.test.ts"],
+      ["--max-input-bytes", "no test of its own yet"],
+      ["--max-output-bytes", "src/cli/agent-contract.test.ts"],
+      ["--brief", "src/output-detail.test.ts"],
+      ["--full", "src/output-detail.test.ts"],
+      ["--yes", "src/cli/messenger/admin-commands.test.ts"],
+      ["--record", "src/cli/messenger/messenger.test.ts"],
+      ["--no-record", "src/cli/json-fields.test.ts"],
+    ] as const
+  ).map(([option, tests]) => ({
     command: "",
     option,
-    reason:
-      "a global option of cli-core's shared program, tested in cli-core (src/cli/*.test.ts); wa adds nothing to it",
+    reason: `a global option of cli-core's shared program, which wa adds nothing to; in cli-core: ${tests}`,
   })),
 ]

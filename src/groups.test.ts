@@ -101,6 +101,26 @@ describe("wa chats members", () => {
     const all = await acting("chats", "members", "list", seed.busy, "--all")
     expect(ids(all.body)).toEqual(everyone)
   })
+
+  it("fetches a group's members from WhatsApp into the store, where members history shows them join", async () => {
+    const everyone = (seed.members[seed.busy] ?? []).map((member) => member.id)
+    const fetched = await acting("chats", "members", "fetch", seed.busy, "--track", "--max-pages", "1")
+    expect(fetched.code).toBe(0)
+    expect(fetched.body).toMatchObject({ participants: everyone.length, complete: true, tracked: true })
+    expect(fetched.body.joined).toEqual(everyone)
+    expect(fetched.closed).toBe(true)
+    const history = await acting("chats", "members", "history", seed.busy)
+    expect(
+      history.body.items.flatMap((event: { people: { id: string }[] }) => event.people.map((one) => one.id)),
+    ).toEqual(everyone)
+  })
+
+  it("audits a group's members, asking for a sync while the store lacks the chat's start", async () => {
+    const result = await acting("chats", "members", "audit", seed.busy, "--deep", "1", "--max-pages", "1")
+    expect(result.code).toBe(0)
+    expect(result.closed).toBe(true)
+    expect(JSON.parse(result.stdout).next).toMatchObject([{ step: "messages.sync", args: { chat: seed.busy } }])
+  })
 })
 
 describe("wa chats admins", () => {
@@ -247,6 +267,25 @@ describe("wa contacts", () => {
     const result = await acting("contacts", "profile", seed.person)
     expect(result.code).toBe(0)
     expect(result.body).toMatchObject({ id: seed.person, has_photo: true })
+  })
+
+  it("has no phone number in a profile, even with --show-phone", async () => {
+    const result = await acting("contacts", "profile", seed.person, "--show-phone")
+    expect(result.code).toBe(0)
+    expect(result.body).toMatchObject({ id: seed.person })
+    expect(result.body.phone ?? null).toBeNull()
+  })
+
+  it("checks a person by their WhatsApp profile; Telegram's ban lists answer unknown", async () => {
+    const checked = await acting("contacts", "check", seed.person)
+    expect(checked.code).toBe(0)
+    expect(checked.body.reasons.map((one: { reason: string }) => one.reason)).toEqual(["no_username", "no_bio"])
+    expect(checked.body.registries).toMatchObject([
+      { name: "cas", answer: "unknown" },
+      { name: "lols", answer: "unknown" },
+    ])
+    const unasked = await acting("contacts", "check", seed.person, "--no-registries")
+    expect(unasked.body.registries).toEqual([])
   })
 
   it("blocks and unblocks", async () => {

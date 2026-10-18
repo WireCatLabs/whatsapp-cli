@@ -160,6 +160,30 @@ describe("wa doctor", () => {
   })
 })
 
+describe("wa doctor report", () => {
+  it("writes wa's own block into a problem report, never the device keys, without starting the engine", async () => {
+    const store = privateStore("reported")
+    mkdirSync(dirname(store), { recursive: true, mode: 0o700 })
+    writeFileSync(store, "synthetic device key marker", { mode: 0o600 })
+    const neverStarted = () => {
+      throw new Error("a problem report must never start the engine")
+    }
+    const preview = await wa(["reported", "doctor", "report", "--json"], { engine: neverStarted })
+    expect(preview.code).toBe(0)
+    const output = join(process.env.TMPDIR ?? "", "wa-report.json")
+    const created = await wa(["reported", "doctor", "report", "create", "--output", output, "--json"], {
+      engine: neverStarted,
+    })
+    expect(created.code).toBe(0)
+    const report = JSON.parse(readFileSync(output, "utf8"))
+    expect(report.doctor.whatsapp).toMatchObject({
+      device: { path: store, exists: true, files: process.platform === "win32" ? { checked: false } : { ok: true } },
+      lock: { holder: null, running: false },
+    })
+    expect(JSON.stringify(report)).not.toContain("synthetic device key marker")
+  })
+})
+
 describe("what WhatsApp lacks", () => {
   const needed = [...new Set(Object.values(COMMAND_NEEDS).map(([method]) => method))]
 
