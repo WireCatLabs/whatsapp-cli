@@ -155,7 +155,8 @@ createInterface({ input: process.stdin }).on("line", (line) => {
         break
       }
       process.stdout.write(
-        `{"id":${id},"ok":{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known"}}\n`,
+        `{"id":${id},"ok":{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known",` +
+          `"profile":"contact_blacklist","status":"","readreceipts":"none"}}\n`,
       )
       break
     case "participants":

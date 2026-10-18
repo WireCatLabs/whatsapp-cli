@@ -92,16 +92,19 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
-- **`wa <profile> account privacy show` and `account privacy set`** (cli-core's, as in max): who may add the account
-  to groups (`--chat-invites`), whose calls ring (`--calls`) and whether online and last seen are hidden
-  (`--hide-online`). `show` asks WhatsApp each time. `set` changes only the settings named and answers them all; it
-  is a write under `permissions.account.privacy.set`. WhatsApp has no setting for who finds the account by its
-  number or who sees the number, so `--find-by-phone` and `--phone-number` are refused, and so are
-  `--chat-invites nobody` (WhatsApp is reported to refuse it) and `--calls nobody`. `--calls contacts` sends the value
-  meant as the phone's "silence unknown callers" (not yet checked on a real account). A setting kept with exceptions
-  ("my contacts except…") is left out of `show`. `--hide-online off` shows last seen to contacts. `set` sends one
-  request per setting: if WhatsApp fails one, those sent before it stay changed, and the error says so. Engine protocol 13, ops `privacy` and
-  `setPrivacy`.
+- **`wa <profile> account privacy show` and `account privacy set`** (cli-core 0.336.0's, as in max): who sees last
+  seen (`--last-seen`), the profile photo (`--profile-photo`) and the about text (`--about-text`), whether online and
+  last seen are hidden (`--hide-online`), whether read receipts go (`--read-receipts`; off also hides others' receipts
+  from the owner, as on the phone), who may add the account to groups (`--chat-invites`) and whose calls ring
+  (`--calls`). `show` asks WhatsApp each time, and reports a setting kept on the phone as "my contacts except…" as
+  `contacts_except`, which `set` refuses; for groups, cli-core has no such value, so it is left out. `set` changes
+  only the settings named and answers them all; it is a write under `permissions.account.privacy.set`. WhatsApp has
+  no setting for who finds the account by its number or who sees the number, so `--find-by-phone` and
+  `--phone-number` are not offered. Refused before anything is sent: `--chat-invites nobody` (WhatsApp is reported
+  to refuse it), `--calls nobody`, and `--hide-online` with `--last-seen`, which both set last seen. `--calls
+  contacts` sends the value meant as the phone's "silence unknown callers" (not yet checked on a real account).
+  `--hide-online off` shows last seen to contacts. `set` sends one request per setting: if WhatsApp fails one, those
+  sent before it stay changed, and the error says so. Engine protocol 14, ops `privacy` and `setPrivacy`.
 - **`wa <profile> chats update <group> --photo <file>` sets the group's photo** (cli-core's `groupPhoto`; engine
   protocol 12, op `setGroupPhoto`). WhatsApp takes only a square JPEG of 190 to 720 pixels a side, and `wa` does not
   convert one: anything else is refused with `validation_error` before WhatsApp is asked, a PNG or WebP by its bytes

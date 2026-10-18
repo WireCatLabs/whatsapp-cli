@@ -73,8 +73,10 @@ Open work, most important first. The plan in flight is
      `calladd` `known` is the phone's "silence unknown callers" (Baileys says "mute unknown calls",
      WhiskeySockets/Baileys#872), and whether WhatsApp really refuses `groupadd` `none` (Baileys#966 says so, so
      `--chat-invites nobody` is refused up front; whatsmeow still lists it).
-     cli-core's `PrivacySettings` has no read receipts, profile photo, about or last-seen audience, and no
-     "contacts except", so `wa` cannot show or set those; asked of cli-core (upstream queue, S1).
+     Also open: that `status` is the about text's audience and `profile` the photo's, that `readreceipts` `none`
+     also hides others' receipts from the owner, and that `chats mark-read` with receipts off clears the phone's
+     unread count (whatsmeow then sends `read-self`, `receipt.go`). cli-core 0.336 has no "contacts except" for
+     `chatInvites`, so such a groups setting is left out of `show`; asked of cli-core (upstream queue, S1).
 6. **Distribution — releases from CI.** 0.1.0 of `@wirecat/whatsapp-cli` and the six `@wirecat/whatsapp-engine-*`
    packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). Next, the owner
    sets npm's trusted publishing on each of the seven packages, so later releases go through `release.yml`, which has

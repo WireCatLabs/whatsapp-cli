@@ -4,14 +4,19 @@ import type { EngineRequest } from "./groups.js"
 /**
  * The account's privacy in WhatsApp's own names and values (whatsmeow's `types.PrivacySettings`): `groupadd` who may
  * add the account to groups, `last` who sees last seen, `online` who sees it online (`match_last_seen`: those who see
- * last seen), `calladd` whose calls ring (`known`: unknown callers are silenced). `""` is a setting WhatsApp did not
- * send.
+ * last seen), `calladd` whose calls ring (`known`: unknown callers are silenced), `profile` who sees the profile photo,
+ * `status` who sees the about text, `readreceipts` whether read receipts go (`all`) or not (`none`). An audience is
+ * `all`, `contacts`, `contact_blacklist` (contacts but those the phone excepts) or `none`. `""` is a setting WhatsApp
+ * did not send.
  */
 export const waPrivacy = v.strictObject({
   groupadd: v.string(),
   last: v.string(),
   online: v.string(),
   calladd: v.string(),
+  profile: v.string(),
+  status: v.string(),
+  readreceipts: v.string(),
 })
 
 export type WaPrivacy = v.InferOutput<typeof waPrivacy>

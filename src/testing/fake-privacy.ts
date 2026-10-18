@@ -7,8 +7,16 @@ export interface FakePrivacy extends PrivacyEngine {
   privacyChanges: WaPrivacyChange[]
 }
 
-/** Where a test starts unless it hands in other settings: everyone may add, see and call the account. */
-export const DEFAULT_PRIVACY: WaPrivacy = { groupadd: "all", last: "all", online: "all", calladd: "all" }
+/** Where a test starts unless it hands in other settings: everyone may add, see and call the account; receipts go. */
+export const DEFAULT_PRIVACY: WaPrivacy = {
+  groupadd: "all",
+  last: "all",
+  online: "all",
+  calladd: "all",
+  profile: "all",
+  status: "all",
+  readreceipts: "all",
+}
 
 /** The engine's privacy requests in memory, each answer checked against the contract as the Go engine's is. */
 export const fakePrivacy = (start: WaPrivacy = DEFAULT_PRIVACY): FakePrivacy => {

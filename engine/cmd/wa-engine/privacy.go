@@ -13,22 +13,29 @@ type waPrivacyChange struct {
 
 // waPrivacy is the account's privacy in WhatsApp's own names and values; "" is a setting WhatsApp did not send.
 type waPrivacy struct {
-	GroupAdd string `json:"groupadd"`
-	LastSeen string `json:"last"`
-	Online   string `json:"online"`
-	CallAdd  string `json:"calladd"`
+	GroupAdd     string `json:"groupadd"`
+	LastSeen     string `json:"last"`
+	Online       string `json:"online"`
+	CallAdd      string `json:"calladd"`
+	Profile      string `json:"profile"`
+	Status       string `json:"status"`
+	ReadReceipts string `json:"readreceipts"`
 }
 
-// privacyValues are the settings wa changes and the values whatsmeow documents for each (types.PrivacySettings),
-// less groupadd none: whatsmeow lists it, but Baileys dropped it as refused by WhatsApp (WhiskeySockets/Baileys#966).
+// privacyValues are the settings wa changes and the values it may send for each: whatsmeow's (types.PrivacySettings)
+// less contact_blacklist, which needs an exception list wa does not send, and less groupadd none, which whatsmeow
+// lists but Baileys dropped as refused by WhatsApp (WhiskeySockets/Baileys#966).
 var privacyValues = map[types.PrivacySettingType][]types.PrivacySetting{
-	types.PrivacySettingTypeGroupAdd: {types.PrivacySettingAll, types.PrivacySettingContacts,
-		types.PrivacySettingContactBlacklist},
-	types.PrivacySettingTypeLastSeen: {types.PrivacySettingAll, types.PrivacySettingContacts,
-		types.PrivacySettingContactBlacklist, types.PrivacySettingNone},
-	types.PrivacySettingTypeOnline:  {types.PrivacySettingAll, types.PrivacySettingMatchLastSeen},
-	types.PrivacySettingTypeCallAdd: {types.PrivacySettingAll, types.PrivacySettingKnown},
+	types.PrivacySettingTypeGroupAdd:     {types.PrivacySettingAll, types.PrivacySettingContacts},
+	types.PrivacySettingTypeLastSeen:     audiences,
+	types.PrivacySettingTypeOnline:       {types.PrivacySettingAll, types.PrivacySettingMatchLastSeen},
+	types.PrivacySettingTypeCallAdd:      {types.PrivacySettingAll, types.PrivacySettingKnown},
+	types.PrivacySettingTypeProfile:      audiences,
+	types.PrivacySettingTypeStatus:       audiences,
+	types.PrivacySettingTypeReadReceipts: {types.PrivacySettingAll, types.PrivacySettingNone},
 }
+
+var audiences = []types.PrivacySetting{types.PrivacySettingAll, types.PrivacySettingContacts, types.PrivacySettingNone}
 
 func (e *engine) dispatchPrivacy(req request) (any, bool, error) {
 	switch req.Op {
@@ -109,9 +116,12 @@ func hasValue(values []types.PrivacySetting, value types.PrivacySetting) bool {
 
 func privacyOf(settings types.PrivacySettings) waPrivacy {
 	return waPrivacy{
-		GroupAdd: string(settings.GroupAdd),
-		LastSeen: string(settings.LastSeen),
-		Online:   string(settings.Online),
-		CallAdd:  string(settings.CallAdd),
+		GroupAdd:     string(settings.GroupAdd),
+		LastSeen:     string(settings.LastSeen),
+		Online:       string(settings.Online),
+		CallAdd:      string(settings.CallAdd),
+		Profile:      string(settings.Profile),
+		Status:       string(settings.Status),
+		ReadReceipts: string(settings.ReadReceipts),
 	}
 }

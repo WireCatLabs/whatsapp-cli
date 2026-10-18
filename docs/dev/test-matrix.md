@@ -31,11 +31,13 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `account sessions end` | `--others` | ✅ |  |
 | `account privacy show` |  | ✅ |  |
 | `account privacy set` |  | ✅ |  |
-| `account privacy set` | `--find-by-phone` | ✅ |  |
-| `account privacy set` | `--phone-number` | ✅ |  |
-| `account privacy set` | `--calls` | ✅ |  |
-| `account privacy set` | `--chat-invites` | ✅ |  |
+| `account privacy set` | `--last-seen` | ✅ |  |
 | `account privacy set` | `--hide-online` | ✅ |  |
+| `account privacy set` | `--profile-photo` | ✅ |  |
+| `account privacy set` | `--about-text` | ✅ |  |
+| `account privacy set` | `--read-receipts` | ✅ |  |
+| `account privacy set` | `--chat-invites` | ✅ |  |
+| `account privacy set` | `--calls` | ✅ |  |
 | `chats list` |  | ✅ |  |
 | `chats list` | `--limit` | ✅ |  |
 | `chats list` | `--page` | ✅ |  |

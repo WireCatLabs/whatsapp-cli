@@ -8,6 +8,7 @@ import { whatsAppAdapter } from "./adapter/adapter.js"
 import type { Check } from "./adapter/checks.js"
 import { fromEngine } from "./adapter/errors.js"
 import { ADMIN_RIGHTS, GROUP_SETTINGS } from "./adapter/groups.js"
+import { PRIVACY_SETTINGS } from "./adapter/privacy.js"
 import { resolveSettings, WA } from "./app.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
@@ -218,6 +219,7 @@ export const WHATSAPP: Messenger = {
   // answering with an "add --for-everyone" that only the owner can act on.
   deleteForMe: false,
   privacy: true,
+  privacySettings: PRIVACY_SETTINGS,
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)
