@@ -29,10 +29,10 @@ For command-line control:
 wa personal search messages 'What time does Helix export run? chat:120363000000000001@g.us' --discover --json
 ```
 
-Chat, sender and date filters still apply. In MCP, pass `discover: true` to the message-search tool. Each item's
-`discovery` says how much of the query it matched: `missing_terms` names unmatched terms, and `parent` links a reply
-to its matching parent. A high score is not answer confidence: a question, proposal or old decision can rank first.
-Read the evidence and check [what the store holds](archive.md#how-much-is-kept) before concluding that a fact is
+Chat, sender and date filters still apply. Over MCP, pass `discover: true` to `wa_read` (`command: "search messages"`).
+Each item's `discovery` says how much of the query it matched: `missing_terms` names unmatched terms, and `parent` links
+a reply to its matching parent. A high score is not answer confidence: a question, proposal or old decision can rank
+first. Read the evidence and check [what the store holds](archive.md#how-much-is-kept) before concluding that a fact is
 absent.
 
 Without `--discover`, the usual strict search remains. Boolean syntax, quoted phrases, wildcards, `--exact` and

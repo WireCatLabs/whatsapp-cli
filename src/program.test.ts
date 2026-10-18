@@ -189,7 +189,7 @@ describe("wa messages send", () => {
       }),
     )
     const send = { chat: seed.dialog, text: "hi" }
-    const poll = { chat: seed.busy, text: "Pizza?", answers: ["yes", "no"] }
+    const poll = { chat: seed.busy, question: "Pizza?", answers: ["yes", "no"] }
     const refused = [
       await mcp.call("wa_write", { command: "messages send", arguments: { ...send, at_time: "1h" } }),
       await mcp.call("wa_write", { command: "messages send", arguments: { ...send, silent: true } }),

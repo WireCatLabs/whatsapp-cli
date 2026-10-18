@@ -174,7 +174,7 @@ An error carries the position of the problem in the query and a hint.
 ## Over MCP
 
 When an agent searches through `wa`'s MCP server, `wa_read` (`command: "search messages"`) takes the query as
-`text`, and `timezone` for the calendar zone. `chat` takes an id or a stored name; `source`, `newest`, `context` and
+`query`, and `timezone` for the calendar zone. `chat` takes an id or a stored name; `source`, `newest`, `context` and
 `limit` work as the command options do; `saved` runs a saved search. `thread`, `thread_hops`, `thread_messages`,
 `thread_bytes` and `thread_within` match the `--thread…` options. The answer has the same fields as `--json`.
 `wa_read` (`command: "stats messages show"`) counts the same queries. `wa personal mcp --no-record`, or `record` set to

@@ -1760,7 +1760,7 @@ wa models audio list [query]
 
 download a speech model once, checked against the sha256 this version expects
 
-**Changes something on this computer only.**
+**Reads from an outside service.**
 
 ```sh
 wa models audio download <model>
@@ -1790,7 +1790,7 @@ wa models text list [query]
 
 download an embedding model once, checked against the sha256 this version expects
 
-**Changes something on this computer only.**
+**Reads from an outside service.**
 
 ```sh
 wa models text download <model> [options]
@@ -2294,7 +2294,7 @@ the conversations inside a chat, found in the stored messages by replies, mentio
 
 find a chat's conversations in what the store holds, replacing the last build; without --chat, every chat that changed since its build and every group never built; never asks the messenger
 
-**Changes something in WhatsApp.**
+**Sends text to an outside service.**
 
 ```sh
 wa conversations build [options]
@@ -2441,6 +2441,22 @@ wa conversations links clear [options]
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | only the answers this model gave. |
 
+### `wa conversations rebuild`
+
+build, then embed with the model on this machine, the chats that changed since their build and the group chats never built — or only --chat; bounded per run, so run it again for the rest; never asks the messenger, downloads no model and sends no text anywhere
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations rebuild [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
+| `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given. |
+
 ### `wa conversations consents`
 
 remembered analysis permissions for this account's chats and provider endpoints
@@ -2472,7 +2488,7 @@ wa conversations consents revoke [options]
 
 compute a vector for each chunk of a chat's conversations for search by meaning — on this machine, or with --provider through a service and your key; resumes where it stopped; without --chat, every built chat with chunks left, on this machine only
 
-**Changes something in WhatsApp.**
+**Sends text to an outside service.**
 
 ```sh
 wa conversations embed [options]
@@ -2845,7 +2861,7 @@ wa images models list [query]
 
 download a picture model once, checked against the sha256 this version expects
 
-**Changes something on this computer only.**
+**Reads from an outside service.**
 
 ```sh
 wa images models download <model>
@@ -3634,6 +3650,8 @@ wa search notes <query> [options]
 
 the conversations nearest to a query in meaning and in words, best first, in one chat or every one — meaning after `conversations embed`; runs on this machine
 
+**Reads from an outside service.**
+
 ```sh
 wa search conversations <query> [options]
 ```
@@ -4033,7 +4051,7 @@ wa upgrade [options]
 
 ## `wa mcp`
 
-serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa mcp`
+serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa <profile> mcp`
 
 **Changes something in WhatsApp.**
 

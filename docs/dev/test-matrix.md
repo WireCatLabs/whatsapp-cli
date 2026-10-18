@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**234 ✅ · 519 ⛔ · 0 ❌** — 242 commands, 511 options.
+**234 ✅ · 523 ⛔ · 0 ❌** — 243 commands, 514 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -359,6 +359,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `conversations links clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations links clear` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations links clear` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations rebuild` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations rebuild` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations rebuild` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations rebuild` | `--max-chunks` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations consents list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations consents revoke` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations consents revoke` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
