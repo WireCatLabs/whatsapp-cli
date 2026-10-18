@@ -58,7 +58,8 @@ Open work, most important first. The plan in flight is
    - ~~**Removing a group's photo**~~ — built: `chats update --remove-photo` (cli-core 0.340.0).
    - **Stickers from a file: live check and the limits.** `messages send --sticker-file` (cli-core 0.340.0) uploads
      the `.webp` as an image and sends a `StickerMessage`, with the canvas read from the file's first chunk; not run
-     against WhatsApp yet (own chat only). One cap, 500 KiB, lets an animated sticker through: Meta's Cloud API caps a
+     against WhatsApp yet (own chat only; the owner runs `bin/live-chat-state <profile> --sticker <file.webp>`,
+     step 9). One cap, 500 KiB, lets an animated sticker through: Meta's Cloud API caps a
      still one at 100 KB, and whether a phone shows a larger still sticker is unknown. `isAnimated` is not set.
      The `.webp` goes as it is: mautrix-whatsapp pads a non-square one to a square and adds a PNG thumbnail before
      sending, and whether a phone shows a non-square sticker well is unknown.

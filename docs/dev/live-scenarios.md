@@ -97,7 +97,7 @@ Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are i
 | `bin/live-poll-vote <profile>` | BACKLOG item 5, a vote cast by `wa`; W-style, own chat only | a poll and a vote in the own chat, through the running `serve` | the poll is deleted for everyone at the end; if the script stops early, it says to delete it from the phone |
 | `bin/live-older-history <profile>` | H1: one 50-message page as one `ON_DEMAND` notification or several, and whether it names the request by its id | restarts `serve` with the engine's log on; one history request from this device to the own phone | starts `serve` again as it was on every exit path; deletes the log |
 | `bin/live-fresh-link <new-profile>` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes` | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
-| `bin/live-chat-state <profile>` | BACKLOG item 5, the chat-state writes: privacy read back, mute, message pin, star (W7), chat pin, archive, mark-unread and mark-read, delete for the owner alone (W6); own chat only | a 1-hour mute of the own chat, a marker message pinned for 24 hours and starred, the own chat pinned, archived and marked unread, through the running `serve` | each undone in the script; the marker deleted for the owner (or for everyone where that is not built); if it stops early, it says what to undo from the phone |
+| `bin/live-chat-state <profile> [--sticker <file.webp>]` | BACKLOG item 5, the chat-state writes: privacy read back, mute, message pin, star (W7), chat pin, archive, mark-unread and mark-read, delete for the owner alone (W6), and a sticker from the owner's `.webp` file; own chat only | a 1-hour mute of the own chat, a marker message pinned for 24 hours and starred, the own chat pinned, archived and marked unread, and with `--sticker` one sticker, through the running `serve` | each undone in the script; the marker and the sticker deleted for the owner (the marker for everyone where that is not built); if it stops early, it says what to undo from the phone |
 | `bin/live-album <profile> [--video <file.mp4>]` | BACKLOG item 5, an album and a photo's preview; own chat only | one album of a test photo and a short video in the own chat, through the running `serve` | not undone by the script, which keeps only the photo's message: the owner deletes the album from the phone |
 | `bin/live-expired-file <profile> [<message-id>]` | BACKLOG item 5, a download of a file WhatsApp no longer keeps, through the phone's new upload; own chat only | one download into a throwaway folder, and a second one after the phone's new upload; if the file is gone from WhatsApp, a receipt from this device to the own phone | the folder is deleted at the end |
 | `bin/live-forward-card <profile>` | BACKLOG item 5, forwarding a place and a contact card; own chat only | a place and a card the owner sends from the phone, and `wa`'s forward of each, all in the own chat, through the running `serve` | not undone by the script: the owner deletes the four messages from the phone |
@@ -198,10 +198,16 @@ never printed. After each step it asks the owner what the phone shows and record
    does not open the chat, which would clear the dot by itself. `wa` sends a read receipt
    only for someone else's message and the own chat has none, so `mark-read` sends nothing there.
 8. `messages delete` of the marker without `--for-everyone`, scenario W6: gone from the owner's devices.
+9. `messages send --sticker-file` of the `--sticker` file, then three questions: it shows as a sticker (no bubble,
+   not a photo or a document), at a sticker's size, and in the file's shape, not stretched or squashed. Then
+   `messages delete` of it for the owner only. Without `--sticker` the step is skipped with the line that says how
+   to run it: the script ships no sticker and never picks a file. It checks only that the file exists and ends in
+   `.webp`; cli-core checks the WebP header and the 500 KiB cap before anything is sent.
 
 A step whose command the build lacks is skipped with "not built in this checkout yet". `chats mute`, `chats unmute`,
 `account privacy show`, `messages star` and `unstar`, `chats pin` and `unpin`, `chats archive` and `unarchive`,
-`chats mark-unread`, and the `--expire-time` option of `messages pin` are looked up in `commands`. `messages pin`
+`chats mark-unread`, the `--expire-time` option of `messages pin` and the `--sticker-file` option of `messages send`
+are looked up in `commands`. `messages pin`
 and `messages delete` are listed in every build, so the script reads their refusal: cli-core's "this messenger
 cannot pin a message", or wa's delete that is only for everyone so far, both exit 2 before anything is sent. Without delete for the owner, it deletes the marker
 for everyone (W4) after an Enter. On a failure it prints the exit code and the error's code, never its message,
@@ -217,6 +223,7 @@ line a yes settles:
 | chats pin, unpin, archive, unarchive, mark-unread | "Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`": a one-to-one chat addressed by its LID. A fourth pinned chat, pinning an archived chat, and an archived chat that a newer message brings back stay open |
 | mark-read | "`chats mark-read` after a `mark-unread`", for the own chat only. A no is expected: without the read patch, `wa` cannot undo a mark-unread there. Whether a receipt in a chat with someone else clears it stays open |
 | delete for you only | "Live check of delete for the owner alone": the owner's own message. Someone else's message in a group, a one-to-one chat with another person, and the saved files stay open |
+| sticker, size, shape | "Stickers from a file: live check and the limits": the send to the own chat. A shape yes on a non-square file answers whether a phone shows one well; a still sticker over 100 KB answers the larger still sticker; an animated file, whether it plays without `isAnimated` |
 
 **`live-album`** needs `serve` running, and works in the own chat only. It draws a 320×240 PNG of colour bands, so a
 preview is easy to tell from a grey box. The video is the `--video` file (it must end in `.mp4`, `.m4v` or `.mov`,

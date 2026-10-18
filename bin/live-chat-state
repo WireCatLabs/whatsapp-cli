@@ -1,11 +1,12 @@
 #!/usr/bin/env sh
 # Live checks of the chat-state writes (BACKLOG item 5): privacy read back, a mute and an unmute, a message pin and
 # an unpin, a star and an unstar (W7), a chat pin, an archive and a mark-unread with their undoing, a delete for the
-# owner alone (W6). Each step ends with a question to the owner at the phone.
-# The owner runs it from a terminal; an agent never does.
+# owner alone (W6), and a sticker from a .webp file the owner names. Each step ends with a question to the owner at the
+# phone. The owner runs it from a terminal; an agent never does.
 #
-#   bin/live-chat-state <profile>
+#   bin/live-chat-state <profile> [--sticker <file.webp>]
 #
+# Without --sticker, the sticker step is skipped: the script ships no sticker and never picks one.
 # It writes only to the own chat, through the running `serve`, and asks before each write. A step whose command
 # this build does not have yet is skipped. It prints exit codes, error codes and yes/no only: no message text, no
 # id, no number.
@@ -17,6 +18,20 @@ set -eu
 
 profile=${1:-}
 need_profile "$profile"
+shift
+sticker_file=""
+case "${1:-}" in
+  "") ;;
+  --sticker) sticker_file=${2:-} && [ -n "$sticker_file" ] || die "--sticker needs a .webp file" ;;
+  *) die "unknown argument — usage: $(basename -- "$0") <profile> [--sticker <file.webp>]" ;;
+esac
+if [ -n "$sticker_file" ]; then
+  [ -f "$sticker_file" ] || die "no file at $sticker_file"
+  case "$sticker_file" in
+    *.webp | *.WEBP) ;;
+    *) die "the sticker must be a .webp file" ;;
+  esac
+fi
 own=$(own_chat "$profile") || exit 1
 serve_running "$profile" ||
   die "start $wa $profile serve first: the writes go through it, so no one-shot connection takes the device"
@@ -40,10 +55,12 @@ chat_pinned=no
 archived=no
 unread=no
 sent=no
+sticker_sent=no
 marker_id=""
 privacy=skipped mute=skipped unmute=skipped pin=skipped unpin=skipped star=skipped unstar=skipped
 chatpin=skipped chatunpin=skipped archive=skipped unarchive=skipped markunread=skipped markread=skipped
 forme=skipped
+stickerkind=skipped stickersize=skipped stickershape=skipped
 
 # Each flag is set before its write: a write cut by the timeout or a Ctrl-C may still reach WhatsApp. Exit 2 is a
 # refusal before anything is sent, so it clears the flag again.
@@ -57,6 +74,7 @@ leftover() {
   [ "$archived" = no ] || echo "your own chat may still be in Archived — unarchive it on the phone" >&2
   [ "$unread" = no ] || echo "your own chat may still be marked unread — open it on the phone" >&2
   [ "$sent" = no ] || echo "the marker \"$marker\" may still be in your own chat — delete it from the phone" >&2
+  [ "$sticker_sent" = no ] || echo "the sticker may still be in your own chat — delete it from the phone" >&2
 }
 trap leftover EXIT
 on_signals
@@ -90,6 +108,8 @@ Plan, on profile $profile, in your own chat only:
   6. wa chats archive on your own chat, then wa chats unarchive
   7. wa chats mark-unread on your own chat, then wa chats mark-read
   8. wa messages delete, for you only (no --for-everyone): the marker goes from your devices
+  9. wa messages send --sticker-file with the --sticker file, then wa messages delete of it for you only
+     (skipped without --sticker)
 After each step it asks what the phone shows. A step this build has no command for is skipped.
 EOF
 
@@ -313,6 +333,34 @@ else
   fi
 fi
 
+echo
+echo "Step 9: a sticker from your .webp file"
+if [ -z "$sticker_file" ]; then
+  echo "skipped: no sticker file — run $(basename -- "$0") $profile --sticker <file.webp> to check one"
+elif ! has "messages send --sticker-file"; then
+  echo "not built in this checkout yet"
+else
+  confirm "Step 9 sends your .webp file to your own chat as a sticker."
+  sticker_sent=yes
+  attempt "$profile" messages send "$own" --sticker-file "$sticker_file" --yes --timeout 120s
+  report "messages send --sticker-file"
+  if [ "$rc" = 0 ]; then
+    sticker_id=$(printf '%s' "$out" | json 'd.item.message.id') || sticker_id=""
+    stickerkind=$(phone "Does it show as a sticker, with no bubble around it, not as a photo or a document?")
+    stickersize=$(phone "Is it the size of a sticker you send from the phone?")
+    stickershape=$(phone "Does it look like the file: square where the file is, not stretched or squashed?")
+    if [ -n "$sticker_id" ]; then
+      confirm "Next it deletes the sticker for you only."
+      attempt "$profile" messages delete "$own" "$sticker_id" --allow-dangerous --yes --timeout 60s
+      report "messages delete"
+      [ "$rc" != 0 ] || sticker_sent=no
+    fi
+  else
+    stickerkind=failed
+    [ "$rc" != 2 ] || sticker_sent=no
+  fi
+fi
+
 cat <<EOF
 
 Step                     Phone    BACKLOG item 5 line it settles
@@ -330,8 +378,12 @@ Step                     Phone    BACKLOG item 5 line it settles
 7 chats mark-unread      $(printf '%-8s' "$markunread") the same line, the mark-unread
 7 chats mark-read        $(printf '%-8s' "$markread") "chats mark-read after a mark-unread": the own chat, no receipt
 8 delete for you only    $(printf '%-8s' "$forme") "Live check of delete for the owner alone": the own message (W6)
+9 sticker, not a photo   $(printf '%-8s' "$stickerkind") "Stickers from a file: live check and the limits": the send
+9 sticker size           $(printf '%-8s' "$stickersize") the same line, the size on the phone
+9 sticker shape          $(printf '%-8s' "$stickershape") the same line: for a non-square file, whether it shows well
 
-A yes settles that part of the line; no or failed is a bug to file; skipped waits for that feature's build;
+A yes settles that part of the line; no or failed is a bug to file; skipped waits for that feature's build,
+or for step 9 a --sticker file;
 kept is a step left out so as not to change a pin the phone already had.
 For 7 chats mark-read, no is the expected answer: without the read patch, wa cannot undo a mark-unread in the own
 chat. Whether a receipt in another chat clears it stays open.
