@@ -76,7 +76,7 @@ output too.
 | `6` | `not_found` | no such chat or message; a change to a message the local store does not hold |
 | `7` | `confirmation_required` | an `ask` level got no answer, or the chat is not on the recipient list |
 | `8` | `rate_limited` | the hourly send limit, the profile's pace ([limits](limits.md)), or WhatsApp asked the account to slow down (`account.rate-limited`): counted writes are then held for 15 minutes |
-| `9` | `timeout` | the command ran out of time |
+| `9` | `timeout` | the command ran out of time, or another process held the send journal, the request pace or the recipient list past the 5 s wait: nothing was sent or changed, so it is safe to retry |
 | `10` | `network_error` | WhatsApp could not be reached |
 | `11` | `provider_error` | WhatsApp refused the request |
 | `12` | `provider_unavailable` | another `wa` command holds the device's one connection (`device.in-use`) or took it over (`device.replaced`), the engine stopped (`engine.stopped`), or WhatsApp no longer accepts this version of `wa` (`client.outdated`) |

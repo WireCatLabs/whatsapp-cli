@@ -56,6 +56,9 @@ wa upgrade            # with the package manager that installed wa
 wa upgrade --check    # only say whether a newer version exists; installs nothing
 ```
 
+`upgrade` asks npm, so `--offline` is refused with exit code `2`. `upgrade --check` runs under `WA_READ_ONLY`;
+`upgrade` without it does not.
+
 After an update, `wa upgrade` restarts each running background `serve`, so it does not keep running the old code.
 The engine comes as a package of `wa`, so it updates with it. Once a day `wa` says on stderr when a newer version
 exists; `WA_NO_UPDATE_CHECK=1`, or `update_check: false` in the settings, turns that off.
