@@ -1691,7 +1691,7 @@ wa watch [options]
 
 | Option | What it does |
 |---|---|
-| `--events` | also edits, deletions, reactions and poll votes; every line then names its event. |
+| `--events` | also edits, deletions, reactions, poll votes and chat events; every line then names its event. |
 
 ## `wa serve`
 
@@ -2093,7 +2093,7 @@ the conversations inside a chat, found in the stored messages by replies, mentio
 
 find a chat's conversations in what the store holds, replacing the last build; without --chat, every chat that changed since its build and every group never built; never asks the messenger
 
-**Changes something on this computer only.**
+**Changes something in WhatsApp.**
 
 ```sh
 wa conversations build [options]
@@ -2905,7 +2905,7 @@ statistics about one chat
 
 #### `wa stats chats show`
 
-a group's or channel's numbers for a period: messages, active members, replies, reactions, questions answered, joins and leaves — counted from the local store; joins and leaves are asked of the messenger
+a group's or channel's numbers for a period: messages, active members, replies, reactions, questions answered, joins and leaves — counted from the local store; joins and leaves too
 
 ```sh
 wa stats chats show <chat> [options]

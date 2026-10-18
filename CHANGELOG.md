@@ -35,6 +35,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `device.in-use`. `serve`'s connection and the keys stay as they were.
 - **`conversations embed` counts as a write to an outside service** (cli-core 0.334.0, WC-CMD-17): a failed run is
   not marked safe to retry, and under `WA_READ_ONLY` it refuses before sending chat text to a remote provider.
+- **`chats events` answers from the local store** (cli-core 0.336.0): it no longer refuses with exit `2`, never
+  connects, and works with `--offline`. `wa` does not record joins and leaves yet, so the list is empty.
+- **`conversations build` counts as a write to an outside service and `search conversations` as a read from one**
+  (cli-core 0.336.0, WC-CMD-17): under `WA_READ_ONLY` each refuses before it sends chat text or the query to a remote
+  provider; a local model still works. Both always run in the calling process, never through `serve`.
+- **`WA_READ_ONLY` also keeps what the owner saved** (cli-core 0.336.0, WC-PERM-12): `searches create`, `searches
+  delete`, `searches clear`, `contacts alias set`, `contacts alias rm`, `contacts notes edit`, `contacts notes remove`
+  and `tags remove`, and their MCP tools, refuse with exit `5`. An agent that saved searches must do it in a process
+  without the lock.
 
 ### Fixed
 

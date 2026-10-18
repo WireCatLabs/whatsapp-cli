@@ -222,8 +222,9 @@ wa personal chats leave 120363000000000001@g.us
 
 With `--offline`, `chats members list` shows the members stored before instead of asking WhatsApp.
 `chats members fetch` keeps the member list in the local store. `chats members history` shows what the fetches
-recorded: everyone present at the first fetch, then who joined or left at each later one. WhatsApp's own record of who
-joined and left (`chats events`) is refused, and `wa` cannot set a group's photo.
+recorded: everyone present at the first fetch, then who joined or left at each later one. `chats events` answers from
+the local store and never connects, but `wa` does not record WhatsApp's joins and leaves there yet, so it shows
+nothing. `wa` cannot set a group's photo.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's
 [permissions](permissions.md) allow.
