@@ -44,22 +44,21 @@ leftover() {
   [ "$sent" = no ] || echo "the marker \"$marker\" may still be in your own chat — delete it from the phone" >&2
 }
 trap leftover EXIT
-trap 'exit 130' INT
-trap 'exit 143' TERM
+on_signals
 
 has() {
   printf '%s\n' "$paths" | grep -qx "$1"
 }
 
 # One wa call: its stdout in $out, its exit code in $rc. Its stderr stays in $errs and is never printed whole,
-# since a refusal can quote the chat.
+# since a refusal can quote the chat. Not wa_json: that keeps only the error code, and not_built reads the refusal.
 attempt() {
-  out=$(wa_json "$@" 2>"$errs") && rc=0 || rc=$?
+  out=$("$wa" "$@" --json --no-input 2>"$errs") && rc=0 || rc=$?
 }
 
 # The error's code ("validation_error", "settings.keys-missing"), the one part of a refusal that is safe to print.
 error_code() {
-  grep -o '"code": *"[A-Za-z_.-]*"' "$errs" | head -n 1 | sed 's/.*"\([^"]*\)"$/\1/'
+  head -n 1 -- "$errs" | json 'd.error.code' 2>/dev/null
 }
 
 report() {
@@ -150,8 +149,8 @@ attempt "$profile" messages send "$own" "$marker" --yes --timeout 60s
 report "messages send"
 [ "$rc" != 2 ] || sent=no
 [ "$rc" = 0 ] || die "the send failed"
-marker_id=$(printf '%s' "$out" | json 'd.item.message.id') && [ -n "$marker_id" ] ||
-  die "messages send gave no message id"
+marker_id=$(printf '%s' "$out" | json 'd.item.message.id') || marker_id=""
+[ -n "$marker_id" ] || die "messages send gave no message id"
 
 if has "messages pin" && has "messages unpin"; then
   confirm "Next it pins the marker, telling the chat (your own chat: only you)."
