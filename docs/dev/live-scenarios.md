@@ -184,10 +184,13 @@ never printed. After each step it asks the owner what the phone shows and record
 3. `messages send` of a marker with a fresh run number, `messages pin --expire-time 24h` on it, then
    `messages unpin`. 24 hours is the shortest pin, so a pin left by a stopped script ends by itself.
 4. `messages star` on the marker, then `messages unstar`, scenario W7: the star on the phone, then not.
-5. `chats pin` on the own chat, then `chats unpin`: at the top of the chat list with the pin icon, then not.
+5. `chats pin` on the own chat, then `chats unpin`: at the top of the chat list with the pin icon, then not. It
+   asks first, and leaves the step out (`kept`) when the own chat is pinned already, whose pin the unpin would take
+   off, or when three chats are.
 6. `chats archive`, then `chats unarchive`: in Archived, then back in the chat list. It comes after the chat pin,
    since whatsmeow's archive patch also unpins the chat.
-7. `chats mark-unread`, then `chats mark-read`: the unread dot, then whether it stays. `wa` sends a read receipt
+7. `chats mark-unread`, then `chats mark-read`: the unread dot in the chat list, then whether it stays; the owner
+   does not open the chat, which would clear the dot by itself. `wa` sends a read receipt
    only for someone else's message and the own chat has none, so `mark-read` sends nothing there.
 8. `messages delete` of the marker without `--for-everyone`, scenario W6: gone from the owner's devices.
 

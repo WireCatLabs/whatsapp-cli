@@ -230,7 +230,18 @@ fi
 # Before the archive: whatsmeow's archive patch also unpins the chat, which would hide what the unpin does.
 echo
 echo "Step 5: chats pin and unpin"
+# An own chat the owner pinned would lose that pin to the unpin, and a fourth pin is a case still open.
+free=no
 if has "chats pin" && has "chats unpin"; then
+  free=$(phone "Is your own chat unpinned on the phone now, with fewer than three chats pinned?")
+  [ "$free" = yes ] || {
+    chatpin=kept chatunpin=kept
+    echo "skipped: the unpin would take off your own pin, or the pin would be a fourth"
+  }
+else
+  echo "not built in this checkout yet"
+fi
+if [ "$free" = yes ]; then
   confirm "Step 5 pins your own chat at the top of your chat list; nobody is told."
   chat_pinned=yes
   attempt "$profile" chats pin "$own" --yes --timeout 60s
@@ -250,8 +261,6 @@ if has "chats pin" && has "chats unpin"; then
     chatpin=failed
     [ "$rc" != 2 ] || chat_pinned=no
   fi
-else
-  echo "not built in this checkout yet"
 fi
 
 echo
@@ -288,12 +297,12 @@ if has "chats mark-unread"; then
   attempt "$profile" chats mark-unread "$own" --yes --timeout 60s
   report "chats mark-unread"
   if [ "$rc" = 0 ]; then
-    markunread=$(phone "Does the phone show the unread dot on your own chat?")
+    markunread=$(phone "In the chat list, without opening the chat: does your own chat show the unread dot?")
     confirm "Next it runs chats mark-read on your own chat; it has no message from someone else, so nothing is sent."
     attempt "$profile" chats mark-read "$own" --yes --timeout 60s
     report "chats mark-read"
     if [ "$rc" = 0 ]; then
-      markread=$(phone "Is the unread dot gone from your own chat?")
+      markread=$(phone "Still without opening it: is the unread dot gone from your own chat?")
       # A no leaves the mark on the phone, for the owner to clear.
       [ "$markread" = no ] || unread=no
     else
@@ -345,7 +354,8 @@ Step                     Phone    BACKLOG item 5 line it settles
 7 chats mark-read        $(printf '%-8s' "$markread") "chats mark-read after a mark-unread": the own chat, no receipt
 8 delete for you only    $(printf '%-8s' "$forme") "Live check of delete for the owner alone": the own message (W6)
 
-A yes settles that part of the line; no or failed is a bug to file; skipped waits for that feature's build.
+A yes settles that part of the line; no or failed is a bug to file; skipped waits for that feature's build;
+kept is a step left out so as not to change a pin the phone already had.
 For 7 chats mark-read, no is the expected answer: without the read patch, wa cannot undo a mark-unread in the own
 chat. Whether a receipt in another chat clears it stays open.
 EOF
