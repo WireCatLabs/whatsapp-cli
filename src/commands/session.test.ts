@@ -12,6 +12,12 @@ import { privateStore } from "../paths.js"
 import { run } from "../program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
 
+// serve offers no relay on Windows, so there the lock's listeningAt is the sign it is up.
+const listening = (lock: string): unknown => {
+  const held = JSON.parse(readFileSync(lock, "utf8"))
+  return process.platform === "win32" ? held.listeningAt : held.relay
+}
+
 const seed = contractSeed({ ids: whatsAppIds })
 const STUB = fileURLToPath(new URL("../testing/engine-stub.mjs", import.meta.url))
 // The fake phone pushes its history in one batch, so the wait can end the moment it lands.
@@ -271,7 +277,7 @@ describe("wa session end", () => {
     const controller = new AbortController()
     const served = fakeEngine(seed)
     const serving = wa(["serving", "serve", "--json"], () => served, { signal: controller.signal })
-    await vi.waitFor(() => expect(JSON.parse(readFileSync(lock, "utf8")).relay).toBeDefined(), { timeout: 5000 })
+    await vi.waitFor(() => expect(listening(lock)).toBeDefined(), { timeout: 5000 })
 
     // Never relayed: run here, it meets the device lock serve holds, as the Go engine refuses it.
     const result = await wa(["serving", "session", "end", "--json"], undefined, {
