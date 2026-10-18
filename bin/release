@@ -50,7 +50,8 @@ rerun_if_changed() {
 }
 package=@wirecat/whatsapp-cli
 
-git fetch -q origin
+# With the tags: the check below that refuses to release one commit twice reads them.
+git fetch -q --tags origin
 [ "$(git branch --show-current)" = "main" ] || { echo "not on main" >&2; exit 1; }
 [ -z "$(git status --porcelain --untracked-files=no)" ] || { echo "uncommitted changes" >&2; exit 1; }
 before=$(git rev-parse HEAD)
@@ -254,15 +255,24 @@ done
 echo "== publishing $version =="
 npm publish --access public --userconfig "$config"
 
-echo "== waiting for npm to show $version (up to three minutes) =="
+# Either answer counts, and as long as release.yml waits: each of the two has been seen stale for minutes on its own.
+echo "== waiting for npm to show $version (up to fifteen minutes) =="
 seen=""
-for _ in $(seq 36); do
-  if published; then seen=1; break; fi
-  sleep 5
+for _ in $(seq 90); do
+  if published || curl -sfo /dev/null "https://registry.npmjs.org/@wirecat%2fwhatsapp-cli/$version"; then seen=1; break; fi
+  sleep 10
 done
-[ -n "$seen" ] || { echo "npm does not show $version after three minutes — not tagging; tag v$version by hand once it does" >&2; exit 1; }
+[ -n "$seen" ] || {
+  echo "npm does not show $version after fifteen minutes — not tagging. Once it does, on $(git rev-parse HEAD):" >&2
+  echo "  git tag -a v$version -m $version && git push origin v$version" >&2
+  echo "  gh release create v$version --title $version, with the $version section of CHANGELOG.md as its notes" >&2
+  exit 1
+}
 
-echo "== tag v$version =="
+# The same tag and GitHub release that release.yml's tag job makes (WC-REL-13).
+echo "== tag v$version and its GitHub release =="
 git tag -a "v$version" -m "$version"
 git push -q origin "v$version"
+awk -v v="$version" '$0 ~ "^## "v" " {on=1; next} /^## / && on {exit} on' CHANGELOG.md |
+  gh release create "v$version" --title "$version" --notes-file -
 echo "published $package@$version"

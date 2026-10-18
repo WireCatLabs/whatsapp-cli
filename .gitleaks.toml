@@ -1,8 +1,8 @@
 # Secret scanning. The default rules catch the well-known shapes (AWS, GitHub, Stripe, private
 # keys); the rules below catch the ones only this project handles.
 #
-#   gitleaks git --redact .              the whole history
-#   gitleaks git --staged --redact .     what is about to be committed — the pre-commit hook
+#   gitleaks git --log-opts=HEAD --redact .   the whole history of HEAD, not every local branch
+#   gitleaks git --staged --redact .          what is about to be committed — the pre-commit hook
 #
 # `--redact` matters: without it a finding prints the secret it found into your terminal and your
 # CI log, which is a second leak on top of the first.
