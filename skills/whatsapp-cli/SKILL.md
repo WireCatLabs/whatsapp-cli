@@ -49,8 +49,8 @@ Not built yet:
 store: the joins, leaves, adds, removals, admin changes and titles the phone pushed and `serve` saw, which
 `stats chats show` counts in `members`; one from before the link the phone did not push is missing. `chats members
 history` shows who joined or left between member fetches. A group in a WhatsApp community names it in `parent_chat_id`, and the
-community itself is a group with `provider_metadata.community: true`; only the answers of `chats create|join|update`
-carry them, not the store. `chats mark-read` sends a read receipt only and may not clear a
+community itself is a group with `provider_metadata.community: true`, in the store (`chats list`, `chats show`) and
+in the answers of `chats create|join|update`. `chats mark-read` sends a read receipt only and may not clear a
 `chats mark-unread`.
 A channel (`…@newsletter`) is followed with `chats join <whatsapp.com/channel link>` and left with `chats leave`;
 `messages sync <channel>` reads its posts from WhatsApp's servers, and every post's sender is the channel.

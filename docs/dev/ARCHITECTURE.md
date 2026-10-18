@@ -166,7 +166,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   and `joinApproval`. A chat built from a group's info (`communities.go`, protocol 15) carries `parent`, the community
   it is linked to, which the adapter maps to cli-core's `parentChatId`, and `community` on a community itself, which
   becomes `providerMetadata.community`: cli-core has no chat kind for a community, and its topics are threads inside
-  one chat, not separate groups.
+  one chat, not separate groups. A history push's group conversation carries the same two (`ParentGroupID`,
+  `IsParentGroup`), so the store keeps them.
 - **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
   [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
   skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and

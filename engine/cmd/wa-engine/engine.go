@@ -45,6 +45,8 @@ type engine struct {
 
 	retries retryWaiter // downloads waiting for the phone to upload a file again
 
+	following follows // e.client; a test answers for WhatsApp here
+
 	// Why WhatsApp ended the connection, until it connects again. Later requests answer with it instead of
 	// connecting: after "replaced" that would take the login back from the other process, and after a ban it would
 	// knock on WhatsApp's door again.
@@ -55,6 +57,7 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	ctx, stop := context.WithCancel(ctx)
 	e := &engine{ctx: ctx, stop: stop, client: whatsmeow.NewClient(device, logger), out: out, chats: map[string]waChat{},
 		addressing: map[types.JID]types.AddressingMode{}}
+	e.following = e.client
 	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf}
 	e.refreshSelf()
 	e.client.AddEventHandler(e.handle)
