@@ -100,7 +100,8 @@ only answer the question. All other permission checks still apply.
 
 A one-shot command has 30 seconds. `--timeout 2m` changes that, and the time spent waiting for stdin counts too.
 Persistent commands and a link at a terminal have no default limit; a link without a terminal (an agent's
-`session start --qr-file`) has 5 minutes, for a person to scan the code elsewhere. Ctrl-C (SIGINT) stops a one-shot
+`session start --qr-file`) has 5 minutes, for a person to scan the code elsewhere;
+what `setup` does after the history push then has the usual 30 seconds. Ctrl-C (SIGINT) stops a one-shot
 command with exit code 130 and normally ends a persistent command with 0. SIGTERM exits with 143. If the program
 reading the output closes the pipe, `wa` ends quietly. Whatever started the engine stops it on every exit path, so
 no engine outlives the command.

@@ -133,9 +133,9 @@ Open work, most important first. The plan in flight is
      attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
      not push history again; a re-link would refill it.
    - **Files WhatsApp no longer keeps.** A download asks the owner's phone to upload the file again and fetches the new
-     copy, but the new path is not kept: cli-core's store has no write for a stored attachment's `providerRef`, so each
-     later download asks the phone again, and a forward still sends the old path, which reaches the recipient as a
-     file that will not open. The fix is a cli-core port to update a stored attachment's ref. Not yet run against
+     copy, but the new path is not kept: cli-core saves a `providerRef` the adapter sets while it reads a file
+     (0.339.0, 0.340.0), and wa's adapter does not set it yet, so each later download asks the phone again, and a
+     forward still sends the old path, which reaches the recipient as a file that will not open. Not yet run against
      WhatsApp: whether the phone answers a receipt for a one-to-one chat addressed by LID.
    - **Forwarding several contact cards** (`ContactsArrayMessage`) and a live location is refused; a place or a card
      stored before `wa` kept their content too.
