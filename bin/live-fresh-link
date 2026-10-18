@@ -49,11 +49,34 @@ EOF
 trap finish EXIT
 on_signals
 
-echo "Scan the QR code below in WhatsApp > Settings > Linked devices > Link a device, then keep WhatsApp open."
+# Machine mode refuses to draw the QR code on the terminal, so it goes to a file. The file exists only once WhatsApp
+# hands out the first code; the wait ends with the store, which `finish` removes, or with this script.
+qr="$store/qr.png"
+show_qr() {
+  if command -v xdg-open >/dev/null 2>&1; then
+    opener=xdg-open
+  elif [ "$(uname)" = Darwin ]; then
+    opener=open
+  else
+    return 0
+  fi
+  while [ -d "$store" ] && [ ! -s "$qr" ] && kill -0 "$$" 2>/dev/null; do sleep 1; done
+  # The file is truncated before it is written; a moment lets the first image finish.
+  sleep 1
+  [ -s "$qr" ] && "$opener" "$qr"
+}
+show_qr </dev/null >/dev/null 2>&1 &
+
+cat <<EOF
+The QR code goes to $qr, and opens in your image viewer when it is ready.
+Scan it in WhatsApp > Settings > Linked devices > Link a device, then keep WhatsApp open.
+WhatsApp renews the code about every 20 seconds and the file is replaced each time. If the viewer does not reload
+it and the phone refuses the code, open the file again.
+EOF
 set +e
 WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACHE_DIR="$main/.wa/cache" \
   MESSAGING_STORE="$store/messages.db" \
-  node "$main/dist/bin/wa.js" "$profile" session start qr --json --timeout 15m >"$store/answer.json"
+  node "$main/dist/bin/wa.js" "$profile" session start qr --qr-file "$qr" --json --timeout 15m >"$store/answer.json"
 code=$?
 set -e
 
