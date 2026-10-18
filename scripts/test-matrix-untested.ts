@@ -77,7 +77,6 @@ export const UNTESTED: Untested[] = [
       "src/cli/messenger/command-capabilities.test.ts the rule",
   })),
   ...cliCore("src/services/account-list.test.ts", [["account list"]]),
-  ...cliCore("src/cli/messenger/chats-answers.test.ts and messenger.test.ts", [["chats show"]]),
   ...cliCore("src/cli/messenger/chats-documents.test.ts", [
     ["chats documents list"],
     ["chats documents list", "--limit"],
