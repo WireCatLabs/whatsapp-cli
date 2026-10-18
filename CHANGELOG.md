@@ -7,6 +7,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **A send blocked by another process's lock exits 9, not 1** (cli-core 0.338.0; WC-OUT-18, WC-OUT-20): when
+  another process holds the send journal or the request pace past the 5 s wait, a send or `flood clear` answers
+  `timeout`, since nothing was sent and a retry is safe. A change to the recipient list held elsewhere for 5 s is
+  refused with exit 9 and the list stays as it was; two changes at once no longer undo each other.
+- **`wa upgrade --offline` exits 2** (WC-OUT-19) instead of asking npm anyway, and `wa upgrade --check` now runs
+  under `WA_READ_ONLY` (WC-PERM-12); `wa upgrade` without `--check` is still refused there.
+
 - **A write the connection dropped under answers `outcome_unknown`** (WC-LIFE-9): exit 14, `retry.safe: false`.
   When the network dropped after a send, edit, reaction, group change or other write left, and whatsmeow could not
   send it again, it answered `network_error` (exit 10), which invited a retry and a double send. Also when

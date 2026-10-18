@@ -63,6 +63,9 @@ wa work recipients list
 wa work recipients remove 100000000000001@lid
 ```
 
+Two changes to the list at the same time cannot undo each other. When another process holds the list for 5 s,
+the change is refused with exit code `9` and the list stays as it was.
+
 An hourly send limit, `sends_per_hour` (30 by default), helps stop a loop. `wa work sends list` shows every attempt
 to send — sent, refused, failed or not known — without the text. These checks remain active when a command is
 allowed ([limits](limits.md)).
