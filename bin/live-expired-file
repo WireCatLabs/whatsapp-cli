@@ -155,6 +155,5 @@ A second download asked the phone again: $again
 
 BACKLOG item 5, "Files WhatsApp no longer keeps": "asked the phone: yes" shows the retry runs in the own chat; a
 saved file of an old message shows it most likely succeeds; "a second download asked the phone again: no" shows the
-store kept the new path. A one-to-one chat with someone else, addressed by its
-LID, stays open.
+store kept the new path. A one-to-one chat with someone else, addressed by its LID, stays open.
 EOF
