@@ -218,12 +218,16 @@ describe("wa chats create, join, leave, update, link", () => {
     expect(both.done).toEqual([])
   })
 
-  it("says the photo was set when the rest of the change then fails", async () => {
+  it.each([
+    ["set", "setGroupPhoto"],
+    ["removed", "removeGroupPhoto"],
+  ] as const)("says the photo was %s when the rest of the change then fails", async (done, op) => {
     const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
     writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))
+    const change = done === "set" ? ["--photo", photo] : ["--remove-photo"]
     let engine: FakeEngine | undefined
     const result = await wa(
-      [PROFILE, "chats", "update", seed.busy, "--photo", photo, "--title", "Synthetic club", "--json"],
+      [PROFILE, "chats", "update", seed.busy, ...change, "--title", "Synthetic club", "--json"],
       () => {
         engine = fakeEngine(seed)
         engine.updateGroup = async () => {
@@ -234,9 +238,9 @@ describe("wa chats create, join, leave, update, link", () => {
     )
     expect(errorOf(result.stderr)).toMatchObject({
       code: "outcome_unknown",
-      message: expect.stringMatching(/^the photo was set, the rest of the change was not: /),
+      message: expect.stringMatching(new RegExp(`^the photo was ${done}, the rest of the change was not: `)),
     })
-    expect(engine?.groupActions).toEqual([{ op: "setGroupPhoto", jid: seed.busy }])
+    expect(engine?.groupActions).toEqual([{ op, jid: seed.busy }])
   })
 
   it("sets no photo when the profile denies chats update", async () => {
