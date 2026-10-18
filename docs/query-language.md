@@ -77,7 +77,7 @@ refused with an error, not ignored. Typos are not corrected: to catch several en
 | `in` | which accounts: a provider | `in:whatsapp` |
 | `preset` | text shaped like a secret or a contact detail | `preset:secret` |
 | `tag` | your own local tag on the message, its chat or its sender | `tag:work` |
-| `phone` | a phone number found in the text, however it is written | `phone:"+34 600 000 000"` |
+| `phone` | a phone number found in the text, however it is written | `phone:"<phone>"` |
 | `email` | an e-mail address found in the text | `email:"ana@example.com"` |
 | `url` | a link found in the text, without tracking parameters | `url:"https://example.com/a"` |
 | `domain` | the site of a link or an address found in the text | `domain:example.com` |
@@ -95,18 +95,20 @@ since `wa` handled files; `content:` needs the file's text read first ([file att
 ## Mentions
 
 `wa` finds phones, e-mail addresses, links, documents and people's names in stored messages. Use these fields to find
-the messages that hold them. The finds themselves are listed by `wa personal mentions list`.
+the messages that hold them. The finds themselves are listed by `wa personal mentions list`. To find a phone, first
+write the number to `number.txt`, on one line.
 
 ```sh
-wa personal search messages 'phone:"+34 600 000 000"'
+wa personal search messages "phone:\"$(cat number.txt)\""
 wa personal search messages 'email:"ana@example.com" OR domain:example.com'
 wa personal search messages 'mentions:"person:12"'
 ```
 
-Quote a value that has `+` or `@`, since both are operators. A phone is found however it is written:
-`+34 600 000 000` and `600000000` are one phone, and a number without `+` is read with the countries of the
-`phone_countries` setting. `domain:` treats `docs.example.com` as `example.com`. `mentions:` takes the reference of a
-person, an organization or a document, and finds the messages whose mentions you linked to it with
+In the table, `<phone>` stands for the number: these pages show no real one. Quote a value that has `+` or `@`,
+since both are operators. A phone is found however it is written: with or without spaces, dashes and the country
+code, it is one phone, and a number without `+` is read with the countries of the `phone_countries` setting.
+`domain:` treats `docs.example.com` as `example.com`. `mentions:` takes the reference of a person, an organization or
+a document, and finds the messages whose mentions you linked to it with
 `wa personal mentions confirm`.
 
 ## Presets
