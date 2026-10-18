@@ -51,14 +51,20 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM)
 	defer stop()
 
-	device, refused := openDevice(ctx, *storePath, *linking, logger.Sub("store"))
+	device, db, refused := openDevice(ctx, *storePath, *linking, logger.Sub("store"))
 	if refused != nil {
 		out.refuse(refused)
 		os.Exit(1)
 	}
 	lookLikeABrowser()
 	e := newEngine(ctx, device, out, logger.Sub("client"))
+	phones, err := openPhoneChats(ctx, db, device.ID == nil)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep the phone-form chats in the device store; they will not be re-keyed")
+	}
+	e.phones = phones
 	out.hello(hello{Protocol: protocol, Engine: "whatsmeow", Version: version, Self: e.self()})
+	e.announce()
 	go func() {
 		<-ctx.Done()
 		os.Stdin.Close()

@@ -273,6 +273,23 @@ person's phone JID and once under their LID would split its messages. **The engi
 LID form** when WhatsApp has a LID for the user, and the phone JID only as a linked identity. In the first live run,
 58 of 71 one-to-one chats were already LIDs.
 
+A user WhatsApp gives no LID for stays in phone form, and may get one later. The engine keeps every one-to-one chat
+id it has emitted in phone form in its own table in `private.db` (`wa_phone_chats`, §7), and after each message and
+each history push checks them against what that message or push says and against whatsmeow's LID store, which keeps
+every mapping WhatsApp sends — in history, in a message's alternate address, in a lookup's answer — before the event
+reaches the engine. A chat whose person now has a LID is announced as a re-key `{from, to}`: in the history push's
+`rekeys`, or as a `rekey` event sent before the message under the new id. The adapter's `feed` hands both to cli-core
+as `HistoryBatch.rekeys` (a `rekey` event as a batch of its own), and cli-core moves the stored chat to the new id
+before the batch's messages land. A live message comes through `watch`, whose events cannot carry a re-key, and need
+not: `serve` and `watch` run `feed` beside it. cli-core saves the two on separate paths, so the message may land
+first, in a new chat under the LID; the re-key then merges the two. At each start the engine announces the
+re-keys whatsmeow learned while it was not running, and repeats those of the last 30 days: a one-shot command does
+not save history, so the first announcement may have had no listener, and cli-core takes a repeat as a no-op. Only
+chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward or a poll —
+never senders or contacts. Once re-keyed, a chat is never emitted in phone form again — not in a message, a
+history push, a send's result or the chat directory: the engine takes its LID from the table wherever whatsmeow's
+store does not answer, and keeps the row after the 30 days of repeats.
+
 ## 6. One connection per linked device
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot
@@ -324,7 +341,10 @@ relays to `serve` is refused by cli-core's `run()` with `permission_error`.
 
 One device per `private.db`: the engine opens the one device in the file, refuses a file with several, and treats
 an empty one as not linked. The engine runs with umask 077, so SQLite's `-wal` and `-shm` beside it are 0600 too.
-Only the engine writes `private.db`; it holds keys and device state, never messages.
+Only the engine writes `private.db`; it holds keys and device state, never messages. Beside whatsmeow's tables the
+engine keeps one of its own, `wa_phone_chats`: the one-to-one chats it emitted in phone form and, once re-keyed, their
+LID (§5). whatsmeow's LID map already holds those numbers in the same file. `session end` deletes the file; a logout
+from WhatsApp's side leaves it, so the engine empties its table when it opens a device not yet linked.
 
 ## 8. On the wire
 

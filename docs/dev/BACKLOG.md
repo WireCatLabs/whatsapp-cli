@@ -13,7 +13,10 @@ Open work, most important first. The plan in flight is
    and `watch` save to the store. Unverified: check live — a message queued while nothing is connected, one
    one-shot connection, then `serve`. The owner runs `bin/live-oneshot-drop` for it; a message arriving during a
    longer one-shot `messages send` is not covered by it.
-3. **A user who gains a LID later.** Their chat would split in two; cli-core cannot re-key a stored chat.
+3. **A user who gains a LID later: live check.** Built: the engine announces the re-key (ARCHITECTURE §5) and the
+   adapter's `feed` hands it to cli-core's `HistoryBatch.rekeys` (cli-core 0.336.0), tested end to end with the fake
+   engine. Left: a live case — a person in phone form who gains a LID — has not been seen yet; the store should then
+   hold their chat once, under the LID.
 4. **Older history from the phone: live checks.** `messages sync <chat>` asks the phone since cli-core 0.316.0
    (`historyOnDemand`), tested end to end with the fake engine; `--all` keeps refusing, as wa has no chat list to walk.
    **Live (2026-10-17, own chat, through `serve`):** with the app in the background the phone sent nothing for 75 s;
@@ -173,8 +176,8 @@ Open work, most important first. The plan in flight is
     history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
     decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup
     that stores a new mapping (`GetUserInfo`, `IsOnWhatsApp`, `UpdateBlocklist` already do, through `contacts
-    profile`, `lookup` and `block`) turns a person's later chats to the LID form, and a chat stored before in phone
-    form then splits in two (item 3). Build it with item 3, or only before a chat is first emitted.
+    profile`, `lookup` and `block`) turns a person's later chats to the LID form; the engine then re-keys the chat
+    stored before in phone form (item 3).
 13. **Standards gaps left by the 2026-10-17 audit** (the handbook's areas, where a fix needs design):
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so

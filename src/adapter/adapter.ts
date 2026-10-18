@@ -467,10 +467,12 @@ export const whatsAppAdapter = (
     },
 
     feed: async (onBatch, signal) => {
-      const pushes = listening(engine, ["history", "connection"], signal, words, (event) => {
+      const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, (event) => {
+        if (event.event === "rekey") onBatch({ rekeys: [{ from: event.from, to: event.to }] })
         if (event.event !== "history") return
-        const { chats, contacts, messages, votes } = event.history
+        const { rekeys, chats, contacts, messages, votes } = event.history
         onBatch({
+          rekeys: rekeys ?? [],
           chats: chats.map(toChat),
           people: contacts.map(toMember),
           messages: messages.map(toMessage),

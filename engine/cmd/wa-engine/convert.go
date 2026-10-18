@@ -229,9 +229,9 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 	if !ok {
 		kind = "other"
 	}
-	out := waHistory{Kind: kind, Chats: []waChat{}, Contacts: []waContact{}, Messages: []waMessage{}, Votes: []waVote{}, oldest: map[string]rawKey{}}
-
 	k := known{}
+	out := waHistory{Kind: kind, Chats: []waChat{}, Contacts: []waContact{}, Messages: []waMessage{}, Votes: []waVote{}, oldest: map[string]rawKey{}, learned: k}
+
 	for _, mapping := range data.GetPhoneNumberToLidMappings() {
 		pn, err1 := types.ParseJID(mapping.GetPnJID())
 		lid, err2 := types.ParseJID(mapping.GetLidJID())

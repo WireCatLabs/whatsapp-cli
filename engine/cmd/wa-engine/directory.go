@@ -60,8 +60,13 @@ func (e *engine) directory() []waChat {
 	for _, group := range e.groups {
 		byID[group.JID] = group
 	}
+	// A chat pushed in phone form may have been re-keyed since; its LID form, if pushed too, wins.
 	for id, chat := range e.chats {
-		byID[id] = chat
+		chat.JID = e.conv.canonical(mustJID(id), nil).String()
+		if _, twin := e.chats[chat.JID]; twin && chat.JID != id {
+			continue
+		}
+		byID[chat.JID] = chat
 	}
 	list := make([]waChat, 0, len(byID))
 	for _, chat := range byID {

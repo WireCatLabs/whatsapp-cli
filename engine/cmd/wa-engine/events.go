@@ -30,7 +30,7 @@ func (e *engine) handle(raw any) {
 	case *events.Message:
 		if evt.Message.GetPollUpdateMessage() != nil {
 			e.pollVote(evt)
-		} else if changed, ok := e.conv.message(evt, nil); ok {
+		} else if changed, ok := e.liveMessage(evt); ok {
 			if changed.kind == "delete" {
 				e.out.deleted(changed.message.Chat, changed.message.ID)
 			} else {
@@ -40,10 +40,12 @@ func (e *engine) handle(raw any) {
 	case *events.HistorySync:
 		history := e.conv.history(evt.Data, e.client.ParseWebMessage)
 		e.remember(history.Chats)
+		rekeys := e.historyRekeys(history)
 		if history.Kind == "on_demand" {
 			history = e.onDemand(history, evt.Notification)
 		}
-		if history.Kind != "on_demand" || !history.empty() {
+		history.Rekeys = rekeys
+		if history.Kind != "on_demand" || !history.empty() || len(rekeys) > 0 {
 			e.out.event("history", history)
 		}
 	case *events.MediaRetry:
