@@ -66,7 +66,7 @@ Every command runs with `--json` and a timeout.
 | C2 | `serve` and `watch` end, and see a write | `watch --events` in the background, a send to Own from the phone, stop by PID; then the same with `serve` | the message deleted for everyone |
 | C3 | the store from live receipt | after C2, `messages list <Own>` and `search messages` find it; `--offline` reads | the owner's store only |
 
-### H — older history from the phone (`serve` stopped, WhatsApp open on the phone)
+### H — older history from the phone (WhatsApp open on the phone)
 
 Record counts and yes/no only. The engine's log line per `ON_DEMAND` batch carries exactly that: how it was matched
 (`session`, `session-other-chat`, `chat`, `late`, `none`), how many messages, the chunk and progress, and whether the
@@ -75,11 +75,11 @@ also say the phone answered the LID chat under another id, such as its phone num
 
 | Id | What | Commands | Puts back |
 |---|---|---|---|
-| H1 | one 50-message page comes as one `ON_DEMAND` notification or several, and the notification names the request by its id | with `WA_ENGINE_LOG` set to a file kept like `private.db`, `messages sync <Own> --limit 50 --no-catch-up` on an Own chat with more than 50 older messages on the phone; count the log's `on-demand history` lines for the one page, note each line's match and its two yes/no values (script: pending) | nothing: the store keeps the page; the log file is deleted after |
+| H1 | one 50-message page comes as one `ON_DEMAND` notification or several, and the notification names the request by its id | with `WA_ENGINE_LOG` set to a file kept like `private.db`, `messages sync <Own> --limit 50 --no-catch-up` on an Own chat with more than 50 older messages on the phone; count the log's `on-demand history` lines for the one page, note each line's match and its two yes/no values (script: `bin/live-older-history`) | nothing: the store keeps the page; the log file is deleted after |
 
 ## Scripts the owner runs
 
-Four checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;
+Five checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;
 an agent never does (`WC-TEST-18`). Each takes the profile as its one argument and never picks one: without it, or
 with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
@@ -95,6 +95,7 @@ Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are i
 |---|---|---|---|
 | `bin/live-oneshot-drop <profile>` | [BACKLOG](BACKLOG.md) item 9: does a one-shot connection take a queued message that then never reaches the store? | stops `serve`; two messages from the phone to the own chat | starts `serve` again on every exit path; the owner deletes the two messages from the phone |
 | `bin/live-poll-vote <profile>` | BACKLOG item 5, a vote cast by `wa`; W-style, own chat only | a poll and a vote in the own chat, through the running `serve` | the poll is deleted for everyone at the end; if the script stops early, it says to delete it from the phone |
+| `bin/live-older-history <profile>` | H1: one 50-message page as one `ON_DEMAND` notification or several, and whether it names the request by its id | restarts `serve` with the engine's log on; one history request from this device to the own phone | starts `serve` again as it was on every exit path; deletes the log |
 | `bin/live-fresh-link <new-profile>` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes` | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
 | `bin/live-chat-state <profile>` | BACKLOG item 5, the chat-state writes: privacy read back, mute, pin, delete for the owner alone (W6); own chat only | a 1-hour mute of the own chat, a marker message pinned and unpinned, through the running `serve` | unmuted and unpinned in the script; the marker deleted for the owner (or for everyone where that is not built); if it stops early, it says what to undo from the phone |
 
@@ -139,6 +140,28 @@ device. It reads the own chat's id from `account list` (it must be in LID form) 
 `polls create` with a question carrying a fresh run number and the answers `yes` and `no`; `polls show` for the
 answer ids; `polls vote` for `yes`; `polls show` again after 10 s; `messages delete --for-everyone`. It prints the
 votes per answer and whether the owner's vote is the chosen one, from the vote's answer and from the store.
+
+**`live-older-history`** restarts `serve`, because the engine reads `WA_ENGINE_LOG` only when it starts. It finds
+and checks `serve` as `live-oneshot-drop` does (the helpers are shared in `bin/lib/live.sh`), and stops nothing when
+`serve` already runs with `WA_ENGINE_LOG` set. Then:
+
+1. It creates the log file beside the device keys (the folder of `doctor`'s device path), mode 600, under a fresh
+   run number.
+2. After the owner's Enter it stops `serve` by its PID and starts it again the same way, with `WA_ENGINE_LOG` set
+   to that file, and waits until `serve` holds the lock.
+3. After a second Enter, `messages sync <Own> --limit 50 --no-catch-up` goes through `serve`: one page, which the
+   engine asks the phone for with a peer message from this device to the own phone. It prints the exit code and
+   `fetched`.
+4. It waits 30 s for later notifications and reads the log. Then it stops the logging `serve` (only if the lock
+   names the PID it started) and starts `serve` as it was, without the log. The `EXIT` trap does the same on any
+   earlier exit. The result below is printed even when this fails.
+5. It prints the log's `on-demand history` lines in order, one row each, then the totals: answers and asks
+   (lines matched by `session`, `session-other-chat` or `chat`), messages credited, the count per match, both yes/no
+   values as logged, and how many lines named their request by the session id. A `late` line counts as named: it
+   matched an earlier ask's id, though its logged flag is `false`, since no ask was waiting by then. Several
+   notifications means a `late` or `none` line, or a chunk order above 1. No line at all is no verdict: the store
+   may already hold the chat's start, or the phone was offline.
+6. The `EXIT` trap deletes the log.
 
 **`live-fresh-link`** refuses a profile that `account list` shows or that has device keys. It says plainly that it
 links a second device and goes on only after `yes`. It runs `session start qr --timeout 15m`; the QR code shows on
