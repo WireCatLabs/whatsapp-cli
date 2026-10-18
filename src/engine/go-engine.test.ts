@@ -43,7 +43,7 @@ describe("startGoEngine", () => {
     const key = { chat: "120363000000000001@g.us", id: "3EB0AA", fromMe: false, sender: "100000000000002@lid" }
     await expect(engine.pin(key)).resolves.toBeUndefined()
     await expect(engine.pin(key, 86_400)).resolves.toBeUndefined()
-    await expect(engine.pin(key, 604_800)).rejects.toMatchObject({ code: "validation_error" })
+    await expect(engine.pin(key, 3600)).rejects.toMatchObject({ code: "validation_error" })
     await expect(engine.unpin(key)).resolves.toBeUndefined()
     await engine.close()
   })

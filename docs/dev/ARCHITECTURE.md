@@ -135,7 +135,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   engine refuses any other), 7 days without one, 0 on an unpin. cli-core has no default length, so 7 days is wa's.
   whatsmeow sends it with the pin edit attribute. Every WhatsApp pin is for the whole chat and its members see it, so
   `WHATSAPP` sets `quietPins: false` and cli-core sends each pin with `notify` and counts it; `pinDurations` lists the
-  three lengths, which cli-core checks before it connects. A pin that arrives is not stored: it has no text.
+  three lengths. cli-core's CLI checks a length before it connects; over MCP only after the engine started
+  (BACKLOG). A pin that arrives is not stored: it has no text.
 - **Votes** arrive once each, as a message of their own, and nothing on WhatsApp's side counts them. The engine
   decrypts a live one (`DecryptPollVote`, with the poll's secret whatsmeow keeps for every poll this device saw) and
   takes the ones a history push carries already decrypted (`WebMessageInfo.pollUpdates`). Each carries the voter
