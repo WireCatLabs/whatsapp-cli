@@ -97,7 +97,7 @@ Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are i
 | `bin/live-poll-vote <profile>` | BACKLOG item 5, a vote cast by `wa`; W-style, own chat only | a poll and a vote in the own chat, through the running `serve` | the poll is deleted for everyone at the end; if the script stops early, it says to delete it from the phone |
 | `bin/live-older-history <profile>` | H1: one 50-message page as one `ON_DEMAND` notification or several, and whether it names the request by its id | restarts `serve` with the engine's log on; one history request from this device to the own phone | starts `serve` again as it was on every exit path; deletes the log |
 | `bin/live-fresh-link <new-profile>` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes` | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
-| `bin/live-chat-state <profile>` | BACKLOG item 5, the chat-state writes: privacy read back, mute, pin, delete for the owner alone (W6); own chat only | a 1-hour mute of the own chat, a marker message pinned and unpinned, through the running `serve` | unmuted and unpinned in the script; the marker deleted for the owner (or for everyone where that is not built); if it stops early, it says what to undo from the phone |
+| `bin/live-chat-state <profile>` | BACKLOG item 5, the chat-state writes: privacy read back, mute, message pin, star (W7), chat pin, archive, mark-unread and mark-read, delete for the owner alone (W6); own chat only | a 1-hour mute of the own chat, a marker message pinned for 24 hours and starred, the own chat pinned, archived and marked unread, through the running `serve` | each undone in the script; the marker deleted for the owner (or for everyone where that is not built); if it stops early, it says what to undo from the phone |
 
 **`live-oneshot-drop`**, step by step:
 
@@ -181,13 +181,24 @@ never printed. After each step it asks the owner what the phone shows and record
    `contacts`, `true`, `false`: no person's data) and the phone screen to compare it with, under Settings >
    Privacy.
 2. `chats mute --until 1h`, then `chats unmute`: muted on the phone, then not.
-3. `messages send` of a marker with a fresh run number, `messages pin` on it, then `messages unpin`.
-4. `messages delete` of the marker without `--for-everyone`, scenario W6: gone from the owner's devices.
+3. `messages send` of a marker with a fresh run number, `messages pin --expire-time 24h` on it, then
+   `messages unpin`. 24 hours is the shortest pin, so a pin left by a stopped script ends by itself.
+4. `messages star` on the marker, then `messages unstar`, scenario W7: the star on the phone, then not.
+5. `chats pin` on the own chat, then `chats unpin`: at the top of the chat list with the pin icon, then not. It
+   asks first, and leaves the step out (`kept`) when the own chat is pinned already, whose pin the unpin would take
+   off, or when three chats are.
+6. `chats archive`, then `chats unarchive`: in Archived, then back in the chat list. It comes after the chat pin,
+   since whatsmeow's archive patch also unpins the chat.
+7. `chats mark-unread`, then `chats mark-read`: the unread dot in the chat list, then whether it stays; the owner
+   does not open the chat, which would clear the dot by itself. `wa` sends a read receipt
+   only for someone else's message and the own chat has none, so `mark-read` sends nothing there.
+8. `messages delete` of the marker without `--for-everyone`, scenario W6: gone from the owner's devices.
 
-A step whose command the build lacks is skipped with "not built in this checkout yet". `chats mute`, `chats unmute`
-and `account privacy show` are looked up in `commands`. `messages pin` and `messages delete` are listed in every
-build, so the script reads their refusal: cli-core's "this messenger cannot pin a message", or wa's delete that is
-only for everyone so far, both exit 2 before anything is sent. Without delete for the owner, it deletes the marker
+A step whose command the build lacks is skipped with "not built in this checkout yet". `chats mute`, `chats unmute`,
+`account privacy show`, `messages star` and `unstar`, `chats pin` and `unpin`, `chats archive` and `unarchive`,
+`chats mark-unread`, and the `--expire-time` option of `messages pin` are looked up in `commands`. `messages pin`
+and `messages delete` are listed in every build, so the script reads their refusal: cli-core's "this messenger
+cannot pin a message", or wa's delete that is only for everyone so far, both exit 2 before anything is sent. Without delete for the owner, it deletes the marker
 for everyone (W4) after an Enter. On a failure it prints the exit code and the error's code, never its message,
 which can quote the chat. It ends with a table of step, answer (yes, no, failed or skipped) and the BACKLOG item 5
 line a yes settles:
@@ -197,6 +208,9 @@ line a yes settles:
 | privacy show | "Live checks of `account privacy`", the `show` half; a match of `calls` says whether `calladd` `known` is the phone's "silence unknown callers" |
 | mute, unmute | "Live checks of `chats mute`": a one-to-one chat addressed by its LID. How soon the settings keys arrive after a fresh link stays open |
 | pin, unpin | "Message pins": the pin and unpin in the own chat. A group addressed by phone numbers stays open |
+| star, unstar | "Live check of starring": the owner's own message in the own chat (W7). Someone else's message, in a group or a one-to-one chat, stays open |
+| chats pin, unpin, archive, unarchive, mark-unread | "Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`": a one-to-one chat addressed by its LID. A fourth pinned chat, pinning an archived chat, and an archived chat that a newer message brings back stay open |
+| mark-read | "`chats mark-read` after a `mark-unread`", for the own chat only. A no is expected: without the read patch, `wa` cannot undo a mark-unread there. Whether a receipt in a chat with someone else clears it stays open |
 | delete for you only | "Live check of delete for the owner alone": the owner's own message. Someone else's message in a group, a one-to-one chat with another person, and the saved files stay open |
 
 Left out on purpose: each changes what other people see, or destroys history, so the owner checks it by hand if
