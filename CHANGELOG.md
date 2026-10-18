@@ -149,6 +149,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   for the code draws nothing and says to widen it or pass `--qr-file`. Without a terminal, `session start` says
   "shows a QR code to scan — run it in a terminal, or pass --qr-file <png>", and `session start phone` says it
   asks questions.
+- **A `--qr-file` path that cannot be written fails the link with exit 2** and says why, instead of crashing wa:
+  the code arrives inside the engine's line listener, where the write error was an uncaught exception. Built on
+  cli-core 0.347.0, whose `close()` removes only an image it wrote.
 - **`WA_READ_ONLY` refuses a write to WhatsApp before anything connects.** `messages send`, `edit`, `delete`,
   `reactions add` and the other commands that change something on WhatsApp used to connect and find the chat first;
   now they exit 5 at once, and a broken login no longer turns the refusal into a network failure. A permission level

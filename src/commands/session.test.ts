@@ -131,6 +131,27 @@ describe("wa session start", () => {
     expect(existsSync(qrFile)).toBe(false)
   })
 
+  it("**fails the link, without crashing, when the --qr-file path cannot be written**", async () => {
+    const engine = fakeEngine(seed, { linked: false })
+    // As the real engine does: the code arrives from a stream listener, outside the link's promise.
+    engine.link = (_request, onCode) => {
+      setImmediate(() => onCode({ login: "qr", code: "FAKECODE" }))
+      return new Promise(() => {})
+    }
+    const blocker = `${process.env.TMPDIR}/not-a-folder`
+    writeFileSync(blocker, "")
+    const result = await wa(
+      ["unwritable", "session", "start", "--qr-file", `${blocker}/login.png`, "--json"],
+      () => engine,
+    )
+    expect(result.code).toBe(2)
+    expect(JSON.parse(result.stderr.slice(result.stderr.lastIndexOf('{"error"'))).error).toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("could not be written"),
+    })
+    expect(engine.closed).toBe(true)
+  })
+
   it("closes the engine and removes the QR image when the login runs past its deadline", async () => {
     const engine = neverScanned()
     const qrFile = `${process.env.TMPDIR}/late.png`

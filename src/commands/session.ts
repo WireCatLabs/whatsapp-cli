@@ -136,9 +136,14 @@ export const startSession = async (
   const environment = environmentOf<Environment>(command)
   // A cut command never reaches its own finally in time; the image links the account while it is valid.
   if (qr.path) environment.trackCloseable?.({ close: async () => qr.close() })
+  // onCode runs inside the engine's line listener, where a throw would crash the process instead of failing the link.
+  let unwritable: (error: CliError) => void = () => {}
+  const failed = new Promise<never>((_, reject) => {
+    unwritable = reject
+  })
 
   try {
-    const linked = await linkDevice(command, context, {
+    const linking = linkDevice(command, context, {
       method,
       beforeLink: () => {
         signal?.throwIfAborted()
@@ -173,9 +178,22 @@ export const startSession = async (
           return
         }
         context.renderer.note("scan in WhatsApp → Settings → Linked devices → Link a device")
-        qr.show(code)
+        try {
+          qr.show(code)
+        } catch (error) {
+          unwritable(
+            new CliError(
+              "validation_error",
+              `--qr-file ${qr.path} could not be written (${error instanceof Error ? error.message : String(error)})`,
+              { param: "--qr-file", reason: "input.invalid" },
+            ),
+          )
+        }
       },
     })
+    // The runner closes the tracked engine once the command fails, which rejects the abandoned link.
+    linking.catch(() => {})
+    const linked = await Promise.race([linking, failed])
     qr.close()
     signal?.throwIfAborted()
 
