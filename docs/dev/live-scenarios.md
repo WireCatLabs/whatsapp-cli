@@ -89,7 +89,8 @@ code on the terminal. The script asks before each step and passes `--yes` only a
 codes, counts and yes or no: never a message's text, an id or a phone number (`WC-SECR-1`). A failed `wa` call
 shows only its command words, exit code and error code, since cli-core's JSON error names the chat and message it
 was about (`WC-SECR-6`); `session start` is the exception, as its sign-in steps and the QR file's path are on that
-stream. A closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are in `bin/lib/live.sh`.
+stream. A closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are in
+`bin/lib/live.sh`.
 
 | Script | Covers | What it changes | How it is put back |
 |---|---|---|---|

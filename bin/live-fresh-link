@@ -50,7 +50,7 @@ trap finish EXIT
 on_signals
 
 # Machine mode refuses to draw the QR code on the terminal, so it goes to a file. The file exists only once WhatsApp
-# hands out the first code, and the wait ends with the store, which `finish` removes.
+# hands out the first code; the wait ends with the store, which `finish` removes, or with this script.
 qr="$store/qr.png"
 show_qr() {
   if command -v xdg-open >/dev/null 2>&1; then
@@ -60,7 +60,7 @@ show_qr() {
   else
     return 0
   fi
-  while [ -d "$store" ] && [ ! -s "$qr" ]; do sleep 1; done
+  while [ -d "$store" ] && [ ! -s "$qr" ] && kill -0 "$$" 2>/dev/null; do sleep 1; done
   # The file is truncated before it is written; a moment lets the first image finish.
   sleep 1
   [ -s "$qr" ] && "$opener" "$qr"
