@@ -234,6 +234,9 @@ func (e *engine) send(req request) (*waMessage, error) {
 	if req.SendID == "" {
 		return nil, &failure{"validation_error", "a send needs its message id"}
 	}
+	if to.Server == types.NewsletterServer && req.ReplyTo != "" {
+		return nil, &failure{"validation_error", "a channel post cannot be a reply"}
+	}
 	if err := e.connect(); err != nil {
 		return nil, err
 	}

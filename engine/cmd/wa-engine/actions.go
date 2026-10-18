@@ -83,6 +83,9 @@ func (e *engine) edit(req request) (*waMessage, error) {
 	if err != nil {
 		return nil, err
 	}
+	if t.chat.Server == types.NewsletterServer {
+		return nil, &failure{"validation_error", "edits in channels are not supported yet"}
+	}
 	if !t.mine() {
 		return nil, &failure{"validation_error", "only your own messages can be edited"}
 	}
@@ -117,6 +120,9 @@ func (e *engine) revoke(req request) error {
 	t, err := targetOf(req)
 	if err != nil {
 		return err
+	}
+	if t.chat.Server == types.NewsletterServer {
+		return &failure{"validation_error", "deleting in channels is not supported yet"}
 	}
 	if !t.mine() && !t.inGroup() {
 		return &failure{"permission_error", "only your own messages can be deleted for everyone in a one-to-one chat"}
