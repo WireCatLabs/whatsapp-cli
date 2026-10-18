@@ -47,17 +47,9 @@ shown() {
 
 stopped=no
 started=""
-restart() {
-  [ "$stopped" = yes ] || return 0
-  stopped=no
-  if kill -0 "$serve" 2>/dev/null; then
-    echo "serve (pid $serve) is still running — not starting a second one" >&2
-    return 0
-  fi
-  start_serve "$profile"
-}
 finish() {
-  restart || true
+  hold_signals
+  restore_serve "$profile" || true
   [ -n "$started" ] || return 0
   if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; fi
 }
@@ -89,7 +81,9 @@ code=$?
 set -e
 echo "doctor --online exited $code"
 
-restart
+hold_signals
+restore_serve "$profile"
+on_signals
 
 confirm "Step 5: on the phone, send yourself a message containing $control."
 echo "waiting 20 s for serve to save it"
