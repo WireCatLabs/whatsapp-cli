@@ -7,6 +7,7 @@ import (
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/proto/waHistorySync"
 	"go.mau.fi/whatsmeow/proto/waWeb"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 )
@@ -272,7 +273,7 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 		}
 		archived := conv.GetArchived()
 		chat.Archived = &archived
-		muted := conv.GetMuteEndTime() > 0 && fromUnix(conv.GetMuteEndTime()).After(now)
+		muted := mutedAt(conv.GetMuteEndTime(), now)
 		chat.Muted = &muted
 		out.Chats = append(out.Chats, chat)
 
@@ -307,6 +308,18 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 		}
 	}
 	return out
+}
+
+// muteHorizon is whatsmeow's own "muted forever", the end of year 9999. A mute for good is -1 in app state and this
+// history field is unsigned, so it probably arrives as all ones: past the horizon it is no time, and time.Unix
+// overflows on it.
+var muteHorizon = uint64(store.MutedForever.Unix())
+
+func mutedAt(end uint64, now time.Time) bool {
+	if end == 0 {
+		return false
+	}
+	return end > muteHorizon || fromUnix(end).After(now)
 }
 
 func fromUnix(seconds uint64) time.Time {
