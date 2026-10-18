@@ -178,6 +178,8 @@ export const WHATSAPP: Messenger = {
   joinRequestsAll: false,
   channelComments: false,
   addsWithHistory: false,
+  // A member's record has no date the account was made, so the moderation rule `newAccount` could never match.
+  knowsAccountAge: false,
   // A document carries the name the recipient sees; WhatsApp has no spoiler and no caption above.
   mediaOptions: ["fileName"],
   groupSettings: GROUP_SETTINGS,

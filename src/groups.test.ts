@@ -534,6 +534,18 @@ describe("wa chats rules", () => {
     expect(errorOf(refused.stderr).message).toContain("name one by its id")
     expect((await naming("rules", "chats", "rules", "show", seed.chats[2]?.id ?? "")).body.saved).toBe(false)
   })
+
+  it("refuses a newAccount rule before connecting, since WhatsApp does not say how old an account is", async () => {
+    const refused = await wa(["ages", "chats", "rules", "set", seed.busy, "newAccount.days", "3", "--json"], () => {
+      throw new Error("a refused rule must never start the engine")
+    })
+    expect(refused.code).toBe(2)
+    expect(refused.stdout).toBe("")
+    expect(errorOf(refused.stderr).message).toBe(
+      "WhatsApp does not say how old an account is, so newAccount cannot work",
+    )
+    expect((await naming("ages", "chats", "rules", "show", seed.busy)).body.saved).toBe(false)
+  })
 })
 
 describe("wa tags auto", () => {
