@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -10,7 +10,7 @@ import { whatsAppAdapter } from "./adapter/adapter.js"
 import { WA } from "./app.js"
 import { type Environment, WHATSAPP } from "./messenger.js"
 import { privateStore } from "./paths.js"
-import { run } from "./program.js"
+import { NO_RESTART_ON, run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
@@ -345,6 +345,72 @@ describe("serve and the commands it runs for others", () => {
     expect(result.stderr).toContain("device.replaced")
     expect(engine?.closed).toBe(true)
   })
+
+  it("rides out a dropped connection and keeps saving what arrives after it", async () => {
+    const profile = "dropped"
+    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
+    const controller = new AbortController()
+    let engine: FakeEngine | undefined
+    let kept = 0
+    const serving = wa([profile, "serve", "--json"], {
+      signal: controller.signal,
+      handled: () => {
+        kept += 1
+        if (kept === 2) controller.abort()
+      },
+      engine: () => {
+        engine = fakeEngine(seed)
+        return engine
+      },
+    })
+    await vi.waitFor(() => expect(listening(lock)).toBeDefined(), { timeout: 5000 })
+    engine?.push(arrived("3EB0000000000000000D01"))
+    engine?.push({ event: "connection", state: "disconnected" })
+    engine?.push({ event: "connection", state: "connected" })
+    engine?.push(arrived("3EB0000000000000000D02"))
+
+    const result = await serving
+    expect(result.code, result.stderr).toBe(0)
+    expect(JSON.parse(result.stdout).item.kept).toEqual({ message: 2 })
+    const listed = await wa([profile, "--offline", "messages", "list", seed.dialog, "--json"])
+    const ids = JSON.parse(listed.stdout).items.map((message: { id: string }) => message.id)
+    expect(ids).toEqual(expect.arrayContaining(["3EB0000000000000000D01", "3EB0000000000000000D02"]))
+  })
+
+  it.each([
+    ["logged_out", 4, "device.logged-out"],
+    ["banned", 5, "account.banned"],
+  ] as const)("stops on %s with exit %i, which its unit does not restart on", async (state, code, reason) => {
+    const profile = `ended-${state}`
+    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
+    let engine: FakeEngine | undefined
+    const serving = wa([profile, "serve", "--json"], {
+      engine: () => {
+        engine = fakeEngine(seed)
+        return engine
+      },
+    })
+    await vi.waitFor(() => expect(listening(lock)).toBeDefined(), { timeout: 5000 })
+    engine?.push({ event: "connection", state })
+
+    const result = await serving
+    expect(result.code, result.stdout).toBe(code)
+    expect(result.stderr).toContain(reason)
+    expect(engine?.closed).toBe(true)
+    expect(existsSync(lock)).toBe(false)
+    expect(NO_RESTART_ON).toContain(code)
+  })
+
+  it("stops when the engine dies, with an exit its unit restarts on", async () => {
+    const profile = "engine-died"
+    linked(profile)
+    const lock = join(process.env.WA_STATE_DIR ?? "", "serve", `${profile}.lock`)
+    const result = await wa([profile, "serve", "--json"], stub("dies"))
+    expect(result.code, result.stdout).toBe(12)
+    expect(result.stderr).toContain("engine.stopped")
+    expect(existsSync(lock)).toBe(false)
+    expect(NO_RESTART_ON).not.toContain(12)
+  })
 })
 
 describe("server, the systemd unit that keeps serve running", () => {
@@ -375,7 +441,7 @@ describe("server, the systemd unit that keeps serve running", () => {
     system,
   })
 
-  it("install writes a unit that does not restart after the login is revoked, and starts nothing", async () => {
+  it("install writes a unit that does not restart after a revoked login or a ban, and starts nothing", async () => {
     const { system, ran } = unitHost()
     const result = await wa(["unitwrite", "server", "install", "--json"], {
       ...onHost("unitwrite", system),
@@ -387,7 +453,7 @@ describe("server, the systemd unit that keeps serve running", () => {
     expect(ran).toEqual([])
     const unit = readFileSync(JSON.parse(result.stdout).item.path, "utf8")
     expect(unit).toContain("Restart=on-failure")
-    expect(unit).toContain("RestartPreventExitStatus=4")
+    expect(unit).toContain("RestartPreventExitStatus=4 5\n")
     expect(unit).toContain('"/opt/wa/dist/bin/wa.js" "serve"')
   })
 
@@ -414,3 +480,19 @@ describe("server, the systemd unit that keeps serve running", () => {
     expect(JSON.parse(status.stdout).item.stopped).toBeUndefined()
   })
 })
+
+const arrived = (id: string) =>
+  ({
+    event: "message",
+    message: {
+      id,
+      chat: seed.dialog,
+      sender: seed.dialog,
+      senderName: "Synthetic Person",
+      fromMe: false,
+      timestamp: new Date().toISOString(),
+      editedAt: null,
+      text: "synthetic text",
+      replyTo: null,
+    },
+  }) as const

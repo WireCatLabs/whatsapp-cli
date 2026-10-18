@@ -94,3 +94,10 @@ Open work, most important first. The plan in flight is
     default, under the owner's autonomy mandate: after a 429, every write is held 15 minutes and reads go on; after a
     ban, writes are held until the end WhatsApp gives it, or until `flood clear` or a `doctor --online` that connects
     when it gives none (`src/adapter/errors.ts`). Open: the 15 minutes, and whether reads should pause too.
+15. **`serve`'s restarts need cli-core** (found 2026-10-18, ARCHITECTURE §4). A unit restarts `serve` by exit code
+    only (cli-core's `noRestartOn`), and `device.replaced`, `client.outdated` and a crashed engine all exit 12. So
+    after another connection takes the login over, the unit starts `serve` again 30 s later and takes it back, and
+    the two push each other off; after `outdated` it restarts for nothing. Needs cli-core: no-restart by reason, or
+    a way for an adapter to give an ending its own exit. Also cli-core's: no cap on restarts (`RestartSec=30`, so
+    systemd's start limit never trips), no restart on macOS once `noRestartOn` is set (launchd cannot exclude one
+    code), none for a `serve` started by hand, and no way to open the connection again inside `serve`.

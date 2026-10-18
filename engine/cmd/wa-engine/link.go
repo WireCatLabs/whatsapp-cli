@@ -15,7 +15,7 @@ func (e *engine) link(method, phone string) (*waAccount, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := e.client.Connect(); err != nil {
+	if err := e.client.ConnectContext(e.ctx); err != nil {
 		return nil, err
 	}
 	phone = strings.Map(func(r rune) rune {

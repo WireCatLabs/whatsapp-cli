@@ -7,6 +7,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **A write the connection dropped under answers `outcome_unknown`** (WC-LIFE-9): exit 14, `retry.safe: false`.
+  When the network dropped after a send, edit, reaction, group change or other write left, and whatsmeow could not
+  send it again, it answered `network_error` (exit 10), which invited a retry and a double send. Also when
+  WhatsApp handed the login to another connection meanwhile: the write may have gone through, so that comes first.
+- **`serve` banned by WhatsApp is not restarted by its unit** (exit 5 joins exit 4 in the unit's no-restart list):
+  a restart 30 s later connected again during the ban. `wa <profile> server status` says it stopped and will not
+  restart; start it again with `wa <profile> server start` once the ban ends.
 - **A temporary ban WhatsApp dates holds writes until its end** (WC-PERM-18): the engine passes the ban's expiry
   (engine protocol 11), the error says when it ends, and `standing.until` is that time.
 - **`session start`, `session end` and `setup` are refused under `WA_READ_ONLY` before they act** (cli-core 0.328.0,
