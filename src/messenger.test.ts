@@ -1,4 +1,5 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
@@ -195,7 +196,7 @@ describe("wa doctor report create --run", () => {
     const run = listRuns(runsDirFor(WA, process.env)).find((one) => one.profile === "failing")
     expect(run).toMatchObject({ command: "messages sync", status: "failed", errorCode: "not_found" })
 
-    const output = join(process.env.TMPDIR ?? "", "wa-run-report.json")
+    const output = join(tmpdir(), "wa-run-report.json")
     const created = await wa(["failing", "doctor", "report", "create", "--run", run?.runId ?? "", "--output", output], {
       engine: () => {
         throw new Error("a problem report must never start the engine")
