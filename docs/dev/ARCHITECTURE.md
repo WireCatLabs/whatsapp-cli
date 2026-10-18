@@ -57,7 +57,7 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   as WhatsApp's own apps do, and refuses a message whose file the store has no keys for. A contact card is stored by its
   name only: the card holds a phone number.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
-  the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
+  the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete`,
   `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store
   first (cli-core's `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing
   is found) and send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not
@@ -165,7 +165,12 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `deleteChat` and `clearChat` (`engine/cmd/wa-engine/chatdeletion.go`; the chat's newest stored message as
   a key and its `timestamp`, which bound what WhatsApp deletes) send `BuildDeleteChat` and a clear-chat patch whatsmeow
   has no builder for, built the same way (`buildClearChat`: index `clearChat`, chat, deleteStarred `1`, deleteMedia
-  `0`; regular_high, version 6 — as Baileys and whatsapp-rust write it). Neither deletes the phone's saved files.
+  `0`; regular_high, version 6 — as Baileys and whatsapp-rust write it). `deleteForMe` (a stored message's key and
+  `timestamp`; one request per message) is another patch whatsmeow has no builder for (`buildDeleteForMe`: index
+  `deleteMessageForMe`, chat, id, fromMe, and the sender of someone else's message in a group, `0` otherwise, in the
+  group's own addressing as `participantFor` gives it; regular_high, version 3; deleteMedia `0` and the message's time
+  in seconds — as WhatsApp Web's `WAWebDeleteMessageForMeSync`, Cobalt and whatsapp-rust write it). None deletes the
+  phone's saved files.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

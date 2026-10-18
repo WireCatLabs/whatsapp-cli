@@ -3,7 +3,7 @@
 Your personal WhatsApp in the terminal, searchable on your computer, and ready for Claude Code, Codex, Cursor or any
 agent — within limits you set.
 
-> **Early.** `wa` links, reads into its local store, sends text and files, edits, deletes for everyone, reacts and
+> **Early.** `wa` links, reads into its local store, sends text and files, edits, deletes, reacts and
 > runs groups. What comes next is on the [roadmap](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/roadmap.md).
 
 An example conversation (invented people, illustrative output):
@@ -126,7 +126,7 @@ The message id `3EB0A1B2C3D4E5F6A7B8` is made up; take a real one from `messages
 - **Privacy.** Who sees your last seen, online, profile photo and about line, whether you send read receipts, who
   may add you to groups and whose calls ring (`wa personal account privacy`).
 
-Several files in one message and deleting for yourself alone are not built yet:
+Several files in one message are not built yet:
 [not in wa yet](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md#not-in-wa-yet).
 
 More: [using wa](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md) · [privacy](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md#privacy) · [one person](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/people.md)

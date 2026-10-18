@@ -21,6 +21,11 @@ export interface SettingsEngine {
   deleteChat(last: WaAnchor): Promise<void>
   /** Deletes every message of `last`'s chat up to `last`, starred ones too, and keeps the chat; as `deleteChat`. */
   clearChat(last: WaAnchor): Promise<void>
+  /**
+   * Deletes `message` from the account's devices alone; the others in the chat keep it. WhatsApp names the message by
+   * its key and the time it was sent, both from the store. The photos and files the phone saved from it stay.
+   */
+  deleteForMe(message: WaAnchor): Promise<void>
 }
 
 const nothing = v.nullable(v.unknown())
@@ -35,5 +40,8 @@ export const goSettings = (request: EngineRequest): SettingsEngine => ({
   },
   clearChat: async (last) => {
     await request("clearChat", { ...keyFields(last), timestamp: last.timestamp }, nothing)
+  },
+  deleteForMe: async (message) => {
+    await request("deleteForMe", { ...keyFields(message), timestamp: message.timestamp }, nothing)
   },
 })

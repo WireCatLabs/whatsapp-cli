@@ -50,6 +50,7 @@ The message id `3EB0A1B2C3D4E5F6A7B8` on this page is made up; take a real one f
 
 ```sh
 wa personal messages edit "Book club" 3EB0A1B2C3D4E5F6A7B8 "the new text"
+wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8                 # for you only
 wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8 --for-everyone
 wa personal reactions add "Book club" 3EB0A1B2C3D4E5F6A7B8 👍
 wa personal messages pin "Book club" 3EB0A1B2C3D4E5F6A7B8 --expire-time 24h
@@ -58,11 +59,12 @@ wa personal chats mark-read "Book club"
 ```
 
 WhatsApp names a message by who sent it as well as by its id, so these work on messages the local store holds; keep
-`serve` running. An edit works on your own message within 20 minutes of sending. A deletion here is for everyone;
-delete a message for yourself alone on the phone. Every pin tells the chat's members: WhatsApp has no quiet pin, so no
-flag is needed. A pin lasts 24 hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`); without
-`--expire-time`, `wa` pins for 7 days. Nothing is marked read unless you ask: `chats mark-read`, or `--mark-read` on
-`messages list`, `inbox` and `review`.
+`serve` running. An edit works on your own message within 20 minutes of sending. A deletion is for you only: `wa`
+asks WhatsApp to take it from your phone and your other devices, to leave it with the others in the chat, and to
+keep the photos and files the phone saved from it. That is not yet checked on a phone. `--for-everyone` removes it
+for everyone. Every pin tells the chat's members: WhatsApp has no quiet pin, so no flag is needed. A pin lasts 24
+hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`); without `--expire-time`, `wa` pins for 7 days. Nothing
+is marked read unless you ask: `chats mark-read`, or `--mark-read` on `messages list`, `inbox` and `review`.
 
 ## Mute a chat
 
@@ -196,7 +198,6 @@ with exit code `2` and says why. Nothing reaches WhatsApp.
 Not built yet:
 
 - several files in one message: a message carries one file;
-- deleting a message for yourself alone: delete it on the phone;
 - who joined and left a group, as WhatsApp records it: `chats events` reads the local store, which does not keep
   them yet, so its empty list does not mean nobody joined (`chats members history` shows the changes between member
   fetches);

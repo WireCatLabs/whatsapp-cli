@@ -46,7 +46,7 @@ import { toAccount, toChat, toMember, toMessage, toWaAttachment } from "./map.js
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
-import { type SettingsAdapter, settingsAdapter } from "./settings.js"
+import { type SettingsAdapter, settingsAdapter, settingsWrite } from "./settings.js"
 
 export type WhatsAppAdapter = MessengerCore &
   LiveUpdates &
@@ -221,6 +221,8 @@ export const whatsAppAdapter = (
       )
     return message
   }
+  // A deletion for the account alone is a change to its synced settings, not a message.
+  const forMe = settingsWrite(translated, words)
 
   async function* fetched(attachment: WaAttachment): AsyncIterable<Uint8Array> {
     const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
@@ -370,13 +372,24 @@ export const whatsAppAdapter = (
     },
 
     delete: async (chatId, messageIds, { forEveryone }) => {
-      if (!forEveryone)
-        throw new CliError(
-          "validation_error",
-          "wa deletes only for everyone so far; add --for-everyone, or delete it for you on the phone",
-        )
       const messages = await Promise.all(messageIds.map((id) => held(chatId, id)))
-      for (const message of messages) await translated(engine.revoke(keyOf(chatId, message)))
+      const done: string[] = []
+      for (const message of messages) {
+        try {
+          if (forEveryone) await translated(engine.revoke(keyOf(chatId, message)))
+          else await forMe(engine.deleteForMe({ ...keyOf(chatId, message), timestamp: message.timestamp }))
+        } catch (error) {
+          if (done.length === 0 || !(error instanceof CliError)) throw error
+          // One request per message: the ones before this went, so the run as a whole is not unsent (WC-OUT-20).
+          const { sent: _, ...details } = error.details
+          throw new CliError(
+            error.code,
+            `deleted ${done.join(", ")}; ${message.id} and any after it were not, or may not have been: ${error.message}`,
+            details,
+          )
+        }
+        done.push(message.id)
+      }
     },
 
     react: async (chatId, messageId, emoji) => {

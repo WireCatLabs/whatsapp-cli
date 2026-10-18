@@ -20,10 +20,12 @@ export interface SettingsDeps {
 // `anchor` gives the newest message sent at a time or before; this one is later than any message's.
 const AFTER_EVERY_MESSAGE = "9999-12-31T23:59:59.999Z"
 
-export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: SettingsDeps): SettingsAdapter => {
-  // The engine cannot name the profile, so the command that brings the keys is named here. whatsmeow refuses before
-  // anything leaves, so a retry is safe (WC-OUT-20).
-  const keyed = <T>(work: Promise<T>): Promise<T> =>
+/** Translates a write to the synced settings, which needs the settings keys WhatsApp sends after linking. */
+export const settingsWrite =
+  (translated: SettingsDeps["translated"], words: Words) =>
+  <T>(work: Promise<T>): Promise<T> =>
+    // The engine cannot name the profile, so the command that brings the keys is named here. whatsmeow refuses before
+    // anything leaves, so a retry is safe (WC-OUT-20).
     translated(
       work.catch((error: unknown) => {
         if (!(error instanceof EngineError) || error.reason !== "settings.keys-missing") throw error
@@ -34,6 +36,9 @@ export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: Se
         )
       }),
     )
+
+export const settingsAdapter = ({ engine, translated, words, stored, keyOf }: SettingsDeps): SettingsAdapter => {
+  const keyed = settingsWrite(translated, words)
 
   // WhatsApp deletes up to a message the patch names, either side's; a guessed one makes the phone drop the patch
   // without a word, so a chat the store holds nothing of is refused.

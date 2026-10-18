@@ -88,9 +88,16 @@ Open work, most important first. The plan in flight is
    - **The store keeps a deleted chat.** cli-core's `chats delete` and `chats clear` leave the local store as it is,
      so `messages list` and `search` still show what was deleted (queued to cli-core); the engine also ignores
      whatsmeow's `DeleteChat` and `ClearChat` events, so a deletion made on the phone does not reach the store either.
-   - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
-     `messages delete` without `--for-everyone` is refused rather than built from a guessed patch. Until it is built,
-     `WHATSAPP.deleteForMe` is `false`, so an agent's MCP delete is refused; building it means setting that to `true`.
+   - **Live check of delete for the owner alone.** `messages delete` without `--for-everyone` sends a hand-built
+     `deleteMessageForMe` patch, pinned against WhatsApp Web's own module, Cobalt and whatsapp-rust, but not yet sent
+     to WhatsApp. Open: that the phone drops a message from someone else in a group (the participant field), one in a
+     one-to-one chat, and the owner's own; and that it keeps the saved files. wa sends the chat id the store holds as
+     it is. WhatsApp Web, once the account's one-to-one chats moved to LIDs, writes a chat stored by phone number as
+     its LID instead (`WAWebSyncdGetChat.getChatJidMutationIndexForChat`), so a chat the store holds by phone number
+     may be dropped; one held by its LID matches.
+   - **A delete for the owner alone made on the phone does not reach the store.** The engine ignores whatsmeow's
+     `events.DeleteForMe`, so `messages list` and `search` still show the message. cli-core already takes an
+     incoming deletion event and marks the message deleted; the engine only has to map this one to it.
    - **Messages stored before files were.** A photo with a caption stored by an older `wa` has the caption and no
      attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
      not push history again; a re-link would refill it.

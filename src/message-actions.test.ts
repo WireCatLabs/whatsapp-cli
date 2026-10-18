@@ -2,7 +2,7 @@ import { captureStreams } from "@wirecat/cli-base"
 import type { Message } from "@wirecat/cli-core"
 import { contractSeed, mcpOverStdio } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
-import type { WhatsAppEngine } from "./engine/contract.js"
+import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
@@ -30,7 +30,18 @@ const answer: Message = {
   text: "synthetic answer",
   replyToId: answered.id,
 }
-const seed = { ...base, messages: [...base.messages, fresh, answer] }
+// Deleted for the owner alone, which also takes them out of the store: one each per test.
+const [forMeOwn, forMeTheirs, forAgent] = [
+  { ...fresh, chatId: base.dialog, id: "3EB0000000000000000F03", timestamp: "2026-08-01T09:00:00.000Z" },
+  {
+    ...answered,
+    id: "3EB0000000000000000F04",
+    timestamp: "2026-08-01T09:01:00.000Z",
+    text: "synthetic text to delete",
+  },
+  { ...fresh, chatId: base.dialog, id: "3EB0000000000000000F05", timestamp: "2026-08-01T09:02:00.000Z" },
+]
+const seed = { ...base, messages: [...base.messages, fresh, answer, forMeOwn, forMeTheirs, forAgent] }
 const inBusy = seed.messages.filter((message) => message.chatId === seed.busy)
 const theirs = inBusy.filter((message) => !message.outgoing).at(-1) as Message
 const oldOwn = inBusy.find((message) => message.outgoing && message.id !== fresh.id) as Message
@@ -215,33 +226,132 @@ describe("wa messages delete", () => {
     ])
   })
 
-  it("refuses to delete for the owner alone, which is not built, and deletes nothing", async () => {
-    const result = await acting(["messages", "delete", seed.busy, fresh.id, "--allow-dangerous"])
-    expect(result.code).toBe(2)
+  it("deletes for the owner alone without --for-everyone, each message by its key and time", async () => {
+    const result = await acting([
+      "messages",
+      "delete",
+      seed.dialog,
+      `${forMeOwn.id},${forMeTheirs.id}`,
+      "--allow-dangerous",
+    ])
+    expect(result.code).toBe(0)
+    expect(result.actions).toEqual([
+      {
+        op: "deleteForMe",
+        key: {
+          chat: seed.dialog,
+          id: forMeOwn.id,
+          fromMe: true,
+          sender: forMeOwn.senderId,
+          timestamp: forMeOwn.timestamp,
+        },
+      },
+      {
+        op: "deleteForMe",
+        key: {
+          chat: seed.dialog,
+          id: forMeTheirs.id,
+          fromMe: false,
+          sender: forMeTheirs.senderId,
+          timestamp: forMeTheirs.timestamp,
+        },
+      },
+    ])
+  })
+
+  it("deletes nothing when one of the messages is not in the store", async () => {
+    const result = await acting([
+      "messages",
+      "delete",
+      seed.dialog,
+      answer.id,
+      "3EB0000000000000000FFF",
+      "--allow-dangerous",
+    ])
+    expect(result.code).toBe(6)
+    expect(errorCode(result.stderr)).toBe("not_found")
     expect(result.actions).toEqual([])
   })
 
-  it("refuses an agent's delete over MCP with permission_error, without connecting", async () => {
-    expect((await wa(["agent", "config", "set", "permissions.messages.delete", "allow"])).code).toBe(0)
-    let connects = 0
-    const neverConnect = (): never => {
-      connects += 1
-      throw new Error("an agent's delete must never connect")
-    }
-    const mcp = await mcpOverStdio((streams) =>
-      run(["agent", "mcp"], { streams: captureStreams(), tty: false, ...streams, engine: neverConnect }),
+  it("asks first, so a script that cannot answer is refused and nothing is deleted", async () => {
+    const result = await acting(["messages", "delete", seed.dialog, answer.id])
+    expect(result.code).not.toBe(0)
+    expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.message).toContain("--allow-dangerous")
+    expect(result.actions).toEqual([])
+  })
+
+  it("names what went when a later message fails, and does not call the run safe to retry", async () => {
+    let engine: FakeEngine | undefined
+    const result = await wa(
+      ["actions", "messages", "delete", seed.dialog, `${answer.id},${forAgent.id}`, "--allow-dangerous", "--json"],
+      () => {
+        engine = fakeEngine(seed)
+        const deleteForMe = engine.deleteForMe
+        engine.deleteForMe = async (message) => {
+          if (message.id === forAgent.id)
+            throw new EngineError("provider_unavailable", "synthetic refusal", "settings.keys-missing")
+          await deleteForMe(message)
+        }
+        return engine
+      },
     )
-    const answer = await mcp.call("wa_write", {
+    expect(result.code).toBe(12)
+    const { error } = JSON.parse(result.stderr.slice(result.stderr.indexOf("{")))
+    expect(error.message).toContain(`deleted ${answer.id}; ${forAgent.id}`)
+    expect(error.retry).toEqual({ safe: false })
+    expect(engine?.actions.map((action) => action.key.id)).toEqual([answer.id])
+  })
+
+  it("says to keep serve running when WhatsApp has not sent the settings keys yet", async () => {
+    const result = await wa(
+      ["actions", "messages", "delete", seed.dialog, answer.id, "--allow-dangerous", "--json"],
+      () => fakeEngine(seed, { settingsKeys: false }),
+    )
+    expect(result.code).toBe(12)
+    const { error } = JSON.parse(result.stderr.slice(result.stderr.indexOf("{")))
+    expect(error).toMatchObject({ code: "provider_unavailable", reason: "settings.keys-missing" })
+    expect(error.message).toContain("wa actions serve")
+  })
+
+  it("lets an agent delete over MCP for the owner alone, and never for everyone", async () => {
+    expect((await wa(["agent", "config", "set", "permissions.messages.delete", "allow"])).code).toBe(0)
+    let engine: FakeEngine | undefined
+    const mcp = await mcpOverStdio((streams) =>
+      run(["agent", "mcp"], {
+        streams: captureStreams(),
+        tty: false,
+        ...streams,
+        engine: () => {
+          engine = fakeEngine(seed)
+          return engine
+        },
+      }),
+    )
+    const everyone = await mcp.call("wa_write", {
       command: "messages delete",
-      arguments: { chat: seed.busy, messages: [fresh.id] },
+      arguments: { chat: seed.dialog, messages: [forAgent.id], for_everyone: true },
+    })
+    const deleted = await mcp.call("wa_write", {
+      command: "messages delete",
+      arguments: { chat: seed.dialog, messages: [forAgent.id] },
     })
     await mcp.close()
-    const refused = answer.body as { error: { code: string; message: string } }
 
-    expect(refused.error).toMatchObject({ code: "permission_error" })
-    expect(refused.error.message).toContain("deletes only for everyone")
-    expect(refused.error.message).toContain("wa messages delete --for-everyone")
-    expect(connects).toBe(0)
+    // --for-everyone is the owner's alone, so the agent's tool has no such argument.
+    expect(everyone.body).toMatchObject({ error: { code: "validation_error", reason: "input.invalid" } })
+    expect(deleted.body).not.toHaveProperty("error")
+    expect(engine?.actions).toEqual([
+      {
+        op: "deleteForMe",
+        key: {
+          chat: seed.dialog,
+          id: forAgent.id,
+          fromMe: true,
+          sender: forAgent.senderId,
+          timestamp: forAgent.timestamp,
+        },
+      },
+    ])
   })
 })
 
