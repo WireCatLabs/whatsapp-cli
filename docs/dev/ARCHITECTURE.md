@@ -168,11 +168,11 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   client rejects a write still waiting when the engine process ends with `outcome_unknown`, a read with
   `provider_unavailable` (`WRITES` in [`go-engine.ts`](../../src/engine/go-engine.ts)).
 - **Holds on writes are cli-core's.** `fromEngine` ([`src/adapter/errors.ts`](../../src/adapter/errors.ts)) gives
-  WhatsApp's 429 a `standing: limited` ending 15 minutes on, and a ban a `standing: frozen` ending when WhatsApp's
-  temporary ban does (the engine passes whatsmeow's `TemporaryBan.Expire` as `until`, protocol 11), or a year on
-  when it gives no end; cli-core's
-  `flooded` turns either into a hold on counted writes, reads go on, and `doctor --online` (the adapter's `health`,
-  which connects) lifts the frozen one. Not `retry_after_ms` alone: cli-core's pace would then hold reads too.
+  WhatsApp's 429 a `standing: limited` ending 15 minutes on, and a ban a `standing: banned` ending when WhatsApp's
+  temporary ban does (the engine passes whatsmeow's `TemporaryBan.Expire` as `until`, protocol 11), or with no
+  `until` when it gives no end; cli-core's `flooded` turns either into a hold on every write, reads go on, and
+  `flood clear` or `doctor --online` (the adapter's `health`, which connects) lifts the ban's hold. Not
+  `retry_after_ms` alone: cli-core's pace would then hold reads too.
 - **Early events are kept.** An event nobody listens for yet is handed to the first listener of its kind
   ([`events.ts`](../../src/engine/events.ts)), so the history pushed right after connecting reaches `feed` even when
   `watch` subscribed first.
@@ -220,8 +220,8 @@ its `serve-relay` is `serve`'s side. On Windows the relay is off for now, so the
 in `src/adapter/` or `engine/` knows about the relay. `session start`, `session end` and `setup` are marked
 `logsInOrOut`: cli-core never relays them (a relayed logout would end `serve`'s own connection and delete the keys
 under it) and refuses them under `WA_READ_ONLY` before they act. Run here, `session end` meets the device lock
-`serve` holds (`device.in-use`) and says to stop `serve` first. cli-core's `serve` does not refuse a login relayed to
-it, which a client of an older `wa` still does, so `session end` keeps refusing a relayed run itself.
+`serve` holds (`device.in-use`) and says to stop `serve` first. A login or logout that a client of an older `wa` still
+relays to `serve` is refused by cli-core's `run()` with `permission_error`.
 
 ## 7. What is on disk
 

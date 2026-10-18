@@ -22,7 +22,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   quoted argument (`wa 'chats list'`) fails with `validation_error`. `wa mcp` no longer offers `chats link create`,
   `metadata get` or `metadata refresh`, which `wa` does not have and which failed.
 - **A hold on writes stops every write** (cli-core 0.334.0, WC-PERM-18): while WhatsApp has the account banned or
-  rate-limited, a reaction, `chats mark-read`, a group title change and a profile change are refused with exit `5`
+  rate-limited, a reaction, `chats mark-read` and a group title change are refused with exit `5`
   too, not only sends and edits. Reads still work; `inbox` and `review` with `--mark-read` still show what they read
   and warn that nothing was marked read.
 - **A ban with no end holds writes until it is lifted** (WC-PERM-18): `standing.state` is `banned`, not `frozen`,

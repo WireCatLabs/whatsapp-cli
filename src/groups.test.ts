@@ -359,6 +359,17 @@ describe("wa doctor --online", () => {
     expect(errorOf(meanwhile.stderr).message).toContain("holds its writes")
     expect(held?.sent ?? []).toEqual([])
 
+    let reacting: FakeEngine | undefined
+    const reaction = await wa(
+      [profile, "reactions", "add", seed.dialog, "3EB0000000000000000BEEF", "👍", "--json"],
+      () => {
+        reacting = fakeEngine(seed)
+        return reacting
+      },
+    )
+    expect(reaction.code).toBe(5)
+    expect(reacting?.actions ?? []).toEqual([])
+
     const stillBanned = await wa([profile, "doctor", "--online", "--json"], () => {
       const engine = fakeEngine(seed)
       engine.ready = async () => {
