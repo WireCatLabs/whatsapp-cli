@@ -12,8 +12,8 @@ does not fail a test; it writes to a living person, and WhatsApp bans accounts t
 action: do it, print, exit.
 
 **Ban risk.** `wa` is an unofficial client, and WhatsApp may ban the owner's account for using one, or for bulk or
-unsolicited messages. Never send in bulk, never write to a chat the owner has not written to, and send only what the
-owner asked for. The profile allows 30 sends an hour by default (`sends_per_hour`); a refusal with exit `8` or `5`
+unsolicited messages. Never send in bulk. Never write to a number the owner has not been in touch with unless the
+owner names it in this request, and never to several such numbers at once. Send only what the owner asked for. The profile allows 30 sends an hour by default (`sends_per_hour`); a refusal with exit `8` or `5`
 after WhatsApp asks to slow down is a hold — stop, do not retry, tell the owner.
 
 Read this skill, then discover only the commands relevant to the task. **`wa commands messages send --json`**
