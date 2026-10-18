@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
-import { COMMAND_NEEDS, listRuns, repliesPathFor, runsDirFor } from "@wirecat/cli-core/cli"
+import { COMMAND_NEEDS, listRuns, repliesPathFor, runsDirFor, type ServerSystem } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "./adapter/adapter.js"
@@ -344,5 +344,73 @@ describe("serve and the commands it runs for others", () => {
     expect(result.code, result.stdout).toBe(12)
     expect(result.stderr).toContain("device.replaced")
     expect(engine?.closed).toBe(true)
+  })
+})
+
+describe("server, the systemd unit that keeps serve running", () => {
+  const unitHost = (exited?: number) => {
+    const ran: string[][] = []
+    const system: ServerSystem = {
+      platform: "linux",
+      uid: 1000,
+      entry: ["/opt/node", "/opt/wa/dist/bin/wa.js"],
+      run: async (argv) => {
+        ran.push(argv)
+        const state =
+          exited === undefined
+            ? "LoadState=loaded\nActiveState=inactive\nSubState=dead\nMainPID=0\n"
+            : `LoadState=loaded\nActiveState=failed\nSubState=failed\nMainPID=0\nExecMainCode=1\nExecMainStatus=${exited}\n`
+        return { code: 0, stdout: argv.includes("show") ? state : "", stderr: "" }
+      },
+      spawn: () => {
+        throw new Error("nothing here starts serve")
+      },
+      pause: async () => {},
+    }
+    return { system, ran }
+  }
+  // cli-core's seam for the OS's service manager; wa's own Environment does not name it.
+  const onHost = (profile: string, system: ServerSystem): Environment & { system: ServerSystem } => ({
+    env: { ...process.env, XDG_CONFIG_HOME: join(tmpdir(), profile, "xdg") },
+    system,
+  })
+
+  it("install writes a unit that does not restart after the login is revoked, and starts nothing", async () => {
+    const { system, ran } = unitHost()
+    const result = await wa(["unitwrite", "server", "install", "--json"], {
+      ...onHost("unitwrite", system),
+      engine: () => {
+        throw new Error("installing the unit must not connect")
+      },
+    })
+    expect(result.code, result.stderr).toBe(0)
+    expect(ran).toEqual([])
+    const unit = readFileSync(JSON.parse(result.stdout).item.path, "utf8")
+    expect(unit).toContain("Restart=on-failure")
+    expect(unit).toContain("RestartPreventExitStatus=4")
+    expect(unit).toContain('"/opt/wa/dist/bin/wa.js" "serve"')
+  })
+
+  it("status says serve stopped for a revoked login and will not restart by itself", async () => {
+    const { system } = unitHost(4)
+    const environment = onHost("unitrevoked", system)
+    expect((await wa(["unitrevoked", "server", "install", "--json"], environment)).code).toBe(0)
+    const status = await wa(["unitrevoked", "server", "status", "--json"], environment)
+    expect(status.code, status.stderr).toBe(0)
+    expect(JSON.parse(status.stdout).item).toMatchObject({
+      running: false,
+      stopped: { exit_code: 4, reason: "authentication_error", restarts: false },
+    })
+    const said = await wa(["unitrevoked", "server", "status"], { ...environment, tty: true })
+    expect(said.stdout).toContain("the login is no longer valid, and it will not restart by itself")
+  })
+
+  it("status leaves any other failure to systemd's restart", async () => {
+    const { system } = unitHost(1)
+    const environment = onHost("unitfailed", system)
+    expect((await wa(["unitfailed", "server", "install", "--json"], environment)).code).toBe(0)
+    const status = await wa(["unitfailed", "server", "status", "--json"], environment)
+    expect(status.code, status.stderr).toBe(0)
+    expect(JSON.parse(status.stdout).item.stopped).toBeUndefined()
   })
 })
