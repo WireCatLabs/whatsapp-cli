@@ -83,13 +83,12 @@ Eight checks need a person at the phone, so they are scripts in `bin/`. Only the
 an agent never does (`WC-TEST-18`). Each takes the profile as its first argument and never picks one: without it, or
 with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
-(`WC-LIFE-5`). Three calls differ: the restarted `serve` runs without a timeout, and `live-fresh-link` runs
-`session start` through `node` with a throwaway store and `--qr-file` (below), since machine mode never draws the QR
-code on the terminal. The script asks before each step and passes `--yes` only after that. It prints exit
+(`WC-LIFE-5`). Some calls differ: the restarted `serve` runs without a timeout, and `live-fresh-link` runs
+`session start` through `node` with a throwaway store, in human mode on the terminal so that wa draws the QR code
+there (below). The script asks before each step and passes `--yes` only after that. It prints exit
 codes, counts and yes or no: never a message's text, an id or a phone number (`WC-SECR-1`). A failed `wa` call
 shows only its command words, exit code and error code, since cli-core's JSON error names the chat and message it
-was about (`WC-SECR-6`); `session start` is the exception, as its sign-in steps and the QR file's path are on that
-stream. A closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are in
+was about (`WC-SECR-6`); `session start` is the exception, as it runs on the terminal for the owner to scan. A closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The shared helpers are in
 `bin/lib/live.sh`.
 
 | Script | Covers | What it changes | How it is put back |
@@ -176,15 +175,13 @@ and checks `serve` as `live-oneshot-drop` does (the helpers are shared in `bin/l
 6. The `EXIT` trap deletes the log.
 
 **`live-fresh-link`** refuses a profile that `account list` shows or that has device keys. It says plainly that it
-links a second device and goes on only after `yes`. It runs `session start qr --qr-file <store>/qr.png --json
---timeout 15m`: `--json` and a redirected stdout make the run headless, and a headless QR login needs a file. The
-image is written with mode 600 inside the throwaway store (mode 700), and `session start` deletes it once the device
-is linked or the run ends. The script prints the path and opens the image in the background with `xdg-open`, or
-`open` on macOS, once it exists; with neither, the owner opens the path. WhatsApp renews the code about every 20
-seconds and the file is replaced each time; a viewer that does not reload it needs the file opened again. The device
-keys go to the main checkout's `.wa/state`, like any profile there. The pushed history goes to a throwaway store,
-removed at the end, because the store keys an account by its WhatsApp id and not by its profile: the push would
-otherwise land in the owner's store. It prints `already_linked` and the history counts (chats, messages, people). On
+links a second device and goes on only after `yes`. It runs `session start qr --timeout 15m` in human mode, with the
+terminal attached and nothing redirected, so wa draws the QR code in the terminal as tg and max do; Ctrl+C there
+ends the history wait, not the script. That run's own lines name the account, so only the result block is pasted.
+The device keys go to the main checkout's `.wa/state`, like any profile there. The pushed history goes to a throwaway
+store, removed at the end, because the store keys an account by its WhatsApp id and not by its profile: the push would
+otherwise land in the owner's store. The result block holds `session start`'s exit code and the chats and messages in
+that store, read afterwards with `doctor --json`: distinct rows, which can be fewer than the pushed batches held. On
 every exit, Ctrl-C included, it removes the throwaway store and, while the new profile has device keys, says how to
 unlink it.
 
