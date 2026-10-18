@@ -64,7 +64,8 @@ WA_REQUESTS_PER_MINUTE=30 wa personal messages send 100000000000001@lid "on my w
   while the hold lasts). Reads go on. Neither hold stops a reaction or a read receipt, so send none while one lasts.
   `wa personal flood clear` lifts a hold once you know it is over.
 - **A poll** has 2 to 12 answers, each with its own text; it counts as a send.
-- **A pin** counts as a send. An unpin does not, and neither hold stops it, though the chat's members see it.
+- **A pin** counts as a send: WhatsApp tells the chat's members about every one. An unpin does not count, but a hold
+  stops it too.
 - A send that may or may not have arrived (exit code `14`) is never repeated by `wa`. Check `wa personal sends list`
   and the chat before you send again ([how wa behaves in scripts](cli-contract.md#previews-and-safe-retries)).
 

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**133 ✅ · 590 ⛔ · 0 ❌** — 227 commands, 496 options.
+**134 ✅ · 590 ⛔ · 0 ❌** — 227 commands, 497 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -184,6 +184,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages forward` | `--operation-id` | ✅ |  |
 | `messages pin` |  | ✅ |  |
 | `messages pin` | `--notify` | ✅ |  |
+| `messages pin` | `--expire-time` | ✅ |  |
 | `messages unpin` |  | ✅ |  |
 | `messages link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/messages-link.test.ts |
 | `messages comments` |  | ✅ |  |

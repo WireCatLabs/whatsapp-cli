@@ -52,15 +52,15 @@ The message id `3EB0A1B2C3D4E5F6A7B8` on this page is made up; take a real one f
 wa personal messages edit "Book club" 3EB0A1B2C3D4E5F6A7B8 "the new text"
 wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8 --for-everyone
 wa personal reactions add "Book club" 3EB0A1B2C3D4E5F6A7B8 👍
-wa personal messages pin "Book club" 3EB0A1B2C3D4E5F6A7B8 --notify
+wa personal messages pin "Book club" 3EB0A1B2C3D4E5F6A7B8 --expire-time 24h
 wa personal messages unpin "Book club" 3EB0A1B2C3D4E5F6A7B8
 wa personal chats mark-read "Book club"
 ```
 
 WhatsApp names a message by who sent it as well as by its id, so these work on messages the local store holds; keep
 `serve` running. An edit works on your own message within 20 minutes of sending. A deletion here is for everyone;
-delete a message for yourself alone on the phone. A pin is for the whole chat and WhatsApp tells its members, so
-`messages pin` needs `--notify`; `wa` pins for 7 days. Nothing is marked read unless you ask: `chats mark-read`, or
+delete a message for yourself alone on the phone. A pin is for the whole chat and WhatsApp tells its members, with or
+without `--notify`. It lasts 24 hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`), 7 days when not given. Nothing is marked read unless you ask: `chats mark-read`, or
 `--mark-read` on `messages list`, `inbox` and `review`.
 
 A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local store holds shows the quoted text

@@ -32,6 +32,8 @@ type request struct {
 	FromMe  bool    `json:"fromMe,omitempty"`
 	Sender  string  `json:"sender,omitempty"`
 	Emoji   *string `json:"emoji,omitempty"`
+	// pin: how many seconds it lasts; 0 is the default.
+	Duration uint32 `json:"duration,omitempty"`
 
 	// older: when the anchor message was sent, and how many before it.
 	Timestamp string `json:"timestamp,omitempty"`

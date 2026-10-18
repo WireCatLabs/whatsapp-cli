@@ -93,6 +93,7 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups {
     text?: string
     emoji?: string | null
     answers?: string[]
+    duration?: number
   }[]
   closed: boolean
   loggedOut: boolean
@@ -267,8 +268,8 @@ export const fakeEngine = (
     vote: async (key, answers) => {
       actions.push({ op: "vote", key, answers })
     },
-    pin: async (key) => {
-      actions.push({ op: "pin", key })
+    pin: async (key, duration) => {
+      actions.push({ op: "pin", key, ...(duration === undefined ? {} : { duration }) })
     },
     unpin: async (key) => {
       actions.push({ op: "unpin", key })

@@ -131,10 +131,11 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   so `polls show`, `polls vote` and `polls voters` read the poll from the store.
 - **Pin requests** (`engine/cmd/wa-engine/pins.go`): `pin` and `unpin`, each addressed by a stored message's key,
   send a `PinInChatMessage` (`PIN_FOR_ALL` or `UNPIN_FOR_ALL`, the target's key, the sender's time) with
-  `messageAddOnDurationInSecs` of 7 days (0 on an unpin). WhatsApp's pins last 24 hours, 7 days or 30 days; 7 days is
-  what wa sends, as cli-core's command has no duration. whatsmeow sends it with the pin edit attribute. Every WhatsApp
-  pin is for the whole chat and its members see it, so the adapter refuses `messages pin` without `--notify` rather
-  than pin loudly. A pin that arrives is not stored: it has no text.
+  `messageAddOnDurationInSecs`: the request's `duration` (86400, 604800 or 2592000 seconds, from `--expire-time`; the
+  engine refuses any other), 7 days without one, 0 on an unpin. cli-core has no default length, so 7 days is wa's.
+  whatsmeow sends it with the pin edit attribute. Every WhatsApp pin is for the whole chat and its members see it, so
+  `WHATSAPP` sets `quietPins: false` and cli-core sends each pin with `notify` and counts it; `pinDurations` lists the
+  three lengths, which cli-core checks before it connects. A pin that arrives is not stored: it has no text.
 - **Votes** arrive once each, as a message of their own, and nothing on WhatsApp's side counts them. The engine
   decrypts a live one (`DecryptPollVote`, with the poll's secret whatsmeow keeps for every poll this device saw) and
   takes the ones a history push carries already decrypted (`WebMessageInfo.pollUpdates`). Each carries the voter

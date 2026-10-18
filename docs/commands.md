@@ -1316,7 +1316,7 @@ wa messages forward <chat> <message> [options]
 
 ### `wa messages pin`
 
-pin a message in a chat, quietly unless --notify
+pin a message in a chat; its members are told
 
 **Changes something in WhatsApp.**
 
@@ -1331,7 +1331,8 @@ wa messages pin <chat> <message> [options]
 
 | Option | What it does |
 |---|---|
-| `--notify` | tell the chat's members about the pin. |
+| `--notify` | tell the chat's members; every pin here does. |
+| `--expire-time <time>` | the pin ends by itself then: 24h, 7d or 30d from now. |
 
 ### `wa messages unpin`
 
@@ -2271,7 +2272,7 @@ wa conversations consents revoke [options]
 
 compute a vector for each chunk of a chat's conversations for search by meaning — on this machine, or with --provider through a service and your key; resumes where it stopped; without --chat, every built chat with chunks left, on this machine only
 
-**Changes something on this computer only.**
+**Changes something in WhatsApp.**
 
 ```sh
 wa conversations embed [options]
