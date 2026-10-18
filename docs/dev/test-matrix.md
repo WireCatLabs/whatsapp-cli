@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**158 ✅ · 565 ⛔ · 0 ❌** — 227 commands, 496 options.
+**161 ✅ · 562 ⛔ · 0 ❌** — 227 commands, 496 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -691,10 +691,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `config unset` | `--bot` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
 | `doctor` |  | ✅ |  |
 | `doctor` | `--online` | ✅ |  |
-| `doctor report` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
-| `doctor report create` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
+| `doctor report` |  | ✅ |  |
+| `doctor report create` |  | ✅ |  |
 | `doctor report create` | `--run` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
-| `doctor report create` | `--output` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/doctor-command.test.ts |
+| `doctor report create` | `--output` | ✅ |  |
 | `commands` |  | ✅ |  |
 | `commands schema` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/commands-command.test.ts) |
 | `complete` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/complete-command.test.ts) |

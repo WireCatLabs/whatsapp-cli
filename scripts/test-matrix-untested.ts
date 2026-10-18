@@ -145,12 +145,7 @@ export const UNTESTED: Untested[] = [
     ["messages links"],
   ]),
   ...cliCore("src/services/messages-link.test.ts", [["messages link"]]),
-  ...cliCore("src/cli/messenger/doctor-command.test.ts", [
-    ["doctor report"],
-    ["doctor report create"],
-    ["doctor report create", "--run"],
-    ["doctor report create", "--output"],
-  ]),
+  ...cliCore("src/cli/messenger/doctor-command.test.ts", [["doctor report create", "--run"]]),
   {
     command: "config show",
     option: "--bot",
