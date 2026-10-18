@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -114,8 +115,14 @@ func TestAPatchThatLeftWithoutAnAnswerIsOutcomeUnknown(t *testing.T) {
 			t.Errorf("%v became %q, want %q", err, got, want)
 		}
 	}
+	// whatsmeow answers ErrNotConnected before a patch leaves, and also when it resends one after a reconnect, so
+	// appStateFailure leaves it to refusalFor, which counts it as maybe sent for a write.
 	if got := classify(appStateFailure(whatsmeow.ErrNotConnected)).Code; got != "network_error" {
-		t.Errorf("a patch that never left became %q", got)
+		t.Errorf("appStateFailure decided a lost connection itself: %q", got)
+	}
+	e := &engine{out: newWire(io.Discard)}
+	if got := e.refusalFor("mute", appStateFailure(whatsmeow.ErrNotConnected)).Code; got != "outcome_unknown" {
+		t.Errorf("a patch that may have left became %q", got)
 	}
 }
 
