@@ -26,7 +26,7 @@ Some words on this page:
 | Delete a message for everyone, as the group's admin | `wa personal messages delete --for-everyone` |
 | Make a group, join one by its link, or leave | `wa personal chats create`, `chats join`, `chats leave` |
 | Add or remove people, make someone an admin | `wa personal chats members add`, `chats admins add` |
-| Rename a group, or change who may add people | `wa personal chats update` |
+| Rename a group, set its photo, or change who may add people | `wa personal chats update` |
 | Show or replace the invite link | `wa personal chats link show`, `chats link reset` |
 | Let in or turn away people who asked to join | `wa personal chats requests list`, `chats requests accept` |
 

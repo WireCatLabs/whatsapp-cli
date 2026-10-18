@@ -116,17 +116,20 @@ The message id `3EB0A1B2C3D4E5F6A7B8` is made up; take a real one from `messages
 - **Read.** Chats and messages from the local store, one message with its neighbours, other people's unread
   messages (`wa personal inbox`), everything since the last review (`wa personal review`), new messages as they
   arrive (`wa personal watch`), and older messages of one chat asked of your phone (`wa personal messages sync`).
-- **Write.** Markdown, replies, one file, photo, video or voice note per message, edits of your own messages within
-  20 minutes, forwards, reactions, polls and votes, pins (each one tells the members), deleting for everyone, and
-  marking a chat read.
+- **Write.** Markdown, replies, one file, photo, video or voice note per message, a photo and a video as one album,
+  edits of your own messages within 20 minutes, forwards, reactions, polls and votes, pins (each one tells the
+  members), deleting for you or for everyone, and marking a chat read.
+- **Your chat list.** Mute, archive, pin or mark a chat unread, star a message, and delete or clear a chat on your
+  own devices; nobody in the chat is told.
 - **Voice on your computer.** WhatsApp has no speech recognition of its own, so `wa` runs a speech model on this
   machine, downloaded only when you ask.
 - **People.** A person's profile, blocking, whether a number has WhatsApp, the phone's address book into the store,
   and your own names and notes for people.
+- **Your account.** Your own name, about line and profile photo (`wa personal account update`).
 - **Privacy.** Who sees your last seen, online, profile photo and about line, whether you send read receipts, who
   may add you to groups and whose calls ring (`wa personal account privacy`).
 
-Several files in one message are not built yet:
+More files in one message than a photo and a video are not built yet:
 [not in wa yet](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md#not-in-wa-yet).
 
 More: [using wa](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md) · [privacy](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md#privacy) · [one person](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/people.md)

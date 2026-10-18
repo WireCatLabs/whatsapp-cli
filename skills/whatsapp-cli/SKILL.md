@@ -26,7 +26,8 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `messages forward`, `messages transcribe --local`, `messages star|unstar`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
 `polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `chats archive|unarchive|pin|unpin|mark-unread`,
 `chats delete|clear` (they ask first; not over MCP),
-`account update` (name, about and a square JPEG photo), group admin
+`account update` (name, about and a square JPEG photo), `metadata refresh` (a group's title and description, for
+`tags auto`), group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
@@ -34,14 +35,16 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.
 Not built yet:
 `chats inspect`, removing a group's photo (`chats update --photo` sets one, a square JPEG of 190 to
-720 pixels a side), `account sessions`, `chats create --channel`. WhatsApp has no
+720 pixels a side), more files in one message than a photo and a video, listing a community's groups or linking one, `account sessions`, `chats create --channel`. WhatsApp has no
 `chats folders`, no `messages comments`, no second invite link, no partial admin rights and no account age (a
 `newAccount` rule in `chats rules set` is refused), and keeps the address book on the phone, so
 `contacts add|remove|rename|import` are refused. `chats show` answers from the store;
 `chats members list` asks WhatsApp, and with `--offline` shows the stored members. `chats events` answers from the
 store, which holds no joins or leaves yet: its empty list does not mean nobody joined, and `stats chats show` leaves
 `members` out and says in `missing` that joins and leaves are not recorded yet; `chats members history` shows who
-joined or left between member fetches. `chats mark-read` sends a read receipt only and may not clear a
+joined or left between member fetches. A group in a WhatsApp community names it in `parent_chat_id`, and the
+community itself is a group with `provider_metadata.community: true`; only the answers of `chats create|join|update`
+carry them, not the store. `chats mark-read` sends a read receipt only and may not clear a
 `chats mark-unread`.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`

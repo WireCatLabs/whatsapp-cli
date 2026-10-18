@@ -227,13 +227,13 @@ with exit code `2` and says why. Nothing reaches WhatsApp.
 
 Not built yet:
 
-- several files in one message: a message carries one file;
+- more files in one message than a photo and a video, which go as one album;
 - who joined and left a group, as WhatsApp records it: `chats events` reads the local store, which does not keep
   them yet, so its empty list does not mean nobody joined (`chats members history` shows the changes between member
   fetches);
-- removing a group's photo (`chats update --photo` sets one), and communities;
+- removing a group's photo (`chats update --photo` sets one);
+- listing a community's groups, and adding a group to one or taking it out ([communities](groups.md#communities));
 - where an invite link leads, without joining (`chats inspect`);
-- your own name, about line or photo (`account update`);
 - the list of linked devices, and ending the others (`account sessions`);
 - making a channel (`chats create --channel`).
 
