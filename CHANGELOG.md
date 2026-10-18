@@ -133,8 +133,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   person's phone number until it gives them a LID. The engine now notices the change and announces a re-key — a
   `rekey` event before the first message under the LID, or `rekeys` in a history push — and `serve` and `watch` move
   the stored chat and its messages to the LID (cli-core 0.336.0). The engine keeps the chats it emitted in phone form
-  in `private.db` across restarts, records them for file sends, forwards and polls as for text sends, and repeats a
-  re-key at each start for 30 days, so one that came while only a one-shot command ran still lands. Wire change.
+  in `private.db` across restarts, records them for file sends, forwards, polls and edits as for text sends, and
+  repeats a re-key at each start for 30 days, so one that came while only a one-shot command ran still lands. Engine
+  protocol 19, event `rekey`.
 - **`wa <profile> chats update <group> --photo <file>` sets the group's photo** (cli-core's `groupPhoto`; engine
   protocol 12, op `setGroupPhoto`). WhatsApp takes only a square JPEG of 190 to 720 pixels a side, and `wa` does not
   convert one: anything else is refused with `validation_error` before WhatsApp is asked, a PNG or WebP by its bytes

@@ -285,7 +285,7 @@ not: `serve` and `watch` run `feed` beside it. cli-core saves the two on separat
 first, in a new chat under the LID; the re-key then merges the two. At each start the engine announces the
 re-keys whatsmeow learned while it was not running, and repeats those of the last 30 days: a one-shot command does
 not save history, so the first announcement may have had no listener, and cli-core takes a repeat as a no-op. Only
-chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward or a poll —
+chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward, a poll or an edit —
 never senders or contacts. Once re-keyed, a chat is never emitted in phone form again — not in a message, a
 history push, a send's result or the chat directory: the engine takes its LID from the table wherever whatsmeow's
 store does not answer, and keeps the row after the 30 days of repeats.
