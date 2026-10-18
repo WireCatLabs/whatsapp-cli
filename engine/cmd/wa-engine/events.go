@@ -41,7 +41,7 @@ func (e *engine) handle(raw any) {
 		history := e.conv.history(evt.Data, e.client.ParseWebMessage)
 		e.remember(history.Chats)
 		if history.Kind == "on_demand" {
-			history = e.olderAsks.deliver(history)
+			history = e.onDemand(history, evt.Notification)
 		}
 		if history.Kind != "on_demand" || !history.empty() {
 			e.out.event("history", history)

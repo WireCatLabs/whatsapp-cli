@@ -42,7 +42,8 @@ and answers when you next open it. A request it does not answer within 25 second
 still arrives, and a running `serve` saves it, so nothing is lost. An empty answer means the chat starts there.
 
 `wa personal messages sync <chat>` makes this request, page after page, at least 2 seconds apart, until it reaches
-`--limit` or the chat's start. It asks about one chat at a time: `--all` is refused, as WhatsApp has no chat list to
+`--limit` or the chat's start. When the phone sends a page short, `wa` asks once or twice more for the rest, one
+second apart. It asks about one chat at a time: `--all` is refused, as WhatsApp has no chat list to
 walk.
 
 ## What you can do

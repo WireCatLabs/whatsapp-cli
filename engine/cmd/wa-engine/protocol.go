@@ -106,6 +106,7 @@ type waHistory struct {
 	Votes    []waVote    `json:"votes"`
 
 	oldest map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
+	sent   map[string]int    // per chat, how many messages the phone sent, kept or skipped
 }
 
 type waAccount struct {

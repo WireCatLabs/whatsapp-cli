@@ -64,6 +64,17 @@ Every command runs with `--json` and a timeout.
 | C2 | `serve` and `watch` end, and see a write | `watch --events` in the background, a send to Own from the phone, stop by PID; then the same with `serve` | the message deleted for everyone |
 | C3 | the store from live receipt | after C2, `messages list <Own>` and `search messages` find it; `--offline` reads | the owner's store only |
 
+### H — older history from the phone (`serve` stopped, WhatsApp open on the phone)
+
+Record counts and yes/no only. The engine's log line per `ON_DEMAND` batch carries exactly that: how it was matched
+(`session`, `session-other-chat`, `chat`, `late`, `none`), how many messages, the chunk and progress, and whether the
+notification's `PeerDataRequestSessionID` and `OriginalMessageID` are the request's id. `session-other-chat` would
+also say the phone answered the LID chat under another id, such as its phone number.
+
+| Id | What | Commands | Puts back |
+|---|---|---|---|
+| H1 | one 50-message page comes as one `ON_DEMAND` notification or several, and the notification names the request by its id | with `WA_ENGINE_LOG` set to a file kept like `private.db`, `messages sync <Own> --limit 50 --no-catch-up` on an Own chat with more than 50 older messages on the phone; count the log's `on-demand history` lines for the one page, note each line's match and its two yes/no values (script: pending) | nothing: the store keeps the page; the log file is deleted after |
+
 ## Scripts the owner runs
 
 Three checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;

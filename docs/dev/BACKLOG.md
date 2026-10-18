@@ -19,13 +19,18 @@ Open work, most important first. The plan in flight is
    **Live (2026-10-17, own chat, through `serve`):** with the app in the background the phone sent nothing for 75 s;
    once the owner opened WhatsApp it answered the queued requests (2 older messages, saved by `serve` as a history
    push because no request was waiting any more), and a new request then got an empty answer — the chat's true start,
-   confirmed by the owner. So the LID form of the own chat works. Still open: a chat with more than 50 older messages
-   (one chunk or several), and matching by `PeerDataRequestSessionID` so a late answer is credited to its request.
-   Ask cli-core what reads `fetched:<chat>` (`completeness.ts` uses only its time): wa's first page is the one before
-   the oldest stored message, not the newest. Live checks before calling it done (NEED-1387, own chat only): whether
-   the phone finds a chat named by its LID when it knows it by phone number; whether a 50-message answer comes in one
-   `ON_DEMAND` chunk; whether the notification's `PeerDataRequestSessionID` equals the request's message id, which
-   would match an answer more surely than its chat.
+   confirmed by the owner. So the LID form of the own chat works. **Built (2026-10-18):** more than 50 is cli-core's
+   paging, 50 per page, 2 s apart, each page counting back from the last one's oldest (pinned through `run()` in
+   `src/older-history.test.ts`); within a page the engine asks again from the oldest message the phone sent when it
+   sent fewer than asked (at most three asks, 1 s apart, 25 s in all); each request goes under an id the engine
+   chose, and an answer whose `PeerDataRequestSessionID` names it is credited to it, one naming an earlier request
+   is saved as a history push, and any other is matched by its chat as before. Still open, live (NEED-1387, own chat
+   only; scenario H1 in [live-scenarios.md](live-scenarios.md)): whether a 50-message answer comes in one `ON_DEMAND`
+   notification or several; whether `PeerDataRequestSessionID` equals the request's id (mautrix-whatsapp logs both
+   and matches neither); whether the phone finds a chat named by its LID when it knows it by phone number. cli-core
+   sets `fetched:<chat>` on the first page of a run without `before`, read only for its time (`stats` `fetched_at`,
+   the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
+   reported to the lead for cli-core to decide.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
    profiles, blocking, number lookup, Markdown and polls are built; what they left open:
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries

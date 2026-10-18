@@ -51,6 +51,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`chats rules set` refuses a `newAccount` rule** (cli-core's `knowsAccountAge`): WhatsApp does not say when an
   account was made, so the rule was saved and could never match. It now fails with `validation_error` (exit 2) and
   saves nothing.
+- **A late answer from the phone no longer ends the next `messages sync` page early**: each request for older
+  messages goes under its own id, and an answer whose notification names an earlier request is saved as a history
+  push instead of being taken for the current page. An empty late answer used to read as the chat's start. This
+  holds if the phone names the request by that id, which is not yet checked live; otherwise answers are matched by
+  their chat, as before.
+- **A page the phone sends in pieces is filled**: when the phone sends fewer messages than asked, `wa` asks again from
+  the oldest one it sent, one second apart, at most three asks and 25 seconds per page; what arrived before a
+  timeout is kept.
 - **A command cut off when WhatsApp ended the connection says why**: a command relayed through `serve` while another
   process took the login over answered `network_error`, which invites a retry; it now answers `device.replaced`, and
   after a ban or a logout `account.banned` or `device.logged-out`.

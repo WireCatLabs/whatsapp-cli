@@ -107,12 +107,20 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   group still addressed by phone numbers, the engine turns the stored LID sender into the phone JID the group
   expects.
 - **Older history** (`engine/cmd/wa-engine/older.go`): `older` (`chat`, `message`, `fromMe`, `timestamp` of the
-  anchor, `count` up to 50) sends whatsmeow's `BuildHistorySyncRequest` to the phone with `SendPeerMessage` and waits
-  up to 30 s for the `ON_DEMAND` history sync that answers it, then answers `{messages, more}`. One request is in
-  flight per process, so the batch is matched by its chat after conversion to LID form, or by naming no chat at all
-  (nothing older); other chats and push names in the same batch go out as a `history` event (saved only where a
-  `feed` listens, as under `serve`). A batch of only messages the contract skips is asked past from its oldest one,
-  up to three rounds, since cli-core reads an empty page as the chat's start.
+  anchor, `count` up to 50) sends whatsmeow's `BuildHistorySyncRequest` to the phone as a peer message under an id
+  the engine chose first, and waits for the `ON_DEMAND` history sync that answers it, then answers `{messages, more}`.
+  A batch is credited to the waiting request when its notification's `PeerDataRequestSessionID` is that id and it
+  names the request's chat or no chat; one with that id naming another chat is passed on as a `history` event, since
+  it would read as the chat's start. One naming a request that stopped waiting (the last 16 are kept) is late and
+  goes out as a `history` event. Without either —
+  whether the phone puts the request's id there is not confirmed live — the batch is matched as before: one request is
+  in flight per process, so by its chat after conversion to LID form, or by naming no chat at all (nothing older).
+  Other chats and push names in the same batch go out as a `history` event (saved only where a `feed` listens, as
+  under `serve`). When the phone sent fewer messages than asked, or only messages the contract skips, the engine asks
+  again from the oldest one it sent, one second apart, at most three asks and 25 s in all; what arrived before a
+  timeout is answered, not dropped. cli-core pages above this, 50 at a time and 2 s apart: a page is one `older`.
+  The engine's log (`WA_ENGINE_LOG`) gets a line per `ON_DEMAND` batch with only counts and yes/no: how it was
+  matched, how many messages, the chunk and progress, and whether the notification names the request's id.
 - **Group and people requests** (`engine/cmd/wa-engine/groups.go`, `people.go`; the contract in
   [`src/engine/groups.ts`](../../src/engine/groups.ts)): `group` (with `withLink` for the invite link, which only
   admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,

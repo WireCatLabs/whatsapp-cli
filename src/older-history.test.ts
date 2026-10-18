@@ -162,6 +162,25 @@ describe("messages sync", () => {
     expect(engine.olderAsked.map((asked) => asked.count)).toEqual([5, 5])
   })
 
+  it("serves more than 50 as one request after another, each counting back from the last one's oldest", async () => {
+    const first = seed.messages.find((message) => message.chatId === seed.dialog)
+    const older: WaMessage[] = Array.from({ length: 120 }, (_, n) => ({
+      ...(onPhone[0] as WaMessage),
+      id: `3EB0000000000000000D${String(n).padStart(3, "0")}`,
+      chat: seed.dialog,
+      timestamp: new Date(Date.parse(first?.timestamp ?? "") - (n + 1) * 60_000).toISOString(),
+    }))
+    const engine = fakeEngine(await ownAccount("chunked", 5), { phone: older })
+    const argv = ["chunked", "messages", "sync", seed.dialog, "--limit", "500", "--pause", "1ms", "--no-catch-up"]
+    const result = await wa([...argv, "--json"], () => engine)
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item).toMatchObject({ fetched: 120, complete: true })
+    // The fourth ask, past the 20 the third brought, finds nothing: that is the chat's start.
+    expect(engine.olderAsked.map((one) => one.count)).toEqual([50, 50, 50, 50])
+    const anchors = [first?.id, older[49]?.id, older[99]?.id, older[119]?.id]
+    expect(engine.olderAsked.map((one) => one.anchor.id)).toEqual(anchors)
+  })
+
   it("with --since-time, stops asking the phone once its pages reach that time", async () => {
     const engine = fakeEngine(await ownAccount("since", 1), { phone: onPhone })
     const item = await sync("since", engine, "--since-time", onPhone[4]?.timestamp ?? "", "--page-size", "3")
