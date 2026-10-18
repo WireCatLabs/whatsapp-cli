@@ -10,6 +10,14 @@ import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.
 const seed = contractSeed({ ids: whatsAppIds })
 const PROFILE = "own-profile"
 
+const photoFile = (name: string, bytes: number[]) => {
+  const path = join(mkdtempSync(join(tmpdir(), "wa-photo-")), name)
+  writeFileSync(path, Buffer.from(bytes))
+  return path
+}
+const JPEG = [0xff, 0xd8, 0xff, 0xe0]
+const PNG = [0x89, 0x50, 0x4e, 0x47]
+
 const updating = async (argv: string[], { settingsKeys = true, profile = PROFILE } = {}) => {
   let engine: FakeEngine | undefined
   const streams = captureStreams()
@@ -47,15 +55,28 @@ describe("wa account update", () => {
     expect(result.changes).toEqual([{ about: "Synthetic about" }])
   })
 
+  it("sets the profile photo from a JPEG", async () => {
+    const result = await updating(["--photo", photoFile("photo.jpg", JPEG)])
+    expect(result.code).toBe(0)
+    expect(result.changes).toEqual([{ photo: true }])
+    expect(result.item).toMatchObject({ account: { id: seed.account?.id } })
+  })
+
+  it("sends the photo with the name in one change", async () => {
+    const result = await updating(["--first-name", "Synthetic", "--photo", photoFile("photo.jpg", JPEG)])
+    expect(result.code).toBe(0)
+    expect(result.changes).toEqual([{ pushName: "Synthetic", photo: true }])
+    expect(result.item).toMatchObject({ account: { name: "Synthetic" } })
+  })
+
   it.each([
     [["--last-name", "Owner"], "WhatsApp has one name"],
-    [["--photo", "photo.jpg"], "profile photo"],
+    [["--first-name", "Synthetic", "--photo", "photo.jpg"], "not a JPEG"],
     [["--description", " "], "about cannot be empty"],
     [["--first-name", " ", "--last-name", " "], "name cannot be empty"],
   ])("refuses %j before anything changes", async (argv, message) => {
-    const folder = mkdtempSync(join(tmpdir(), "wa-photo-"))
-    writeFileSync(join(folder, "photo.jpg"), Buffer.from([0xff, 0xd8, 0xff, 0xe0]))
-    const result = await updating(argv.map((arg) => (arg === "photo.jpg" ? join(folder, arg) : arg)))
+    const png = photoFile("photo.jpg", PNG)
+    const result = await updating(argv.map((arg) => (arg === "photo.jpg" ? png : arg)))
     expect(result.code).toBe(2)
     expect(result.error).toMatchObject({ code: "validation_error" })
     expect(result.error.message).toContain(message)

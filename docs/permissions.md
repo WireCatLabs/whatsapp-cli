@@ -49,7 +49,7 @@ This controls messages. Other actions have their own keys: `reactions` for react
 `chats.mute` alone still covers both. `messages.star` and `messages.unstar` cover starring a message, which nobody
 else sees either. `chats.archive`, `chats.unarchive`, `chats.pin`, `chats.unpin` and `chats.mark-unread` cover the
 commands of those names, which nobody else sees; each key stands alone, so `chats.archive readonly` still lets
-`chats unarchive` through. `account.update` covers `account update`: other people can see the new name and about.
+`chats unarchive` through. `account.update` covers `account update`: other people can see the new name, about and photo.
 `chats.delete` and `chats.clear` cover deleting a chat or its messages from your own devices; they ask by default,
 since nothing brings the messages back.
 

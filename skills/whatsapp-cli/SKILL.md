@@ -26,7 +26,7 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `messages forward`, `messages transcribe --local`, `messages star|unstar`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
 `polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `chats archive|unarchive|pin|unpin|mark-unread`,
 `chats delete|clear` (they ask first; not over MCP),
-`account update` (name and about), group admin
+`account update` (name, about and a square JPEG photo), group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.

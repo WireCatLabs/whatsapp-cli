@@ -1,6 +1,11 @@
 package main
 
 import (
+	"errors"
+	"image"
+	"image/jpeg"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"go.mau.fi/whatsmeow/appstate"
@@ -8,16 +13,37 @@ import (
 
 func TestUpdateProfileRefusesBeforeConnecting(t *testing.T) {
 	blank, name := "  ", "Synthetic Owner"
+	png := filepath.Join(t.TempDir(), "photo.jpg")
+	if err := os.WriteFile(png, []byte("\x89PNG\r\n\x1a\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	cases := map[string]request{
 		"nothing":     {},
 		"blank name":  {settingsFields: settingsFields{PushName: &blank}},
 		"blank about": {settingsFields: settingsFields{PushName: &name, About: &blank}},
+		"a non-JPEG":  {settingsFields: settingsFields{PushName: &name}, Path: png},
+		"a relative":  {Path: "photo.jpg"},
 	}
 	for label, req := range cases {
 		// A zero engine has no client: reaching the network would panic.
 		if _, err := (&engine{}).updateProfile(req); !isFailure(err, "validation_error") {
 			t.Errorf("%s gave %v, want a validation_error", label, err)
 		}
+	}
+}
+
+func TestAnOwnPhotoOutsideTheSidesIsRefusedAsWasCheck(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "wide.jpg")
+	file, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = jpeg.Encode(file, image.NewRGBA(image.Rect(0, 0, 640, 480)), nil)
+	_ = file.Close()
+	var known *failure
+	_, err = (&engine{}).updateProfile(request{Path: path})
+	if !errors.As(err, &known) || known.Message != "wa takes a profile photo as a square of 190 to 720 pixels a side" {
+		t.Errorf("got %v", err)
 	}
 }
 
@@ -32,11 +58,19 @@ func TestThePushNameIsTheCriticalSettingWhatsmeowReadsBack(t *testing.T) {
 	}
 }
 
-func TestAnAboutFailingAfterTheNameSaysTheNameChanged(t *testing.T) {
+func TestALaterStepFailingSaysWhatChangedBeforeIt(t *testing.T) {
 	for _, code := range []string{"provider_error", "outcome_unknown"} {
-		got := classify(nameOnly(&failure{code, "the about failed"}))
+		got := classify(changedBefore([]string{"name"}, &failure{code, "the about failed"}))
 		if got.Code != code || got.Message != "the name is changed; the about failed" {
 			t.Errorf("got %+v", got)
 		}
+	}
+	got := classify(changedBefore([]string{"name", "about"}, &failure{"provider_error", "the photo failed"}))
+	if got.Message != "the name and the about are changed; the photo failed" {
+		t.Errorf("got %+v", got)
+	}
+	untouched := &failure{"validation_error", "WhatsApp refused the photo; it takes a square JPEG"}
+	if changedBefore(nil, untouched) != error(untouched) {
+		t.Error("a first step's failure changed")
 	}
 }

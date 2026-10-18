@@ -104,8 +104,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
   }[]
   /** Each mute and unmute, in order. */
   mutes: { jid: string; until: string | null }[]
-  /** Each change of the own name or about, in order. */
-  profileChanges: WaProfileChange[]
+  /** Each change of the own name, about or photo, in order; the photo's path is a temporary one, so only its presence. */
+  profileChanges: (Omit<WaProfileChange, "path"> & { photo?: true })[]
   /** Each chat deletion and clear, in order, with the newest message it was bounded by. */
   chatDeletions: { op: "deleteChat" | "clearChat"; last: WaAnchor }[]
   /** Each archive and unarchive, in order, with the newest message it was bounded by. */
@@ -164,7 +164,7 @@ export const fakeEngine = (
   const forwards: WaForward[] = []
   const olderAsked: FakeEngine["olderAsked"] = []
   const mutes: FakeEngine["mutes"] = []
-  const profileChanges: WaProfileChange[] = []
+  const profileChanges: FakeEngine["profileChanges"] = []
   let ownName = seed.account?.name ?? null
   const chatDeletions: FakeEngine["chatDeletions"] = []
   const archives: FakeEngine["archives"] = []
@@ -351,7 +351,8 @@ export const fakeEngine = (
           "WhatsApp has not sent the settings keys yet; keep serve running a few minutes and try again",
           "settings.keys-missing",
         )
-      profileChanges.push(change)
+      const { path, ...named } = change
+      profileChanges.push(path === undefined ? named : { ...named, photo: true })
       if (change.pushName !== undefined) ownName = change.pushName
       return { jid: seed.account.id, name: ownName }
     },

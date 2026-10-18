@@ -166,10 +166,11 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   the keys a patch is sealed with, counts a patch the server took as done even if reading the settings back failed, and
   answers `outcome_unknown` when the patch left and no answer came. `mute` (`jid`, `until`: `forever`, an RFC 3339 time,
   or null to unmute; `BuildMuteAbs`, forever as -1, an end in milliseconds) refuses channels, which mute by another
-  request. `updateProfile` (`pushName`, `about`, either left out; `engine/cmd/wa-engine/ownprofile.go`) sends the name
+  request. `updateProfile` (`pushName`, `about`, `path`, each left out; `engine/cmd/wa-engine/ownprofile.go`) checks
+  the photo at `path` as `setGroupPhoto` does, then sends the name
   as `BuildSettingPushName` through `sendAppState` first, fills it into whatsmeow's store for `me` when the read-back did not, then the about with
-  `SetStatusMessage`, which is not app state; it answers the account, and sends no presence. The adapter joins
-  cli-core's first and last name into the one name.
+  `SetStatusMessage`, which is not app state, then the photo with `SetGroupPhoto` and no target; it answers the
+  account, and sends no presence. The adapter joins cli-core's first and last name into the one name.
   `deleteChat` and `clearChat` (`engine/cmd/wa-engine/chatdeletion.go`; the chat's newest stored message as
   a key and its `timestamp`, which bound what WhatsApp deletes) send `BuildDeleteChat` and a clear-chat patch whatsmeow
   has no builder for, built the same way (`buildClearChat`: index `clearChat`, chat, deleteStarred `1`, deleteMedia
