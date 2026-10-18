@@ -175,6 +175,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   and for a one-to-one chat whose stored sender is addressed otherwise than the chat (`buildStar`: index `star`, chat,
   id, fromMe, the same participant as `deleteForMe`; regular_high, version 2 — as WhatsApp Web's
   `WAWebStarMessageSync`, Cobalt and whatsapp-rust write it). Channels and broadcasts are refused.
+  `archiveChat`, `unarchiveChat` and `markChatUnread` (`engine/cmd/wa-engine/chatlist.go`; the same newest-message
+  key and `timestamp`) send `BuildArchive`, whose archive also unpins the chat, and `BuildMarkChatAsRead` with read
+  false. `pinChat` and `unpinChat` (`jid`) send `BuildPin`. All refuse channels; nothing counts pins, which the server
+  cannot read.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

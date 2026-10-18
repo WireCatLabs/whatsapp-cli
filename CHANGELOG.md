@@ -182,6 +182,17 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   profile's permissions (`messages.star`, `messages.unstar`), an agent can do it over MCP (`wa_write` with
   `messages star`), and it answers `settings.keys-missing` as `chats mute` does. The local store does not record the
   star, and a star set on the phone does not reach it. Not yet checked live on the phone. Engine protocol 22, op `star`.
+- **`wa <profile> chats archive` and `unarchive`, `chats pin` and `unpin`, and `chats mark-unread`** (cli-core
+  0.336.0's): move a chat into WhatsApp's archive and back, keep it at the top of the chat list, or mark it unread, on
+  the account's devices; nobody in the chat is told. `chats pin` pins the chat, not a message (`messages pin` does
+  that). Archiving a chat also unpins it (whatsmeow's archive patch does both). Archive, unarchive and mark-unread name
+  the chat's newest stored message, as `chats delete` does, and refuse a chat the store holds nothing of (exit 6); pin
+  needs no message. WhatsApp's apps keep three pinned chats; the server cannot refuse a fourth, and `wa` does not count
+  them. A mark-unread sends no receipt; `chats mark-read` sends only a receipt, so it may not clear the mark. Channels
+  are refused. Each answers `settings.keys-missing` as `chats mute` does, and has its own permission key
+  (`chats.archive`, `chats.unarchive`, `chats.pin`, `chats.unpin`, `chats.mark-unread`), allowed by default. Not yet
+  checked live on the phone. Engine protocol 23, ops `archiveChat`, `unarchiveChat`, `pinChat`, `unpinChat` and
+  `markChatUnread`.
 
 ## 0.1.0 — 17.10.2026
 

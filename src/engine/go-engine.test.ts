@@ -163,6 +163,27 @@ describe("startGoEngine", () => {
     })
   })
 
+  it("sends archive and mark unread bounded by the newest message, and a chat pin by the chat alone", async () => {
+    const last = {
+      chat: "120363000000000001@g.us",
+      id: "3EB0LAST",
+      fromMe: true,
+      sender: null,
+      timestamp: "2026-09-01T10:00:00.000Z",
+    }
+    const engine = await stub("ok")
+    await expect(engine.archiveChat(last, true)).resolves.toBeUndefined()
+    await expect(engine.archiveChat(last, false)).resolves.toBeUndefined()
+    await expect(engine.markChatUnread(last)).resolves.toBeUndefined()
+    await expect(engine.pinChat(last.chat, true)).resolves.toBeUndefined()
+    await expect(engine.pinChat(last.chat, false)).resolves.toBeUndefined()
+    await expect(engine.archiveChat({ ...last, chat: "crash@stub" }, true)).rejects.toMatchObject({
+      code: "outcome_unknown",
+      reason: "engine.stopped-mid-write",
+    })
+    await engine.close()
+  })
+
   it("rejects at start when the lock is held, naming the holder", async () => {
     await expect(stub("refuse")).rejects.toMatchObject({
       code: "provider_unavailable",

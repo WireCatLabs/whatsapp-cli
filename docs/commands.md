@@ -815,6 +815,76 @@ wa chats unmute <chat>
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 
+### `wa chats archive`
+
+move a chat into the archive; nobody in it is told
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats archive <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats unarchive`
+
+bring an archived chat back to the chat list
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats unarchive <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats pin`
+
+keep a chat at the top of your chat list; nobody in it is told
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats pin <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats unpin`
+
+let a pinned chat move down the chat list again
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats unpin <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+### `wa chats mark-unread`
+
+mark a chat unread on your own devices; nobody in it is told
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats mark-unread <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
 ### `wa chats delete`
 
 delete a chat from this account; the others in it keep it and its messages

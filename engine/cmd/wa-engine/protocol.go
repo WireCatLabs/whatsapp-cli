@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 22
+const protocol = 23
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -35,8 +35,8 @@ type request struct {
 	// pin: how many seconds it lasts; 0 is the default.
 	Duration uint32 `json:"duration,omitempty"`
 
-	// older: when the anchor message was sent, and how many before it. deleteChat, clearChat: when the chat's newest
-	// message was sent. deleteForMe: when the message was sent.
+	// older: when the anchor message was sent, and how many before it. deleteChat, clearChat, archiveChat,
+	// unarchiveChat, markChatUnread: when the chat's newest message was sent. deleteForMe: when the message was sent.
 	Timestamp string `json:"timestamp,omitempty"`
 	Count     int    `json:"count,omitempty"`
 

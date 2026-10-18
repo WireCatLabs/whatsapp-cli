@@ -24,7 +24,8 @@ do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". T
 account, older history of one chat (`messages sync`), sending text (with `--reply-to`), one file per message or a photo and a video as an album,
 `messages edit`, `messages delete` (for the owner only; `--for-everyone` for everyone), `messages download`,
 `messages forward`, `messages transcribe --local`, `messages star|unstar`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
-`polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `chats delete|clear` (they ask first; not over MCP),
+`polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `chats archive|unarchive|pin|unpin|mark-unread`,
+`chats delete|clear` (they ask first; not over MCP),
 `account update` (name and about), group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
@@ -40,7 +41,8 @@ Not built yet:
 `chats members list` asks WhatsApp, and with `--offline` shows the stored members. `chats events` answers from the
 store, which holds no joins or leaves yet: its empty list does not mean nobody joined, and `stats chats show` leaves
 `members` out and says in `missing` that joins and leaves are not recorded yet; `chats members history` shows who
-joined or left between member fetches.
+joined or left between member fetches. `chats mark-read` sends a read receipt only and may not clear a
+`chats mark-unread`.
 
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add

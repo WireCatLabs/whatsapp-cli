@@ -1,8 +1,11 @@
 [
+  "chats archive",
+  "chats mark-unread",
   "chats members audit",
   "chats mute",
   "chats requests accept",
   "chats requests decline",
+  "chats unarchive",
   "chats unmute",
   "commands schema",
   "contacts alias rm",

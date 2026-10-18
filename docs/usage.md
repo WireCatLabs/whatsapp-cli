@@ -89,6 +89,22 @@ Muting is your own setting, which WhatsApp syncs to your other devices; nobody i
 applies it to a one-to-one chat has not been checked yet. A device linked a few minutes ago may not have WhatsApp's
 settings keys yet; keep `serve` running a while and try again. Mute a channel on the phone.
 
+## Archive, pin or mark a chat unread
+
+```sh
+wa personal chats archive "Book club"       # wa personal chats unarchive "Book club" brings it back
+wa personal chats pin "Book club"           # at the top of the chat list; wa personal chats unpin "Book club"
+wa personal chats mark-unread "Book club"
+```
+
+These are your own settings too, synced to your other devices; nobody in the chat is told. `chats pin` pins the
+chat, not a message. Archiving a chat also unpins it (whatsmeow's archive patch does both). WhatsApp's apps keep
+three pinned chats; `wa` does not count them, and what the phone does with a fourth has not been checked. Archive,
+unarchive and mark-unread name the chat's newest message in the local store, as `chats delete` does, so a chat the
+store holds nothing of is refused. A chat marked unread sends no read receipt. `chats mark-read` sends a read receipt,
+not the settings change, so it may leave a mark-unread on the phone; clear it there. Channels are refused. None of
+this has been checked on a phone yet.
+
 A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local store holds shows the quoted text
 and its sender on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's
 apps may then show the quote as unavailable.
