@@ -187,6 +187,27 @@ describe("wa chats create, join, leave, update, link", () => {
     expect(long.done).toEqual([])
   })
 
+  it("says the photo was set when the rest of the change then fails", async () => {
+    const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
+    writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))
+    let engine: FakeEngine | undefined
+    const result = await wa(
+      [PROFILE, "chats", "update", seed.busy, "--photo", photo, "--title", "Synthetic club", "--json"],
+      () => {
+        engine = fakeEngine(seed)
+        engine.updateGroup = async () => {
+          throw new EngineError("outcome_unknown", "the WhatsApp engine stopped before WhatsApp confirmed the change")
+        }
+        return engine
+      },
+    )
+    expect(errorOf(result.stderr)).toMatchObject({
+      code: "outcome_unknown",
+      message: expect.stringMatching(/^the photo was set, the rest of the change was not: /),
+    })
+    expect(engine?.groupActions).toEqual([{ op: "setGroupPhoto", jid: seed.busy }])
+  })
+
   it("sets no photo when the profile denies chats update", async () => {
     const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
     writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))

@@ -1,5 +1,5 @@
 import { open } from "node:fs/promises"
-import { CliError } from "@wirecat/cli-base"
+import { CliError, isCliError } from "@wirecat/cli-base"
 import type { AdminRight, Chat, GroupCard, GroupMember, ProfileFacts } from "@wirecat/cli-core"
 import type { MessengerAdapter } from "@wirecat/cli-core/cli"
 import type { UploadSource } from "@wirecat/cli-core/sends"
@@ -228,8 +228,18 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: G
         photo === undefined
           ? undefined
           : await translated(onDisk(photo.source, (path) => engine.setGroupPhoto(jid, path)))
-      if (pictured !== undefined && Object.keys(change).length === 0) return toGroupCard(pictured)
-      return toGroupCard(await translated(engine.updateGroup(jid, change)))
+      if (pictured === undefined) return toGroupCard(await translated(engine.updateGroup(jid, change)))
+      if (Object.keys(change).length === 0) return toGroupCard(pictured)
+      try {
+        return toGroupCard(await translated(engine.updateGroup(jid, change)))
+      } catch (error) {
+        if (!isCliError(error)) throw error
+        throw new CliError(
+          error.code,
+          `the photo was set, the rest of the change was not: ${error.message}`,
+          error.details,
+        )
+      }
     },
 
     resetInviteLink: async (chatId) => toGroupCard(await translated(engine.resetInviteLink(await groupId(chatId)))),

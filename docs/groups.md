@@ -222,7 +222,8 @@ wa personal chats leave 120363000000000001@g.us
   the times WhatsApp offers; any other is refused, and `off` keeps them.
 - **The photo.** `update --photo` takes a square JPEG of 190 to 720 pixels a side, the only kind WhatsApp takes as a
   group photo. `wa` does not convert or crop one: export it as a JPEG first. A PNG or WebP is refused by its content,
-  whatever its name. Removing the photo is done on the phone.
+  whatever its name. The photo is set first: if the title, description or a setting given with it then fails, the
+  error says the photo was set. Removing the photo is done on the phone.
 - **Name a group by its id** here: a command that connects knows group names only after it connects.
 - `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
 
