@@ -24,7 +24,10 @@ Open work, most important first. The plan in flight is
    nothing asks the phone to send it again — whatsmeow sends the `hist_sync` receipt as soon as the notification arrives
    ([`message.go:899-906`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L899-L906)) and deletes the
    blob from WhatsApp's servers once it is handed on (`message.go:735-736`); re-keys are covered, as the engine
-   repeats them at each start (ARCHITECTURE §5).
+   repeats them at each start (ARCHITECTURE §5). Possible levers, untried: `ManualHistorySyncDownload` with
+   `DisableManualHistorySyncReceipt` to hold the receipt back on a one-shot connection, or
+   `SendHistorySyncServerErrorReceipt` to ask the phone to upload a push again; either needs a cli-core port that
+   hands a one-shot connection's history on, as `listen` hands only messages.
 3. **A user who gains a LID later: live check.** Built: the engine announces the re-key (ARCHITECTURE §5) and the
    adapter's `feed` hands it to cli-core's `HistoryBatch.rekeys` (cli-core 0.336.0), tested end to end with the fake
    engine. Left: a live case — a person in phone form who gains a LID — has not been seen yet; the store should then
