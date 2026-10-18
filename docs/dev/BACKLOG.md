@@ -95,6 +95,13 @@ Open work, most important first. The plan in flight is
      it is. WhatsApp Web, once the account's one-to-one chats moved to LIDs, writes a chat stored by phone number as
      its LID instead (`WAWebSyncdGetChat.getChatJidMutationIndexForChat`), so a chat the store holds by phone number
      may be dropped; one held by its LID matches.
+   - **Live check of starring.** `messages star` and `unstar` send a hand-built `star` patch, pinned against WhatsApp
+     Web's `WAWebStarMessageSync`, Cobalt and whatsapp-rust, but not yet sent to WhatsApp. Open: that the phone shows
+     and drops the star on someone else's message in a group (the participant field), one in a one-to-one chat, and the
+     owner's own. A chat the store holds by phone number may be dropped, as with delete for the owner alone.
+   - **The store does not know what is starred.** cli-core's `Message` has no star and the engine ignores whatsmeow's
+     `events.Star`, so neither a star from `wa` nor one from the phone reaches the store, and nothing lists starred
+     messages. Both need cli-core first.
    - **A delete for the owner alone made on the phone does not reach the store.** The engine ignores whatsmeow's
      `events.DeleteForMe`, so `messages list` and `search` still show the message. cli-core already takes an
      incoming deletion event and marks the message deleted; the engine only has to map this one to it.

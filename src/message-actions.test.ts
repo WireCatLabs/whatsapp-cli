@@ -355,6 +355,65 @@ describe("wa messages delete", () => {
   })
 })
 
+describe("wa messages star", () => {
+  it("stars someone else's message by its stored key, and answers that it is starred", async () => {
+    const result = await acting(["messages", "star", seed.busy, theirs.id])
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item).toMatchObject({ chat_id: seed.busy, message_id: theirs.id, starred: true })
+    expect(result.actions).toEqual([
+      { op: "star", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId }, starred: true },
+    ])
+    expect(result.closed).toBe(true)
+  })
+
+  it("takes the star off the account's own message", async () => {
+    const result = await acting(["messages", "unstar", seed.busy, fresh.id])
+    expect(result.code).toBe(0)
+    expect(result.actions).toEqual([
+      { op: "star", key: { chat: seed.busy, id: fresh.id, fromMe: true, sender: fresh.senderId }, starred: false },
+    ])
+  })
+
+  it("refuses a message the store does not hold, and sends nothing", async () => {
+    const result = await acting(["messages", "star", seed.busy, "3EB0000000000000000DEAD"])
+    expect(result.code).toBe(6)
+    expect(errorCode(result.stderr)).toBe("not_found")
+    expect(result.actions).toEqual([])
+  })
+
+  it("says to keep serve running when WhatsApp has not sent the settings keys yet", async () => {
+    const result = await wa(["actions", "messages", "star", seed.busy, theirs.id, "--json"], () =>
+      fakeEngine(seed, { settingsKeys: false }),
+    )
+    expect(result.code).toBe(12)
+    const { error } = JSON.parse(result.stderr.slice(result.stderr.indexOf("{")))
+    expect(error).toMatchObject({ code: "provider_unavailable", reason: "settings.keys-missing" })
+    expect(error.retry).toEqual({ safe: true })
+  })
+
+  it("lets an agent star a message over MCP", async () => {
+    let engine: FakeEngine | undefined
+    const mcp = await mcpOverStdio((streams) =>
+      run(["agent", "mcp"], {
+        streams: captureStreams(),
+        tty: false,
+        ...streams,
+        engine: () => {
+          engine = fakeEngine(seed)
+          return engine
+        },
+      }),
+    )
+    const starred = await mcp.call("wa_write", {
+      command: "messages star",
+      arguments: { chat: seed.busy, message: theirs.id },
+    })
+    await mcp.close()
+    expect(starred.body).not.toHaveProperty("error")
+    expect(engine?.actions).toMatchObject([{ op: "star", key: { id: theirs.id }, starred: true }])
+  })
+})
+
 describe("marking read", () => {
   const newestTheirs = { op: "read", key: { chat: seed.busy, id: theirs.id, fromMe: false, sender: theirs.senderId } }
 

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**219 ✅ · 522 ⛔ · 0 ❌** — 233 commands, 508 options.
+**221 ✅ · 522 ⛔ · 0 ❌** — 235 commands, 508 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -203,6 +203,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages pin` | `--notify` | ⛔ | every WhatsApp pin notifies, so the flag changes nothing and wa never passes it; cli-core drops it for messengers without quiet pins (cli-core #1541), and this entry goes with that bump |
 | `messages pin` | `--expire-time` | ✅ |  |
 | `messages unpin` |  | ✅ |  |
+| `messages star` |  | ✅ |  |
+| `messages unstar` |  | ✅ |  |
 | `messages link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/messages-link.test.ts |
 | `messages comments` |  | ✅ |  |
 | `messages comments` | `--limit` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |

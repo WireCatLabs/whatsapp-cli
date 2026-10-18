@@ -74,6 +74,7 @@ const WRITES = new Set([
   "deleteChat",
   "clearChat",
   "deleteForMe",
+  "star",
   "logout",
 ])
 

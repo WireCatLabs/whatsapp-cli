@@ -19,6 +19,7 @@ import type {
   MessageMedia,
   MessagePins,
   MessageReactions,
+  MessageStars,
   MessengerCore,
   PushedHistory,
   ReadState,
@@ -54,6 +55,7 @@ export type WhatsAppAdapter = MessengerCore &
   Pick<MessageEditing, "edit" | "delete" | "forward"> &
   Pick<MessageMedia, "download"> &
   MessageReactions &
+  MessageStars &
   ReadState &
   Pick<ServerReads, "history"> &
   MarkdownFormatting &
@@ -221,8 +223,8 @@ export const whatsAppAdapter = (
       )
     return message
   }
-  // A deletion for the account alone is a change to its synced settings, not a message.
-  const forMe = settingsWrite(translated, words)
+  // A deletion for the account alone and a star are changes to its synced settings, not messages.
+  const synced = settingsWrite(translated, words)
 
   async function* fetched(attachment: WaAttachment): AsyncIterable<Uint8Array> {
     const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
@@ -377,7 +379,7 @@ export const whatsAppAdapter = (
       for (const message of messages) {
         try {
           if (forEveryone) await translated(engine.revoke(keyOf(chatId, message)))
-          else await forMe(engine.deleteForMe({ ...keyOf(chatId, message), timestamp: message.timestamp }))
+          else await synced(engine.deleteForMe({ ...keyOf(chatId, message), timestamp: message.timestamp }))
         } catch (error) {
           if (done.length === 0 || !(error instanceof CliError)) throw error
           // One request per message: the ones before this went, so the run as a whole is not unsent (WC-OUT-20).
@@ -395,6 +397,11 @@ export const whatsAppAdapter = (
     react: async (chatId, messageId, emoji) => {
       const message = await held(chatId, messageId)
       await translated(engine.react(keyOf(chatId, message), emoji))
+    },
+
+    star: async (chatId, messageId, starred) => {
+      const message = await held(chatId, messageId)
+      await synced(engine.star(keyOf(chatId, message), starred))
     },
 
     // One receipt, for the newest message from someone else up to `until`: the account's own messages have none.

@@ -1450,6 +1450,36 @@ wa messages unpin <chat> <message>
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
 | `message` | required | the message id. |
 
+### `wa messages star`
+
+star a message, so it is easy to find again; only you see the star
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages star <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+
+### `wa messages unstar`
+
+take the star off a message
+
+**Changes something in WhatsApp.**
+
+```sh
+wa messages unstar <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+| `message` | required | the message id. |
+
 ### `wa messages link`
 
 a message permalink when supported, and its account-scoped locator

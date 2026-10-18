@@ -66,6 +66,17 @@ for everyone. Every pin tells the chat's members: WhatsApp has no quiet pin, so 
 hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`); without `--expire-time`, `wa` pins for 7 days. Nothing
 is marked read unless you ask: `chats mark-read`, or `--mark-read` on `messages list`, `inbox` and `review`.
 
+## Star a message
+
+```sh
+wa personal messages star "Book club" 3EB0A1B2C3D4E5F6A7B8
+wa personal messages unstar "Book club" 3EB0A1B2C3D4E5F6A7B8
+```
+
+A star is your own mark, which WhatsApp syncs to your other devices; nobody in the chat is told. Like an edit, it
+needs the message in the local store. The local store does not keep the star, so `wa` cannot list starred messages
+yet. Whether the phone shows it has not been checked yet. Star a channel's post on the phone.
+
 ## Mute a chat
 
 ```sh

@@ -153,6 +153,16 @@ describe("startGoEngine", () => {
     ).rejects.toMatchObject({ code: "outcome_unknown", reason: "engine.stopped-mid-write" })
   })
 
+  it("sends a star with the message's key and which way, as a write that may have happened", async () => {
+    const message = { chat: "120363000000000001@g.us", id: "3EB0A1", fromMe: false, sender: "100000000000002@lid" }
+    const engine = await stub("ok")
+    await expect(engine.star(message, false)).resolves.toBeUndefined()
+    await expect(engine.star({ ...message, chat: "crash@stub" }, true)).rejects.toMatchObject({
+      code: "outcome_unknown",
+      reason: "engine.stopped-mid-write",
+    })
+  })
+
   it("rejects at start when the lock is held, naming the holder", async () => {
     await expect(stub("refuse")).rejects.toMatchObject({
       code: "provider_unavailable",

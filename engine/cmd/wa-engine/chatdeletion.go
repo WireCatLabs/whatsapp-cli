@@ -100,24 +100,29 @@ func (e *engine) deleteForMe(req request) error {
 
 // buildDeleteForMe is the patch whatsmeow has an index for but no builder, as WhatsApp Web's
 // WAWebDeleteMessageForMeSync writes it: regular_high, version 3, index [deleteMessageForMe, chat, id, fromMe,
-// participant], where the participant is the sender of someone else's message in a group and "0" otherwise. Cobalt
-// and whatsapp-rust write the same; whatsmeow reads index 4 back as the sender. The message's time is in seconds, as
-// WhatsApp Web's message time is.
+// participant]. Cobalt and whatsapp-rust write the same; whatsmeow reads index 4 back as the sender. The message's
+// time is in seconds, as WhatsApp Web's message time is.
 func buildDeleteForMe(t target, at time.Time) appstate.PatchInfo {
-	participant := "0"
-	if t.inGroup() && !t.mine() {
-		participant = t.sender.ToNonAD().String()
-	}
 	// WhatsApp Web reads deleteMedia as required when two devices' deletions meet, so it is always set.
 	media, sent := deleteMedia, at.Unix()
 	return appstate.PatchInfo{
 		Type: appstate.WAPatchRegularHigh,
 		Mutations: []appstate.MutationInfo{{
-			Index:   []string{appstate.IndexDeleteMessageForMe, t.chat.String(), t.id, indexFlag(t.mine()), participant},
+			Index:   []string{appstate.IndexDeleteMessageForMe, t.chat.String(), t.id, indexFlag(t.mine()), syncParticipant(t)},
 			Version: 3,
 			Value: &waSyncAction.SyncActionValue{
 				DeleteMessageForMeAction: &waSyncAction.DeleteMessageForMeAction{DeleteMedia: &media, MessageTimestamp: &sent},
 			},
 		}},
 	}
+}
+
+// syncParticipant is the last part of a message's key in a settings patch, as WhatsApp Web's
+// constructMsgKeySegmentsFromMsgKey writes it: the sender of someone else's message in a group, without the device
+// part, and "0" otherwise — also in a one-to-one chat, whichever addressing the sender is stored in.
+func syncParticipant(t target) string {
+	if t.inGroup() && !t.mine() {
+		return t.sender.ToNonAD().String()
+	}
+	return "0"
 }

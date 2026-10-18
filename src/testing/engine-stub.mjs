@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 21, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 22, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -191,6 +191,12 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       if (fields.chat === "crash@stub") process.exit(3)
       if (!fields.chat || !fields.message || !fields.timestamp || typeof fields.fromMe !== "boolean")
         say({ id, error: { code: "validation_error", message: "no last message" } })
+      else say({ id, ok: null })
+      break
+    case "star":
+      if (fields.chat === "crash@stub") process.exit(3)
+      if (!fields.chat || !fields.message || typeof fields.starred !== "boolean")
+        say({ id, error: { code: "validation_error", message: "no message or no starred" } })
       else say({ id, ok: null })
       break
     case "participants":

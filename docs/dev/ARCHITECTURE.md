@@ -58,7 +58,7 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   name only: the card holds a phone number.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
   the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete`,
-  `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store
+  `messages star`, `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store
   first (cli-core's `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing
   is found) and send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not
   refused by WhatsApp, it is dropped without a word. A reply is the exception: it goes either way, and only carries the
@@ -170,7 +170,11 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `deleteMessageForMe`, chat, id, fromMe, and the sender of someone else's message in a group, `0` otherwise, in the
   group's own addressing as `participantFor` gives it; regular_high, version 3; deleteMedia `0` and the message's time
   in seconds — as WhatsApp Web's `WAWebDeleteMessageForMeSync`, Cobalt and whatsapp-rust write it). None deletes the
-  phone's saved files.
+  phone's saved files. `star` (`engine/cmd/wa-engine/stars.go`; a stored message's key and `starred`, never left out)
+  is built by hand next to it, not with whatsmeow's `BuildStar`, which writes a sender for the account's own message
+  and for a one-to-one chat whose stored sender is addressed otherwise than the chat (`buildStar`: index `star`, chat,
+  id, fromMe, the same participant as `deleteForMe`; regular_high, version 2 — as WhatsApp Web's
+  `WAWebStarMessageSync`, Cobalt and whatsapp-rust write it). Channels and broadcasts are refused.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

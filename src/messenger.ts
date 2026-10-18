@@ -220,6 +220,7 @@ export const WHATSAPP: Messenger = {
   deleteForMe: true,
   privacy: true,
   privacySettings: PRIVACY_SETTINGS,
+  messageStars: true,
   connect: async (command, base, options = {}) => {
     const linked = handedOver.get(command)
     handedOver.delete(command)

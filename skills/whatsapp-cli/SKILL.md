@@ -23,7 +23,7 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
 account, older history of one chat (`messages sync`), sending text (with `--reply-to`), one file per message or a photo and a video as an album,
 `messages edit`, `messages delete` (for the owner only; `--for-everyone` for everyone), `messages download`,
-`messages forward`, `messages transcribe --local`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
+`messages forward`, `messages transcribe --local`, `messages star|unstar`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
 `polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `chats delete|clear` (they ask first; not over MCP),
 `account update` (name and about), group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
@@ -73,7 +73,7 @@ the store does not hold yet needs its `…@g.us` id.
   (`serve (pid 4242)`): tell the owner, do not stop it. `wa personal mcp` keeps a connection it opened until two
   minutes pass without a call, and `serve` cannot start meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
-  `messages edit`, `messages delete`, `reactions add|remove`, `polls show|vote|voters` and
+  `messages edit`, `messages delete`, `messages star|unstar`, `reactions add|remove`, `polls show|vote|voters` and
   `chats mark-read` look the message up in the store. One the store lacks is exit `6`. `messages download`,
   `messages forward` and `messages transcribe --local` work the same way, from the file keys the store holds. A
   `--reply-to` a message the store lacks still sends, but the phone may show the quote as unavailable.

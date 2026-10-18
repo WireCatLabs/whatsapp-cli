@@ -175,6 +175,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `--for-everyone`. It answers `settings.keys-missing` as `chats mute` does. A delete of several messages that fails
   partway, with or without `--for-everyone`, names the ones already deleted and is not safe to retry (WC-OUT-20).
   Not yet checked live on the phone. Engine protocol 21, op `deleteForMe`.
+- **`wa <profile> messages star` and `messages unstar`** (cli-core 0.336.0's, `messageStars`): star one message so it
+  is easy to find again, or take the star off. It is the account's own mark, which WhatsApp syncs to the other
+  devices; nobody in the chat is told. The message must be in the local store, since WhatsApp names it by its sender;
+  one the store lacks is exit 6 and nothing is sent. A channel's post is starred on the phone. It goes through the
+  profile's permissions (`messages.star`, `messages.unstar`), an agent can do it over MCP (`wa_write` with
+  `messages star`), and it answers `settings.keys-missing` as `chats mute` does. The local store does not record the
+  star, and a star set on the phone does not reach it. Not yet checked live on the phone. Engine protocol 22, op `star`.
 
 ## 0.1.0 — 17.10.2026
 
