@@ -274,5 +274,9 @@ echo "== tag v$version and its GitHub release =="
 git tag -a "v$version" -m "$version"
 git push -q origin "v$version"
 awk -v v="$version" '$0 ~ "^## "v" " {on=1; next} /^## / && on {exit} on' CHANGELOG.md |
-  gh release create "v$version" --title "$version" --notes-file -
+  gh release create "v$version" --title "$version" --notes-file - || {
+  echo "v$version is tagged, but its GitHub release is not: gh release create v$version --title $version," \
+    "with the $version section of CHANGELOG.md as its notes" >&2
+  exit 1
+}
 echo "published $package@$version"
