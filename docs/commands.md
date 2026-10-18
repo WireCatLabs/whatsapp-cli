@@ -1349,6 +1349,7 @@ wa messages send <chat> [text] [options]
 | `--voice <file>` | send an Ogg Opus file as a voice message, alone, with no text. |
 | `--allow-any-file` | send a file even from credential folders or this CLI's own folders. |
 | `--filename <name>` | the name others see for the --file, instead of its name on disk. |
+| `--sticker-file <file>` | send a .webp file as a sticker, alone, with no text. |
 
 ### `wa messages show`
 

@@ -319,6 +319,10 @@ export const whatsAppAdapter = (
         )
       if (upload?.kind === "voice" && text.trim() !== "")
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
+      const { stickerFile } = options
+      // Untried on a live channel, where a post carries a URL and no key.
+      if (stickerFile && isChannel(chatId))
+        throw new CliError("validation_error", "wa does not post stickers to a WhatsApp channel yet")
       if (isChannel(chatId))
         await refuseChannelPost(engine, translated, chatId, {
           files: files.length,
@@ -347,7 +351,11 @@ export const whatsAppAdapter = (
             ? onDisk(upload.source, (path) =>
                 engine.sendMedia({ ...request, file: { kind: uploadKind(upload), path, name: upload.name } }),
               )
-            : engine.send(request),
+            : stickerFile
+              ? onDisk(stickerFile.source, (path) =>
+                  engine.sendMedia({ ...request, file: { kind: "sticker", path, name: stickerFile.name } }),
+                )
+              : engine.send(request),
       )
       return { message: toMessage(message), sendId: options.sendId }
     },

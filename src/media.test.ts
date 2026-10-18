@@ -221,6 +221,32 @@ describe("wa messages send with a file", () => {
   })
 })
 
+describe("wa messages send --sticker-file", () => {
+  const webp = (bytes = 64) => {
+    const path = join(folder(), "synthetic.webp")
+    const file = Buffer.alloc(bytes)
+    file.write("RIFF", 0)
+    file.write("WEBPVP8X", 8)
+    writeFileSync(path, file)
+    return path
+  }
+
+  it("sends a .webp to the engine as a sticker, alone", async () => {
+    const result = await driving(["messages", "send", base.dialog, "--sticker-file", webp()])
+    expect(result.code).toBe(0)
+    expect(result.engine.uploads).toEqual([{ kind: "sticker", name: "synthetic.webp", size: 64 }])
+    expect(result.engine.sent[0]).toMatchObject({ text: "", attachments: [{ kind: "sticker" }] })
+    expect(result.stdout).not.toContain("mediaKey")
+  })
+
+  it("refuses a sticker larger than WhatsApp takes, and sends nothing", async () => {
+    const result = await driving(["messages", "send", base.dialog, "--sticker-file", webp(500 * 1024 + 1)])
+    expect(result.code).toBe(2)
+    expect(failure(result.stderr).message).toContain("500 KiB")
+    expect(result.engine?.uploads ?? []).toEqual([])
+  })
+})
+
 describe("wa messages download", () => {
   it("saves a stored photo through the engine, by the keys the store holds", async () => {
     const output = folder()

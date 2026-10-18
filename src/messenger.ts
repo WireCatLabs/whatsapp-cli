@@ -183,6 +183,9 @@ export const WHATSAPP: Messenger = {
   knowsAccountAge: false,
   // A document carries the name the recipient sees; WhatsApp has no spoiler and no caption above.
   mediaOptions: ["fileName"],
+  // A sticker is an uploaded .webp, not one of a set. Meta's Cloud API caps an animated one at 500 KB and a still one
+  // at 100 KB; one cap has to let animated stickers through.
+  stickerFileBytes: 500 * 1024,
   groupSettings: GROUP_SETTINGS,
   groupPhoto: true,
   groupPhotoRemoval: true,

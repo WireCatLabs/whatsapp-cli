@@ -202,6 +202,7 @@ WhatsApp has no setting for who finds you by your number or who sees it, so `wa`
 wa personal messages send "Book club" "the agenda" --file agenda.pdf
 wa personal messages send "Book club" "us, last week" --photo photo.jpg
 wa personal messages send "Book club" --voice note.ogg
+wa personal messages send "Book club" --sticker-file thumbs-up.webp
 wa personal messages download "Book club" 3EB0A1B2C3D4E5F6A7B8 --output-dir ~/Downloads
 wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local
 wa personal messages forward "Book club" 3EB0A1B2C3D4E5F6A7B8 --to "Ann Lee"
@@ -209,7 +210,8 @@ wa personal messages forward "Book club" 3EB0A1B2C3D4E5F6A7B8 --to "Ann Lee"
 
 A message carries one file; the text becomes its caption, except on a voice note, which goes alone. A `.mp4`, `.m4v`
 or `.mov` goes as a video unless `--as-file`. A `--photo` and a video `--file` together go as one album, the text as
-the photo's caption. Photos, videos, voice notes, files and stickers that reach the local store
+the photo's caption. `--sticker-file` sends a `.webp` of at most 500 KiB as a sticker, alone, with no text: WhatsApp
+has no sticker sets to pick one from by id, so there is no `--sticker`. Photos, videos, voice notes, files and stickers that reach the local store
 can be saved and forwarded later, since the store keeps what WhatsApp needs to fetch them again; WhatsApp keeps a file
 for a limited time, and a download of one it no longer keeps asks your phone to upload it again. A place or a
 contact card is kept too, so it can be forwarded; neither is a file to save. WhatsApp has no speech
@@ -247,7 +249,7 @@ wa personal chats leave 120363000000000001@newsletter                     # unfo
 - **Only the channel's owner and admins post.** `messages send` asks WhatsApp for your role first and refuses
   anyone else (exit `5`), before anything is uploaded. A post is text or one file (`--photo`, `--file`, `--voice`,
   the text as its caption), and not a reply; the followers see it at once. A channel's files are not encrypted, as
-  in WhatsApp's apps. An album, a poll, a forward, an edit or a deletion in a channel is refused, and so is a
+  in WhatsApp's apps. An album, a sticker, a poll, a forward, an edit or a deletion in a channel is refused, and so is a
   forward of a channel's file into a chat (`media.channel-file-forward`): with no file key it would not open there.
 - `chats join` and `chats leave` go through the profile's [permissions](permissions.md) like a group's: the
   channel's admins see that you followed. A follower count stands in for the member list, which WhatsApp does not

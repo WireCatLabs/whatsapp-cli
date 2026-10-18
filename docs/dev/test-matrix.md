@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**235 ✅ · 523 ⛔ · 0 ❌** — 243 commands, 515 options.
+**236 ✅ · 523 ⛔ · 0 ❌** — 243 commands, 516 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -180,6 +180,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages send` | `--voice` | ✅ |  |
 | `messages send` | `--allow-any-file` | ✅ |  |
 | `messages send` | `--filename` | ✅ |  |
+| `messages send` | `--sticker-file` | ✅ |  |
 | `messages show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
 | `messages context` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
 | `messages context` | `--thread` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |

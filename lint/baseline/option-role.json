@@ -3,6 +3,7 @@
   "chats update --only-admins-edit-info",
   "chats update --only-admins-send",
   "chats update --remove-photo",
+  "messages send --sticker-file",
   "runs search --error-code",
   "runs search --operation",
   "runs search --status",

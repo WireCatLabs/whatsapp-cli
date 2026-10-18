@@ -182,3 +182,58 @@ func TestDescribeReadsWhatTheRecipientSeesFirst(t *testing.T) {
 		t.Error("an unknown kind was described")
 	}
 }
+
+func syntheticWebP(chunk string, body []byte) []byte {
+	head := append([]byte("RIFF\x00\x00\x00\x00WEBP"+chunk+"\x00\x00\x00\x00"), body...)
+	return append(head, make([]byte, 16)...)
+}
+
+func TestAStickerFileIsSentAsAStickerMessage(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "synthetic.webp")
+	canvas := []byte{0x10, 0, 0, 0, 0xff, 0x01, 0, 0xff, 0x01, 0}
+	_ = os.WriteFile(path, syntheticWebP("VP8X", canvas), 0o600)
+	s, err := stage(&waUpload{Kind: "sticker", Path: path, Name: "synthetic.webp"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.file.Close()
+	if s.media != "sticker" || s.described.Kind != "sticker" || s.described.Mime != "image/webp" ||
+		s.described.Width != 512 || s.described.Height != 512 {
+		t.Fatalf("staged %+v as %q", s.described, s.media)
+	}
+	if mediaTypes[s.media] != mediaTypes["image"] {
+		t.Error("a sticker is not uploaded as an image")
+	}
+	s.described.Ref = ref(s.media)
+	content, err := contentOf(s.described, "", nil)
+	sticker := content.GetStickerMessage()
+	if err != nil || sticker == nil || sticker.GetMimetype() != "image/webp" || sticker.GetWidth() != 512 ||
+		sticker.GetDirectPath() != "/v/t62/synthetic" {
+		t.Fatalf("got %v %v", content, err)
+	}
+	if _, err := contentOf(s.described, "words", nil); err == nil {
+		t.Error("a sticker took a caption")
+	}
+}
+
+func TestWebPSizeReadsEachKindOfFirstChunk(t *testing.T) {
+	lossless := []byte{0x2f, 0, 0, 0, 0}
+	binary.LittleEndian.PutUint32(lossless[1:], 299|199<<14)
+	lossy := []byte{0, 0, 0, 0x9d, 0x01, 0x2a, 0, 0, 0, 0}
+	binary.LittleEndian.PutUint16(lossy[6:], 320)
+	binary.LittleEndian.PutUint16(lossy[8:], 240)
+	for _, c := range []struct {
+		name          string
+		head          []byte
+		width, height uint32
+	}{
+		{"lossless", syntheticWebP("VP8L", lossless), 300, 200},
+		{"lossy", syntheticWebP("VP8 ", lossy), 320, 240},
+		{"not a WebP", bytes.Repeat([]byte{0}, 64), 0, 0},
+		{"too short", []byte("RIFF"), 0, 0},
+	} {
+		if w, h := webpSize(c.head); w != c.width || h != c.height {
+			t.Errorf("%s: got %dx%d", c.name, w, h)
+		}
+	}
+}
