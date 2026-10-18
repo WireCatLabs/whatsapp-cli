@@ -457,9 +457,9 @@ export const whatsAppAdapter = (
     },
 
     // The read patch takes a mark-unread off the owner's devices, which a receipt does not; it is bounded by `until`
-    // or the newest stored message, either side's, so a message newer than that stays unread. It goes first, so a
-    // refusal for missing settings keys leaves nothing sent. Then one receipt, for the newest message from someone
-    // else up to `until`: the account's own messages have none. A chat the store holds nothing of has neither.
+    // or the newest stored message, either side's, so it names nothing newer than the receipt covers. It goes first,
+    // so a refusal for missing settings keys leaves nothing sent. Then one receipt, for the newest message from
+    // someone else up to `until`: the account's own messages have none. A chat the store holds nothing of has neither.
     markRead: async (chatId, until) => {
       const anchor = until === undefined ? await stored.anchor(chatId, AFTER_EVERY_MESSAGE) : await held(chatId, until)
       if (!anchor) return

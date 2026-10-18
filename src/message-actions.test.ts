@@ -673,7 +673,7 @@ describe("marking read", () => {
     expect(result.actions).toEqual([newestTheirs])
   })
 
-  it("with --until-id, bounds the read patch by that message, so newer ones stay unread", async () => {
+  it("with --until-id, bounds the read patch by that message", async () => {
     const result = await acting(["chats", "mark-read", seed.busy, "--until-id", theirs.id])
     expect(result.code).toBe(0)
     expect(result.markedRead).toEqual([upTo(theirs)])
