@@ -32,7 +32,7 @@ Open work, most important first. The plan in flight is
    the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
    reported to the lead for cli-core to decide.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
-   profiles, blocking, number lookup, Markdown, polls and message pins are built; what they left open:
+   profiles, blocking, number lookup, Markdown, polls, message pins and chat mute are built; what they left open:
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
      them (cli-core 0.322.0); a live vote whose poll the store does not hold yet is passed over.
    - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and
@@ -65,6 +65,14 @@ Open work, most important first. The plan in flight is
    - **Live checks of the chat-state writes** in the own chat: `account privacy show`, `chats mute` and `unmute`,
      `messages pin` and `unpin`, and delete for the owner alone (W6). The owner runs `bin/live-chat-state` for them;
      its last table names the line of this item each answer settles, and it skips what is not built yet.
+   - **Live checks of `chats mute`**: not run against WhatsApp. Open: whether the phone applies a mute addressed
+     to a one-to-one chat by its LID when it keys that chat by phone number (whatsmeow maps neither way), and how
+     soon after a fresh link the settings keys arrive. Channels are refused; whatsmeow's `NewsletterToggleMute`
+     would mute one, without an end time.
+   - **The store does not learn of a mute.** Nothing updates a chat's `muted` after `chats mute`, and the engine
+     reads no live mute events, so `inbox` leaves the chat in until the next history push. That push may read it
+     wrong too: `convert.go` takes `muteEndTime > 0` as seconds, while a mute for good is -1 in app state and the
+     history field is unsigned — whether the phone writes it as all ones, and in which unit, is not checked.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so
      `messages delete` without `--for-everyone` is refused rather than built from a guessed patch. Until it is built,
      `WHATSAPP.deleteForMe` is `false`, so an agent's MCP delete is refused; building it means setting that to `true`.

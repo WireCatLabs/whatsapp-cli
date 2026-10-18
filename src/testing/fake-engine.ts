@@ -97,6 +97,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
     answers?: string[]
     duration?: number
   }[]
+  /** Each mute and unmute, in order. */
+  mutes: { jid: string; until: string | null }[]
   closed: boolean
   loggedOut: boolean
 }
@@ -108,7 +110,12 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy {
  */
 export const fakeEngine = (
   seed: Seed,
-  { linked = true, phone, privacy }: { linked?: boolean; phone?: WaMessage[]; privacy?: WaPrivacy } = {},
+  {
+    linked = true,
+    phone,
+    privacy,
+    settingsKeys = true,
+  }: { linked?: boolean; phone?: WaMessage[]; privacy?: WaPrivacy; settingsKeys?: boolean } = {},
 ): FakeEngine => {
   const hub = eventHub()
   let self = linked ? (seed.account?.id ?? null) : null
@@ -140,6 +147,7 @@ export const fakeEngine = (
   const downloads: WaAttachment[] = []
   const forwards: WaForward[] = []
   const olderAsked: FakeEngine["olderAsked"] = []
+  const mutes: FakeEngine["mutes"] = []
 
   const post = (chat: string, id: string, text: string, attachments: WaAttachment[], replyTo?: string): WaMessage => {
     const message: WaMessage = {
@@ -168,6 +176,7 @@ export const fakeEngine = (
     downloads,
     forwards,
     olderAsked,
+    mutes,
     closed: false,
     loggedOut: false,
     push,
@@ -289,6 +298,15 @@ export const fakeEngine = (
     },
     unpin: async (key) => {
       actions.push({ op: "unpin", key })
+    },
+    mute: async (jid, until) => {
+      if (!settingsKeys)
+        throw new EngineError(
+          "provider_unavailable",
+          "WhatsApp has not sent the settings keys yet; keep serve running a few minutes and try again",
+          "settings.keys-missing",
+        )
+      mutes.push({ jid, until })
     },
     link: async (request, onCode) => {
       if (!seed.account) throw new EngineError("authentication_error", "not linked")

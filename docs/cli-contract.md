@@ -79,7 +79,7 @@ output too.
 | `9` | `timeout` | the command ran out of time, or another process held the send journal, the request pace or the recipient list past the 5 s wait: nothing was sent or changed, so it is safe to retry |
 | `10` | `network_error` | WhatsApp could not be reached |
 | `11` | `provider_error` | WhatsApp refused the request |
-| `12` | `provider_unavailable` | another `wa` command holds the device's one connection (`device.in-use`) or took it over (`device.replaced`), the engine stopped (`engine.stopped`), or WhatsApp no longer accepts this version of `wa` (`client.outdated`) |
+| `12` | `provider_unavailable` | another `wa` command holds the device's one connection (`device.in-use`) or took it over (`device.replaced`), the engine stopped (`engine.stopped`), WhatsApp no longer accepts this version of `wa` (`client.outdated`), or has not sent this device the keys a settings change needs yet (`settings.keys-missing`: keep `serve` running a few minutes) |
 | `13` | `invalid_response` | WhatsApp answered something `wa` does not understand |
 | `14` | `outcome_unknown` | a write may or may not have happened, also when the engine stopped during it (`engine.stopped-mid-write`) ([below](#previews-and-safe-retries)) |
 | `130` | `cancelled` | Ctrl-C |

@@ -783,6 +783,38 @@ wa chats moderate <chat> [options]
 | `--allow-dangerous` | yes to every action whose level in the group's rules is ask. |
 | `--max-actions <n>` | at most this many actions in one run; 10 if not given. |
 
+### `wa chats mute`
+
+stop notifications from a chat, for good or until a time; nobody in it is told
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats mute <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
+| Option | What it does |
+|---|---|
+| `--until <time>` | only until then: 2026-09-25T09:00 (local time), or 30m, 2h, 7d from now. |
+
+### `wa chats unmute`
+
+hear a muted chat again
+
+**Changes something in WhatsApp.**
+
+```sh
+wa chats unmute <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us). |
+
 ## `wa contacts`
 
 people this account has a one-to-one chat with

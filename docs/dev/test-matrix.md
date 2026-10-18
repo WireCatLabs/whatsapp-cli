@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**209 ✅ · 525 ⛔ · 0 ❌** — 229 commands, 505 options.
+**212 ✅ · 525 ⛔ · 0 ❌** — 231 commands, 506 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -106,6 +106,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats moderate` | `--dry-run` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
 | `chats moderate` | `--allow-dangerous` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
 | `chats moderate` | `--max-actions` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
+| `chats mute` |  | ✅ |  |
+| `chats mute` | `--until` | ✅ |  |
+| `chats unmute` |  | ✅ |  |
 | `contacts list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts list` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts list` | `--page` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |

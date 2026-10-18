@@ -64,6 +64,18 @@ flag is needed. A pin lasts 24 hours, 7 days or 30 days (`--expire-time 24h`, `7
 `--expire-time`, `wa` pins for 7 days. Nothing is marked read unless you ask: `chats mark-read`, or `--mark-read` on
 `messages list`, `inbox` and `review`.
 
+## Mute a chat
+
+```sh
+wa personal chats mute "Book club"              # for good
+wa personal chats mute "Book club" --until 8h   # or until a time: --until 2026-10-09T09:00
+wa personal chats unmute "Book club"
+```
+
+Muting is your own setting, which WhatsApp syncs to your other devices; nobody in the chat is told. Whether the phone
+applies it to a one-to-one chat has not been checked yet. A device linked a few minutes ago may not have WhatsApp's
+settings keys yet; keep `serve` running a while and try again. Mute a channel on the phone.
+
 A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local store holds shows the quoted text
 and its sender on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's
 apps may then show the quote as unavailable.

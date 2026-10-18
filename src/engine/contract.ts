@@ -1,6 +1,7 @@
 import * as v from "valibot"
 import type { GroupEngine } from "./groups.js"
 import type { PrivacyEngine } from "./privacy.js"
+import type { SettingsEngine } from "./settings.js"
 
 /**
  * What the engine and the adapter say to each other, in WhatsApp's own terms. The Go engine speaks it as JSON
@@ -12,7 +13,7 @@ import type { PrivacyEngine } from "./privacy.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 17
+export const PROTOCOL = 18
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -161,7 +162,8 @@ export const engineErrorCode = v.picklist([
  * Why, for the refusals an agent recovers from differently than their code says: another process holds the device
  * (`device.in-use`), WhatsApp handed the login to another connection (`device.replaced`), logged the device out, refuses
  * this version (`client.outdated`), banned the account, or asked it to slow down (`account.rate-limited`, never the
- * engine's own lookup pace). The CLI registers each one (`src/reasons.ts`).
+ * engine's own lookup pace), or has not yet sent the keys a settings change is sealed with (`settings.keys-missing`).
+ * The CLI registers each one (`src/reasons.ts`).
  */
 export const engineReason = v.picklist([
   "device.in-use",
@@ -170,6 +172,7 @@ export const engineReason = v.picklist([
   "client.outdated",
   "account.banned",
   "account.rate-limited",
+  "settings.keys-missing",
 ])
 
 export const engineError = v.strictObject({
@@ -309,7 +312,7 @@ export class EngineError extends Error {
  * An event nobody listens for yet is kept and handed to the first listener of its kind, so a history push that
  * comes right after connecting is not lost to a `feed` that started a moment after `watch`.
  */
-export interface WhatsAppEngine extends GroupEngine, PrivacyEngine {
+export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngine {
   /**
    * The linked account, from the engine's own store: no request. `null` before a login. Always the user JID in LID
    * form with no device part (`…@lid`, not `…:12@s.whatsapp.net`): the store keys the account by it, so a change of

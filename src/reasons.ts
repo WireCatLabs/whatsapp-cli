@@ -10,6 +10,7 @@ export const REASONS: ErrorReason[] = defineReasons(
       ["client.outdated", "provider_unavailable", "WhatsApp no longer accepts this version of wa"],
       ["account.banned", "permission_error", "WhatsApp has banned or restricted this account"],
       ["account.rate-limited", "rate_limited", "WhatsApp asked this account to slow down"],
+      ["settings.keys-missing", "provider_unavailable", "WhatsApp has not sent the keys a settings change needs yet"],
       ["engine.stopped", "provider_unavailable", "the WhatsApp engine stopped unexpectedly"],
       ["engine.stopped-mid-write", "outcome_unknown", "the WhatsApp engine stopped before WhatsApp confirmed a change"],
     ] satisfies [string, ErrorReason["code"], string][]

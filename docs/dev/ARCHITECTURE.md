@@ -151,6 +151,14 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   (`src/adapter/privacy.ts`) maps them onto cli-core's `chatInvites`, `calls`, `hideOnline` (`last` and `online`
   together), `lastSeen`, `profilePhoto`, `about` and `readReceipts`, lists those in the Messenger's
   `privacySettings`, and refuses what WhatsApp has no value for.
+- **Settings requests** (`engine/cmd/wa-engine/appstate.go`; the contract in
+  [`src/engine/settings.ts`](../../src/engine/settings.ts)): writes to the account's synced settings ("app state"),
+  which WhatsApp syncs to the account's other devices and nobody else sees. Each goes through `sendAppState`, which
+  sends a whatsmeow patch with `SendAppState`, answers `settings.keys-missing` while WhatsApp has not sent this device
+  the keys a patch is sealed with, counts a patch the server took as done even if reading the settings back failed, and
+  answers `outcome_unknown` when the patch left and no answer came. `mute` (`jid`, `until`: `forever`, an RFC 3339 time,
+  or null to unmute; `BuildMuteAbs`, forever as -1, an end in milliseconds) refuses channels, which mute by another
+  request.
 - **Poll requests** (`engine/cmd/wa-engine/polls.go`): `createPoll` (`question`, `answers`, `multiple`;
   `BuildPollCreation`, which gives the poll a secret whatsmeow keeps in `private.db`) and `vote` (a message key and
   the chosen answers' texts, none to retract; `BuildPollVote`, encrypted with that secret, so it needs the poll to

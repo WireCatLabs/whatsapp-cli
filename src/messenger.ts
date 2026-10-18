@@ -201,6 +201,7 @@ export const WHATSAPP: Messenger = {
   pinDurations: [86_400, 604_800, 2_592_000],
   // Nothing sends unless a typed command asked: WhatsApp bans accounts that answer like a bot.
   autoReplies: false,
+  chatMute: true,
   lacks: [
     "updateProfile",
     "sessions",

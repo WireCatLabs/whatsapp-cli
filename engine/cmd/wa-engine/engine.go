@@ -165,6 +165,9 @@ func (e *engine) dispatch(req request) (any, error) {
 	if value, handled, err := e.dispatchPins(req); handled {
 		return value, err
 	}
+	if value, handled, err := e.dispatchSettings(req); handled {
+		return value, err
+	}
 	return nil, &failure{"validation_error", "the engine has no such request"}
 }
 

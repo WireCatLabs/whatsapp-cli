@@ -23,6 +23,7 @@ import {
 import { eventHub } from "./events.js"
 import { goGroups } from "./groups.js"
 import { goPrivacy } from "./privacy.js"
+import { goSettings } from "./settings.js"
 
 export interface GoEngineOptions {
   /** The profile's `private.db`. */
@@ -68,6 +69,7 @@ const WRITES = new Set([
   "answerRequest",
   "block",
   "setPrivacy",
+  "mute",
   "logout",
 ])
 
@@ -279,6 +281,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     close,
     ...goGroups(request),
     ...goPrivacy(request),
+    ...goSettings(request),
   }
 }
 

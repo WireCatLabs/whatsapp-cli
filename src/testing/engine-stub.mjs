@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 17, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 18, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -168,6 +168,19 @@ createInterface({ input: process.stdin }).on("line", (line) => {
         `{"id":${id},"ok":{"groupadd":"contacts","last":"none","online":"match_last_seen","calladd":"known",` +
           `"profile":"contact_blacklist","status":"","readreceipts":"none"}}\n`,
       )
+      break
+    case "mute":
+      if (fields.jid === "nokeys@stub")
+        say({
+          id,
+          error: {
+            code: "provider_unavailable",
+            message: "WhatsApp has not sent the settings keys yet; keep serve running a few minutes and try again",
+            reason: "settings.keys-missing",
+          },
+        })
+      else if (fields.until === undefined) say({ id, error: { code: "validation_error", message: "no until" } })
+      else say({ id, ok: null })
       break
     case "participants":
       process.stdout.write(`{"id":${id},"ok":{"notAdded":[]}}\n`)

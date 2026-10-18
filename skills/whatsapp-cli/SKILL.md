@@ -24,7 +24,7 @@ do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". T
 account, older history of one chat (`messages sync`), sending text (with `--reply-to`), one file per message or a photo and a video as an album,
 `messages edit`, `messages delete --for-everyone`, `messages download`, `messages forward`,
 `messages transcribe --local`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
-`polls create|show|vote|voters`, `chats mark-read`, group admin
+`polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
