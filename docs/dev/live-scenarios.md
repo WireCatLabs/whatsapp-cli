@@ -187,7 +187,8 @@ never printed. After each step it asks the owner what the phone shows and record
 5. `chats pin` on the own chat, then `chats unpin`: at the top of the chat list with the pin icon, then not.
 6. `chats archive`, then `chats unarchive`: in Archived, then back in the chat list. It comes after the chat pin,
    since whatsmeow's archive patch also unpins the chat.
-7. `chats mark-unread`, then `chats mark-read`: the unread dot, then whether the read receipt alone clears it.
+7. `chats mark-unread`, then `chats mark-read`: the unread dot, then whether it stays. `wa` sends a read receipt
+   only for someone else's message and the own chat has none, so `mark-read` sends nothing there.
 8. `messages delete` of the marker without `--for-everyone`, scenario W6: gone from the owner's devices.
 
 A step whose command the build lacks is skipped with "not built in this checkout yet". `chats mute`, `chats unmute`,
@@ -206,7 +207,7 @@ line a yes settles:
 | pin, unpin | "Message pins": the pin and unpin in the own chat. A group addressed by phone numbers stays open |
 | star, unstar | "Live check of starring": the owner's own message in the own chat (W7). Someone else's message, in a group or a one-to-one chat, stays open |
 | chats pin, unpin, archive, unarchive, mark-unread | "Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`": a one-to-one chat addressed by its LID. A fourth pinned chat, pinning an archived chat, and an archived chat that a newer message brings back stay open |
-| mark-read | "`chats mark-read` after a `mark-unread`": yes, the read receipt clears the mark. A no settles it the other way: `mark-read` must also send the read patch, and is not a bug in what was sent |
+| mark-read | "`chats mark-read` after a `mark-unread`", for the own chat only. A no is expected: without the read patch, `wa` cannot undo a mark-unread there. Whether a receipt in a chat with someone else clears it stays open |
 | delete for you only | "Live check of delete for the owner alone": the owner's own message. Someone else's message in a group, a one-to-one chat with another person, and the saved files stay open |
 
 Left out on purpose: each changes what other people see, or destroys history, so the owner checks it by hand if

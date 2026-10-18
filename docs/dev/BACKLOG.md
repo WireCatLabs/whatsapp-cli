@@ -98,8 +98,10 @@ Open work, most important first. The plan in flight is
      sends a read receipt and no app-state patch, clears a mark-unread on the phone; and whether an archived chat comes
      back when a message newer than the patch's range arrives.
    - **`chats mark-read` after a `mark-unread`.** `mark-read` sends a read receipt only; the app-state patch that
-     undoes a mark-unread is the same one with read true (whatsmeow's `BuildMarkChatAsRead`). If the live
-     check (`bin/live-chat-state`, step 7) shows the receipt leaves the mark, `mark-read` also sends that patch.
+     undoes a mark-unread is the same one with read true (whatsmeow's `BuildMarkChatAsRead`). If a live check
+     shows the receipt leaves the mark, `mark-read` also sends that patch. `bin/live-chat-state` (step 7) cannot
+     answer it: in the own chat `mark-read` sends nothing, since the account's own messages have no receipt, so it
+     shows only that `wa` cannot undo a mark-unread there; the receipt needs a chat with someone else.
      Open then: a second write that can fail with `settings.keys-missing` after the receipt went out, and
      `inbox`/`review --mark-read` doing it per chat.
    - **An archive or mark-unread with nothing stored.** Baileys accepts an empty message range, whatsapp-rust calls
