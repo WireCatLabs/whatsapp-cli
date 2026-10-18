@@ -18,8 +18,12 @@ import (
 )
 
 // holdLock takes the one lock per linked device before anything can connect: a second connection would not fail,
-// WhatsApp would silently drop the first. The loser is told who holds it.
+// WhatsApp would silently drop the first. The loser is told who holds it. It is the first to touch the profile's
+// folder, so it makes it: a new profile has none until its first login.
 func holdLock(storePath, holder string) (*os.File, *refusal) {
+	if err := os.MkdirAll(filepath.Dir(storePath), 0o700); err != nil {
+		return nil, &refusal{failure: failure{"provider_error", "cannot create the profile folder"}}
+	}
 	file, err := os.OpenFile(storePath+".lock", os.O_CREATE|os.O_RDWR, 0o600)
 	if err != nil {
 		return nil, &refusal{failure: failure{"provider_error", "cannot open the lock beside the device store"}}
@@ -43,9 +47,6 @@ func holdLock(storePath, holder string) (*os.File, *refusal) {
 // create one), several means the file is not ours to guess in. The database comes back too, for the engine's own
 // table beside whatsmeow's.
 func openDevice(ctx context.Context, storePath string, linking bool, logger waLog.Logger) (*store.Device, *sql.DB, *failure) {
-	if err := os.MkdirAll(filepath.Dir(storePath), 0o700); err != nil {
-		return nil, nil, &failure{"provider_error", "cannot create the profile folder"}
-	}
 	dsn := "file:" + storePath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {

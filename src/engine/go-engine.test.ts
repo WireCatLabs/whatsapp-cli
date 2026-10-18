@@ -294,6 +294,13 @@ describe.skipIf(noEngine)("the built Go engine", () => {
     await linking.close()
   })
 
+  it("links a new profile whose folder does not exist yet", async () => {
+    const path = join(mkdtempSync(join(tmpdir(), "wa-engine-")), "profiles", "new", "private.db")
+    const linking = await startGoEngine({ storePath: path, holder: "session start", link: true })
+    expect(linking.self()).toBeNull()
+    await linking.close()
+  })
+
   it("lets one process hold a device and tells the second who holds it", async () => {
     const path = storePath()
     const first = await startGoEngine({ storePath: path, holder: "serve", link: true })
