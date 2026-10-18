@@ -162,19 +162,13 @@ export const UNTESTED: Untested[] = [
     reason:
       "a shared cli-core option; src/update.test.ts runs `config show` only to see the update notice after a command",
   },
-  ...["--limit", "--cursor", "--transcribe", "--model"].map((option) => ({
+  ...["--limit", "--cursor"].map((option) => ({
     command: "messages list",
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); " +
-      "src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine",
-  })),
-  ...["--local", "--model"].map((option) => ({
-    command: "messages transcribe",
-    option,
-    reason:
-      "needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, " +
-      "and cli-core's src/speech tests drive the local model",
+      "src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach " +
+      "the engine",
   })),
   ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
     command: "messages sync",
@@ -217,21 +211,21 @@ export const UNTESTED: Untested[] = [
     option: "--operation-id",
     reason: "a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/guard.test.ts)",
   },
-  ...["--new", "--limit", "--kind", "--transcribe", "--model"].map((option) => ({
+  ...["--new", "--limit", "--kind"].map((option) => ({
     command: "inbox",
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in " +
-      "src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives " +
-      "--mark-read, the option that reaches the engine",
+      "src/cli/list-query.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts " +
+      "--transcribe, the options that reach the engine",
   })),
-  ...["--kind", "--transcribe", "--model", "--new"].map((option) => ({
+  ...["--kind", "--new"].map((option) => ({
     command: "review",
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); " +
-      "src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach " +
-      "the engine",
+      "src/message-actions.test.ts drives --mark-read, src/groups.test.ts --unanswered and src/media.test.ts " +
+      "--transcribe, the options that reach the engine",
   })),
 
   ...["--from-dir", "--cursor", "--limit", "--ocr", "--concurrency"].map((option) => ({
