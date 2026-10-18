@@ -10,7 +10,16 @@ import {
 } from "../engine/groups.js"
 
 export interface GroupAction {
-  op: "createGroup" | "join" | "leave" | "updateGroup" | "resetLink" | WaParticipantAction | "answerRequest" | "block"
+  op:
+    | "createGroup"
+    | "join"
+    | "leave"
+    | "updateGroup"
+    | "setGroupPhoto"
+    | "resetLink"
+    | WaParticipantAction
+    | "answerRequest"
+    | "block"
   jid?: string
   people?: string[]
   change?: WaGroupChange
@@ -91,6 +100,11 @@ export const fakeGroups = (seed: Seed, chats: WaChat[]): FakeGroups => {
     updateGroup: async (jid, change) => {
       groupActions.push({ op: "updateGroup", jid, change })
       changed.set(jid, { ...changed.get(jid), ...change })
+      return groupOf(jid, true)
+    },
+    // The photo's path is a temporary one, different on every run, so it is left out.
+    setGroupPhoto: async (jid) => {
+      groupActions.push({ op: "setGroupPhoto", jid })
       return groupOf(jid, true)
     },
     resetInviteLink: async (jid) => {

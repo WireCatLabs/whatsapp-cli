@@ -1,3 +1,6 @@
+import { mkdtempSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
@@ -162,6 +165,69 @@ describe("wa chats create, join, leave, update, link", () => {
     expect(result.done).toEqual([
       { op: "updateGroup", jid: seed.busy, change: { title: "Synthetic club", description: "synthetic" } },
     ])
+  })
+
+  it("sets a group's photo from a JPEG, before the rest of the change", async () => {
+    const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
+    writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))
+    const alone = await acting("chats", "update", seed.busy, "--photo", photo)
+    expect(alone.code).toBe(0)
+    expect(alone.done).toEqual([{ op: "setGroupPhoto", jid: seed.busy }])
+    expect(alone.body.chat.id).toBe(seed.busy)
+
+    const both = await acting("chats", "update", seed.busy, "--photo", photo, "--title", "Synthetic club")
+    expect(both.code).toBe(0)
+    expect(both.done).toEqual([
+      { op: "setGroupPhoto", jid: seed.busy },
+      { op: "updateGroup", jid: seed.busy, change: { title: "Synthetic club" } },
+    ])
+
+    const long = await acting("chats", "update", seed.busy, "--photo", photo, "--title", "x".repeat(26))
+    expect(long.code).toBe(2)
+    expect(long.done).toEqual([])
+  })
+
+  it("says the photo was set when the rest of the change then fails", async () => {
+    const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
+    writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))
+    let engine: FakeEngine | undefined
+    const result = await wa(
+      [PROFILE, "chats", "update", seed.busy, "--photo", photo, "--title", "Synthetic club", "--json"],
+      () => {
+        engine = fakeEngine(seed)
+        engine.updateGroup = async () => {
+          throw new EngineError("outcome_unknown", "the WhatsApp engine stopped before WhatsApp confirmed the change")
+        }
+        return engine
+      },
+    )
+    expect(errorOf(result.stderr)).toMatchObject({
+      code: "outcome_unknown",
+      message: expect.stringMatching(/^the photo was set, the rest of the change was not: /),
+    })
+    expect(engine?.groupActions).toEqual([{ op: "setGroupPhoto", jid: seed.busy }])
+  })
+
+  it("sets no photo when the profile denies chats update", async () => {
+    const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
+    writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]))
+    expect((await wa(["no-update", "config", "set", "permissions.chats.update", "deny"])).code).toBe(0)
+    let engine: FakeEngine | undefined
+    const result = await wa(["no-update", "chats", "update", seed.busy, "--photo", photo, "--json"], () => {
+      engine = fakeEngine(seed)
+      return engine
+    })
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(engine?.groupActions ?? []).toEqual([])
+  })
+
+  it("refuses a photo that is not a JPEG, whatever its name, and changes nothing", async () => {
+    const photo = join(mkdtempSync(join(tmpdir(), "wa-photo-test-")), "synthetic.jpg")
+    writeFileSync(photo, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+    const result = await acting("chats", "update", seed.busy, "--photo", photo, "--title", "Synthetic club")
+    expect(result.code).toBe(2)
+    expect(errorOf(result.stderr)).toMatchObject({ code: "validation_error", message: expect.stringContaining("JPEG") })
+    expect(result.done).toEqual([])
   })
 
   it("joins by an invite link, or says the request waits for an admin", async () => {

@@ -75,6 +75,8 @@ export interface GroupEngine {
   join(link: string): Promise<WaJoined>
   leave(jid: string): Promise<void>
   updateGroup(jid: string, change: WaGroupChange): Promise<WaGroup>
+  /** The group's photo from a JPEG at `path`, an absolute path; the engine refuses one WhatsApp would not take. */
+  setGroupPhoto(jid: string, path: string): Promise<WaGroup>
   /** A new invite link; the old one stops working. */
   resetInviteLink(jid: string): Promise<WaGroup>
   /** Adds, removes, promotes to admin or demotes; only `add` may leave some out. */
@@ -107,6 +109,7 @@ export const goGroups = (request: EngineRequest): GroupEngine => ({
     await request("leave", { jid }, nothing)
   },
   updateGroup: (jid, change) => request("updateGroup", { jid, ...change }, waGroup),
+  setGroupPhoto: (jid, path) => request("setGroupPhoto", { jid, path }, waGroup),
   resetInviteLink: (jid) => request("resetLink", { jid }, waGroup),
   participants: (jid, action, people) => request("participants", { jid, action, people }, waNotAdded),
   joinRequests: (jid) => request("requests", { jid }, v.array(waJoinRequest)),

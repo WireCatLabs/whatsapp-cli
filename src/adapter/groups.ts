@@ -1,8 +1,10 @@
-import { CliError } from "@wirecat/cli-base"
+import { open } from "node:fs/promises"
+import { CliError, isCliError } from "@wirecat/cli-base"
 import type { AdminRight, Chat, GroupCard, GroupMember, ProfileFacts } from "@wirecat/cli-core"
 import type { MessengerAdapter } from "@wirecat/cli-core/cli"
+import type { UploadSource } from "@wirecat/cli-core/sends"
 import type { WhatsAppEngine } from "../engine/contract.js"
-import type { WaGroup } from "../engine/groups.js"
+import type { WaGroup, WaGroupChange } from "../engine/groups.js"
 import { toChat, toMember } from "./map.js"
 
 /** Group moderation and admin, join requests, profiles, blocking, number lookup and the account's health. */
@@ -56,6 +58,9 @@ export const GROUP_SETTINGS = [
 /** The timers WhatsApp's apps offer, in seconds; its server refuses any other in a group. */
 const DISAPPEARING_SECONDS = [0, 86_400, 604_800, 7_776_000]
 
+/** WhatsApp refuses a longer group name; the engine's `groupNameLimit`. */
+const GROUP_NAME_LIMIT = 25
+
 const isPerson = (id: string) => id.endsWith("@lid") || id.endsWith("@s.whatsapp.net")
 
 /** A group as `chats update` and `chats create` answer it. */
@@ -92,9 +97,26 @@ export interface GroupDeps {
   translated: <T>(work: Promise<T>) => Promise<T>
   /** Whether the owner has written to this person; from cli-core's store. */
   wroteTo: (personId: string) => Promise<boolean>
+  /** An upload as a file the engine can read. */
+  onDisk: <T>(source: UploadSource, work: (path: string) => Promise<T>) => Promise<T>
 }
 
-export const groupAdapter = ({ engine, resolve, translated, wroteTo }: GroupDeps): GroupAdapter => {
+// A JPEG starts with a start-of-image marker and then another marker; the file's name says nothing.
+const isJpeg = async (source: UploadSource): Promise<boolean> => {
+  const head = Buffer.alloc(3)
+  if (source.kind === "bytes") head.set(source.bytes.subarray(0, 3))
+  else {
+    const file = await open(source.path)
+    try {
+      await file.read(head, 0, 3, 0)
+    } finally {
+      await file.close()
+    }
+  }
+  return head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff
+}
+
+export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: GroupDeps): GroupAdapter => {
   const groupId = async (reference: string): Promise<string> => {
     const { id } = await resolve(reference)
     if (!id.endsWith("@g.us")) throw new CliError("validation_error", "that chat is not a WhatsApp group")
@@ -180,25 +202,44 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo }: GroupDeps
     group: async (chat) => toGroupCard(await translated(engine.group(await groupId(chat), { withLink: true }))),
 
     updateGroup: async (chatId, { title, description, settings = {}, photo }) => {
-      if (photo !== undefined) throw new CliError("validation_error", "wa does not set a group's photo yet")
+      if (photo !== undefined && !(await isJpeg(photo.source)))
+        throw new CliError("validation_error", `${photo.name} is not a JPEG — WhatsApp takes a group photo only as one`)
       const missing = Object.keys(settings).filter((key) => !(GROUP_SETTINGS as readonly string[]).includes(key))
       if (missing.length > 0)
         throw new CliError("validation_error", `WhatsApp has no group setting ${missing.join(", ")}`)
       const { onlyAdminsAdd, joinApproval, onlyAdminsSend, onlyAdminsEditInfo, disappearingSeconds } = settings
       if (typeof disappearingSeconds === "number" && !DISAPPEARING_SECONDS.includes(disappearingSeconds))
         throw new CliError("validation_error", "WhatsApp makes messages disappear after 24h, 7d or 90d; off keeps them")
-      const group = await translated(
-        engine.updateGroup(await groupId(chatId), {
-          ...(title === undefined ? {} : { title }),
-          ...(description === undefined ? {} : { description }),
-          ...(typeof onlyAdminsAdd === "boolean" ? { addMode: onlyAdminsAdd ? "admin_add" : "all_member_add" } : {}),
-          ...(typeof joinApproval === "boolean" ? { approval: joinApproval } : {}),
-          ...(typeof onlyAdminsSend === "boolean" ? { announce: onlyAdminsSend } : {}),
-          ...(typeof onlyAdminsEditInfo === "boolean" ? { locked: onlyAdminsEditInfo } : {}),
-          ...(typeof disappearingSeconds === "number" ? { ephemeral: disappearingSeconds } : {}),
-        }),
-      )
-      return toGroupCard(group)
+      const change: WaGroupChange = {
+        ...(title === undefined ? {} : { title }),
+        ...(description === undefined ? {} : { description }),
+        ...(typeof onlyAdminsAdd === "boolean" ? { addMode: onlyAdminsAdd ? "admin_add" : "all_member_add" } : {}),
+        ...(typeof joinApproval === "boolean" ? { approval: joinApproval } : {}),
+        ...(typeof onlyAdminsSend === "boolean" ? { announce: onlyAdminsSend } : {}),
+        ...(typeof onlyAdminsEditInfo === "boolean" ? { locked: onlyAdminsEditInfo } : {}),
+        ...(typeof disappearingSeconds === "number" ? { ephemeral: disappearingSeconds } : {}),
+      }
+      // The engine checks the name too, but only after the photo is set: a refusal then would hide that it changed.
+      if (title !== undefined && [...title].length > GROUP_NAME_LIMIT)
+        throw new CliError("validation_error", "WhatsApp takes a group name of 1 to 25 characters")
+      const jid = await groupId(chatId)
+      // The photo goes first: the engine refuses one WhatsApp would not take, and then nothing else has changed.
+      const pictured =
+        photo === undefined
+          ? undefined
+          : await translated(onDisk(photo.source, (path) => engine.setGroupPhoto(jid, path)))
+      if (pictured === undefined) return toGroupCard(await translated(engine.updateGroup(jid, change)))
+      if (Object.keys(change).length === 0) return toGroupCard(pictured)
+      try {
+        return toGroupCard(await translated(engine.updateGroup(jid, change)))
+      } catch (error) {
+        if (!isCliError(error)) throw error
+        throw new CliError(
+          error.code,
+          `the photo was set, the rest of the change was not: ${error.message}`,
+          error.details,
+        )
+      }
     },
 
     resetInviteLink: async (chatId) => toGroupCard(await translated(engine.resetInviteLink(await groupId(chatId)))),

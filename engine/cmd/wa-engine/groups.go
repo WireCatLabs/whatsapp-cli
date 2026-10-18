@@ -2,6 +2,10 @@ package main
 
 import (
 	"errors"
+	"image"
+	"io"
+	"os"
+	"path/filepath"
 	"regexp"
 	"time"
 	"unicode/utf8"
@@ -103,6 +107,9 @@ func (e *engine) groupOp(req request) (any, bool, error) {
 		return value, true, err
 	case "resetLink":
 		value, err := e.resetLink(req.JID)
+		return value, true, err
+	case "setGroupPhoto":
+		value, err := e.setGroupPhoto(req.JID, req.Path)
 		return value, true, err
 	case "participants":
 		value, err := e.participants(req)
@@ -407,4 +414,56 @@ func (e *engine) resetLink(raw string) (*waGroup, error) {
 	}
 	group.Link = &link
 	return group, nil
+}
+
+// WhatsApp takes a group photo as a JPEG, and whatsmeow sends the bytes as given. mautrix-whatsapp v0.2610.0 sends
+// only square JPEGs of these sides: it re-encodes any other picture to a side clamped to them, ends included
+// (pkg/connector/handlematrix.go, convertRoomAvatar).
+const (
+	groupPhotoMin = 190
+	groupPhotoMax = 720
+)
+
+// groupPhoto reads the picture in full only once its header shows WhatsApp would take it.
+func groupPhoto(path string) ([]byte, error) {
+	if !filepath.IsAbs(path) {
+		return nil, &failure{"validation_error", "a group photo needs its absolute path"}
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, &failure{"validation_error", "the group photo could not be opened"}
+	}
+	defer file.Close()
+	config, format, err := image.DecodeConfig(file)
+	if err != nil || format != "jpeg" {
+		return nil, &failure{"validation_error", "WhatsApp takes a group photo only as a JPEG"}
+	}
+	if config.Width != config.Height || config.Width < groupPhotoMin || config.Width > groupPhotoMax {
+		return nil, &failure{"validation_error", "WhatsApp takes a group photo as a square of 190 to 720 pixels a side"}
+	}
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	return io.ReadAll(file)
+}
+
+func (e *engine) setGroupPhoto(raw, path string) (*waGroup, error) {
+	jid, err := groupJID(raw)
+	if err != nil {
+		return nil, err
+	}
+	photo, err := groupPhoto(path)
+	if err != nil {
+		return nil, err
+	}
+	if err := e.connect(); err != nil {
+		return nil, err
+	}
+	if _, err := e.client.SetGroupPhoto(e.ctx, jid, photo); err != nil {
+		if errors.Is(err, whatsmeow.ErrInvalidImageFormat) {
+			return nil, &failure{"validation_error", "WhatsApp refused the photo; it takes a square JPEG"}
+		}
+		return nil, err
+	}
+	return e.readGroup(jid, true)
 }

@@ -58,6 +58,7 @@ const WRITES = new Set([
   "join",
   "leave",
   "updateGroup",
+  "setGroupPhoto",
   "resetLink",
   "participants",
   "answerRequest",

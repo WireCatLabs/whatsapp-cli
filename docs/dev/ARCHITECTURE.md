@@ -125,7 +125,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   [`src/engine/groups.ts`](../../src/engine/groups.ts)): `group` (with `withLink` for the invite link, which only
   admins get), `createGroup`, `join` (an invite link; a group that approves joins answers `requested`), `leave`,
   `updateGroup` (name, description, `addMode`, `approval`, `announce`, `locked`, `ephemeral` — only WhatsApp's
-  timers, 0, 24h, 7d or 90d), `resetLink`, `participants` (`add`, `remove`, `promote`,
+  timers, 0, 24h, 7d or 90d), `setGroupPhoto` (`path`: a square JPEG of 190 to 720 pixels a side, checked before
+  connecting, the sides mautrix-whatsapp re-encodes to), `resetLink`, `participants` (`add`, `remove`, `promote`,
   `demote`; a phone-addressed group gets phone JIDs), `requests`, `answerRequest`, `profile` (`GetUserInfo` and the
   photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per profile, timed by
   `private.db.lookup`) and `contacts` (the address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter

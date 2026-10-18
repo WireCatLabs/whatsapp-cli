@@ -480,6 +480,7 @@ wa chats update <chat> [options]
 |---|---|
 | `--title <title>` | the new name. |
 | `--description <text>` | the new description. |
+| `--photo <file>` | a new photo for it — an image file. |
 | `--only-admins-add <on\|off>` | only admins may add members. |
 | `--join-approval <on\|off>` | people ask to join, and an admin lets them in. |
 | `--only-admins-send <on\|off>` | only admins may send messages. |

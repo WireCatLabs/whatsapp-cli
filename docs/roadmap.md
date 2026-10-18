@@ -14,7 +14,7 @@ What is not: [not in wa yet](usage.md#not-in-wa-yet).
 
 ## Next
 
-- **The group photo**: setting a group's picture.
+- **Removing a group's photo**: `chats update --photo` sets one; taking it away is done on the phone for now.
 
 ## Later
 
