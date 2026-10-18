@@ -47,7 +47,7 @@ age=$(wa_json "$profile" messages show "$own" "$message" --offline --timeout 30s
   json 'Math.floor((Date.now() - Date.parse(d.item.timestamp)) / 86400000)') ||
   die "messages show failed — is that message in your own chat?"
 kind=$(wa_json "$profile" messages show "$own" "$message" --offline --timeout 30s |
-  json 'd.item.attachments.map((one) => one.kind).join(", ") || "no attachment"')
+  json 'd.item.attachments.map((one) => one.kind).join(", ") || "no attachment"') || die "messages show failed"
 
 cat <<EOF
 

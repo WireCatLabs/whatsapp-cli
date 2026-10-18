@@ -251,8 +251,8 @@ engine's log.
 **`live-forward-card`** needs `serve` running, which stores what the phone sends. It notes the newest place and
 the newest single contact card in the own chat (`messages list --offline --limit 20`), then asks the owner to send
 both from the phone: a place, not a live location, and one contact, not several, since `wa` refuses those two. It
-waits up to 30 s for a new place and a new card in the store, so an older one is never forwarded. After an Enter
-each, it forwards the place and then the card with `messages forward <own> <id> --to <own>`, and asks whether each
+looks for a new place and a new card in the store 30 times, a second apart, so an older one is never forwarded.
+After an Enter each, it forwards the place and then the card with `messages forward <own> <id> --to <own>`, and asks whether each
 shows marked Forwarded and opens on the phone at the same spot or with the same number. The owner deletes the four
 messages from the phone.
 
