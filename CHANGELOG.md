@@ -36,8 +36,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   everyone stays the owner's `--for-everyone`. A deletion asks first by default, and over MCP that level lets the
   agent's call through, so at the default an agent can now delete the owner's copy. To keep agents from it, set
   `permissions.messages.delete` to `readonly` or `deny`: the MCP server then does not offer the command, and an
-  agent's call answers `validation_error` (`input.invalid`, no such command), as before; the owner's own `messages
-  delete` at those levels is refused with exit 5. A delete
+  agent's call is refused with `permission_error` (`access.denied`), as the owner's own `messages delete` at those
+  levels is, with exit 5. A delete
   of several messages that fails partway, with or without `--for-everyone`, now names the ones already deleted and
   is not marked safe to retry: delete only the rest. A message you delete for yourself on the phone leaves the
   local store the same way while `serve` or `watch` runs. Not yet checked live on the phone.
@@ -137,6 +137,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **A live edit or deletion of a channel post is no longer passed on**: `watch` and `serve` used to hand it on under
   an id the store does not file the post by. A channel's posts are now read with `messages sync <channel>`.
 
+### Security
+
+- **`WA_READ_ONLY` refuses a write to WhatsApp before anything connects.** `messages send`, `edit`, `delete`,
+  `reactions add` and the other commands that change something on WhatsApp used to connect and find the chat first;
+  now they exit 5 at once, and a broken login no longer turns the refusal into a network failure. A permission level
+  of `readonly` or `deny` on the command does the same (cli-core 0.343.0).
+
 ### Fixed
 
 - **One pushed event that `wa` cannot handle no longer stops the ones after it.** `serve` and `watch` handle what
@@ -145,6 +152,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   on stderr names its kind and error code (never its content), the next event goes on, and when `wa` stops listening it
   says how many were skipped if there was more than one. A failure that means the engine or the connection is gone
   still ends the listening, as before.
+- **A message that arrives while no `serve` runs is no longer lost.** WhatsApp keeps messages for a linked device
+  while it is offline and hands each one over once, to the next connection. When that connection was a one-shot
+  command (`messages send`, `doctor --online`, an MCP session), `wa` received the messages and saved none of them. Now
+  every connection saves what arrives, and the command waits for those saves before it exits (cli-core 0.343.0). A
+  history push that arrives during such a command is still not saved; keep `serve` running for those.
 - **A file your phone uploaded again stays downloadable.** `wa` keeps the new copy's address in the store, so a later
   `messages download` of it no longer asks the phone again, and `messages forward` sends a file that opens instead of
   the expired one. The same holds for `attachments extract --download`, `messages transcribe --local` and the

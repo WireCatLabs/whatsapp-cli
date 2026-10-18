@@ -16,11 +16,18 @@ Open work, most important first. The plan in flight is
    Cause: the engine emits them, `wa` keeps an event nobody listens for in memory (`src/engine/events.ts:17`), a
    one-shot command never reads it, and whatsmeow has already sent the receipt that tells WhatsApp it arrived
    ([`message.go:489-496`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L489-L496), the version
-   in `engine/go.mod`). Fix: a gap in cli-core — a one-shot connection of a
-   messenger whose history lives in the store needs a passive listener that saves what arrives (queued for
-   cli-core); `wa` then implements that port over `engine.listen`. Until then, keep `serve` running: commands then go
-   through it and nothing is lost. A message arriving during a longer one-shot `messages send` is not covered by the
-   script.
+   in `engine/go.mod`). **Built (2026-10-18):** cli-core 0.343.0 lets every connection that does not watch save what
+   arrives (`PassiveUpdates.listen`), and wa's adapter implements it over `engine.listen`: the same events as `watch`,
+   without connecting. `session end` ends that listen quietly, since the logout it asked for is not a failure. Tested
+   with the fake engine (`src/oneshot-listen.test.ts`). Left: the live re-check, the owner's `bin/live-oneshot-drop`
+   (NEED-1387, own chat only). Not covered: a history push received by a one-shot connection is still dropped, and
+   nothing asks the phone to send it again — whatsmeow sends the `hist_sync` receipt as soon as the notification arrives
+   ([`message.go:899-906`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L899-L906)) and deletes the
+   blob from WhatsApp's servers once it is handed on (`message.go:735-736`); re-keys are covered, as the engine
+   repeats them at each start (ARCHITECTURE §5). Possible levers, untried: `ManualHistorySyncDownload` with
+   `DisableManualHistorySyncReceipt` to hold the receipt back on a one-shot connection, or
+   `SendHistorySyncServerErrorReceipt` to ask the phone to upload a push again; either needs a cli-core port that
+   hands a one-shot connection's history on, as `listen` hands only messages.
 3. **A user who gains a LID later: live check.** Built: the engine announces the re-key (ARCHITECTURE §5) and the
    adapter's `feed` hands it to cli-core's `HistoryBatch.rekeys` (cli-core 0.336.0), tested end to end with the fake
    engine. Left: a live case — a person in phone form who gains a LID — has not been seen yet; the store should then
