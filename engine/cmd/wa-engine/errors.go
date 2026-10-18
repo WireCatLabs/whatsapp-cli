@@ -11,7 +11,8 @@ import (
 var writes = map[string]bool{
 	"send": true, "sendMedia": true, "forward": true, "edit": true, "revoke": true, "react": true, "read": true,
 	"createPoll": true, "vote": true, "createGroup": true, "join": true, "leave": true, "updateGroup": true,
-	"resetLink": true, "participants": true, "answerRequest": true, "block": true, "logout": true,
+	"resetLink": true, "setGroupPhoto": true, "participants": true, "answerRequest": true, "block": true,
+	"logout": true,
 }
 
 var cutWrite = &refusal{failure: failure{"outcome_unknown",
