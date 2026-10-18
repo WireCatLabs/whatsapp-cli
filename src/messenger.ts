@@ -183,6 +183,7 @@ export const WHATSAPP: Messenger = {
   // A document carries the name the recipient sees; WhatsApp has no spoiler and no caption above.
   mediaOptions: ["fileName"],
   groupSettings: GROUP_SETTINGS,
+  groupPhoto: true,
   adminRights: ADMIN_RIGHTS,
   pickAdminRights: false,
   // A WhatsApp poll stays open, and any vote in it can be changed; everyone sees who voted for what.

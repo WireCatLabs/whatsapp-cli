@@ -446,7 +446,13 @@ export const whatsAppAdapter = (
 
   return {
     ...core,
-    ...groupAdapter({ engine, resolve: core.resolve, translated, wroteTo: (person) => stored.wroteTo(person) }),
+    ...groupAdapter({
+      engine,
+      resolve: core.resolve,
+      translated,
+      wroteTo: (person) => stored.wroteTo(person),
+      onDisk,
+    }),
     ...pollAdapter({ engine, stored, held, keyOf, translated }),
   }
 }

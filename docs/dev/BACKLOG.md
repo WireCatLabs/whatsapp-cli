@@ -44,7 +44,9 @@ Open work, most important first. The plan in flight is
      watch event); the engine does not push them yet, so it always shows nothing.
    - **Group names in a one-shot command.** The engine learns the joined groups only once connected, after cli-core
      resolved the chat, so a connecting command finds a group by its `…@g.us` id, not its name.
-   - **The group photo** (`--photo`, whatsmeow's `SetGroupPhoto`) and **communities** are not built.
+   - ~~**The group photo** (`--photo`, whatsmeow's `SetGroupPhoto`)~~ — built: `chats update --photo` (op
+     `setGroupPhoto`). Removing it (`SetGroupPhoto` with no bytes) waits for a cli-core option. **Communities** are
+     not built.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so

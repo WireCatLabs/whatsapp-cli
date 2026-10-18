@@ -1,8 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -161,5 +168,39 @@ func TestUpdateGroupKeepsATimerOfZero(t *testing.T) {
 	}
 	if req.Ephemeral == nil || *req.Ephemeral != 0 {
 		t.Fatalf("got %v, want a timer of 0", req.Ephemeral)
+	}
+}
+
+func TestGroupPhotoTakesOnlyASquareJPEGWhatsAppAccepts(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name string, encode func(*bytes.Buffer, image.Image) error, side, height int) string {
+		var encoded bytes.Buffer
+		_ = encode(&encoded, image.NewRGBA(image.Rect(0, 0, side, height)))
+		path := filepath.Join(dir, name)
+		_ = os.WriteFile(path, encoded.Bytes(), 0o600)
+		return path
+	}
+	asJPEG := func(b *bytes.Buffer, m image.Image) error { return jpeg.Encode(b, m, nil) }
+	asPNG := func(b *bytes.Buffer, m image.Image) error { return png.Encode(b, m) }
+
+	for _, side := range []int{190, 640, 720} {
+		got, err := groupPhoto(write("good.jpg", asJPEG, side, side))
+		if err != nil || len(got) < 2 || got[0] != 0xFF || got[1] != 0xD8 {
+			t.Fatalf("a %dpx JPEG: %v", side, err)
+		}
+	}
+	refused := map[string]string{
+		"a PNG named .jpg": write("png.jpg", asPNG, 640, 640),
+		"a wide JPEG":      write("wide.jpg", asJPEG, 640, 480),
+		"a tiny JPEG":      write("tiny.jpg", asJPEG, 189, 189),
+		"a huge JPEG":      write("huge.jpg", asJPEG, 721, 721),
+		"a relative path":  "good.jpg",
+		"a file not there": filepath.Join(dir, "missing.jpg"),
+	}
+	for what, path := range refused {
+		var known *failure
+		if _, err := groupPhoto(path); !errors.As(err, &known) || known.Code != "validation_error" {
+			t.Errorf("%s: got %v, want a validation_error", what, err)
+		}
 	}
 }

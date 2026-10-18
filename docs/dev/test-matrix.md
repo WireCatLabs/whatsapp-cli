@@ -65,6 +65,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats update` |  | ✅ |  |
 | `chats update` | `--title` | ✅ |  |
 | `chats update` | `--description` | ✅ |  |
+| `chats update` | `--photo` | ✅ |  |
 | `chats update` | `--only-admins-add` | ✅ |  |
 | `chats update` | `--join-approval` | ✅ |  |
 | `chats update` | `--only-admins-send` | ✅ |  |

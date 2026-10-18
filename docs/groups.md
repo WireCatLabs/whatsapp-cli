@@ -201,6 +201,7 @@ wa personal chats members remove 120363000000000001@g.us 100000000000003@lid
 wa personal chats admins add 120363000000000001@g.us 100000000000002@lid
 wa personal chats update 120363000000000001@g.us --title "Hiking club" --only-admins-add on --join-approval on
 wa personal chats update 120363000000000001@g.us --only-admins-send on --disappear-time 7d
+wa personal chats update 120363000000000001@g.us --photo club.jpg
 wa personal chats link show 120363000000000001@g.us
 wa personal chats link reset 120363000000000001@g.us
 wa personal chats requests list 120363000000000001@g.us
@@ -219,6 +220,9 @@ wa personal chats leave 120363000000000001@g.us
 - **Settings.** `update` changes the name, the description, `--only-admins-add`, `--join-approval`,
   `--only-admins-send`, `--only-admins-edit-info` and `--disappear-time`. Messages disappear after 24h, 7d or 90d,
   the times WhatsApp offers; any other is refused, and `off` keeps them.
+- **The photo.** `update --photo` takes a square JPEG of 190 to 720 pixels a side, the only kind WhatsApp takes as a
+  group photo. `wa` does not convert or crop one: export it as a JPEG first. A PNG or WebP is refused by its content,
+  whatever its name. Removing the photo is done on the phone.
 - **Name a group by its id** here: a command that connects knows group names only after it connects.
 - `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
 
@@ -226,7 +230,7 @@ With `--offline`, `chats members list` shows the members stored before instead o
 `chats members fetch` keeps the member list in the local store. `chats members history` shows what the fetches
 recorded: everyone present at the first fetch, then who joined or left at each later one. `chats events` answers from
 the local store and never connects, but `wa` does not record WhatsApp's joins and leaves there yet, so it shows
-nothing. An empty list does not mean nobody joined. `wa` cannot set a group's photo.
+nothing. An empty list does not mean nobody joined.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's
 [permissions](permissions.md) allow.
