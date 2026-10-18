@@ -171,7 +171,8 @@ WhatsApp has no such thing, or keeps it on the phone:
 - admins with only some rights: every admin has all of them;
 - polls that close, quizzes and anonymous polls;
 - silent, scheduled or send-as messages;
-- your address book: `contacts add`, `remove`, `rename` and `import` are refused.
+- your address book: `contacts add`, `remove`, `rename` and `import` are refused;
+- how old an account is: a `newAccount` rule in `chats rules set` is refused.
 
 `wa` never answers by itself: there are no automatic replies, as WhatsApp bans accounts that answer like a bot.
 What is planned is on the [roadmap](roadmap.md).

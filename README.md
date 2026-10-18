@@ -183,9 +183,9 @@ wa personal chats update 120363000000000001@g.us --join-approval on
 wa personal chats requests list 120363000000000001@g.us
 ```
 
-Renaming a group, members and admins, the invite link, join requests and who may send or add people are commands
-too. The members see each change, so each passes the profile's permissions and hourly limit. `wa` adds only people in
-your address book or that you have written to: WhatsApp bans accounts that add strangers.
+Renaming a group, its photo, members and admins, the invite link, join requests and who may send or add people are
+commands too. The members see each change, so each passes the profile's permissions and hourly limit. `wa` adds only
+people in your address book or that you have written to: WhatsApp bans accounts that add strangers.
 
 More: [groups](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/groups.md)
 
