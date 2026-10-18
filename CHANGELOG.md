@@ -118,6 +118,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A chat muted for good on the phone is stored as muted**, so `inbox` leaves it out. The history the phone sends
+  marks such a mute with an end no clock can read (WhatsApp writes -1 into an unsigned field), and `wa` took that for
+  a mute that had already ended. Any end past the year 9999 now reads as muted with no end, as whatsmeow reads it in
+  app state. How the phone writes it in history is not yet checked live.
 - **A late answer from the phone no longer ends the next `messages sync` page early**: each request for older messages
   goes under its own id, and an answer that names an earlier request is saved like any history the phone sends instead
   of being taken for the current page. An empty late answer used to read as the chat's start. This holds if the phone

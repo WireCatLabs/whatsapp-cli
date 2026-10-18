@@ -77,9 +77,9 @@ Open work, most important first. The plan in flight is
      soon after a fresh link the settings keys arrive. Channels are refused; whatsmeow's `NewsletterToggleMute`
      would mute one, without an end time.
    - **The store does not learn of a mute.** Nothing updates a chat's `muted` after `chats mute`, and the engine
-     reads no live mute events, so `inbox` leaves the chat in until the next history push. That push may read it
-     wrong too: `convert.go` takes `muteEndTime > 0` as seconds, while a mute for good is -1 in app state and the
-     history field is unsigned — whether the phone writes it as all ones, and in which unit, is not checked.
+     reads no live mute events, so `inbox` leaves the chat in until the next history push. That push now reads any
+     end past the year 9999 (a -1 in the unsigned field) as a mute for good; whether the phone writes it as all ones,
+     and whether a timed end is in seconds, is not checked live.
    - **The own profile photo** (`account update --photo`). **Built (2026-10-18):** whatsmeow has no own-photo call;
      `SetGroupPhoto(ctx, types.EmptyJID, jpeg)` sends no `target`, the request Baileys' `updateProfilePicture` sends
      for the own picture, after the square-JPEG check `chats update --photo` uses. Removing it waits, as for a group.

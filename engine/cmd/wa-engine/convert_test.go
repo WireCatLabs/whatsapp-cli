@@ -199,6 +199,32 @@ func TestHistoryUsesTheBatchMappingForChatsAndMessages(t *testing.T) {
 	}
 }
 
+func TestHistoryReadsAMuteForGoodAsMuted(t *testing.T) {
+	now := uint64(time.Now().Unix())
+	cases := []struct {
+		name string
+		end  uint64
+		want bool
+	}{
+		{"forever, -1 as unsigned", ^uint64(0), true},
+		{"past the year 9999", muteHorizon + 1, true},
+		{"ends later", now + 3600, true},
+		{"ended", now - 3600, false},
+		{"never muted", 0, false},
+	}
+	for _, tc := range cases {
+		data := &waHistorySync.HistorySync{Conversations: []*waHistorySync.Conversation{
+			{ID: proto.String(group.String()), MuteEndTime: proto.Uint64(tc.end)},
+		}}
+		history := testConverter().history(data, func(types.JID, *waWeb.WebMessageInfo) (*events.Message, error) {
+			return nil, nil
+		})
+		if got := *history.Chats[0].Muted; got != tc.want {
+			t.Errorf("%s: muted=%v, want %v", tc.name, got, tc.want)
+		}
+	}
+}
+
 func TestOwnChatIsSelf(t *testing.T) {
 	c := testConverter()
 	if c.kindOf(c.canonical(selfPN, nil)) != "self" {
