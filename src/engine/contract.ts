@@ -13,7 +13,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 26
+export const PROTOCOL = 27
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -168,6 +168,8 @@ export const waMessage = v.strictObject({
   replyTo: v.nullable(v.string()),
   attachments: v.optional(v.array(waAttachment)),
   poll: v.optional(waPoll),
+  /** Only ever `true`, on a pushed message the owner starred: a push may be older than a star taken off since. */
+  starred: v.optional(v.literal(true)),
 })
 
 /**
@@ -230,6 +232,8 @@ export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("edit"), message: waMessage }),
   v.strictObject({ event: v.literal("delete"), chat: jid, id: v.string() }),
   v.strictObject({ event: v.literal("vote"), vote: waVote }),
+  /** The owner starred a message or took the star off on another device. */
+  v.strictObject({ event: v.literal("star"), chat: jid, id: v.pipe(v.string(), v.nonEmpty()), starred: v.boolean() }),
   /** A re-key outside a history push, sent before the first message under the new id. */
   v.strictObject({ event: v.literal("rekey"), ...waRekey.entries }),
   /** `until`: when a temporary ban ends, if WhatsApp said. */

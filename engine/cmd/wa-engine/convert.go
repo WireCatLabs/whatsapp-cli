@@ -287,6 +287,10 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 				continue
 			}
 			changed.message.Chat = chat.JID
+			if item.GetMessage().GetStarred() {
+				starred := true
+				changed.message.Starred = &starred
+			}
 			out.Messages = append(out.Messages, changed.message)
 			if changed.message.Poll != nil {
 				out.Votes = append(out.Votes, c.historyVotes(changed.message, item.GetMessage(), k)...)

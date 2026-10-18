@@ -40,3 +40,13 @@ func buildStar(t target, starred bool) appstate.PatchInfo {
 		}},
 	}
 }
+
+// appStateMessage is the chat a star or a delete for the owner alone made on another device names, as the store keys
+// it. whatsmeow emits these only outside a full app-state sync: stars from before the link come with the history
+// push's messages instead.
+func (c *converter) appStateMessage(chat types.JID, id string) (string, bool) {
+	if chat.IsEmpty() || id == "" || chat == types.StatusBroadcastJID {
+		return "", false
+	}
+	return c.canonical(chat, nil).String(), true
+}

@@ -446,6 +446,14 @@ export const whatsAppAdapter = (
             chatTitle: null,
             messageId: event.id,
           })
+        else if (event.event === "star")
+          onEvent({
+            event: "star",
+            chatId: event.chat,
+            chatTitle: null,
+            messageId: event.id,
+            starred: event.starred,
+          })
         else if (event.event === "vote") {
           const vote = await toVoteEvent(event.vote, stored)
           if (vote) onEvent(vote)
@@ -453,9 +461,15 @@ export const whatsAppAdapter = (
       }
       // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
       let queue = Promise.resolve()
-      const live = listening(engine, ["message", "edit", "delete", "vote", "connection"], signal, words, (event) => {
-        queue = queue.then(() => handed(event))
-      })
+      const live = listening(
+        engine,
+        ["message", "edit", "delete", "vote", "star", "connection"],
+        signal,
+        words,
+        (event) => {
+          queue = queue.then(() => handed(event))
+        },
+      )
       try {
         await translated(engine.ready(signal))
         if (!signal.aborted) onReady?.()

@@ -68,6 +68,7 @@ export const toMessage = (message: WaMessage): Message => ({
   reactions: null,
   // Kept with the message in the store: a vote names answers by text, and only the poll's message has them.
   ...(message.poll === undefined ? {} : { providerMetadata: { poll: message.poll } }),
+  ...(message.starred ? { starred: true } : {}),
 })
 
 /** Whether an attachment holds a file's keys, not a place or a contact card. */
