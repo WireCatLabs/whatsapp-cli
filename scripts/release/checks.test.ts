@@ -35,8 +35,8 @@ describe("the engine stays a separate program", () => {
     ])
   })
 
-  // cli-base's release run() spawns "npm" without a shell, which Windows cannot start (upstream queue, S5). The
-  // release checks run on Linux only.
+  // cli-base's release run() spawns "npm" without a shell, which Windows cannot start (spawnSync npm ENOENT); the fix
+  // belongs in cli-base. The release checks run on Linux only.
   it.skipIf(process.platform === "win32")("leaves the engine out of what npm would pack for the CLI", () => {
     expect(engineOutOfPackage(repo)()).toEqual([])
   })
