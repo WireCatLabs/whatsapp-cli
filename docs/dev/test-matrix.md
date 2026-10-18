@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**190 ✅ · 534 ⛔ · 0 ❌** — 227 commands, 497 options.
+**199 ✅ · 525 ⛔ · 0 ❌** — 227 commands, 497 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -203,7 +203,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages sync` | `--catch-up-chunks` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--catch-up-messages` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--catch-up-time` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
-| `messages sync` | `--background` | ⛔ | cli-core runs the sync as a store job, tested in cli-core (src/cli/messenger/backfill.test.ts); the job's sync reaches wa as src/older-history.test.ts drives it |
+| `messages sync` | `--background` | ✅ |  |
 | `messages sync` | `--dry-run` | ✅ |  |
 | `reactions add` |  | ✅ |  |
 | `reactions remove` |  | ✅ |  |
@@ -244,34 +244,34 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `watch` |  | ✅ |  |
 | `watch` | `--events` | ✅ |  |
 | `serve` |  | ✅ |  |
-| `server start` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
-| `server stop` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
-| `server restart` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
-| `server status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
-| `server logs` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
-| `server logs` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
-| `server install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
-| `server uninstall` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/server.test.ts) |
+| `server start` |  | ⛔ | cli-core's shared command over the OS's service manager and serve's process, tested in cli-core (src/cli/messenger/server.test.ts); src/messenger.test.ts drives install and status, where wa's own part, no restart after a revoked login, shows |
+| `server stop` |  | ⛔ | cli-core's shared command over the OS's service manager and serve's process, tested in cli-core (src/cli/messenger/server.test.ts); src/messenger.test.ts drives install and status, where wa's own part, no restart after a revoked login, shows |
+| `server restart` |  | ⛔ | cli-core's shared command over the OS's service manager and serve's process, tested in cli-core (src/cli/messenger/server.test.ts); src/messenger.test.ts drives install and status, where wa's own part, no restart after a revoked login, shows |
+| `server status` |  | ✅ |  |
+| `server logs` |  | ⛔ | cli-core's shared command over the OS's service manager and serve's process, tested in cli-core (src/cli/messenger/server.test.ts); src/messenger.test.ts drives install and status, where wa's own part, no restart after a revoked login, shows |
+| `server logs` | `--limit` | ⛔ | cli-core's shared command over the OS's service manager and serve's process, tested in cli-core (src/cli/messenger/server.test.ts); src/messenger.test.ts drives install and status, where wa's own part, no restart after a revoked login, shows |
+| `server install` |  | ✅ |  |
+| `server uninstall` |  | ⛔ | cli-core's shared command over the OS's service manager and serve's process, tested in cli-core (src/cli/messenger/server.test.ts); src/messenger.test.ts drives install and status, where wa's own part, no restart after a revoked login, shows |
 | `store status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store gaps plan` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store gaps repair` |  | ✅ |  |
-| `store gaps repair` | `--limit` | ⛔ | a bound or a plan check cli-core applies before and between the pages it asks for, tested in cli-core (src/services/archive-gaps.test.ts and src/cli/messenger/gaps.test.ts); src/older-history.test.ts drives the repair through wa's history pages |
-| `store gaps repair` | `--max-gaps` | ⛔ | a bound or a plan check cli-core applies before and between the pages it asks for, tested in cli-core (src/services/archive-gaps.test.ts and src/cli/messenger/gaps.test.ts); src/older-history.test.ts drives the repair through wa's history pages |
-| `store gaps repair` | `--repair-time` | ⛔ | a bound or a plan check cli-core applies before and between the pages it asks for, tested in cli-core (src/services/archive-gaps.test.ts and src/cli/messenger/gaps.test.ts); src/older-history.test.ts drives the repair through wa's history pages |
+| `store gaps repair` | `--limit` | ✅ |  |
+| `store gaps repair` | `--max-gaps` | ✅ |  |
+| `store gaps repair` | `--repair-time` | ✅ |  |
 | `store gaps repair` | `--page-size` | ✅ |  |
 | `store gaps repair` | `--pause` | ✅ |  |
-| `store gaps repair` | `--fingerprint` | ⛔ | a bound or a plan check cli-core applies before and between the pages it asks for, tested in cli-core (src/services/archive-gaps.test.ts and src/cli/messenger/gaps.test.ts); src/older-history.test.ts drives the repair through wa's history pages |
+| `store gaps repair` | `--fingerprint` | ✅ |  |
 | `store gaps repair` | `--catch-up` | ⛔ | local search preparation after the repair, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself |
 | `store gaps repair` | `--no-catch-up` | ✅ |  |
 | `store gaps repair` | `--catch-up-chunks` | ⛔ | local search preparation after the repair, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself |
 | `store gaps repair` | `--catch-up-messages` | ⛔ | local search preparation after the repair, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself |
 | `store gaps repair` | `--catch-up-time` | ⛔ | local search preparation after the repair, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself |
-| `store gaps repair` | `--background` | ⛔ | cli-core runs the repair as a store job, tested in cli-core (src/cli/messenger/gaps.test.ts); the job's repair reaches wa as src/older-history.test.ts drives it |
+| `store gaps repair` | `--background` | ✅ |  |
 | `store jobs list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store jobs list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store jobs list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store jobs list` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
-| `store jobs show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store jobs show` |  | ✅ |  |
 | `store jobs cancel` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store jobs retry` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store jobs retry` | `--failed` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
@@ -702,11 +702,11 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
 | `mcp` |  | ✅ |  |
-| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--port` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
-| `mcp` | `--revoke` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; --revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and stdout only to see wa's delete refused |
+| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
+| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
+| `mcp` | `--port` | ⛔ | cli-core's shared option, the local port for --http; its range check in src/cli/messenger/mcp-command.ts has no cli-core test yet, and wa adds nothing to it |
+| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
+| `mcp` | `--revoke` | ⛔ | cli-core's shared option over the token file only; cli-core's src/mcp/http/oauth.test.ts drives the revokeAll it calls, not the flag; wa adds nothing to it |
 | `mcp config` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
 | `mcp config` | `--permission` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
 | `mcp setup` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |

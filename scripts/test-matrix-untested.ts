@@ -11,7 +11,6 @@ export interface Untested {
 
 /** A shared cli-core group mounted unchanged, and the cli-core tests that drive it over the store or the system. */
 const SHARED: Record<string, string> = {
-  "server *": "src/cli/messenger/server.test.ts",
   "store *": "src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts",
   "conversations *": "src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts",
   "attachments *": "src/cli/messenger/attachments.test.ts",
@@ -47,6 +46,13 @@ export const UNTESTED: Untested[] = [
     command,
     reason: `shared cli-core command mounted unchanged, over the store; tested in cli-core (${tests})`,
   })),
+  {
+    command: "server *",
+    reason:
+      "cli-core's shared command over the OS's service manager and serve's process, tested in cli-core " +
+      "(src/cli/messenger/server.test.ts); src/messenger.test.ts drives install and status, where wa's own part, " +
+      "no restart after a revoked login, shows",
+  },
   // The messages, chats, contacts, account and doctor groups are listed command by command, so a new subcommand shows
   // up as missing instead of being waived unseen.
   ...[
@@ -176,14 +182,6 @@ export const UNTESTED: Untested[] = [
       "local search preparation after the sync, over the store; tested in cli-core " +
       "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself",
   })),
-  ...["--limit", "--max-gaps", "--repair-time", "--fingerprint"].map((option) => ({
-    command: "store gaps repair",
-    option,
-    reason:
-      "a bound or a plan check cli-core applies before and between the pages it asks for, tested in cli-core " +
-      "(src/services/archive-gaps.test.ts and src/cli/messenger/gaps.test.ts); src/older-history.test.ts drives the " +
-      "repair through wa's history pages",
-  })),
   ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
     command: "store gaps repair",
     option,
@@ -191,20 +189,6 @@ export const UNTESTED: Untested[] = [
       "local search preparation after the repair, over the store; tested in cli-core " +
       "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself",
   })),
-  {
-    command: "store gaps repair",
-    option: "--background",
-    reason:
-      "cli-core runs the repair as a store job, tested in cli-core (src/cli/messenger/gaps.test.ts); the job's " +
-      "repair reaches wa as src/older-history.test.ts drives it",
-  },
-  {
-    command: "messages sync",
-    option: "--background",
-    reason:
-      "cli-core runs the sync as a store job, tested in cli-core (src/cli/messenger/backfill.test.ts); the job's " +
-      "sync reaches wa as src/older-history.test.ts drives it",
-  },
   ...["--new", "--limit", "--kind"].map((option) => ({
     command: "inbox",
     option,
@@ -229,14 +213,29 @@ export const UNTESTED: Untested[] = [
       "reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); " +
       "src/media.test.ts drives --download, the option that reaches the engine",
   })),
-  ...["--permission", "--http", "--port", "--public-url", "--revoke"].map((option) => ({
+  ...["--permission", "--http", "--public-url"].map((option) => ({
     command: "mcp",
     option,
     reason:
-      "cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts; " +
-      "--revoke in src/mcp/http/oauth.test.ts); src/message-actions.test.ts drives `mcp` on a relayed stdin and " +
-      "stdout only to see wa's delete refused",
+      "cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with " +
+      "the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool " +
+      "list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits " +
+      "for the process's SIGINT and has no signal a test can hand in",
   })),
+  {
+    command: "mcp",
+    option: "--port",
+    reason:
+      "cli-core's shared option, the local port for --http; its range check in src/cli/messenger/mcp-command.ts has " +
+      "no cli-core test yet, and wa adds nothing to it",
+  },
+  {
+    command: "mcp",
+    option: "--revoke",
+    reason:
+      "cli-core's shared option over the token file only; cli-core's src/mcp/http/oauth.test.ts drives the " +
+      "revokeAll it calls, not the flag; wa adds nothing to it",
+  },
   ...["--defaults", "--personal", "--bot"].map((option) => ({
     command: "config set",
     option,
