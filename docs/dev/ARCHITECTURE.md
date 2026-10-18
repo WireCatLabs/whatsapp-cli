@@ -103,8 +103,12 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   act on a message the account already has, each addressed by `chat`, `message` (its id), `fromMe` and `sender`:
   `edit` (with `text`; whatsmeow's `BuildEdit`), `revoke` (`BuildRevoke`; someone else's message only in a group, as
   its admin), `react` (with `emoji`, `null` to take it off; `BuildReaction`) and `read` (one read receipt;
-  `MarkRead`). Three
-  carry files: `sendMedia` (`file`: a path on this machine and its kind; uploaded with `UploadReader`, then sent),
+  `MarkRead`). Four
+  carry files: `sendMedia` (`file`: a path on this machine and its kind; uploaded with `UploadReader`, then sent;
+  a photo gets a 72-pixel `JPEGThumbnail`, made in `thumbnail.go`), `sendAlbum` (`files`, photos and videos: all
+  uploaded first, then an `AlbumMessage` and each file tied to it by `MessageAssociation` `MEDIA_ALBUM`; the first file
+  carries the send id and the caption, the album and the other files ids derived from the send id, so a repeat sends
+  the same ids; `album.go`),
   `download` (`attachment` as stored, and `path`, which the engine creates 0600 in a folder the CLI made 0700 and
   removes after reading) and `forward` (`attachment` and `text` as stored). No file crosses the JSON line itself. In a
   group still addressed by phone numbers, the engine turns the stored LID sender into the phone JID the group

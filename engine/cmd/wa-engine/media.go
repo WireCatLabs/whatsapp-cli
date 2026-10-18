@@ -44,6 +44,8 @@ type waAttachment struct {
 	Mime     string      `json:"mime,omitempty"`
 	Duration uint32      `json:"duration,omitempty"`
 	Ref      *waMediaRef `json:"ref,omitempty"`
+	// The preview a photo carries inside its message. Unexported, so it never reaches a JSON line, the store or a log.
+	thumb []byte
 }
 
 // waUpload is a file on this machine to send. Kind is decided by the CLI, as tg decides it: photo, video, voice
@@ -148,7 +150,7 @@ func contentOf(a waAttachment, caption string, info *waE2E.ContextInfo) (*waE2E.
 		return &waE2E.Message{ImageMessage: &waE2E.ImageMessage{
 			DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, FileSHA256: ref.FileSHA256,
 			FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime), Caption: optional(caption),
-			Width: nonZero(a.Width), Height: nonZero(a.Height), ContextInfo: info,
+			Width: nonZero(a.Width), Height: nonZero(a.Height), JPEGThumbnail: a.thumb, ContextInfo: info,
 		}}, nil
 	case a.Kind == "video" && ref.Media == "video":
 		return &waE2E.Message{VideoMessage: &waE2E.VideoMessage{
@@ -211,7 +213,32 @@ func (e *engine) sendMedia(req request) (*waMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	upload := req.File
+	s, err := stage(req.File)
+	if err != nil {
+		return nil, err
+	}
+	defer s.file.Close()
+	if err := e.connect(); err != nil {
+		return nil, err
+	}
+	if err := e.upload(s); err != nil {
+		return nil, err
+	}
+	content, err := contentOf(s.described, req.Text, e.replyContext(req))
+	if err != nil {
+		return nil, err
+	}
+	return e.post(to, req.SendID, content, req.Text, req.ReplyTo)
+}
+
+// staged is a file to send, opened and described, not uploaded yet.
+type staged struct {
+	file      *os.File
+	described waAttachment
+	media     string
+}
+
+func stage(upload *waUpload) (*staged, error) {
 	if upload == nil || !filepath.IsAbs(upload.Path) {
 		return nil, &failure{"validation_error", "a file to send needs its absolute path"}
 	}
@@ -219,29 +246,26 @@ func (e *engine) sendMedia(req request) (*waMessage, error) {
 	if err != nil {
 		return nil, &failure{"validation_error", "the file to send could not be opened"}
 	}
-	defer file.Close()
 	described, media, err := describe(file, *upload)
 	if err != nil {
+		file.Close()
 		return nil, err
 	}
-	if err := e.connect(); err != nil {
-		return nil, err
+	return &staged{file: file, described: described, media: media}, nil
+}
+
+func (e *engine) upload(s *staged) error {
+	if _, err := s.file.Seek(0, io.SeekStart); err != nil {
+		return err
 	}
-	if _, err := file.Seek(0, io.SeekStart); err != nil {
-		return nil, err
-	}
-	uploaded, err := e.client.UploadReader(e.ctx, file, nil, mediaTypes[media])
+	uploaded, err := e.client.UploadReader(e.ctx, s.file, nil, mediaTypes[s.media])
 	if err != nil {
-		return nil, err
+		return err
 	}
-	described.Size = uploaded.FileLength
-	described.Ref = &waMediaRef{Media: media, DirectPath: uploaded.DirectPath, MediaKey: uploaded.MediaKey,
+	s.described.Size = uploaded.FileLength
+	s.described.Ref = &waMediaRef{Media: s.media, DirectPath: uploaded.DirectPath, MediaKey: uploaded.MediaKey,
 		FileSHA256: uploaded.FileSHA256, FileEncSHA256: uploaded.FileEncSHA256}
-	content, err := contentOf(described, req.Text, e.replyContext(req))
-	if err != nil {
-		return nil, err
-	}
-	return e.post(to, req.SendID, content, req.Text, req.ReplyTo)
+	return nil
 }
 
 var uploadKinds = map[string]struct{ kind, media string }{
@@ -272,6 +296,7 @@ func describe(file *os.File, upload waUpload) (waAttachment, string, error) {
 		if _, err := file.Seek(0, io.SeekStart); err == nil {
 			if config, _, err := image.DecodeConfig(file); err == nil {
 				a.Width, a.Height = uint32(config.Width), uint32(config.Height)
+				a.thumb = thumbnailOf(file, config)
 			}
 		}
 	case "document":

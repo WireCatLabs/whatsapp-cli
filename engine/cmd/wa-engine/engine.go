@@ -142,6 +142,8 @@ func (e *engine) dispatch(req request) (any, error) {
 		return nil, e.markRead(req)
 	case "sendMedia":
 		return e.sendMedia(req)
+	case "sendAlbum":
+		return e.sendAlbum(req)
 	case "download":
 		return nil, e.download(req)
 	case "forward":

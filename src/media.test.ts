@@ -149,7 +149,38 @@ describe("wa messages send with a file", () => {
     expect(allowed.engine.uploads).toEqual([{ kind: "document", name: "synthetic-export.txt", size: 15 }])
   })
 
-  it("refuses a photo and a file together, and sends nothing", async () => {
+  it("sends a photo and a video as one album, the text as the first one's caption", async () => {
+    const dir = folder()
+    writeFileSync(join(dir, "a.png"), "synthetic png")
+    writeFileSync(join(dir, "clip.mp4"), "synthetic mp4 bytes")
+    const result = await driving([
+      "messages",
+      "send",
+      base.dialog,
+      "synthetic caption",
+      "--photo",
+      join(dir, "a.png"),
+      "--file",
+      join(dir, "clip.mp4"),
+    ])
+    expect(result.code).toBe(0)
+    expect(result.engine.uploads).toEqual([
+      { kind: "photo", name: "a.png", size: 13 },
+      { kind: "video", name: "clip.mp4", size: 19 },
+    ])
+    const [album] = result.engine.sends
+    expect(result.engine.sent).toEqual([
+      expect.objectContaining({
+        id: album?.id,
+        text: "synthetic caption",
+        attachments: [expect.objectContaining({ kind: "photo" })],
+      }),
+    ])
+    expect(result.stdout).toContain(album?.id)
+    expect(result.stdout).not.toContain("mediaKey")
+  })
+
+  it("refuses a photo and a document together, and sends nothing", async () => {
     const dir = folder()
     writeFileSync(join(dir, "a.png"), "x")
     writeFileSync(join(dir, "b.txt"), "x")

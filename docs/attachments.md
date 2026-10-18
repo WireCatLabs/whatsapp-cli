@@ -29,8 +29,12 @@ Some words on this page:
 
 ## What you can send
 
-A message carries one file, and the text becomes its caption. Sending needs an explicit command and passes the
-profile's [permissions and send limits](permissions.md), as any send does.
+A message carries one file, and the text becomes its caption. A `--photo` and a video `--file` given together go as
+one album: the text is the photo's caption, and the answer is the photo's message. An album holds photos and videos
+only, so a document beside a photo is refused. Only the photo's message reaches the local store; the video is in the
+chat on WhatsApp. A photo carries the small preview the chat shows before it downloads
+(not a WEBP, and not a video yet). Sending needs an explicit command and passes the profile's
+[permissions and send limits](permissions.md), as any send does.
 
 | File | Option | What the chat gets |
 | --- | --- | --- |

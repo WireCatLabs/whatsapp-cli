@@ -177,6 +177,16 @@ const onDisk = async <T>(source: UploadSource, work: (path: string) => Promise<T
   })
 }
 
+const allOnDisk = async <F extends { upload: Upload }, T>(
+  files: F[],
+  work: (placed: (F & { path: string })[]) => Promise<T>,
+  placed: (F & { path: string })[] = [],
+): Promise<T> => {
+  const [next, ...rest] = files
+  if (!next) return work(placed)
+  return onDisk(next.upload.source, (path) => allOnDisk(rest, work, [...placed, { ...next, path }]))
+}
+
 const quoted = (message: Message) => ({
   id: message.id,
   senderId: message.senderId,
@@ -264,8 +274,14 @@ export const whatsAppAdapter = (
     send: async (chatId: string, text: string, options: SendOptions) => {
       const refused = REFUSED.filter((option) => options[option] !== undefined && options[option] !== false)
       if (refused.length > 0) throw new CliError("validation_error", `WhatsApp cannot send with ${refused.join(", ")}`)
-      const [upload, ...more] = options.attachments ?? []
-      if (more.length > 0) throw new CliError("validation_error", "WhatsApp sends one file per message here")
+      const uploads = options.attachments ?? []
+      const [upload] = uploads
+      const files = uploads.map((one) => ({ upload: one, kind: uploadKind(one) }))
+      if (files.length > 1 && files.some(({ kind }) => kind !== "photo" && kind !== "video"))
+        throw new CliError(
+          "validation_error",
+          "a WhatsApp album holds photos and videos only; send a document in a message of its own",
+        )
       if (upload?.kind === "voice" && text.trim() !== "")
         throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
       // A reply to a message the store lacks still goes, with its id alone.
@@ -280,11 +296,18 @@ export const whatsAppAdapter = (
           : {}),
       }
       const message = await translated(
-        upload
-          ? onDisk(upload.source, (path) =>
-              engine.sendMedia({ ...request, file: { kind: uploadKind(upload), path, name: upload.name } }),
+        files.length > 1
+          ? allOnDisk(files, (placed) =>
+              engine.sendAlbum({
+                ...request,
+                files: placed.map(({ upload, kind, path }) => ({ kind, path, name: upload.name })),
+              }),
             )
-          : engine.send(request),
+          : upload
+            ? onDisk(upload.source, (path) =>
+                engine.sendMedia({ ...request, file: { kind: uploadKind(upload), path, name: upload.name } }),
+              )
+            : engine.send(request),
       )
       return { message: toMessage(message), sendId: options.sendId }
     },

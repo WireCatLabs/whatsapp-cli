@@ -132,6 +132,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   update`, `chats create` and `chats join`. The local store does not hold them yet, so `chats list` and `chats show`
   do not show them. Listing a community's groups, and linking or unlinking one, are not built: cli-core has no
   command for them.
+- **A photo and a video in one send go as an album** (`messages send --photo … --file clip.mp4`): one message that
+  announces the album, then each file tied to it. The text is the photo's caption and the answer is the photo's
+  message, under the send id. A repeat with the same `--operation-id` after an unknown outcome sends the same message
+  ids, which WhatsApp takes as the same messages, as it does for a single send. A document beside a photo is still
+  refused. Not yet checked against WhatsApp's apps. Engine protocol 17 (`sendAlbum`).
+- **A sent photo carries its preview**: the chat shows a small blurred picture before the download. Not yet for a
+  video or a WEBP photo.
 
 ## 0.1.0 — 17.10.2026
 

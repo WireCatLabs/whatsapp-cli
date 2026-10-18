@@ -48,6 +48,7 @@ const STOPPED = () =>
 const WRITES = new Set([
   "send",
   "sendMedia",
+  "sendAlbum",
   "forward",
   "edit",
   "revoke",
@@ -240,6 +241,8 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     },
     sendMedia: ({ chat, text, id, replyTo, quoted, file }) =>
       request("sendMedia", { chat, text, sendId: id, file, ...replyFields(replyTo, quoted) }, waMessage),
+    sendAlbum: ({ chat, text, id, replyTo, quoted, files }) =>
+      request("sendAlbum", { chat, text, sendId: id, files, ...replyFields(replyTo, quoted) }, waMessage),
     download: async (attachment, path) => {
       await request("download", { attachment, path }, nothing)
     },

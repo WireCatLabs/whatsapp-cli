@@ -12,7 +12,7 @@ import type { PrivacyEngine } from "./privacy.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 16
+export const PROTOCOL = 17
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -245,6 +245,11 @@ export interface WaSendMedia extends WaSend {
   file: { kind: "photo" | "video" | "voice" | "document"; path: string; name: string }
 }
 
+/** Photos and videos sent as one album, `text` as the first one's caption. */
+export interface WaSendAlbum extends WaSend {
+  files: WaSendMedia["file"][]
+}
+
 /** A poll to send; `multiple` lets a voter pick any number of answers, else one. */
 export interface WaNewPoll {
   chat: string
@@ -328,6 +333,11 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine {
   markRead(key: WaKey): Promise<void>
   /** Uploads the file, then sends it; a failed upload sent nothing. */
   sendMedia(request: WaSendMedia): Promise<WaMessage>
+  /**
+   * Uploads every file, then sends the album and each file tied to it. The answer is the first file's message, under
+   * the send id; the others carry ids derived from it, so a repeat sends the same ones.
+   */
+  sendAlbum(request: WaSendAlbum): Promise<WaMessage>
   /** Writes a stored file to `path`, which must not exist yet; the engine creates it readable by this user alone. */
   download(attachment: WaAttachment, path: string): Promise<void>
   forward(request: WaForward): Promise<WaMessage>

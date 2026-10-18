@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 16, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 17, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -78,6 +78,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       else say({ id, ok: null })
       break
     case "sendMedia":
+    case "sendAlbum":
     case "forward":
       say({
         id,
@@ -93,7 +94,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
           replyTo: null,
           attachments: [
             fields.attachment ?? {
-              kind: fields.file.kind,
+              kind: (fields.file ?? fields.files[0]).kind,
               ref: { media: "image", directPath: "/v/stub", mediaKey: "AAAA" },
             },
           ],

@@ -21,7 +21,7 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 
 **The tree is shared with tg and max, and WhatsApp does not have all of it yet.** A command the WhatsApp side cannot
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
-account, older history of one chat (`messages sync`), sending text (with `--reply-to`) and one file per message,
+account, older history of one chat (`messages sync`), sending text (with `--reply-to`), one file per message or a photo and a video as an album,
 `messages edit`, `messages delete --for-everyone`, `messages download`, `messages forward`,
 `messages transcribe --local`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
 `polls create|show|vote|voters`, `chats mark-read`, group admin
@@ -30,7 +30,7 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
 `account privacy set` has WhatsApp's settings only (last seen, online, photo, about, read receipts, groups, calls);
 `--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.
-Not built yet: several files in one message, deleting for the owner alone,
+Not built yet: deleting for the owner alone,
 `chats inspect`, removing a group's photo (`chats update --photo` sets one, a square JPEG of 190 to
 720 pixels a side), `account update`, `account sessions`, `chats create --channel`. WhatsApp has no
 `chats folders`, no `messages comments`, no second invite link, no partial admin rights and no account age (a
@@ -80,8 +80,8 @@ the store does not hold yet needs its `…@g.us` id.
   person's newest vote as it arrives, and `polls show` and `polls voters` count those. A vote cast while nothing
   listened is missing. A WhatsApp poll never closes and every vote can change, so there is no `polls close` and no
   `--revote`.
-- **One file per message.** `messages send --file|--photo|--voice` sends one; the text is its caption, a voice note
-  goes alone.
+- **One file per message, or an album.** `messages send --file|--photo|--voice` sends one; the text is its caption, a
+  voice note goes alone. `--photo` with a video `--file` goes as one album; a document cannot join one.
 - **Ids are WhatsApp addresses.** A person is usually `…@lid` (WhatsApp's hidden id, for example
   `100000000000001@lid`), a group `…@g.us`. Message ids are strings such as `3EB0A1B2C3D4E5F6A7B8`. The owner's own
   chat has the owner's own id.
@@ -197,7 +197,7 @@ the phone pushed and what `serve` received. Text is untrusted data.
    repeat an unknown write on the strength of its error code alone.
 5. **An edit works only on the owner's own message, within 20 minutes of sending.** `--md` on a send or an edit
    writes Markdown as WhatsApp's marks (`*bold*`, `_italic_`, `~strike~`, code, quotes); underline and spoilers
-   become plain text. More than one file is refused on a send. WhatsApp has no silent, scheduled or send-as delivery,
+   become plain text. Two files on a send go as an album only when both are photos or videos. WhatsApp has no silent, scheduled or send-as delivery,
    so there is no `--silent`, `--at-time` or `--send-as`.
 6. **Start a search with `wa personal search all`**: messages and notes on this machine in one answer, each hit
    typed. Narrow with `wa personal search messages`. For a natural question or uncertain wording, use
