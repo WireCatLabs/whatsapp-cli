@@ -17,6 +17,9 @@ var writes = map[string]bool{
 	"archiveChat": true, "unarchiveChat": true, "pinChat": true, "unpinChat": true, "markChatUnread": true,
 }
 
+// rateLimited answers the write after a 429 a background lookup met, in the words classify gives WhatsApp's own.
+var rateLimited = because("account.rate-limited", "rate_limited", "WhatsApp asks to slow down")
+
 var cutWrite = &refusal{failure: failure{"outcome_unknown",
 	"the connection to WhatsApp broke before it confirmed the change; it may have gone through — check first"}}
 
@@ -30,6 +33,9 @@ func (e *engine) refusalFor(op string, err error) *refusal {
 		return cutWrite
 	}
 	refused := classify(err)
+	if refused.Reason == "account.rate-limited" {
+		e.asks.hold(e.ctx)
+	}
 	if ended := e.endedBy(); ended != nil && refused.Code == "network_error" {
 		return ended
 	}

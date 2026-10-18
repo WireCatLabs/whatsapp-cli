@@ -297,11 +297,17 @@ For a chat still in phone form the engine asks WhatsApp itself, with the request
 (`GetUserInfo`), whose answer whatsmeow stores with the LID. Many such requests in a row are what a scraper sends,
 so they are bounded: only for chats already in the account (the table above), five people per request, one request
 per 10 seconds (the number lookup's gap, with a pace of their own so the owner's `lookup` is never refused for
-them), at most 20 people per run, each person at most once a week (`wa_lid_asks` in `private.db`), a request that
-fails ends the run. A run starts a minute after the last history push, so the pushes after connecting have settled
-and a one-shot command, which ends sooner, never makes one; the on-demand pushes that answer `messages sync` start
-none, and the run that links the device makes none. Each LID found
-goes out as a re-key.
+them), at most 20 people per run, each person at most once a week (`wa_lid_asks` in `private.db`, written before
+the request goes out; a request that cannot be recorded is not sent), and a request that fails ends the run. The
+10 seconds hold within one process; after a restart the minute's wait below keeps them apart. A run starts a minute
+after the last history push, so the pushes after connecting have settled and a one-shot command, which ends sooner,
+never makes one; the on-demand pushes that answer `messages sync` start none, and the run that links the device makes
+none. Each LID found goes out as a re-key.
+
+WhatsApp's 429, on a lookup or on any other request, stops the lookups for a week, across restarts (a row of
+`wa_lid_asks`). A 429 a lookup met has no command to refuse, so the engine refuses the next write with
+`account.rate-limited`, and the CLI holds the profile's writes from there as after any 429 (WC-PERM-18). `serve` goes
+on: ending it would make its unit start it again, and a new run with it.
 
 ## 6. One connection per linked device
 

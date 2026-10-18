@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -103,5 +106,51 @@ func TestOnlyTheAccountsOwnPhoneFormChatsAreCandidates(t *testing.T) {
 	p.note(context.Background(), fakeLID)
 	if got := p.waiting(); fmt.Sprint(got) != "[70000000009]" {
 		t.Errorf("got %v", got)
+	}
+}
+
+func TestWhatsAppsRateLimitStopsTheLookupsForAWeekAcrossRestarts(t *testing.T) {
+	clock := time.Date(2026, 10, 18, 10, 0, 0, 0, time.UTC)
+	path := filepath.Join(t.TempDir(), "private.db")
+	first, _ := fakeAsker(t, path, &clock, &whatsmeow.IQError{Code: 429})
+	if !first.run(context.Background(), fakeUsers(12)) {
+		t.Fatal("a 429 was not reported")
+	}
+
+	again, log := fakeAsker(t, path, &clock, nil)
+	clock = clock.Add(lidAskAgain - time.Hour)
+	again.run(context.Background(), fakeUsers(12)[5:])
+	if len(log.sizes) != 0 {
+		t.Fatalf("asked within a week of a 429: %v", log.sizes)
+	}
+	clock = clock.Add(2 * time.Hour)
+	again.run(context.Background(), fakeUsers(12)[5:])
+	if len(log.sizes) == 0 {
+		t.Error("never asked again after the week")
+	}
+}
+
+func TestAnAskThatCannotBeRecordedFirstIsNotSent(t *testing.T) {
+	clock := time.Date(2026, 10, 18, 10, 0, 0, 0, time.UTC)
+	a, log := fakeAsker(t, filepath.Join(t.TempDir(), "private.db"), &clock, nil)
+	if _, err := a.db.Exec(`CREATE TRIGGER full BEFORE INSERT ON wa_lid_asks BEGIN SELECT RAISE(FAIL, 'full'); END`); err != nil {
+		t.Fatal(err)
+	}
+	a.run(context.Background(), fakeUsers(5))
+	if len(log.sizes) != 0 {
+		t.Errorf("asked without a record of it: %v", log.sizes)
+	}
+}
+
+func TestTheWriteAfterABackgroundRateLimitIsRefusedSoTheCLIHoldsWrites(t *testing.T) {
+	var out bytes.Buffer
+	e := &engine{out: newWire(&out)}
+	e.limited.Store(true)
+	e.answer(request{ID: 1, Op: "send"})
+	if !strings.Contains(out.String(), `"reason":"account.rate-limited"`) {
+		t.Fatalf("the write went on: %s", out.String())
+	}
+	if e.limited.Load() {
+		t.Error("the 429 was owed to more than one write; the CLI's hold covers the rest")
 	}
 }

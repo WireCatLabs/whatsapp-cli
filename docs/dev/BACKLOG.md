@@ -189,7 +189,8 @@ Open work, most important first. The plan in flight is
     neither how long to wait nor whether reads count, and a ban says nothing about the account's standing. The lead's
     default, under the owner's autonomy mandate: after a 429, every write is held 15 minutes and reads go on; after a
     ban, writes are held until the end WhatsApp gives it, or until `flood clear` or a `doctor --online` that connects
-    when it gives none (`src/adapter/errors.ts`). Open: the 15 minutes, and whether reads should pause too.
+    when it gives none (`src/adapter/errors.ts`). A 429 also stops the background LID lookups for a week (ARCHITECTURE
+    §5). Open: the 15 minutes, the week, and whether reads should pause too.
 15. **`serve`'s restarts need cli-core** (found 2026-10-18, ARCHITECTURE §4). A unit restarts `serve` by exit code
     only (cli-core's `noRestartOn`), and `device.replaced`, `client.outdated` and a crashed engine all exit 12. So
     after another connection takes the login over, the unit starts `serve` again 30 s later and takes it back, and

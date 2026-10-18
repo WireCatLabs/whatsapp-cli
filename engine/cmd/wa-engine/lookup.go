@@ -21,6 +21,9 @@ const (
 	lidAskAgain  = 7 * 24 * time.Hour
 	// History comes in several pushes right after connecting; the lookups wait until they stop.
 	lidAskSettle = time.Minute
+	// A row of wa_lid_asks no phone number can be: when WhatsApp last asked this account to slow down. No lookup
+	// goes out for lidAskAgain after it, across restarts, since WhatsApp's 429 says nothing of how long to wait.
+	lidAskHeld = "rate-limited"
 )
 
 type lidAsker struct {
@@ -56,26 +59,31 @@ func openLidAsker(ctx context.Context, db *sql.DB, unlinked bool, ask func([]typ
 	return &lidAsker{db: db, now: time.Now, wait: wait, ask: ask}, nil
 }
 
-// run asks for the LIDs of `users`, phone JIDs' user parts, that were not asked for within lidAskAgain.
-func (a *lidAsker) run(ctx context.Context, users []string) {
+// run asks for the LIDs of `users`, phone JIDs' user parts, that were not asked for within lidAskAgain. It answers
+// whether WhatsApp asked to slow down.
+func (a *lidAsker) run(ctx context.Context, users []string) (limited bool) {
 	if !a.one.TryLock() {
-		return
+		return false
 	}
 	defer a.one.Unlock()
+	if a.recent(ctx, lidAskHeld) {
+		return false
+	}
 	due := a.due(ctx, users)
 	for start := 0; start < len(due) && start < lidAskBatch*lidAskPerRun; start += lidAskBatch {
 		a.mu.Lock()
 		pause := a.last.Add(lidAskGap).Sub(a.now())
 		a.mu.Unlock()
 		if !a.last.IsZero() && pause > 0 && !a.wait(pause) {
-			return
+			return false
 		}
 		batch := due[start:min(start+lidAskBatch, len(due))]
 		now := a.now()
 		// Recorded before the request: one that fails or never answers is not asked again at once.
 		for _, user := range batch {
-			_, _ = a.db.ExecContext(ctx, `INSERT INTO wa_lid_asks (pn, asked_at) VALUES (?, ?)
-				ON CONFLICT (pn) DO UPDATE SET asked_at = excluded.asked_at`, user, now.Unix())
+			if a.mark(ctx, user, now) != nil {
+				return false
+			}
 		}
 		a.mu.Lock()
 		a.last = now
@@ -84,19 +92,44 @@ func (a *lidAsker) run(ctx context.Context, users []string) {
 		for i, user := range batch {
 			jids[i] = types.NewJID(user, types.DefaultUserServer)
 		}
-		if a.ask(jids) != nil {
-			return
+		if err := a.ask(jids); err != nil {
+			if classify(err).Reason == "account.rate-limited" {
+				a.hold(ctx)
+				return true
+			}
+			return false
 		}
+	}
+	return false
+}
+
+// hold stops the lookups after WhatsApp's 429, whichever request met it.
+func (a *lidAsker) hold(ctx context.Context) {
+	if a != nil {
+		_ = a.mark(ctx, lidAskHeld, a.now())
 	}
 }
 
+func (a *lidAsker) mark(ctx context.Context, pn string, at time.Time) error {
+	_, err := a.db.ExecContext(ctx, `INSERT INTO wa_lid_asks (pn, asked_at) VALUES (?, ?)
+		ON CONFLICT (pn) DO UPDATE SET asked_at = excluded.asked_at`, pn, at.Unix())
+	return err
+}
+
+// recent says `pn` was asked for within lidAskAgain; a store that cannot say counts as yes.
+func (a *lidAsker) recent(ctx context.Context, pn string) bool {
+	var at int64
+	err := a.db.QueryRowContext(ctx, `SELECT asked_at FROM wa_lid_asks WHERE pn = ?`, pn).Scan(&at)
+	if err == sql.ErrNoRows {
+		return false
+	}
+	return err != nil || at >= a.now().Add(-lidAskAgain).Unix()
+}
+
 func (a *lidAsker) due(ctx context.Context, users []string) []string {
-	since := a.now().Add(-lidAskAgain).Unix()
 	var due []string
 	for _, user := range users {
-		var at int64
-		err := a.db.QueryRowContext(ctx, `SELECT asked_at FROM wa_lid_asks WHERE pn = ?`, user).Scan(&at)
-		if err == sql.ErrNoRows || (err == nil && at < since) {
+		if !a.recent(ctx, user) {
 			due = append(due, user)
 		}
 	}
@@ -140,7 +173,9 @@ func (e *engine) lookUpMissing() {
 		e.out.rekey(rekey)
 	}
 	// whatsmeow stores each LID the answer carries; settle then turns them into re-keys.
-	e.asks.run(e.ctx, e.phones.waiting())
+	if e.asks.run(e.ctx, e.phones.waiting()) {
+		e.limited.Store(true)
+	}
 	for _, rekey := range e.phones.settle(e.ctx, e.lidOf(nil), time.Now()) {
 		e.out.rekey(rekey)
 	}
