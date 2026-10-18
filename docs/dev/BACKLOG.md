@@ -47,8 +47,9 @@ Open work, most important first. The plan in flight is
    - **`chats events`.** WhatsApp's joins and leaves come as live notifications, not as history the engine can
      read back. cli-core 0.336.0 answers `chats events` from the store (`HistoryBatch.events`, the `chat_event`
      watch event); the engine does not push them yet, so it always shows nothing.
-   - **Group names in a one-shot command.** The engine learns the joined groups only once connected, after cli-core
-     resolved the chat, so a connecting command finds a group by its `…@g.us` id, not its name.
+   - **Names of groups the store lacks, in a one-shot command.** cli-core finds a stored group by name (0.337.0);
+     for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
+     for the name, so such a group is found by its `…@g.us` id only.
    - ~~**The group photo** (`--photo`, whatsmeow's `SetGroupPhoto`)~~ — built: `chats update --photo` (op
      `setGroupPhoto`). Removing it (`SetGroupPhoto` with no bytes) waits for a cli-core option. **Communities** are
      not built.
@@ -84,8 +85,6 @@ Open work, most important first. The plan in flight is
     that stores a new mapping (`GetUserInfo`, `IsOnWhatsApp`, `UpdateBlocklist` already do, through `contacts
     profile`, `lookup` and `block`) turns a person's later chats to the LID form, and a chat stored before in phone
     form then splits in two (item 3). Build it with item 3, or only before a chat is first emitted.
-12. **cli-core could resolve names from the store for `history: "store"` messengers.** Today it always asks the
-    adapter, so the engine keeps its own small chat directory (ARCHITECTURE §4). Raise it in cli-core.
 13. **Standards gaps left by the 2026-10-17 audit** (the handbook's areas, where a fix needs design):
     - **Modules entered only through their entry points** (WC-ARCH-8): `src/adapter/` and `src/engine/` have no
       `index.ts`, and `biome.json` lets the composition root import any file in them. Add the rule when tg does, so

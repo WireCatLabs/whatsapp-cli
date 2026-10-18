@@ -33,7 +33,6 @@ import {
   type EngineEvent,
   OLDER_MAX,
   type WaAttachment,
-  type WaChat,
   type WaKey,
   type WaSendMedia,
   type WhatsAppEngine,
@@ -82,7 +81,7 @@ const translated = async <T>(work: Promise<T>): Promise<T> => {
   }
 }
 
-const hit = (chat: WaChat | undefined, message: Message): MessageHit => ({ ...message, chatTitle: chat?.name ?? null })
+const hit = (message: Message): MessageHit => ({ ...message, chatTitle: null })
 
 const ENDED: Partial<Record<ConnectionState, (words: Words, until?: string) => CliError>> = {
   logged_out: (words) =>
@@ -217,9 +216,6 @@ export const whatsAppAdapter = (
     }
   }
 
-  const titled = async (): Promise<Map<string, WaChat>> =>
-    new Map((await translated(engine.directory())).map((chat) => [chat.jid, chat]))
-
   const core: Omit<WhatsAppAdapter, keyof GroupAdapter | keyof PollAdapter> = {
     formatMarkdown: async (text) => parseMarkdownSpans(text),
 
@@ -233,9 +229,6 @@ export const whatsAppAdapter = (
     },
 
     resolve: async (query: string): Promise<Chat> => {
-      const chats = await titled()
-      const byId = chats.get(query)
-      if (byId) return toChat(byId)
       if (query.includes("@"))
         return {
           id: query,
@@ -245,7 +238,7 @@ export const whatsAppAdapter = (
           lastMessageAt: null,
           participantsCount: null,
         }
-      const named = [...chats.values()].filter((chat) => chat.name === query)
+      const named = (await translated(engine.directory())).filter((chat) => chat.name === query)
       if (named.length === 1 && named[0]) return toChat(named[0])
       if (named.length > 1)
         throw new CliError(
@@ -392,21 +385,18 @@ export const whatsAppAdapter = (
     close: () => engine.close(),
 
     watch: async (onEvent: (event: MessageEvent) => void, signal: AbortSignal, onReady?: () => void) => {
-      const chats = await titled()
       const handed = async (event: EngineEvent) => {
-        if (event.event === "message")
-          onEvent({ event: "message", message: hit(chats.get(event.message.chat), toMessage(event.message)) })
-        else if (event.event === "edit")
-          onEvent({ event: "edit", message: hit(chats.get(event.message.chat), toMessage(event.message)) })
+        if (event.event === "message") onEvent({ event: "message", message: hit(toMessage(event.message)) })
+        else if (event.event === "edit") onEvent({ event: "edit", message: hit(toMessage(event.message)) })
         else if (event.event === "delete")
           onEvent({
             event: "delete",
             chatId: event.chat,
-            chatTitle: chats.get(event.chat)?.name ?? null,
+            chatTitle: null,
             messageId: event.id,
           })
         else if (event.event === "vote") {
-          const vote = await toVoteEvent(event.vote, chats.get(event.vote.chat)?.name ?? null, stored)
+          const vote = await toVoteEvent(event.vote, stored)
           if (vote) onEvent(vote)
         }
       }

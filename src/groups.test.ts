@@ -5,7 +5,7 @@ import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
-import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
+import { EngineError, type WaChat, type WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { REQUESTER } from "./testing/fake-groups.js"
@@ -528,6 +528,41 @@ describe("wa doctor --online", () => {
   })
 })
 
+describe("wa watch", () => {
+  it("titles a message from the chat's stored title, which WhatsApp's event lacks", async () => {
+    const controller = new AbortController()
+    const result = await wa(
+      [PROFILE, "watch", "--jsonl"],
+      () => {
+        const engine = fakeEngine(seed)
+        engine.ready = async () => {
+          setImmediate(() => {
+            engine.push({
+              event: "message",
+              message: {
+                id: "3EB0000000000000000ABD",
+                chat: seed.busy,
+                sender: seed.person,
+                senderName: "Ann Lee",
+                fromMe: false,
+                timestamp: "2026-09-01T10:00:00.000Z",
+                editedAt: null,
+                text: "synthetic text",
+                replyTo: null,
+              },
+            })
+            setImmediate(() => controller.abort())
+          })
+        }
+        return engine
+      },
+      controller.signal,
+    )
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout)).toMatchObject({ chatId: seed.busy, chatTitle: "Book club" })
+  })
+})
+
 describe("wa review --unanswered", () => {
   it("answers from the store without starting the engine for the groups' admins", async () => {
     const result = await wa([PROFILE, "review", "--unanswered", "1h", "--json"], () => {
@@ -537,7 +572,7 @@ describe("wa review --unanswered", () => {
   })
 })
 
-// Each command here names a chat, and only WhatsApp's chat list turns a name into an id.
+// Each command here names a chat; cli-core answers a stored name, and WhatsApp's chat list only a name the store lacks.
 const naming = async (profile: string, ...argv: string[]) => {
   let engine: FakeEngine | undefined
   let listed = 0
@@ -555,27 +590,54 @@ const naming = async (profile: string, ...argv: string[]) => {
 }
 
 describe("wa recipients add", () => {
-  it("looks the chat up by its WhatsApp name and puts its id on the list", async () => {
+  it("looks the chat up by its stored name and puts its id on the list", async () => {
     const added = await naming("guarded", "recipients", "add", "Ann Lee")
     expect(added.code).toBe(0)
     expect(added.body).toEqual({ id: seed.dialog, title: "Ann Lee", added: true })
-    expect(added.listed).toBe(1)
+    expect(added.listed).toBe(0)
     expect(added.closed).toBe(true)
   })
 
   it("refuses a name two chats share, and a name no chat has, and adds nothing", async () => {
     const shared = await naming("unlisted", "recipients", "add", "Twins")
     expect(shared.code).toBe(2)
-    expect(errorOf(shared.stderr).message).toContain("2 chats share that name")
+    expect(errorOf(shared.stderr).message).toContain("matches 2 chats")
     const unknown = await naming("unlisted", "recipients", "add", "Synthetic nobody")
     expect(errorCode(unknown.stderr)).toBe("not_found")
     const list = await wa(["unlisted", "recipients", "list", "--json"])
     expect(JSON.parse(list.stdout).items).toEqual([])
   })
+
+  it("takes the id of a group the store does not hold without asking WhatsApp's chat list", async () => {
+    const unstored = "120363000000000099@g.us"
+    const added = await naming("unstored", "recipients", "add", unstored)
+    expect(added.code).toBe(0)
+    expect(added.body).toMatchObject({ id: unstored, added: true })
+    expect(added.listed).toBe(0)
+  })
+
+  it("asks WhatsApp's chat list for a name the store does not hold", async () => {
+    const newcomer: WaChat = {
+      jid: "100000000000098@lid",
+      name: "Synthetic Newcomer",
+      kind: "dm",
+      unread: null,
+      lastMessageAt: null,
+      participants: null,
+    }
+    const result = await wa(["fallback", "recipients", "add", "Synthetic Newcomer", "--json"], () => {
+      const engine = fakeEngine(seed)
+      const directory = engine.directory
+      engine.directory = async () => [...(await directory()), newcomer]
+      return engine
+    })
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item).toMatchObject({ id: newcomer.jid, added: true })
+  })
 })
 
 describe("wa chats rules", () => {
-  it("keeps a group's rules by the id WhatsApp gives for its name", async () => {
+  it("keeps a group's rules by the id its stored name gives", async () => {
     const shown = await naming("rules", "chats", "rules", "show", "Book club")
     expect(shown.body).toMatchObject({
       chat_id: seed.busy,
@@ -583,7 +645,7 @@ describe("wa chats rules", () => {
       saved: false,
       rules: { links: "report" },
     })
-    expect(shown.listed).toBe(1)
+    expect(shown.listed).toBe(0)
 
     const set = await naming("rules", "chats", "rules", "set", "Book club", "links", "delete")
     expect(set.body).toMatchObject({ chat_id: seed.busy, saved: true, rules: { links: "delete" } })

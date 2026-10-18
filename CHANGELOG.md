@@ -37,7 +37,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   not marked safe to retry, and under `WA_READ_ONLY` it refuses before sending chat text to a remote provider.
 - **`chats events` answers from the local store** (cli-core 0.336.0): it no longer refuses with exit `2`, never
   connects, and works with `--offline`. `wa` does not record joins and leaves yet, so the list is empty, and
-  `stats chats show` now counts `0` joins and leaves from the same store instead of saying it did not ask.
+  `stats chats show` leaves `members` out, sets `complete` to `false` and says in `missing` (and on stderr in text
+  mode) that joins and leaves are not recorded for this chat yet (cli-core 0.337.0, WC-OUT-13).
 - **`conversations build` counts as a write to an outside service and `search conversations` as a read from one**
   (cli-core 0.336.0, WC-CMD-17): under `WA_READ_ONLY` each refuses before it sends chat text or the query to a remote
   provider; a local model still works. Both always run in the calling process, never through `serve`.
@@ -45,8 +46,21 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   delete`, `searches clear`, `contacts alias set`, `contacts alias rm`, `contacts notes edit`, `contacts notes remove`
   and `tags remove`, and their MCP tools, refuse with exit `5`. An agent that saved searches must do it in a process
   without the lock.
+- **A chat or person named by name is found in the local store first** (cli-core 0.337.0): part of the name is
+  enough, and a name several stored chats match is refused with "… matches N chats", as `chats show` refuses it; a
+  caller that matched the old "N chats share that name" must match the new text. Only a name the store does not hold
+  is asked of WhatsApp's chat list, so a one-shot command now finds a stored group by its name. `watch` titles a
+  chat from the store and follows its renames; a chat the store has never held has no title in `watch`.
+- **`WA_READ_ONLY` refuses every local write cli-core has not marked safe** (cli-core 0.337.0, WC-PERM-12): `tags
+  add`, `tags auto`, `mentions confirm`, `mentions reject`, `contacts notes add`, `contacts link`, `contacts unlink`,
+  `attachments text set`, `chats tracking add|remove`, `conversations links add|clear`, `conversations consents
+  revoke` and `tasks reject`, and their MCP tools, now refuse with exit `5`. Under the lock `tasks close` only
+  suggests the close.
 
 ### Fixed
+
+- **`images embed` runs inside `serve` when `serve` holds the connection** (cli-core 0.337.0, WC-LIFE-11): it
+  downloads pictures through WhatsApp, so it is a read from WhatsApp, and its MCP tool has no `offline` input.
 
 - **`chats rules set` refuses a `newAccount` rule** (cli-core's `knowsAccountAge`): WhatsApp does not say when an
   account was made, so the rule was saved and could never match. It now fails with `validation_error` (exit 2) and

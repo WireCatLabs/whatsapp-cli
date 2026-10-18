@@ -155,8 +155,9 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   group id, which starts with its creator's number) and any other run of seven or more digits
   (`engine/cmd/wa-engine/redact.go`, WC-SECR-1). Errors reach the CLI as one of the contract's codes with fixed
   wording, and a reason where the recovery differs (`src/reasons.ts`).
-- **Names without the phone.** WhatsApp has no "list chats" request, but cli-core resolves a chat name through the
-  adapter. The engine answers from what it can see without asking the phone: chats pushed in this process, the address
+- **Names without the phone.** WhatsApp has no "list chats" request. cli-core answers a name the store holds, and
+  `watch`'s chat titles, from the store (`history: "store"`); only a name it lacks reaches the adapter. The engine
+  answers that from what it can see without asking the phone: chats pushed in this process, the address
   book in `private.db`, and the joined groups (one request per process, then kept;
   `engine/cmd/wa-engine/directory.go`).
 - **One npm package per platform.** The engine ships as `@wirecat/whatsapp-engine-<platform>-<arch>`, named by
