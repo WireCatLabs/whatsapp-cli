@@ -121,10 +121,14 @@ describe("wa messages send", () => {
   })
 
   it("answers a message the store lacks with --reply-to, by its id alone", async () => {
-    const result = await sending("--reply-to", seed.messages[0]?.id ?? "")
-    expect(result.code).toBe(0)
-    expect(result.sent[0]?.replyTo).toBe(seed.messages[0]?.id)
-    expect(result.sends[0]?.quoted).toBeUndefined()
+    // A store of its own: a `watch` elsewhere in this file stores the seed, and the message would then be quoted.
+    const env = { ...process.env, MESSAGING_STORE: join(mkdtempSync(join(tmpdir(), "wa-reply-")), "messages.db") }
+    const engine = fakeEngine(seed)
+    const argv = ["options", "messages", "send", seed.dialog, "hi", "--reply-to", seed.messages[0]?.id ?? "", "--json"]
+    const streams = captureStreams()
+    expect(await run(argv, { streams, tty: false, env, engine: () => engine })).toBe(0)
+    expect(engine.sent[0]?.replyTo).toBe(seed.messages[0]?.id)
+    expect(engine.sends[0]?.quoted).toBeUndefined()
   })
 
   it("repeats a send with --operation-id as the same WhatsApp message", async () => {
