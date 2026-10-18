@@ -13,9 +13,7 @@ listing its members ([groups](groups.md#run-a-group)), a person's profile, block
 
 ## Next
 
-1. **The first release on npm**, with the engine for Linux, macOS and Windows.
-2. **More of a group from WhatsApp**: who joined and left as WhatsApp records it (`chats events`), and the group
-   photo.
+1. **The group photo**: setting a group's picture.
 
 What each released version changed is in the
 [changelog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/CHANGELOG.md).

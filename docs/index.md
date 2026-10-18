@@ -22,19 +22,19 @@ Three terms appear on every page:
 | Find what was said, by words, people, dates or labels | [Search](search.md) |
 | Keep a copy of your messages on this computer, and search or export it | [The local store](archive.md) |
 | Send, save and forward photos and files, and hear voice notes as text | [File attachments](attachments.md) |
-| Answer, edit, react and delete for everyone, yourself or through an agent, within your limits | [Using wa](usage.md), [Permissions](permissions.md) |
+| Answer, edit and react, yourself or through an agent, and delete for everyone yourself, within your limits | [Using wa](usage.md), [Permissions](permissions.md) |
 | See which questions nobody answered in your groups | [Groups](groups.md) |
 | Use WhatsApp from an app with no terminal, or from a chat in the browser | [The MCP server](mcp.md), [From the browser](remote.md) |
 
 Every command does one thing, gives the same shape of answer every time, and has a fixed exit code for each kind of
 failure. This is why scripts and agents can rely on it.
 
-`wa` is early: it is not on npm yet ([roadmap](roadmap.md)).
+`wa` is early: what comes next is on the [roadmap](roadmap.md).
 
 ## Get started
 
 ```sh
-npm install -g @wirecat/whatsapp-cli   # once published; until then, build it from the repository
+npm install -g @wirecat/whatsapp-cli
 wa personal setup                      # link by QR code, check five chats, install the agent skill
 wa personal server install             # keep receiving in the background
 wa personal inbox                      # other people's unread messages; nothing is marked read
