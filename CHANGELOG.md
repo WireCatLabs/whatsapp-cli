@@ -15,7 +15,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   agent's `messages delete` over MCP, which was refused too, now does the same, for the owner only; deleting for
   everyone stays the owner's `--for-everyone`. A deletion asks first by default, and over MCP that level lets the
   agent's call through, so at the default an agent can now delete the owner's copy. To keep agents from it, set
-  `permissions.messages.delete` to `readonly` or `deny`; the refusal is then exit 5, not the old exit 2. A delete
+  `permissions.messages.delete` to `readonly` or `deny`: the MCP server then does not offer the command, and an
+  agent's call answers `validation_error` (`input.invalid`, no such command), as before; the owner's own `messages
+  delete` at those levels is refused with exit 5. A delete
   of several messages that fails partway, with or without `--for-everyone`, now names the ones already deleted and
   is not marked safe to retry: delete only the rest. Not yet checked live on the phone.
 - **`messages download` asks your phone for a file WhatsApp no longer keeps**, as WhatsApp's apps do, instead of

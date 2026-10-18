@@ -66,7 +66,7 @@ wa account list              # every profile on this computer, and the account e
 wa personal session end      # unlink the device on WhatsApp's side, and delete its keys here
 ```
 
-## Change your name and about
+## Change your name, about and photo
 
 ```sh
 wa personal account update --first-name Ana --last-name Silva   # WhatsApp keeps one name: "Ana Silva"
