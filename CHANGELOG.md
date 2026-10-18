@@ -153,7 +153,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - **A pushed community no longer loses its mark.** The store replaced a chat's `provider_metadata` whole on every
   push, so a later push that did not say a group was a community took `community: true` off it. A key a push leaves
-  out now keeps its stored value, and so does a group's `parent_chat_id` (cli-core 0.346.0).
+  out now keeps its stored value, and so does a group's `parent_chat_id` (cli-core 0.346.0). Engine protocol
+  35.
 - **`inbox` and `review` check `--json=<fields>` against the message summary's fields**, and refuse a name it does
   not have instead of printing empty items. `--brief` and `--full` no longer mention mail (cli-core 0.345.0).
 - **`session start` and `setup` link a new profile.** They failed before showing a code with "cannot open the lock
