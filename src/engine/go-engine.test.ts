@@ -210,6 +210,12 @@ describe("startGoEngine", () => {
       reason: "engine.stopped-mid-write",
     })
     await engine.close()
+    const reading = await stub("ok")
+    await expect(reading.markChatRead({ ...last, chat: "crash@stub" })).rejects.toMatchObject({
+      code: "outcome_unknown",
+      reason: "engine.stopped-mid-write",
+    })
+    await reading.close()
   })
 
   it("rejects at start when the lock is held, naming the holder", async () => {
