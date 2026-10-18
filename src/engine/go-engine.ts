@@ -251,8 +251,8 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     vote: async (key, answers) => {
       await request("vote", { ...keyFields(key), answers }, nothing)
     },
-    pin: async (key) => {
-      await request("pin", keyFields(key), nothing)
+    pin: async (key, duration) => {
+      await request("pin", { ...keyFields(key), ...(duration === undefined ? {} : { duration }) }, nothing)
     },
     unpin: async (key) => {
       await request("unpin", keyFields(key), nothing)

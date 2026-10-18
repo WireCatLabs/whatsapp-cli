@@ -101,6 +101,10 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       })
       break
     case "pin":
+      if (fields.duration !== undefined && fields.duration !== 86400)
+        say({ id, error: { code: "validation_error", message: "the stub pins for 24 hours only" } })
+      else say({ id, ok: null })
+      break
     case "unpin":
       say({ id, ok: null })
       break

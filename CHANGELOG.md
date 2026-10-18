@@ -73,12 +73,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
-- **`messages pin --notify` and `messages unpin`** (cli-core's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is
-  sent as WhatsApp's `PinInChatMessage` and lasts 7 days, which is what `wa` sends (WhatsApp's pins last 24 hours,
-  7 days or 30 days, and cli-core's command has no duration to choose), addressed by the message's key in the local
-  store; a message the store lacks is `not_found`. WhatsApp tells the chat's members about every pin, so
-  `messages pin` without `--notify` is refused with `validation_error` instead of pinning loudly. Engine requests
-  `pin` and `unpin`.
+- **`messages pin` and `messages unpin`** (cli-core 0.336.0's `MessagePins`, WC-ARCH-5, WC-ARCH-18): a pin is sent
+  as WhatsApp's `PinInChatMessage`, addressed by the message's key in the local store; a message the store lacks is
+  `not_found`. WhatsApp tells the chat's members about every pin, so each one notifies, with or without `--notify`,
+  and counts toward the hourly limit; an agent's `messages_pin` takes no `notify`. `--expire-time 24h`, `7d` or `30d`
+  (MCP `expire_time`) says how long it lasts, 7 days when not given; any other length is `validation_error`. Engine
+  requests `pin` (with an optional `duration` in seconds) and `unpin`.
 
 ### Fixed
 

@@ -76,9 +76,10 @@ Open work, most important first. The plan in flight is
      recipient as a file that will not open.
    - **Media leftovers**: albums (one file per message here), thumbnails on sent photos and videos, files to
      channels, forwarding a place or a contact card, `metadata` (needs the group read).
-   - **Message pins**: a pin always lasts 7 days (cli-core's `messages pin` has no duration to pass 24 hours or 30
-     days); a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned. Live check
-     open: a pin and an unpin in the own chat and in a group addressed by phone numbers.
+   - **Message pins**: a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned.
+     Over MCP, an `expire_time` WhatsApp does not offer is refused only after the engine started (cli-core checks it
+     inside the tool's online step). Live check open: a pin and an unpin in the own chat and in a group addressed by
+     phone numbers, and that a 24-hour pin ends on the phone.
    - **Live checks** (with item 1): a reaction and a revoke in a group addressed by phone numbers (the own LID chat
      works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.

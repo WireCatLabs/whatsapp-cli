@@ -334,8 +334,11 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine {
   createPoll(request: WaNewPoll): Promise<WaMessage>
   /** The account's vote in a poll, by the answers' texts; none takes it back. Everyone in the chat sees it. */
   vote(key: WaKey, answers: string[]): Promise<void>
-  /** Pins the message for everyone in the chat, for 7 days: WhatsApp has no pin only the account sees. */
-  pin(key: WaKey): Promise<void>
+  /**
+   * Pins the message for everyone in the chat: WhatsApp has no pin only the account sees. `duration` is 86400,
+   * 604800 or 2592000 seconds; the engine pins for 7 days without one.
+   */
+  pin(key: WaKey, duration?: number): Promise<void>
   unpin(key: WaKey): Promise<void>
   /**
    * Asks the phone for up to `count` of the chat's messages sent before `anchor`, and waits for its answer. WhatsApp
