@@ -45,7 +45,7 @@ import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
-import { isFile, toAccount, toChat, toMember, toMessage, toWaAttachment } from "./map.js"
+import { isFile, sameFile, toAccount, toChat, toMember, toMessage, toWaAttachment } from "./map.js"
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
@@ -226,8 +226,9 @@ export const whatsAppAdapter = (
     return message
   }
   // A push after a re-link carries the path the file had then, and the store may hold the one the phone uploaded
-  // again. cli-core keeps a stored ref only when the pushed file has none, so the pushed one is left off. Only a
-  // message with a ref costs a store read; one that fails hands the message on as pushed, never loses it.
+  // again. cli-core keeps a stored ref only when the pushed file has none, so the pushed one is left off when it names
+  // the same file; another file keeps its own. Only a message with a ref costs a store read; one that fails hands the
+  // message on as pushed, never loses it.
   const withoutKeptRefs = async (message: Message): Promise<Message> => {
     if (!message.attachments.some((file) => file.providerRef)) return message
     const kept = await stored.message(message.chatId, message.id).catch(() => undefined)
@@ -235,7 +236,7 @@ export const whatsAppAdapter = (
     return {
       ...message,
       attachments: message.attachments.map((file, position) => {
-        if (!kept.attachments[position]?.providerRef) return file
+        if (!sameFile(file.providerRef, kept.attachments[position]?.providerRef)) return file
         const { providerRef: _pushed, ...rest } = file
         return rest
       }),

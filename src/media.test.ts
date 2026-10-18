@@ -626,6 +626,18 @@ describe("a history push after the phone uploaded a file again", () => {
     const added = await downloading(after, fresh)
     expect(added.downloads.map((attachment) => attachment.ref)).toEqual([ref("image", 14)])
   })
+
+  it("takes the pushed path of another file in the same place", async () => {
+    const carrying = (n: number): Message => ({
+      ...theirs(15, "", [{ kind: "photo", mime: "image/jpeg", providerRef: ref("image", n) }]),
+      chatId: base.dialog,
+    })
+    await pushHistory({ ...seed, messages: [...seed.messages, carrying(15)] })
+    const pushed = { ...seed, messages: [...seed.messages, carrying(16)] }
+    await pushHistory(pushed)
+    const engine = await downloading(pushed, carrying(16))
+    expect(engine.downloads.map((attachment) => attachment.ref)).toEqual([ref("image", 16)])
+  })
 })
 
 describe("a download leaves nothing readable by others", () => {

@@ -8,6 +8,7 @@ import {
   type WaMediaRef,
   type WaMessage,
   waAttachment,
+  waMediaRef,
 } from "../engine/contract.js"
 
 const KINDS: Record<WaChat["kind"], ChatKind> = {
@@ -82,6 +83,16 @@ export const toMessage = (message: WaMessage): Message => ({
 /** Whether an attachment holds a file's keys, not a place or a contact card. */
 export const isFile = (attachment: WaAttachment | undefined): attachment is WaAttachment & { ref: WaMediaRef } =>
   attachment?.ref !== undefined && "directPath" in attachment.ref
+
+/**
+ * Whether two refs name one file, wherever each says it is: the phone keeps a file's keys when it uploads it again.
+ * A keyless file (a channel's) is never uploaded again, and without keys two of them cannot be told apart.
+ */
+export const sameFile = (one: unknown, other: unknown): boolean => {
+  const [a, b] = [v.safeParse(waMediaRef, one), v.safeParse(waMediaRef, other)]
+  if (!a.success || !b.success || a.output.mediaKey === undefined) return false
+  return (["media", "mediaKey", "fileSha256", "fileEncSha256"] as const).every((key) => a.output[key] === b.output[key])
+}
 
 /** A stored attachment as the engine takes it back, or `undefined` when it is not one this engine wrote. */
 export const toWaAttachment = ({ providerRef, ...attachment }: Attachment): WaAttachment | undefined => {

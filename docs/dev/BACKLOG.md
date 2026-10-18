@@ -134,7 +134,7 @@ Open work, most important first. The plan in flight is
    - **Files WhatsApp no longer keeps.** A download asks the owner's phone to upload the file again and fetches the new
      copy; ~~each later download asks the phone again~~ the new path is kept in the stored `providerRef`, so a later
      download and a forward use it. ~~Left: a later push of the same message with the old ref (a history push after a
-     re-link) replaces the kept one~~ the adapter's `feed` leaves the ref off a pushed file the store holds with one
+     re-link) replaces the kept one~~ the adapter's `feed` leaves the ref off a pushed file the store holds with the same keys
      (cli-core #1540 leaves that to wa); a chat re-keyed in the same push is looked up under its new id and misses.
      Not yet run against WhatsApp: the retry in the own
      chat and that a second download no longer asks (the owner runs `bin/live-expired-file` for both), and whether the
