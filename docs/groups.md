@@ -239,3 +239,12 @@ nothing. An empty list does not mean nobody joined.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's
 [permissions](permissions.md) allow.
+
+## Communities
+
+A WhatsApp community holds several groups under one name. In `wa` a community is a group too, with
+`provider_metadata.community: true`, and a group in a community names it in `parent_chat_id`. Both come with what
+WhatsApp says about the group, so they show in the answers of `chats update`, `chats create` and `chats join`. The
+local store does not keep them yet: `chats list` and `chats show` do not show them.
+
+Listing a community's groups, and adding a group to a community or taking it out, are done on the phone.

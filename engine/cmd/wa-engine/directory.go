@@ -103,7 +103,7 @@ func (e *engine) contacts() []waContact {
 
 func (e *engine) groupChat(group *types.GroupInfo) waChat {
 	count := len(group.Participants)
-	return waChat{JID: group.JID.String(), Name: name(group.Name), Kind: "group", Participants: &count}
+	return linked(waChat{JID: group.JID.String(), Name: name(group.Name), Kind: "group", Participants: &count}, group)
 }
 
 func (e *engine) chat(raw string) (*waChatCard, error) {

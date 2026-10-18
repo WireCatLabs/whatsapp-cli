@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 14
+const protocol = 15
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -77,6 +77,9 @@ type waChat struct {
 	Participants  *int    `json:"participants"`
 	Archived      *bool   `json:"archived,omitempty"`
 	Muted         *bool   `json:"muted,omitempty"`
+	// Parent is the community a group is linked to; Community marks a community itself.
+	Parent    *string `json:"parent,omitempty"`
+	Community bool    `json:"community,omitempty"`
 }
 
 type waContact struct {

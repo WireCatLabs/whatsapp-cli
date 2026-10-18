@@ -300,6 +300,43 @@ describe("wa chats create, join, leave, update, link", () => {
   })
 })
 
+describe("wa communities", () => {
+  const community = "120363000000000009@g.us"
+  const neighbours = {
+    ...seed,
+    chats: [
+      ...seed.chats.map((chat) => (chat.id === seed.busy ? { ...chat, parentChatId: community } : chat)),
+      {
+        id: community,
+        title: "Synthetic neighbours",
+        kind: "group" as const,
+        unreadCount: 0,
+        lastMessageAt: null,
+        participantsCount: 3,
+        providerMetadata: { community: true },
+      },
+    ],
+  }
+  const updated = async (chat: string) => {
+    const result = await wa([PROFILE, "chats", "update", chat, "--description", "synthetic", "--json"], () =>
+      fakeEngine(neighbours),
+    )
+    expect(result.code).toBe(0)
+    return JSON.parse(result.stdout).item.chat
+  }
+
+  it("a group in a community names it as its parent, and the community says it is one", async () => {
+    const group = await updated(seed.busy)
+    expect(group.parent_chat_id).toBe(community)
+    expect(group.provider_metadata).toBeUndefined()
+
+    const parent = await updated(community)
+    expect(parent.kind).toBe("group")
+    expect(parent.provider_metadata).toEqual({ community: true })
+    expect(parent.parent_chat_id).toBeUndefined()
+  })
+})
+
 describe("wa chats requests", () => {
   it("lists who asked to join and lets one in", async () => {
     const listed = await acting("chats", "requests", "list", seed.busy, "--limit", "1", "--page", "1")

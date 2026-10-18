@@ -134,7 +134,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   photo's presence), `block`, `lookup` (`IsOnWhatsApp`, one number, one every 10 s per profile, timed by
   `private.db.lookup`) and `contacts` (the address book in `private.db`). Answers stay in WhatsApp's terms (`announce`, `locked`, `ephemeral`); the adapter
   maps them onto cli-core's `onlyAdminsSend`, `onlyAdminsEditInfo` and `disappearingSeconds`, beside `onlyAdminsAdd`
-  and `joinApproval`.
+  and `joinApproval`. A chat built from a group's info (`communities.go`, protocol 15) carries `parent`, the community
+  it is linked to, which the adapter maps to cli-core's `parentChatId`, and `community` on a community itself, which
+  becomes `providerMetadata.community`: cli-core has no chat kind for a community, and its topics are threads inside
+  one chat, not separate groups.
 - **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
   [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
   skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and

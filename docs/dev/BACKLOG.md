@@ -51,7 +51,15 @@ Open work, most important first. The plan in flight is
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
    - **Removing a group's photo** (whatsmeow's `SetGroupPhoto` with no bytes) waits for a cli-core option;
-     `chats update --photo` sets one. **Communities** are not built.
+     `chats update --photo` sets one.
+   - **Communities: only the read of one group.** A group read from WhatsApp carries its community as cli-core's
+     `parentChatId` and a community carries `providerMetadata.community` (engine protocol 15). Still open: the store
+     gets chats only from history pushes, and `convert.go` does not read the pushed conversation's
+     `GetParentGroupID`, `GetIsParentGroup` and `GetIsDefaultSubgroup` yet, so `chats list` and `chats show` lack them. Listing a community's
+     groups (`GetSubGroups`, which also names groups the owner is not in), linking and unlinking (`LinkGroup`,
+     `UnlinkGroup`) and creating a group in a community (`ReqCreateGroup.LinkedParentJID`) wait for cli-core: a
+     `parent_chat_id` field in the chat-list query, a `GroupAdmin` method for link and unlink behind the send guard,
+     and a store upsert that can clear a parent once a group is unlinked.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
    - **Delete for the owner alone.** whatsmeow has the app-state index (`deleteMessageForMe`) but no builder, so

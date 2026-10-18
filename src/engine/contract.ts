@@ -12,7 +12,7 @@ import type { PrivacyEngine } from "./privacy.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 14
+export const PROTOCOL = 15
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -26,6 +26,10 @@ export const waChat = v.strictObject({
   participants: v.nullable(v.number()),
   archived: v.optional(v.boolean()),
   muted: v.optional(v.boolean()),
+  /** The community a group is linked to. */
+  parent: v.optional(jid),
+  /** A community itself: a group that holds other groups. */
+  community: v.optional(v.literal(true)),
 })
 
 export const waContact = v.strictObject({ jid, name: v.nullable(v.string()) })
