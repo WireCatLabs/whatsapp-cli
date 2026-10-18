@@ -149,7 +149,7 @@ func (c *converter) group(info *types.GroupInfo, link *string) waGroup {
 	}
 	count := len(info.Participants)
 	return waGroup{
-		Chat:        waChat{JID: info.JID.String(), Name: name(info.Name), Kind: "group", Participants: &count},
+		Chat:        linked(waChat{JID: info.JID.String(), Name: name(info.Name), Kind: "group", Participants: &count}, info),
 		Description: str(info.Topic),
 		Link:        link,
 		AddMode:     string(info.MemberAddMode),

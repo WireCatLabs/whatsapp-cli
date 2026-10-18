@@ -113,6 +113,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   the change then fails, the error begins "the photo was set", keeping its code. It runs under the same permission
   and hourly limit as the rest of `chats update`.
   Removing a group's photo is not built: cli-core's `chats update` has no option for it.
+- **A group says which WhatsApp community it is in** (engine protocol 15: `parent` and `community` on a chat). A
+  group linked to a community answers with `parent_chat_id`, the community's id; the community itself is a group
+  with `provider_metadata.community: true`. They come with the group as WhatsApp gives it: the answers of `chats
+  update`, `chats create` and `chats join`. The local store does not hold them yet, so `chats list` and `chats show`
+  do not show them. Listing a community's groups, and linking or unlinking one, are not built: cli-core has no
+  command for them.
 
 ## 0.1.0 — 17.10.2026
 

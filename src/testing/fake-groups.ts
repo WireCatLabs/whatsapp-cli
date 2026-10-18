@@ -54,8 +54,14 @@ export const fakeGroups = (seed: Seed, chats: WaChat[]): FakeGroups => {
       name: member.name,
       role: member.id === seed.account?.id ? ("owner" as const) : ("member" as const),
     }))
+    const { parentChatId, providerMetadata } = seed.chats.find((one) => one.id === jid) ?? {}
     return v.parse(waGroup, {
-      chat: { ...chat, name: change.title ?? chat.name },
+      chat: {
+        ...chat,
+        name: change.title ?? chat.name,
+        ...(parentChatId ? { parent: parentChatId } : {}),
+        ...(providerMetadata?.community ? { community: true } : {}),
+      },
       description: change.description ?? null,
       link: withLink ? LINK : null,
       addMode: change.addMode ?? "all_member_add",

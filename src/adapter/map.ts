@@ -19,6 +19,9 @@ export const toChat = (chat: WaChat): Chat => ({
   participantsCount: chat.participants,
   ...(chat.archived === undefined ? {} : { archived: chat.archived }),
   ...(chat.muted === undefined ? {} : { muted: chat.muted }),
+  // cli-core has a parent chat but no kind of chat that holds groups, so a community is a group marked as one.
+  ...(chat.parent === undefined ? {} : { parentChatId: chat.parent }),
+  ...(chat.community ? { providerMetadata: { community: true } } : {}),
 })
 
 export const toMember = (contact: WaContact): Member => ({ id: contact.jid, name: contact.name, username: null })
