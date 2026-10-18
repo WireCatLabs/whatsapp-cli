@@ -22,7 +22,7 @@ export const pinAdapter = ({
     if (!notify)
       throw new CliError(
         "validation_error",
-        "WhatsApp tells the chat's members about every pin and has no quiet one; pin with --notify",
+        "WhatsApp tells the chat's members about every pin and has no quiet one; pin with notify (--notify)",
       )
     await translated(engine.pin(keyOf(chatId, await held(chatId, messageId))))
   },

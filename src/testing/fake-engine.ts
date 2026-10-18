@@ -86,7 +86,7 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups {
   forwards: WaForward[]
   /** Each request for older history, by the anchor and count it was asked with. */
   olderAsked: { anchor: WaAnchor; count: number }[]
-  /** Every edit, deletion, reaction and read receipt, in order, with the key it was addressed by. */
+  /** Every edit, deletion, reaction, read receipt, vote and pin, in order, with the key it was addressed by. */
   actions: {
     op: "edit" | "revoke" | "react" | "read" | "vote" | "pin" | "unpin"
     key: WaKey
