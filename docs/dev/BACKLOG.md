@@ -55,8 +55,7 @@ Open work, most important first. The plan in flight is
    - **Names of groups the store lacks, in a one-shot command.** cli-core finds a stored group by name (0.337.0);
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
-   - **Removing a group's photo** (whatsmeow's `SetGroupPhoto` with no bytes) waits for a cli-core option;
-     `chats update --photo` sets one.
+   - ~~**Removing a group's photo**~~ — built: `chats update --remove-photo` (cli-core 0.340.0).
    - **Communities: only the read of one group.** A group read from WhatsApp carries its community as cli-core's
      `parentChatId` and a community carries `providerMetadata.community` (engine protocol 15). Still open: the store
      gets chats only from history pushes, and `convert.go` does not read the pushed conversation's

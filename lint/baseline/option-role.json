@@ -2,6 +2,7 @@
   "chats update --disappear-time",
   "chats update --only-admins-edit-info",
   "chats update --only-admins-send",
+  "chats update --remove-photo",
   "runs search --error-code",
   "runs search --operation",
   "runs search --status",

@@ -29,6 +29,7 @@ type groupFields struct {
 	Announce    *bool    `json:"announce,omitempty"`
 	Locked      *bool    `json:"locked,omitempty"`
 	Ephemeral   *uint32  `json:"ephemeral,omitempty"`
+	RemovePhoto bool     `json:"removePhoto,omitempty"`
 }
 
 type waMember struct {
@@ -109,7 +110,7 @@ func (e *engine) groupOp(req request) (any, bool, error) {
 		value, err := e.resetLink(req.JID)
 		return value, true, err
 	case "setGroupPhoto":
-		value, err := e.setGroupPhoto(req.JID, req.Path)
+		value, err := e.setGroupPhoto(req.JID, req.Path, req.RemovePhoto)
 		return value, true, err
 	case "participants":
 		value, err := e.participants(req)
@@ -452,6 +453,17 @@ func squareJPEG(path, what, sidesBy string) ([]byte, error) {
 
 func groupPhoto(path string) ([]byte, error) { return squareJPEG(path, "group photo", "WhatsApp") }
 
+// newGroupPhoto is what SetGroupPhoto gets: nil takes the photo away (whatsmeow group.go, SetGroupPhoto).
+func newGroupPhoto(path string, remove bool) ([]byte, error) {
+	if !remove {
+		return groupPhoto(path)
+	}
+	if path != "" {
+		return nil, &failure{"validation_error", "give a new group photo or remove it, not both"}
+	}
+	return nil, nil
+}
+
 // setPicture sets a group's photo, or the account's own with types.EmptyJID: whatsmeow then sends no target, as
 // Baileys does for the account's own picture (src/Socket/chats.ts, updateProfilePicture).
 func (e *engine) setPicture(jid types.JID, photo []byte) error {
@@ -467,12 +479,12 @@ func (e *engine) setPicture(jid types.JID, photo []byte) error {
 	return nil
 }
 
-func (e *engine) setGroupPhoto(raw, path string) (*waGroup, error) {
+func (e *engine) setGroupPhoto(raw, path string, remove bool) (*waGroup, error) {
 	jid, err := groupJID(raw)
 	if err != nil {
 		return nil, err
 	}
-	photo, err := groupPhoto(path)
+	photo, err := newGroupPhoto(path, remove)
 	if err != nil {
 		return nil, err
 	}

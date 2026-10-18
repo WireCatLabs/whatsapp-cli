@@ -28,14 +28,14 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `chats delete|clear` (they ask first; not over MCP),
 `account update` (name, about and a square JPEG photo), `metadata refresh` (a group's title and description, for
 `tags auto`), group admin
-(`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
+(`chats create|join|leave|update`, a group photo by `chats update --photo` (a square JPEG of 190 to 720 pixels a
+side) or `--remove-photo`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
 `account privacy set` has WhatsApp's settings only (last seen, online, photo, about, read receipts, groups, calls);
 `--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.
 Not built yet:
-`chats inspect`, removing a group's photo (`chats update --photo` sets one, a square JPEG of 190 to
-720 pixels a side), more files in one message than a photo and a video, listing a community's groups or linking one, `account sessions`, `chats create --channel`. WhatsApp has no
+`chats inspect`, more files in one message than a photo and a video, listing a community's groups or linking one, `account sessions`, `chats create --channel`. WhatsApp has no
 `chats folders`, no `messages comments`, no second invite link, no partial admin rights and no account age (a
 `newAccount` rule in `chats rules set` is refused), and keeps the address book on the phone, so
 `contacts add|remove|rename|import` are refused. `chats show` answers from the store;

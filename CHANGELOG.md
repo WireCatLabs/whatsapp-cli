@@ -183,6 +183,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> chats update <group> --remove-photo`** takes a group's photo away; agents send `remove_photo` to
+  `chats_update` through `wa_write`. The members see it. It goes through the profile's permissions under
+  `chats.update`, as `--photo` does, and is refused beside `--photo` before connecting. The photo goes first: if a
+  title, description or setting given with it then fails, the error says the photo was removed.
+- **`chats update --photo` and `account update --photo` say they take a `.jpg` or `.jpeg` file**, and refuse a file
+  named otherwise, as they already refused one whose first bytes are not a JPEG's, before connecting. The engine still
+  checks the photo is a square of 190 to 720 pixels a side.
 - **`wa <profile> conversations rebuild`** builds, then embeds on this machine, the chats that changed and the group
   chats never built, or only `--chat`, bounded by `--max-chats` and `--max-chunks`. It sends nothing anywhere.
 - **`wa <profile> chats mute` and `chats unmute`**: stop a chat's notifications for good or `--until` a time (`2h`,

@@ -130,7 +130,7 @@ wa account update [options]
 | `--first-name <name>` | your first name. |
 | `--last-name <name>` | your last name. |
 | `--description <text>` | about you. |
-| `--photo <file>` | a new profile photo — an image file. |
+| `--photo <file>` | a new profile photo — a .jpg or .jpeg file. |
 
 ### `wa account sessions`
 
@@ -512,7 +512,8 @@ wa chats update <chat> [options]
 |---|---|
 | `--title <title>` | the new name. |
 | `--description <text>` | the new description. |
-| `--photo <file>` | a new photo for it — an image file. |
+| `--photo <file>` | a new photo for it — a .jpg or .jpeg file. |
+| `--remove-photo` | take its photo away; not with --photo. |
 | `--only-admins-add <on\|off>` | only admins may add members. |
 | `--join-approval <on\|off>` | people ask to join, and an admin lets them in. |
 | `--only-admins-send <on\|off>` | only admins may send messages. |

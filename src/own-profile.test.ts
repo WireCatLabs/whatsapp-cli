@@ -71,7 +71,7 @@ describe("wa account update", () => {
 
   it.each([
     [["--last-name", "Owner"], "WhatsApp has one name"],
-    [["--first-name", "Synthetic", "--photo", "photo.jpg"], "not a JPEG"],
+    [["--first-name", "Synthetic", "--photo", "photo.jpg"], "is not a .jpg or .jpeg image"],
     [["--description", " "], "about cannot be empty"],
     [["--first-name", " ", "--last-name", " "], "name cannot be empty"],
   ])("refuses %j before anything changes", async (argv, message) => {
