@@ -46,10 +46,11 @@ export const completeGlobalInstall = ({
     repair(prefix)
     note("wa: Windows user PATH updated; new terminals can run wa directly.")
   }
-  if (env.WA_INSTALL_AGENT === "none") {
-    note("wa: agent skill skipped by WA_INSTALL_AGENT=none; install with wa skill install --for all.")
+  // npm hides a lifecycle script's output, so writing into the owner's agent folders here must be asked for.
+  const agent = env.WA_INSTALL_AGENT
+  if (agent === undefined || agent === "none") {
+    note("wa: agent skill not installed; wa personal setup offers it, or run wa skill install --for all.")
   } else {
-    const agent = env.WA_INSTALL_AGENT ?? "all"
     if (!["all", "codex", "cursor", "claude", "gemini"].includes(agent))
       throw new Error("WA_INSTALL_AGENT must be all, codex, cursor, claude, gemini or none")
     const targets =

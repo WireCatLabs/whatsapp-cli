@@ -12,6 +12,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   fields. The agent is offered every command the profile's permissions allow, including some it was not offered
   before; marking read, `--as-owner` and `--allow-any-file` stay off MCP. An agent's runs are named `mcp <command>`
   in run history and the send journal. `conversations rebuild` replaces the agent-only `conversations_refresh`.
+- **A global `npm install` no longer writes the agent skill into `~/.claude/skills` and `~/.agents/skills` on its
+  own.** npm hides what an install script prints, so the files appeared without a word. `wa personal setup` still
+  offers the skill, and `wa skill install` installs it; set `WA_INSTALL_AGENT` (`all`, `claude`, `codex`, `cursor` or
+  `gemini`) to have the install do it as before. The Windows installer is unchanged: it says what it installs.
 - **`session start phone` and `setup --method phone` refuse a number without `+` and the country code** (exit 2,
   `input.invalid`). WhatsApp reads the first digits of the number as the country code, so a number typed the way it
   is dialled at home asked for a pairing code on someone else's account. Nothing reaches WhatsApp until the number

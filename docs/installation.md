@@ -16,6 +16,10 @@ the engine out.
 
 Then link a profile and install the agent skill with `wa personal setup` (see [usage](usage.md)).
 
+The install itself writes nothing into your agents' folders. To have it install the agent skill too, set
+`WA_INSTALL_AGENT` to `all`, `claude`, `codex`, `cursor` or `gemini`: `WA_INSTALL_AGENT=all npm install --global
+@wirecat/whatsapp-cli`.
+
 ## From source
 
 To run `wa` from a checkout of the repository instead:
