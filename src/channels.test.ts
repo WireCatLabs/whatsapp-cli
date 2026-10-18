@@ -1,4 +1,4 @@
-import { cpSync, mkdtempSync } from "node:fs"
+import { cpSync, mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
@@ -122,6 +122,35 @@ describe("wa channels", () => {
     expect(result.code).toBe(5)
     expect(errorCode(result.stderr)).toBe("permission_error")
     expect(result.engine?.sends).toEqual([])
+  })
+
+  it("refuses a photo or a reply posted to a channel, and sends nothing", async () => {
+    const photo = join(dirname(store), "post.jpg")
+    writeFileSync(photo, Buffer.from([0xff, 0xd8, 0xff, 0xe0]))
+    const withPhoto = await acting(["messages", "send", CHANNEL, "synthetic post", "--photo", photo], "admin")
+    expect(withPhoto.code).toBe(2)
+    expect(withPhoto.stderr).toContain("text only")
+    expect(withPhoto.engine?.sends ?? []).toEqual([])
+
+    const post = CHANNEL_POSTS.at(-1)?.id ?? ""
+    const reply = await acting(["messages", "send", CHANNEL, "synthetic post", "--reply-to", post], "admin")
+    expect(reply.code).toBe(2)
+    expect(reply.stderr).toContain("cannot be a reply")
+    expect(reply.engine?.sends ?? []).toEqual([])
+  })
+
+  it("posts nothing under WA_READ_ONLY", async () => {
+    env = { WA_READ_ONLY: "1" }
+    const result = await acting(["messages", "send", CHANNEL, "synthetic post"], "admin")
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.sends ?? []).toEqual([])
+  })
+
+  it("posts nothing when the profile denies sending", async () => {
+    expect((await wa(["no-sends", "config", "set", "permissions.messages.send", "deny"])).code).toBe(0)
+    const result = await acting(["messages", "send", CHANNEL, "synthetic post"], "admin", "no-sends")
+    expect(errorCode(result.stderr)).toBe("permission_error")
+    expect(result.engine?.sends ?? []).toEqual([])
   })
 
   it("refuses a poll or a forward to a channel, even one the account runs, and sends nothing", async () => {

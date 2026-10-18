@@ -222,6 +222,9 @@ func (e *engine) createPoll(req request) (*waMessage, error) {
 	if err != nil || to.User == "" {
 		return nil, &failure{"validation_error", "not a WhatsApp chat id"}
 	}
+	if to.Server == types.NewsletterServer {
+		return nil, &failure{"validation_error", "polls in channels are not supported yet"}
+	}
 	if req.SendID == "" {
 		return nil, &failure{"validation_error", "a send needs its message id"}
 	}
@@ -272,6 +275,9 @@ func (e *engine) vote(req request) error {
 	t, err := targetOf(req)
 	if err != nil {
 		return err
+	}
+	if t.chat.Server == types.NewsletterServer {
+		return &failure{"validation_error", "polls in channels are not supported yet"}
 	}
 	if err := e.connect(); err != nil {
 		return err
