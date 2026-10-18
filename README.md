@@ -294,8 +294,8 @@ others. WhatsApp is different in three ways:
   store and never connects.
 - **One connection per device.** WhatsApp allows one. While `wa serve` runs, other commands for the same profile,
   a send included, run through its connection. On Windows they are refused until `serve` stops, for now.
-- **Unofficial.** The risk of a ban is in the warning at the top of this page. `wa` never sends
-  "online" or "typing", and marks nothing read unless you ask.
+- **Unofficial.** The risk of a ban is in the warning at the top of this page. `wa` never sends "online" or
+  "typing", and marks nothing read unless you ask.
 
 ## Part of WireCat
 

@@ -214,9 +214,11 @@ describe("wa session start at a terminal", () => {
     warnsBefore(scanned.stderr, "Linked devices")
     expect(scanned.stdout).not.toContain("ban")
 
-    const quiet = await wa(["hushed", "session", "start", "--quiet"], () => fakeEngine(seed, { linked: false }), {
-      ...terminal(),
-    })
+    const quiet = await wa(
+      ["hushed", "session", "start", "--quiet"],
+      () => fakeEngine(seed, { linked: false }),
+      terminal(),
+    )
     expect(quiet.stderr).toContain(BAN_WARNING)
 
     const paired = await wa(
