@@ -56,13 +56,13 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   message up and hand the engine the stored attachment; `messages forward` sends the same keys again marked forwarded,
   as WhatsApp's own apps do, and refuses a message whose file the store has no keys for. A contact card is stored by its
   name only: the card holds a phone number.
-- **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it
-  is the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
-  `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store first (cli-core's
-  `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing is found) and
-  send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not refused by
-  WhatsApp, it is dropped without a word. A reply is the exception: it goes either way, and only carries the quoted
-  sender and text when the store has them. A live edit carries only the new text, stamped with the edit's time;
+- **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
+  the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
+  `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store
+  first (cli-core's `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing
+  is found) and send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not
+  refused by WhatsApp, it is dropped without a word. A reply is the exception: it goes either way, and only carries the
+  quoted sender and text when the store has them. A live edit carries only the new text, stamped with the edit's time;
   `watch` hands it on as it came, and cli-core's store keeps the message's own time, reply and reactions.
 
 ## 4. The engine
