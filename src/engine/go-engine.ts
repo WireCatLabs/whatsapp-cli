@@ -4,9 +4,11 @@ import * as v from "valibot"
 import { engineBinary, enginePackage } from "../engine-binary.js"
 import {
   EngineError,
+  type EngineOp,
   engineError,
   engineEvent,
   hello,
+  isWrite,
   keyFields,
   type LoginCode,
   loginCode,
@@ -45,44 +47,6 @@ const CLOSE_WAIT_MS = 5_000
 const STOPPED = () =>
   new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly", "engine.stopped")
 
-/** Requests that change something on WhatsApp: cut by the engine's end, they may have gone out. */
-const WRITES = new Set([
-  "send",
-  "sendMedia",
-  "sendAlbum",
-  "forward",
-  "edit",
-  "revoke",
-  "react",
-  "read",
-  "createPoll",
-  "vote",
-  "pin",
-  "unpin",
-  "createGroup",
-  "join",
-  "leave",
-  "updateGroup",
-  "setGroupPhoto",
-  "resetLink",
-  "participants",
-  "answerRequest",
-  "block",
-  "setPrivacy",
-  "mute",
-  "updateProfile",
-  "deleteChat",
-  "clearChat",
-  "deleteForMe",
-  "star",
-  "archiveChat",
-  "unarchiveChat",
-  "pinChat",
-  "unpinChat",
-  "markChatUnread",
-  "logout",
-])
-
 const CUT = () =>
   new EngineError(
     "outcome_unknown",
@@ -98,7 +62,7 @@ const missing = () =>
   )
 
 interface Pending {
-  op: string
+  op: EngineOp
   resolve: (value: unknown) => void
   reject: (error: Error) => void
 }
@@ -135,7 +99,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
 
   const failAll = (error: () => Error) => {
     greet?.reject(error())
-    for (const waiting of pending.values()) waiting.reject(WRITES.has(waiting.op) ? CUT() : error())
+    for (const waiting of pending.values()) waiting.reject(isWrite(waiting.op) ? CUT() : error())
     pending.clear()
   }
 
@@ -193,7 +157,11 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
   }
   createInterface({ input: child.stdout as NodeJS.ReadableStream }).on("line", onLine)
 
-  const request = <T>(op: string, fields: Record<string, unknown>, schema: v.GenericSchema<unknown, T>): Promise<T> => {
+  const request = <T>(
+    op: EngineOp,
+    fields: Record<string, unknown>,
+    schema: v.GenericSchema<unknown, T>,
+  ): Promise<T> => {
     if (exited) return Promise.reject(STOPPED())
     const id = nextId++
     const answer = new Promise<unknown>((resolve, reject) => pending.set(id, { op, resolve, reject }))

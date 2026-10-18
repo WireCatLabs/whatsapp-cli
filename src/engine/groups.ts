@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { type WaContact, waChat, waContact } from "./contract.js"
+import { type EngineOp, type WaContact, waChat, waContact } from "./contract.js"
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -93,7 +93,7 @@ export interface GroupEngine {
 }
 
 export type EngineRequest = <T>(
-  op: string,
+  op: EngineOp,
   fields: Record<string, unknown>,
   schema: v.GenericSchema<unknown, T>,
 ) => Promise<T>
