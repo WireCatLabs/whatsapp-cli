@@ -175,6 +175,28 @@ export const UNTESTED: Untested[] = [
       "local search preparation after the sync, over the store; tested in cli-core " +
       "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself",
   })),
+  ...["--limit", "--max-gaps", "--repair-time", "--fingerprint"].map((option) => ({
+    command: "store gaps repair",
+    option,
+    reason:
+      "a bound or a plan check cli-core applies before and between the pages it asks for, tested in cli-core " +
+      "(src/services/archive-gaps.test.ts and src/cli/messenger/gaps.test.ts); src/older-history.test.ts drives the " +
+      "repair through wa's history pages",
+  })),
+  ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
+    command: "store gaps repair",
+    option,
+    reason:
+      "local search preparation after the repair, over the store; tested in cli-core " +
+      "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself",
+  })),
+  {
+    command: "store gaps repair",
+    option: "--background",
+    reason:
+      "cli-core runs the repair as a store job, tested in cli-core (src/cli/messenger/gaps.test.ts); the job's " +
+      "repair reaches wa as src/older-history.test.ts drives it",
+  },
   {
     command: "messages sync",
     option: "--background",

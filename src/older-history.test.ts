@@ -132,13 +132,15 @@ describe("older history from the phone", () => {
   })
 })
 
-// Each on an account of its own: a page sync stores moves the chat's oldest message, which every test counts back from.
+// A page sync stores moves the chat's oldest message, which every test counts back from.
+const ownAccount = async (profile: string, n: number) => {
+  const own = { ...seed, account: { id: `1000000000000${80 + n}@lid`, name: "Synthetic owner", username: null } }
+  await filled(profile, own)
+  return own
+}
+
+// Each on an account of its own.
 describe("messages sync", () => {
-  const ownAccount = async (profile: string, n: number) => {
-    const own = { ...seed, account: { id: `1000000000000${80 + n}@lid`, name: "Synthetic owner", username: null } }
-    await filled(profile, own)
-    return own
-  }
   const sync = async (profile: string, engine: WhatsAppEngine, ...options: string[]) => {
     const argv = [profile, "messages", "sync", seed.busy, ...options, "--pause", "1ms", "--no-catch-up", "--json"]
     const result = await wa(argv, () => engine)
@@ -182,5 +184,35 @@ describe("messages sync", () => {
     expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.message).toContain(
       "pushes its history instead",
     )
+  })
+})
+
+describe("store gaps repair", () => {
+  it("asks the phone for the gap between two held stretches, counting back from the message above it", async () => {
+    const own = await ownAccount("gaps", 5)
+    const key = { provider: "whatsapp", account: own.account.id }
+    const at = (message?: { timestamp: string }) => Date.parse(message?.timestamp ?? "")
+    const store = await opened
+    await store.sync.markRange(key, seed.busy, at(oldest), at(inBusy.at(-1)))
+    await store.sync.markRange(key, seed.busy, at(onPhone[30]), at(onPhone[20]))
+    const gap = { from: at(onPhone[20]) + 1, to: at(oldest) - 1 }
+
+    const engine = fakeEngine(own, { phone: onPhone })
+    const argv = ["gaps", "store", "gaps", "repair", seed.busy, "--page-size", "10", "--pause", "1ms", "--no-catch-up"]
+    const result = await wa([...argv, "--json"], () => engine)
+    expect(result.code, result.stderr).toBe(0)
+    expect(engine.olderAsked.map((asked) => [asked.anchor.id, asked.count])).toEqual([
+      [oldest?.id, 10],
+      [onPhone[9]?.id, 10],
+      [onPhone[19]?.id, 10],
+    ])
+    expect(JSON.parse(result.stdout).item).toMatchObject({
+      before: { gaps: [gap] },
+      repaired: [gap],
+      after: { gaps: [] },
+      complete: true,
+      requests: 3,
+    })
+    expect(engine.closed).toBe(true)
   })
 })
