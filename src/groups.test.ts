@@ -470,3 +470,68 @@ describe("wa review --unanswered", () => {
     expect(result.code).toBe(0)
   })
 })
+
+// Each command here names a chat, and only WhatsApp's chat list turns a name into an id.
+const naming = async (profile: string, ...argv: string[]) => {
+  let engine: FakeEngine | undefined
+  let listed = 0
+  const result = await wa([profile, ...argv, "--json"], () => {
+    engine = fakeEngine(seed)
+    const directory = engine.directory
+    engine.directory = () => {
+      listed += 1
+      return directory()
+    }
+    return engine
+  })
+  const body = result.code === 0 ? JSON.parse(result.stdout).item : undefined
+  return { ...result, body, listed, closed: engine?.closed }
+}
+
+describe("wa recipients add", () => {
+  it("looks the chat up by its WhatsApp name and puts its id on the list", async () => {
+    const added = await naming("guarded", "recipients", "add", "Ann Lee")
+    expect(added.code).toBe(0)
+    expect(added.body).toEqual({ id: seed.dialog, title: "Ann Lee", added: true })
+    expect(added.listed).toBe(1)
+    expect(added.closed).toBe(true)
+  })
+
+  it("refuses a name two chats share, and a name no chat has, and adds nothing", async () => {
+    const shared = await naming("unlisted", "recipients", "add", "Twins")
+    expect(shared.code).toBe(2)
+    expect(errorOf(shared.stderr).message).toContain("2 chats share that name")
+    const unknown = await naming("unlisted", "recipients", "add", "Synthetic nobody")
+    expect(errorCode(unknown.stderr)).toBe("not_found")
+    const list = await wa(["unlisted", "recipients", "list", "--json"])
+    expect(JSON.parse(list.stdout).items).toEqual([])
+  })
+})
+
+describe("wa chats rules", () => {
+  it("keeps a group's rules by the id WhatsApp gives for its name", async () => {
+    const shown = await naming("rules", "chats", "rules", "show", "Book club")
+    expect(shown.body).toMatchObject({
+      chat_id: seed.busy,
+      title: "Book club",
+      saved: false,
+      rules: { links: "report" },
+    })
+    expect(shown.listed).toBe(1)
+
+    const set = await naming("rules", "chats", "rules", "set", "Book club", "links", "delete")
+    expect(set.body).toMatchObject({ chat_id: seed.busy, saved: true, rules: { links: "delete" } })
+    expect((await naming("rules", "chats", "rules", "show", seed.busy)).body.rules.links).toBe("delete")
+
+    const unset = await naming("rules", "chats", "rules", "unset", seed.busy, "links")
+    expect(unset.body).toMatchObject({ chat_id: seed.busy, saved: true, rules: { links: "report" } })
+    expect(unset.closed).toBe(true)
+  })
+
+  it("refuses a name two groups share, and saves nothing", async () => {
+    const refused = await naming("rules", "chats", "rules", "set", "Twins", "links", "delete")
+    expect(refused.code).toBe(2)
+    expect(errorOf(refused.stderr).message).toContain("name one by its id")
+    expect((await naming("rules", "chats", "rules", "show", seed.chats[2]?.id ?? "")).body.saved).toBe(false)
+  })
+})

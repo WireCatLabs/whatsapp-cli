@@ -85,11 +85,6 @@ export const UNTESTED: Untested[] = [
     ["chats tracking add"],
     ["chats tracking remove"],
   ]),
-  ...cliCore("src/cli/messenger/admin-commands.test.ts", [
-    ["chats rules show"],
-    ["chats rules set"],
-    ["chats rules unset"],
-  ]),
   ...cliCore("src/cli/messenger/people-answers.test.ts", [
     ["contacts list"],
     ["contacts list", "--limit"],
