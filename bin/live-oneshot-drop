@@ -56,7 +56,13 @@ restart() {
     return 0
   fi
   umask 077
-  nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$log" &
+  # Its own session, so a Ctrl-C at a later prompt reaches the script and not serve.
+  if command -v setsid >/dev/null; then
+    setsid nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$log" &
+  else
+    nohup "$wa" "$profile" serve </dev/null >/dev/null 2>>"$log" &
+  fi
+  restarted=yes
   echo "started serve again (pid $!), its diagnostics in $log"
   tries=0
   until serve_running "$profile"; do
@@ -66,7 +72,13 @@ restart() {
   done
   echo "serve holds the lock again"
 }
-trap restart EXIT
+restarted=no
+finish() {
+  restart || true
+  [ "$restarted" = yes ] || return 0
+  if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; fi
+}
+trap finish EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
@@ -117,3 +129,4 @@ echo "── result ──"
 echo "marker, sent while nothing was connected: $(count "$marker")"
 echo "control, sent while serve ran:            $(count "$control")"
 echo "A control found and a marker missing means the one-shot connection took the message (BACKLOG 9 holds)."
+echo "A marker found does not clear item 9: doctor --online may have ended before WhatsApp delivered it."

@@ -70,7 +70,9 @@ Three checks need a person at the phone, so they are scripts in `bin/`. Only the
 an agent never does (`WC-TEST-18`). Each takes the profile as its one argument and never picks one: without it, or
 with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
-on every call (`WC-LIFE-5`). The script asks before each step and passes `--yes` only after that. It prints exit
+(`WC-LIFE-5`). Three calls differ: the restarted `serve` runs without a timeout, and `live-fresh-link` runs
+`session start` without `--no-input`, since it draws the QR code on the terminal, and through `node` with a
+throwaway store (below). The script asks before each step and passes `--yes` only after that. It prints exit
 codes, counts and yes or no: never a message's text, an id or a phone number (`WC-SECR-1`). The shared helpers are
 in `bin/lib/live.sh`.
 
@@ -92,12 +94,15 @@ in `bin/lib/live.sh`.
 4. The owner sends the marker word to the own chat from the phone, while no device of this profile is connected,
    so WhatsApp queues it.
 5. One one-shot connection: `doctor --online`, which connects and sends nothing (`WC-LIFE-1`).
-6. It starts `serve` again with `nohup bin/wa <profile> serve`, stdin and stdout on `/dev/null`, its diagnostics in
+6. It starts `serve` again with `setsid nohup bin/wa <profile> serve`, stdin and stdout on `/dev/null`, its diagnostics in
    `<main>/.wa/serve.log`, and waits until `doctor` shows the lock held by `serve` (`WC-LIFE-11`). The `EXIT`
    trap does the same on any earlier exit, Ctrl-C included, once `serve` was stopped.
 7. The owner sends a control word while `serve` runs. Both words are counted again.
 
-A control found and a marker missing means the one-shot took the message: BACKLOG item 9 holds. The marker is sent
+A control found and a marker missing means the one-shot took the message: BACKLOG item 9 holds. A marker found
+does not clear item 9: `doctor --online` may end before WhatsApp delivers the queue, and a one-shot `messages send`
+stays connected longer. `serve` is started in its own session (`setsid`, where there is one), so a Ctrl-C at a
+later prompt does not stop it; the last line says whether `serve` holds the lock. The marker is sent
 before the one-shot connects, not during it, because `doctor --online` ends too fast for a person to send in
 time; a queued message is the case item 9 worries about. While `serve` is stopped, other people's messages are in
 the same position, and that is said before step 3.
