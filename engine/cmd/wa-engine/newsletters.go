@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"io"
 	"regexp"
@@ -107,16 +108,21 @@ func channelOf(meta *types.NewsletterMetadata) waChannel {
 	}
 }
 
+type follows interface {
+	IsConnected() bool
+	GetSubscribedNewsletters(ctx context.Context) ([]*types.NewsletterMetadata, error)
+}
+
 // followedChannels asks WhatsApp once per process, like the joined groups; a failure leaves them out of the directory.
 // The first answer also goes out as a history push, so a listening store keeps the channels as chats.
 func (e *engine) followedChannels() []waChat {
 	e.mu.Lock()
 	known, asked := e.channels, e.channels != nil
 	e.mu.Unlock()
-	if asked || !e.client.IsConnected() {
+	if asked || !e.following.IsConnected() {
 		return known
 	}
-	followed, err := e.client.GetSubscribedNewsletters(e.ctx)
+	followed, err := e.following.GetSubscribedNewsletters(e.ctx)
 	if err != nil {
 		return nil
 	}
