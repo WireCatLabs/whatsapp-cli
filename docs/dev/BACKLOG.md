@@ -72,12 +72,12 @@ Open work, most important first. The plan in flight is
    packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). Next, the owner
    sets npm's trusted publishing on each of the seven packages, so later releases go through `release.yml`, which has
    not published yet. The install tests on three systems (`install-windows.yml`) have run once, by hand.
-8. **Replace the test-matrix waivers with tests.** On 2026-10-18, after a third round, 198 commands and options have a
+8. **Replace the test-matrix waivers with tests.** On 2026-10-18, after a third round, 199 commands and options have a
    wa test and 525 are waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
    goes. A `store gaps repair --background` job never runs: cli-core 0.336.0 hands it `--timeout 0`, which the job
-   refuses. `src/older-history.test.ts` keeps the job's run as an expected failure until cli-core fixes it.
+   refuses. `src/older-history.test.ts` asserts that refusal, so it fails once cli-core is fixed.
 11. **The last step of the LID lookup is not built.** The engine maps a phone JID to a LID from whatsmeow's store, the
     history's own mappings and a message's alternate address; a batched `GetUserInfo` request for the rest (plan,
     decision 3) is not done, so such users stay in phone form. Left out on purpose with the groups work: every lookup

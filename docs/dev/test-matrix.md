@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**198 ✅ · 525 ⛔ · 0 ❌** — 227 commands, 496 options.
+**199 ✅ · 525 ⛔ · 0 ❌** — 227 commands, 497 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -65,6 +65,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats update` |  | ✅ |  |
 | `chats update` | `--title` | ✅ |  |
 | `chats update` | `--description` | ✅ |  |
+| `chats update` | `--photo` | ✅ |  |
 | `chats update` | `--only-admins-add` | ✅ |  |
 | `chats update` | `--join-approval` | ✅ |  |
 | `chats update` | `--only-admins-send` | ✅ |  |
