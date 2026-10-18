@@ -124,6 +124,19 @@ describe("wa channels", () => {
     expect(result.engine?.sends).toEqual([])
   })
 
+  it("refuses a poll or a forward to a channel, even one the account runs, and sends nothing", async () => {
+    const poll = await acting(["polls", "create", CHANNEL, "Synthetic?", "yes", "no"], "admin")
+    expect(poll.code).toBe(2)
+    expect(poll.stderr).toContain("in a WhatsApp channel")
+    expect(poll.engine?.sent).toEqual([])
+
+    const post = CHANNEL_POSTS.at(-1)?.id ?? ""
+    const forward = await acting(["messages", "forward", CHANNEL, post, "--to", CHANNEL], "admin")
+    expect(forward.code).toBe(2)
+    expect(forward.stderr).toContain("in a WhatsApp channel")
+    expect(forward.engine?.forwards).toEqual([])
+  })
+
   it("unfollows a channel with chats leave", async () => {
     const result = await acting(["chats", "leave", CHANNEL], "subscriber")
     expect(result.code).toBe(0)

@@ -39,7 +39,7 @@ import {
   type WaSendMedia,
   type WhatsAppEngine,
 } from "../engine/contract.js"
-import { channelAdapter, channelHistory, isChannel, refuseChannelPost } from "./channels.js"
+import { channelAdapter, channelHistory, channelWrites, isChannel, refuseChannelPost } from "./channels.js"
 import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
@@ -511,6 +511,7 @@ export const whatsAppAdapter = (
     },
   }
 
+  const polls = pollAdapter({ engine, stored, held, keyOf, translated })
   const groups = groupAdapter({
     engine,
     resolve: core.resolve,
@@ -522,7 +523,8 @@ export const whatsAppAdapter = (
     ...core,
     ...groups,
     ...channelAdapter({ engine, resolve: core.resolve, translated, groups }),
-    ...pollAdapter({ engine, stored, held, keyOf, translated }),
+    ...polls,
+    ...channelWrites({ ...core, ...polls }),
     ...privacyAdapter({ engine, translated }),
     ...pinAdapter({ engine, held, keyOf, translated }),
     ...settingsAdapter({ engine, translated, words, stored, keyOf, onDisk }),

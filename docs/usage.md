@@ -244,7 +244,8 @@ wa personal chats leave 120363000000000001@newsletter                     # unfo
 - **The channel is the sender** of every post, and a post you made reads as the channel's, not as yours
   (`outgoing: false`): WhatsApp does not say which posts are your own.
 - **Only the channel's owner and admins post.** `messages send` asks WhatsApp for your role first and refuses
-  anyone else (exit `5`). A post is text only, and not a reply; the followers see it at once.
+  anyone else (exit `5`). A post is text only, and not a reply; the followers see it at once. A poll, a forward, an
+  edit or a deletion in a channel is refused.
 - `chats join` and `chats leave` go through the profile's [permissions](permissions.md) like a group's: the
   channel's admins see that you followed. A follower count stands in for the member list, which WhatsApp does not
   show.

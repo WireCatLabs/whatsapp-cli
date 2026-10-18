@@ -1,10 +1,11 @@
 import { CliError } from "@wirecat/cli-base"
 import type { Chat, GroupCard, Message, Page } from "@wirecat/cli-core"
-import type { StoredMessages } from "@wirecat/cli-core/cli"
+import type { MessageEditing, StoredMessages } from "@wirecat/cli-core/cli"
 import { CHANNEL_PAGE_MAX, type WaChannel } from "../engine/channels.js"
 import type { WhatsAppEngine } from "../engine/contract.js"
 import type { GroupAdapter } from "./groups.js"
 import { toChat, toMessage } from "./map.js"
+import type { PollAdapter } from "./polls.js"
 
 /** WhatsApp channels are whatsmeow's newsletters, and their ids end so. */
 export const isChannel = (id: string) => id.endsWith("@newsletter")
@@ -98,5 +99,37 @@ export const channelAdapter = ({
     if (!isChannel(id)) return groups.leave(chat)
     await translated(engine.unfollowChannel(id))
     return { chatId: id }
+  },
+})
+
+type ChannelWrites = Pick<MessageEditing, "edit" | "delete" | "forward"> & Pick<PollAdapter, "createPoll" | "vote">
+
+const NOT_IN_CHANNELS = () =>
+  new CliError("validation_error", "wa does not do that in a WhatsApp channel yet; it posts text only")
+
+/**
+ * The writes wa has not built for a channel are refused before anything is sent: whatsmeow would send each of them
+ * to a channel as a post, and WhatsApp addresses a post's edit, deletion and votes by its server id.
+ */
+export const channelWrites = ({ edit, delete: remove, forward, createPoll, vote }: ChannelWrites): ChannelWrites => ({
+  edit: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return edit(chatId, ...rest)
+  },
+  delete: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return remove(chatId, ...rest)
+  },
+  forward: async (fromChatId, messageId, toChatId, options) => {
+    if (isChannel(toChatId)) throw NOT_IN_CHANNELS()
+    return forward(fromChatId, messageId, toChatId, options)
+  },
+  createPoll: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return createPoll(chatId, ...rest)
+  },
+  vote: async (chatId, ...rest) => {
+    if (isChannel(chatId)) throw NOT_IN_CHANNELS()
+    return vote(chatId, ...rest)
   },
 })
