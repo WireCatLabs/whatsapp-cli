@@ -80,19 +80,6 @@ export const UNTESTED: Untested[] = [
     ["chats documents list", "--limit"],
     ["chats documents list", "--page"],
   ]),
-  ...cliCore(
-    "src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which " +
-      "src/groups.test.ts drives through `chats members list`",
-    [
-      ["chats members history"],
-      ["chats members fetch"],
-      ["chats members fetch", "--track"],
-      ["chats members fetch", "--max-pages"],
-      ["chats members audit"],
-      ["chats members audit", "--max-pages"],
-      ["chats members audit", "--deep"],
-    ],
-  ),
   ...cliCore("src/cli/messenger/messenger.test.ts", [
     ["chats tracking list"],
     ["chats tracking show"],
@@ -118,8 +105,6 @@ export const UNTESTED: Untested[] = [
     ["contacts context", "--limit"],
     ["contacts context", "--since-time"],
     ["contacts context", "--chat"],
-    ["contacts check"],
-    ["contacts check", "--no-registries"],
     ["contacts link"],
     ["contacts unlink"],
   ]),
@@ -223,13 +208,6 @@ export const UNTESTED: Untested[] = [
     command: "messages send",
     option: "--allow-any-file",
     reason: "cli-core's file check, tested in cli-core (src/sends/upload.test.ts); wa receives the file it allowed",
-  },
-  {
-    command: "contacts profile",
-    option: "--show-phone",
-    reason:
-      "wa's profile never carries a phone number (the engine leaves it out), so there is nothing to unmask; " +
-      "cli-core tests the masking",
   },
   ...["--new", "--limit", "--kind", "--transcribe", "--model"].map((option) => ({
     command: "inbox",

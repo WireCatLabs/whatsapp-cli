@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**142 ✅ · 581 ⛔ · 0 ❌** — 227 commands, 496 options.
+**152 ✅ · 571 ⛔ · 0 ❌** — 227 commands, 496 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -43,13 +43,13 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `chats members list` | `--limit` | ✅ |  |
 | `chats members list` | `--page` | ✅ |  |
 | `chats members list` | `--all` | ✅ |  |
-| `chats members audit` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
-| `chats members audit` | `--max-pages` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
-| `chats members audit` | `--deep` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
-| `chats members history` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
-| `chats members fetch` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
-| `chats members fetch` | `--track` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
-| `chats members fetch` | `--max-pages` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/members-fetch.test.ts and members-audit.test.ts; both page through wa's member list, which src/groups.test.ts drives through `chats members list` |
+| `chats members audit` |  | ✅ |  |
+| `chats members audit` | `--max-pages` | ✅ |  |
+| `chats members audit` | `--deep` | ✅ |  |
+| `chats members history` |  | ✅ |  |
+| `chats members fetch` |  | ✅ |  |
+| `chats members fetch` | `--track` | ✅ |  |
+| `chats members fetch` | `--max-pages` | ✅ |  |
 | `chats members add` |  | ✅ |  |
 | `chats members remove` |  | ✅ |  |
 | `chats mark-read` |  | ✅ |  |
@@ -104,7 +104,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `contacts show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts show` | `--with-notes` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts profile` |  | ✅ |  |
-| `contacts profile` | `--show-phone` | ⛔ | wa's profile never carries a phone number (the engine leaves it out), so there is nothing to unmask; cli-core tests the masking |
+| `contacts profile` | `--show-phone` | ✅ |  |
 | `contacts context` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts context` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts context` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
@@ -115,8 +115,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `contacts timeline` | `--until-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
 | `contacts timeline` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
 | `contacts timeline` | `--cursor` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
-| `contacts check` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
-| `contacts check` | `--no-registries` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts check` |  | ✅ |  |
+| `contacts check` | `--no-registries` | ✅ |  |
 | `contacts link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts unlink` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts lookup` |  | ✅ |  |
