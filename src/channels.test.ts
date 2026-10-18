@@ -93,7 +93,7 @@ describe("wa channels", () => {
     const argv = ["messages", "sync", CHANNEL, "--limit", "10", "--pause", "1ms", "--no-catch-up"]
     expect((await acting(argv, "subscriber")).code).toBe(0)
     let engine: FakeEngine | undefined
-    const result = await wa([PROFILE, "chats", "mark-read", CHANNEL, "--yes", "--json"], () => {
+    const result = await wa([PROFILE, "chats", "mark-read", CHANNEL, "--json"], () => {
       engine = fakeEngine(seed, { channel: "subscriber", settingsKeys: false })
       return engine
     })
