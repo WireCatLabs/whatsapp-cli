@@ -112,7 +112,8 @@ the new commit itself.
 `--local` stays the way to publish until npm's trusted publishing is set on all seven packages (BACKLOG item 6). It
 takes the npm token from `NPM_TOKEN` or the keyring without printing it (`WC-REL-14`), builds the six engine
 packages on this machine, publishes them before the CLI ([CONVENTIONS.md](../../CONVENTIONS.md#releases)), waits
-for npm and pushes the tag. Once trusted publishing is set, the owner runs plain `bin/release` instead: it starts
+for npm (up to fifteen minutes), pushes the tag and creates the GitHub release from the changelog, as `release.yml` does
+(`WC-REL-13`). Once trusted publishing is set, the owner runs plain `bin/release` instead: it starts
 `release.yml`, which publishes the validated packages with provenance (`WC-REL-11`, `WC-REL-12`). Before that,
 check that no run is in progress, since two releases at once race:
 

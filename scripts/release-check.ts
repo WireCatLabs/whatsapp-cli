@@ -64,7 +64,7 @@ const failed = releaseCheck(
       : [
           {
             name: "secrets",
-            run: command(root, "gitleaks", "git", "--no-banner", "--redact", "--exit-code", "1", "."),
+            run: command(root, "pnpm", "secrets:scan"),
           },
         ]),
   ].filter(

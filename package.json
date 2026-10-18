@@ -42,7 +42,7 @@
     "version:check": "cli-dev version && node scripts/engine-packages.mjs check",
     "version:sync": "cli-dev version --sync && node scripts/engine-packages.mjs sync",
     "prepare": "lefthook install || true",
-    "secrets:scan": "gitleaks git --no-banner --redact .",
+    "secrets:scan": "gitleaks git --log-opts=HEAD --no-banner --redact --exit-code 1 .",
     "prepack": "rm -rf dist tsconfig.tsbuildinfo && pnpm build",
     "postinstall": "node install/postinstall.mjs",
     "check:agent-docs": "pnpm build && node --experimental-strip-types scripts/check-agent-docs.ts",
