@@ -20,6 +20,13 @@ var (
 	syntheticEnc = bytes.Repeat([]byte{3}, 32)
 )
 
+const syntheticVCard = "BEGIN:VCARD\nVERSION:3.0\nFN:Ann Lee\nTEL:+00 000 000 0001\nEND:VCARD"
+
+var (
+	syntheticPlace = &waPlace{Latitude: 39.47, Longitude: -0.376, Name: "Synthetic Square"}
+	syntheticCard  = &waCard{Name: "Ann Lee", VCard: syntheticVCard}
+)
+
 func ref(media string) *waMediaRef {
 	return &waMediaRef{Media: media, DirectPath: "/v/t62/synthetic", MediaKey: syntheticKey, FileSHA256: syntheticSum,
 		FileEncSHA256: syntheticEnc}
@@ -56,10 +63,14 @@ func TestAttachmentsOfEachKind(t *testing.T) {
 			[]waAttachment{{Kind: "sticker", Width: 512, Height: 512, Mime: "image/webp", Ref: ref("sticker")}}},
 		{"a place", &waE2E.Message{LocationMessage: &waE2E.LocationMessage{DegreesLatitude: proto.Float64(39.47),
 			DegreesLongitude: proto.Float64(-0.376), Name: proto.String("Synthetic Square")}},
-			[]waAttachment{{Kind: "location", URL: "geo:39.470000,-0.376000", Title: "Synthetic Square"}}},
-		{"a contact card keeps its name, never the vCard", &waE2E.Message{ContactMessage: &waE2E.ContactMessage{
-			DisplayName: proto.String("Ann Lee"), Vcard: proto.String("BEGIN:VCARD\nTEL:+00000\nEND:VCARD")}},
-			[]waAttachment{{Kind: "contact", Name: "Ann Lee"}}},
+			[]waAttachment{{Kind: "location", URL: "geo:39.470000,-0.376000", Title: "Synthetic Square",
+				Ref: &waMediaRef{Place: syntheticPlace}}}},
+		{"a contact card keeps its vCard in the ref, which cli-core never prints", &waE2E.Message{
+			ContactMessage: &waE2E.ContactMessage{DisplayName: proto.String("Ann Lee"), Vcard: proto.String(syntheticVCard)}},
+			[]waAttachment{{Kind: "contact", Name: "Ann Lee", Ref: &waMediaRef{Card: syntheticCard}}}},
+		{"a live location is not sent again", &waE2E.Message{LiveLocationMessage: &waE2E.LiveLocationMessage{
+			DegreesLatitude: proto.Float64(39.47), DegreesLongitude: proto.Float64(-0.376)}},
+			[]waAttachment{{Kind: "location", URL: "geo:39.470000,-0.376000"}}},
 		{"a file whose keys never came has no ref", &waE2E.Message{ImageMessage: &waE2E.ImageMessage{}},
 			[]waAttachment{{Kind: "photo"}}},
 		{"plain text has none", text("hi"), nil},
@@ -102,6 +113,9 @@ func TestContentOfSendsTheStoredKeysAgain(t *testing.T) {
 		{Kind: "voice", Size: 900, Mime: "audio/ogg; codecs=opus", Duration: 7, Ref: ref("audio")},
 		{Kind: "document", Name: "report.pdf", Size: 5000, Mime: "application/pdf", Ref: ref("document")},
 		{Kind: "sticker", Width: 512, Height: 512, Mime: "image/webp", Ref: ref("sticker")},
+		{Kind: "location", URL: "geo:39.470000,-0.376000", Title: "Synthetic Square", Ref: &waMediaRef{Place: &waPlace{
+			Latitude: 39.47, Longitude: -0.376, Name: "Synthetic Square", Address: "1 Synthetic St", URL: "https://example.com"}}},
+		{Kind: "contact", Name: "Ann Lee", Ref: &waMediaRef{Card: syntheticCard}},
 	} {
 		caption := ""
 		if a.Kind == "photo" || a.Kind == "video" || a.Kind == "document" {
@@ -125,6 +139,8 @@ func TestContentOfRefusesWhatItCannotRebuild(t *testing.T) {
 		{Kind: "photo"},
 		{Kind: "location", URL: "geo:0,0"},
 		{Kind: "photo", Ref: ref("audio")},
+		{Kind: "location", Ref: &waMediaRef{Card: syntheticCard}},
+		{Kind: "contact", Name: "Ann Lee", Ref: &waMediaRef{Card: &waCard{Name: "Ann Lee"}}},
 	} {
 		if _, err := contentOf(a, "", nil); err == nil {
 			t.Errorf("%+v was rebuilt", a)
@@ -132,6 +148,9 @@ func TestContentOfRefusesWhatItCannotRebuild(t *testing.T) {
 	}
 	if _, err := contentOf(waAttachment{Kind: "voice", Ref: ref("audio")}, "words", nil); err == nil {
 		t.Error("a voice note took a caption")
+	}
+	if _, err := contentOf(waAttachment{Kind: "location", Ref: &waMediaRef{Place: syntheticPlace}}, "words", nil); err == nil {
+		t.Error("a place took a caption")
 	}
 }
 

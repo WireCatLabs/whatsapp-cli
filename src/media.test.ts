@@ -52,7 +52,19 @@ const elsewhere: Message = {
   ]),
   chatId: base.dialog,
 }
-const seed = { ...base, messages: [...base.messages, photo, voice, place, keyless, plain, notes, elsewhere] }
+const SYNTHETIC_VCARD = "BEGIN:VCARD\nVERSION:3.0\nFN:Ann Lee\nTEL:+00 000 000 0001\nEND:VCARD"
+const placed = theirs(8, "", [
+  {
+    kind: "location",
+    url: "geo:39.470000,-0.376000",
+    title: "Synthetic Square",
+    providerRef: { place: { latitude: 39.47, longitude: -0.376, name: "Synthetic Square" } },
+  },
+])
+const card = theirs(9, "", [
+  { kind: "contact", name: "Ann Lee", providerRef: { card: { name: "Ann Lee", vcard: SYNTHETIC_VCARD } } },
+])
+const seed = { ...base, messages: [...base.messages, photo, voice, place, keyless, plain, notes, elsewhere, placed, card] }
 
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
@@ -206,6 +218,9 @@ describe("wa messages download", () => {
     expect(result.engine.downloads).toEqual([
       { kind: "photo", width: 640, height: 480, size: 1200, mime: "image/jpeg", ref: ref("image", 1) },
     ])
+    expect(result.engine.downloadKeys).toEqual([
+      { chat: base.busy, id: photo.id, fromMe: false, sender: photo.senderId },
+    ])
     const [saved] = readdirSync(output).filter((name) => !name.startsWith("."))
     expect(readFileSync(join(output, saved as string), "utf8")).toBe("synthetic photo bytes")
     expect(readdirSync(tmpdir()).filter((name) => name.startsWith("wa-media-") && !name.includes("test"))).toEqual([])
@@ -251,8 +266,11 @@ describe("wa messages download", () => {
     expect(item.files).toContainEqual(expect.objectContaining({ name: "minutes.txt", status: "extracted" }))
   })
 
-  it("names a place as not a file, and downloads nothing", async () => {
-    const result = await driving(["messages", "download", base.busy, place.id, "--output-dir", folder()])
+  it.each([
+    ["a place", placed.id],
+    ["a contact card", card.id],
+  ])("names %s as not a file, and downloads nothing", async (_, id) => {
+    const result = await driving(["messages", "download", base.busy, id, "--output-dir", folder()])
     expect(result.code).toBe(6)
     expect(errorCode(result.stderr)).toBe("not_found")
     expect(result.engine.downloads).toEqual([])
@@ -286,6 +304,40 @@ describe("wa messages forward", () => {
       }),
     ])
     expect(result.stdout).not.toContain("mediaKey")
+  })
+
+  it("sends a stored place again, as the store kept it", async () => {
+    const result = await forwarding(placed.id)
+    expect(result.code).toBe(0)
+    expect(result.engine.forwards).toEqual([
+      expect.objectContaining({
+        text: "",
+        attachment: expect.objectContaining({
+          kind: "location",
+          ref: { place: { latitude: 39.47, longitude: -0.376, name: "Synthetic Square" } },
+        }),
+      }),
+    ])
+  })
+
+  it("sends a stored contact card again, and never prints its vCard", async () => {
+    const result = await forwarding(card.id)
+    expect(result.code).toBe(0)
+    expect(result.engine.forwards).toEqual([
+      expect.objectContaining({
+        attachment: { kind: "contact", name: "Ann Lee", ref: { card: { name: "Ann Lee", vcard: SYNTHETIC_VCARD } } },
+      }),
+    ])
+    expect(result.stdout).toContain("Ann Lee")
+    expect(result.stdout + result.stderr).not.toContain("VCARD")
+  })
+
+  it("never prints a contact card's vCard or a file's keys, even in the most detailed text view", async () => {
+    const result = await wa(["media", "messages", "list", base.busy, "-vv", "--offline"])
+    expect(result.code, result.stderr).toBe(0)
+    expect(result.stdout).toContain('{"kind":"contact","name":"Ann Lee"}')
+    expect(result.stdout).not.toContain("VCARD")
+    expect(result.stdout).not.toContain("directPath")
   })
 
   it("sends stored text again", async () => {
@@ -323,7 +375,7 @@ describe("wa messages forward", () => {
 
   it.each([
     ["a file whose keys the store does not hold", keyless.id],
-    ["a place, which cannot be rebuilt", place.id],
+    ["a place stored before wa kept its coordinates", place.id],
   ])("refuses %s, and sends nothing", async (_, id) => {
     const result = await forwarding(id)
     expect(result.code).toBe(2)
@@ -476,8 +528,8 @@ describe("a download leaves nothing readable by others", () => {
     let checked = false
     const engine = fakeEngine(seed)
     const download = engine.download
-    engine.download = async (attachment, path) => {
-      await download(attachment, path)
+    engine.download = async (attachment, path, key) => {
+      await download(attachment, path, key)
       assertPrivate(join(path, ".."), 0o700)
       assertPrivate(path, 0o600)
       checked = true

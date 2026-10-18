@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 23, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 24, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -109,7 +109,12 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "unpin":
       say({ id, ok: null })
       break
+    // The Go engine asks the phone about an expired file by the message's key, so the stub refuses a download without one.
     case "download":
+      if (!fields.chat || !fields.message) {
+        say({ id, error: { code: "validation_error", message: "a message id is needed" } })
+        break
+      }
       writeFileSync(fields.path, `synthetic ${fields.attachment.kind} bytes`, { mode: 0o600, flag: "wx" })
       say({ id, ok: null })
       break

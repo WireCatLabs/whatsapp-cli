@@ -54,8 +54,15 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   to fetch and decrypt it. The engine sends them with each message as the attachment's `ref`, and cli-core keeps them
   as the opaque `providerRef`, never shown in an answer. `messages download` and `messages transcribe --local` look the
   message up and hand the engine the stored attachment; `messages forward` sends the same keys again marked forwarded,
-  as WhatsApp's own apps do, and refuses a message whose file the store has no keys for. A contact card is stored by its
-  name only: the card holds a phone number.
+  as WhatsApp's own apps do, and refuses a message whose file the store has no keys for. A place's coordinates, name,
+  address and link, and a contact card's name and vCard, ride in the same `ref`, so `messages forward` rebuilds the
+  `LocationMessage` or `ContactMessage`; the vCard holds a phone number, and `providerRef` is the one field cli-core
+  never prints (`withoutProviderRefs`, `watch` included).
+- **A file WhatsApp no longer keeps is asked of the phone again** (`engine/cmd/wa-engine/mediaretry.go`). A download
+  that fails with 403, 404 or 410 sends whatsmeow's `SendMediaRetryReceipt` to the account's own phone, waits up to
+  20 s for the matching `events.MediaRetry`, decrypts the new path and downloads again, all inside the one `download`
+  request, so a one-shot command and one relayed through `serve` behave the same. The CLI sends the message's key with
+  the attachment, from the store. The new path is not kept: cli-core's store has no write for an attachment's ref.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it is
   the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete`,
   `messages star`, `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store
@@ -109,8 +116,9 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   uploaded first, then an `AlbumMessage` and each file tied to it by `MessageAssociation` `MEDIA_ALBUM`; the first file
   carries the send id and the caption, the album and the other files ids derived from the send id, so a repeat sends
   the same ids; `album.go`),
-  `download` (`attachment` as stored, and `path`, which the engine creates 0600 in a folder the CLI made 0700 and
-  removes after reading) and `forward` (`attachment` and `text` as stored). No file crosses the JSON line itself. In a
+  `download` (`attachment` as stored, the message's `chat`, `message`, `fromMe` and `sender` for a retry, and
+  `path`, which the engine creates 0600 in a folder the CLI made 0700 and removes after reading; protocol 24) and
+  `forward` (`attachment` and `text` as stored). No file crosses the JSON line itself. In a
   group still addressed by phone numbers, the engine turns the stored LID sender into the phone JID the group
   expects.
 - **Older history** (`engine/cmd/wa-engine/older.go`): `older` (`chat`, `message`, `fromMe`, `timestamp` of the

@@ -58,7 +58,8 @@ else, so `wa` has no `--silent`, `--at-time` or `--send-as`.
 
 For each photo, video, voice note, audio, document and sticker that reaches the local store, `wa` keeps its name,
 size and type, and its keys. The keys never appear in an answer, in JSON, in MCP output or in `watch` events. A place
-or a contact card is kept as what it shows; it has no file.
+keeps its coordinates, name and address, and a contact card its name and the card itself, so both can be forwarded.
+The card holds a phone number, so it stays with the keys and is never shown. A live location keeps only where it was.
 
 Two kinds of message have no keys, so `wa` cannot save or forward their file:
 
@@ -66,7 +67,9 @@ Two kinds of message have no keys, so `wa` cannot save or forward their file:
   arrives.
 - **A message stored before `wa` handled files.** It names its file, but cannot fetch it.
 
-WhatsApp keeps a file on its servers only for a limited time, so an old file may be gone even with its keys.
+WhatsApp keeps a file on its servers only for a limited time. When a download finds it gone, `wa` asks your phone
+to upload it again, as WhatsApp's own apps do, and fetches the new copy. Your phone must be online and still hold the
+file: one deleted from the phone is gone for good.
 
 ## Download
 
@@ -78,7 +81,10 @@ wa personal messages download "Book club" --all --output-dir ./book-club
 ```
 
 A download fetches the file with the keys in the store; the message must be there, so keep `serve` running. A place,
-a contact card or a file without keys is named in `skipped` and nothing is saved for it. `--all` saves every file of
+a contact card or a file without keys is named in `skipped` and nothing is saved for it. A file WhatsApp no longer
+keeps is asked of your phone again. The phone has about 20 seconds to answer, so with a slow phone give the command a
+longer `--timeout`. Each later download asks again, since the store cannot keep the new copy's address. If the phone
+no longer has the file, the download ends with exit `6`; ask the sender to send it again. `--all` saves every file of
 the chat, newest first; run it again to continue where it stopped. While `serve` runs, a download goes through its
 connection ([one connection per device](sessions.md#one-connection-per-device)).
 
@@ -88,8 +94,14 @@ connection ([one connection per device](sessions.md#one-connection-per-device)).
 wa personal messages forward "Book club" 3EB0A1B2C3D4E5F6A7B8 --to "Ann Lee"
 ```
 
-A forward sends the stored text and file again, marked forwarded. It needs the message in the store, with keys for
-its file; otherwise it is refused and nothing is sent, and you forward it on the phone.
+A forward sends the stored text and file again, marked forwarded, or the stored place or contact card. It needs the
+message in the store, with keys for its file; otherwise it is refused and nothing is sent, and you forward it on the
+phone. A place or a card stored by an older `wa`, a live location and a message with several contact cards are refused
+the same way.
+
+A forward reuses the file's keys and does not check that WhatsApp still keeps the file: checking would mean
+downloading it first. An old file may reach the recipient as one that will not open. To be sure, download it and send
+it as a new file.
 
 ## Voice notes as text
 

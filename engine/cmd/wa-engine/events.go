@@ -46,6 +46,8 @@ func (e *engine) handle(raw any) {
 		if history.Kind != "on_demand" || !history.empty() {
 			e.out.event("history", history)
 		}
+	case *events.MediaRetry:
+		e.retries.deliver(evt)
 	case *events.AppStateSyncComplete:
 		// The address book arrives in this patch; until then contacts have no names.
 		if evt.Name == appstate.WAPatchCriticalUnblockLow {

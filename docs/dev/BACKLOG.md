@@ -121,10 +121,14 @@ Open work, most important first. The plan in flight is
    - **Messages stored before files were.** A photo with a caption stored by an older `wa` has the caption and no
      attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
      not push history again; a re-link would refill it.
-   - **Files WhatsApp no longer keeps.** A download of an expired file is `not_found`; WhatsApp's apps ask the sender's
-     phone to upload it again (whatsmeow's `SendMediaRetryReceipt`), which is not built. A forward of one reaches the
-     recipient as a file that will not open.
-   - **Media leftovers**: files to channels, forwarding a place or a contact card, `metadata` (needs the group read).
+   - **Files WhatsApp no longer keeps.** A download asks the owner's phone to upload the file again and fetches the new
+     copy, but the new path is not kept: cli-core's store has no write for a stored attachment's `providerRef`, so each
+     later download asks the phone again, and a forward still sends the old path, which reaches the recipient as a
+     file that will not open. The fix is a cli-core port to update a stored attachment's ref. Not yet run against
+     WhatsApp: whether the phone answers a receipt for a one-to-one chat addressed by LID.
+   - **Forwarding several contact cards** (`ContactsArrayMessage`) and a live location is refused; a place or a card
+     stored before `wa` kept their content too.
+   - **Media leftovers**: files to channels; `metadata refresh` for a channel (`group` reads groups only).
    - **Albums: only the first file is stored.** An album goes as an `AlbumMessage`, then each file as a plain photo
      or video tied to it by `MessageAssociation` (`MEDIA_ALBUM`), but cli-core's `Sent` holds one message, so the
      store keeps the photo's message and not the others; WhatsApp is not seen to echo a device's own sends back to

@@ -5,6 +5,7 @@ import {
   type WaAttachment,
   type WaChat,
   type WaContact,
+  type WaMediaRef,
   type WaMessage,
   waAttachment,
 } from "../engine/contract.js"
@@ -68,6 +69,10 @@ export const toMessage = (message: WaMessage): Message => ({
   // Kept with the message in the store: a vote names answers by text, and only the poll's message has them.
   ...(message.poll === undefined ? {} : { providerMetadata: { poll: message.poll } }),
 })
+
+/** Whether an attachment holds a file's keys, not a place or a contact card. */
+export const isFile = (attachment: WaAttachment | undefined): attachment is WaAttachment & { ref: WaMediaRef } =>
+  attachment?.ref !== undefined && "directPath" in attachment.ref
 
 /** A stored attachment as the engine takes it back, or `undefined` when it is not one this engine wrote. */
 export const toWaAttachment = ({ providerRef, ...attachment }: Attachment): WaAttachment | undefined => {

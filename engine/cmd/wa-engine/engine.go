@@ -35,6 +35,8 @@ type engine struct {
 	olderOne  sync.Mutex // one request for older history at a time, so its answer is known by its chat
 	olderAsks olderWaiter
 
+	retries retryWaiter // downloads waiting for the phone to upload a file again
+
 	// Why WhatsApp ended the connection, until it connects again. Later requests answer with it instead of
 	// connecting: after "replaced" that would take the login back from the other process, and after a ban it would
 	// knock on WhatsApp's door again.

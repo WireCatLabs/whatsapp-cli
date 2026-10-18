@@ -2856,6 +2856,38 @@ wa images models download <model>
 |---|---|---|
 | `model` | required | a model id from `images models list`. |
 
+## `wa metadata`
+
+cached group/channel descriptions for local automatic tags
+
+### `wa metadata get`
+
+
+
+```sh
+wa metadata get [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a stored chat. |
+
+### `wa metadata refresh`
+
+
+
+**Changes something on this computer only.**
+
+```sh
+wa metadata refresh [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | stored group/channel; repeat for several. Default: ``. |
+| `--only-missing` | only chats with no metadata yet; without --chat, every stored group/channel. |
+| `--limit <number>` | process at most 1–500 chats. Default: `50`. |
+
 ## `wa stats`
 
 statistics about messages, chats and their authors

@@ -256,8 +256,8 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       request("sendMedia", { chat, text, sendId: id, file, ...replyFields(replyTo, quoted) }, waMessage),
     sendAlbum: ({ chat, text, id, replyTo, quoted, files }) =>
       request("sendAlbum", { chat, text, sendId: id, files, ...replyFields(replyTo, quoted) }, waMessage),
-    download: async (attachment, path) => {
-      await request("download", { attachment, path }, nothing)
+    download: async (attachment, path, key) => {
+      await request("download", { attachment, path, ...keyFields(key) }, nothing)
     },
     forward: ({ chat, id, text, attachment }) =>
       request("forward", { chat, sendId: id, text, ...(attachment ? { attachment } : {}) }, waMessage),

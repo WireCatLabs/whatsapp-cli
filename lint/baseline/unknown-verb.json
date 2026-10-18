@@ -20,6 +20,8 @@
   "messages links",
   "messages star",
   "messages unstar",
+  "metadata get",
+  "metadata refresh",
   "polls voters",
   "search conversations",
   "stats charts",

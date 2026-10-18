@@ -61,7 +61,12 @@ describe("startGoEngine", () => {
     const copy = await engine.forward({ chat: "100000000000003@lid", id: "3EB0AC", text: "", attachment })
     expect(copy.attachments).toEqual([attachment])
     const path = join(mkdtempSync(join(tmpdir(), "wa-stub-")), "file")
-    await engine.download(attachment, path)
+    await engine.download(attachment, path, {
+      chat: "100000000000003@lid",
+      id: "3EB0AC",
+      fromMe: true,
+      sender: "100000000000001@lid",
+    })
     expect(readFileSync(path, "utf8")).toBe("synthetic photo bytes")
     assertPrivate(path, 0o600)
     await engine.close()

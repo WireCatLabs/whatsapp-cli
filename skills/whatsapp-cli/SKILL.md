@@ -77,7 +77,8 @@ the store does not hold yet needs its `…@g.us` id.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
   `messages edit`, `messages delete`, `messages star|unstar`, `reactions add|remove`, `polls show|vote|voters` and
   `chats mark-read` look the message up in the store. One the store lacks is exit `6`. `messages download`,
-  `messages forward` and `messages transcribe --local` work the same way, from the file keys the store holds. A
+  `messages forward` and `messages transcribe --local` work the same way, from the file keys the store holds; a file
+  WhatsApp no longer keeps is asked of the owner's phone again, which must be online (a `timeout` otherwise). A
   `--reply-to` a message the store lacks still sends, but the phone may show the quote as unavailable.
 - **Poll counts are what the store heard.** WhatsApp has no request for votes: `serve` and `watch` keep each
   person's newest vote as it arrives, and `polls show` and `polls voters` count those. A vote cast while nothing

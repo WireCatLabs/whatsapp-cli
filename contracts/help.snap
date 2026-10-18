@@ -79,6 +79,8 @@ Commands:
                                addresses in stored messages
   images                       search pictures by what they show, with a model
                                on this machine
+  metadata                     cached group/channel descriptions for local
+                               automatic tags
   stats                        statistics about messages, chats and their
                                authors
   tasks                        what waits on you — unanswered questions,

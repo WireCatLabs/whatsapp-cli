@@ -13,7 +13,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 23
+export const PROTOCOL = 24
 
 const jid = v.pipe(v.string(), v.includes("@"))
 const time = v.pipe(v.string(), v.isoTimestamp())
@@ -47,9 +47,27 @@ export const waMediaRef = v.strictObject({
   fileEncSha256: v.optional(v.string()),
 })
 
+/** A place as its message carried it, kept so a forward sends it again; `geo:` in `url` rounds the coordinates. */
+export const waPlaceRef = v.strictObject({
+  place: v.strictObject({
+    latitude: v.number(),
+    longitude: v.number(),
+    name: v.optional(v.string()),
+    address: v.optional(v.string()),
+    url: v.optional(v.string()),
+  }),
+})
+
+/**
+ * A contact card as its message carried it, kept so a forward sends it again. The vCard holds a phone number: it
+ * stays in the opaque `providerRef`, which cli-core never prints, and never reaches a log or an error.
+ */
+export const waCardRef = v.strictObject({ card: v.strictObject({ name: v.string(), vcard: v.string() }) })
+
 /**
  * cli-core's Attachment in WhatsApp's terms: `photo`, `video`, `voice`, `audio`, `document`, `sticker`, `location`
- * (`url` is a `geo:` link), `contact` (its name only — the card holds a phone number). `ref` only for a file.
+ * (`url` is a `geo:` link), `contact` (its name; the card itself only in `ref`). `ref` is a file's keys, or what a
+ * place or a contact card needs to be sent again; a live location has none.
  */
 export const waAttachment = v.strictObject({
   kind: v.picklist(["photo", "video", "voice", "audio", "document", "sticker", "location", "contact"]),
@@ -61,7 +79,7 @@ export const waAttachment = v.strictObject({
   size: v.optional(v.number()),
   mime: v.optional(v.string()),
   duration: v.optional(v.number()),
-  ref: v.optional(waMediaRef),
+  ref: v.optional(v.union([waMediaRef, waPlaceRef, waCardRef])),
 })
 
 /**
@@ -207,6 +225,8 @@ export type WaMessage = v.InferOutput<typeof waMessage>
 export type WaPoll = v.InferOutput<typeof waPoll>
 export type WaVote = v.InferOutput<typeof waVote>
 export type WaMediaRef = v.InferOutput<typeof waMediaRef>
+export type WaPlaceRef = v.InferOutput<typeof waPlaceRef>
+export type WaCardRef = v.InferOutput<typeof waCardRef>
 export type WaAttachment = v.InferOutput<typeof waAttachment>
 export type WaHistory = v.InferOutput<typeof waHistory>
 export type EngineEvent = v.InferOutput<typeof engineEvent>
@@ -262,7 +282,10 @@ export interface WaNewPoll {
   multiple: boolean
 }
 
-/** A stored message sent again, marked forwarded: its text and its one file, by the keys the store holds. */
+/**
+ * A stored message sent again, marked forwarded: its text and its one file by the keys the store holds, or its place
+ * or contact card as the store kept it.
+ */
 export interface WaForward {
   chat: string
   id: string
@@ -349,8 +372,12 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngi
    * the send id; the others carry ids derived from it, so a repeat sends the same ones.
    */
   sendAlbum(request: WaSendAlbum): Promise<WaMessage>
-  /** Writes a stored file to `path`, which must not exist yet; the engine creates it readable by this user alone. */
-  download(attachment: WaAttachment, path: string): Promise<void>
+  /**
+   * Writes a stored file to `path`, which must not exist yet; the engine creates it readable by this user alone. A
+   * file WhatsApp no longer keeps is asked of the owner's phone again, for the message `key` names, and fetched from
+   * its new upload; a phone that does not answer in time is a `timeout`.
+   */
+  download(attachment: WaAttachment, path: string, key: WaKey): Promise<void>
   forward(request: WaForward): Promise<WaMessage>
   createPoll(request: WaNewPoll): Promise<WaMessage>
   /** The account's vote in a poll, by the answers' texts; none takes it back. Everyone in the chat sees it. */

@@ -264,6 +264,27 @@ A tag is your own label on a chat, a person, one message (`--message <id> --chat
 tagged `work`, messages in a chat tagged `work` and messages from a person tagged `work`. A tag is 1–32 letters a–z,
 digits and hyphens.
 
+Groups can be tagged automatically, from their title and description — no messages and no model:
+
+```sh
+wa personal metadata refresh --chat "Book club"  # read the group's description from WhatsApp; the group is not changed
+```
+
+```sh
+wa personal metadata refresh --only-missing  # every stored group with no description read yet
+```
+
+```sh
+wa personal tags auto --dry-run          # what it would tag, without writing
+```
+
+```sh
+wa personal tags auto                    # write the automatic tags
+```
+
+`metadata get --chat "Book club"` shows what was read, from the store. Channels are not read yet: a channel in the
+list answers with an error of its own, and the others go on.
+
 ## Saved searches and history
 
 ```sh

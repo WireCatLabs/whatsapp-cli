@@ -43,7 +43,7 @@ import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
-import { toAccount, toChat, toMember, toMessage, toWaAttachment } from "./map.js"
+import { isFile, toAccount, toChat, toMember, toMessage, toWaAttachment } from "./map.js"
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
@@ -226,11 +226,11 @@ export const whatsAppAdapter = (
   // A deletion for the account alone and a star are changes to its synced settings, not messages.
   const synced = settingsWrite(translated, words)
 
-  async function* fetched(attachment: WaAttachment): AsyncIterable<Uint8Array> {
+  async function* fetched(attachment: WaAttachment, key: WaKey): AsyncIterable<Uint8Array> {
     const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
     try {
       const path = join(folder, "file")
-      await translated(engine.download(attachment, path))
+      await translated(engine.download(attachment, path, key))
       yield* createReadStream(path)
     } finally {
       await rm(folder, { recursive: true, force: true })
@@ -337,7 +337,8 @@ export const whatsAppAdapter = (
     },
 
     // From the keys in the store: WhatsApp has no request for an old message. A file that is not one (a place, a
-    // contact card) or that the store has no keys for is named in `skipped`.
+    // contact card) or that the store has no keys for is named in `skipped`. The message's key goes along, so the
+    // engine can ask the phone for a file WhatsApp no longer keeps.
     download: async (chat, messageId) => {
       const { id: chatId } = await core.resolve(chat)
       const message = await held(chatId, messageId)
@@ -345,7 +346,7 @@ export const whatsAppAdapter = (
       const skipped: string[] = []
       message.attachments.forEach((stored, position) => {
         const attachment = toWaAttachment(stored)
-        if (!attachment?.ref) {
+        if (!isFile(attachment)) {
           skipped.push(stored.kind)
           return
         }
@@ -355,7 +356,7 @@ export const whatsAppAdapter = (
           ...(attachment.mime === undefined ? {} : { mime: attachment.mime }),
           ...(attachment.size === undefined ? {} : { size: attachment.size }),
           position,
-          bytes: () => fetched(attachment),
+          bytes: () => fetched(attachment, keyOf(chatId, message)),
         })
       })
       return { files, skipped }
