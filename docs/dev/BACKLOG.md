@@ -37,7 +37,8 @@ Open work, most important first. The plan in flight is
    - **Live checks** of `polls vote` from `wa` (one-to-one, group, phone-addressed group): `polls create` in the own
      chat and `--md` sends work (2026-10-17); a vote cast by `wa` has not been run against WhatsApp.
    - **`chats events`.** WhatsApp's joins and leaves come as live notifications, not as history the engine can
-     read back, so `chatEvents` is not built.
+     read back. cli-core 0.336.0 answers `chats events` from the store (`HistoryBatch.events`, the `chat_event`
+     watch event); the engine does not push them yet, so it always shows nothing.
    - **Group names in a one-shot command.** The engine learns the joined groups only once connected, after cli-core
      resolved the chat, so a connecting command finds a group by its `…@g.us` id, not its name.
    - **The group photo** (`--photo`, whatsmeow's `SetGroupPhoto`) and **communities** are not built.
