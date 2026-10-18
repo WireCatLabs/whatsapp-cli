@@ -67,11 +67,13 @@ func (c *converter) groupChanges(evt *events.GroupInfo) []waChatEvent {
 	return out
 }
 
+// WhatsApp writes ADD for a join it approved too, but LEAVE for anyone who went out on their own: REMOVE is always
+// someone else's doing, even where the stub names no actor.
 var stubKinds = map[waWeb.WebMessageInfo_StubType]string{
 	waWeb.WebMessageInfo_GROUP_PARTICIPANT_ADD:               cameIn,
 	waWeb.WebMessageInfo_GROUP_PARTICIPANT_INVITE:            "join",
 	waWeb.WebMessageInfo_GROUP_PARTICIPANT_LINKED_GROUP_JOIN: "join",
-	waWeb.WebMessageInfo_GROUP_PARTICIPANT_REMOVE:            wentOut,
+	waWeb.WebMessageInfo_GROUP_PARTICIPANT_REMOVE:            "remove",
 	waWeb.WebMessageInfo_GROUP_PARTICIPANT_LEAVE:             "leave",
 	waWeb.WebMessageInfo_GROUP_PARTICIPANT_PROMOTE:           promoted,
 	waWeb.WebMessageInfo_GROUP_PARTICIPANT_DEMOTE:            demoted,

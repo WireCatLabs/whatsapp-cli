@@ -209,7 +209,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   to one `chat_event` shape, sent live as a `chat_event` event and in the push's `events`; the adapter hands them to
   cli-core as `ChatEventNotice` and `HistoryBatch.events`, and cli-core's store answers `chats events` and the
   `members` of `stats chats show`. whatsmeow folds joined and added into one list, and left and removed into another,
-  so both paths tell them apart by who made the change: nobody named, or the one person it is about, joined or left.
+  so both paths tell them apart by who made the change: nobody named, or the one person it is about, joined or left
+  (a pushed `GROUP_PARTICIPANT_REMOVE` is always a removal: WhatsApp writes `LEAVE` for someone who left).
   WhatsApp gives a live change no id, so the event's id is a hash of the chat, the time in seconds, the action and the
   sorted people in `canonical` form: the same change from both paths is stored once. A service message becomes no
   message.

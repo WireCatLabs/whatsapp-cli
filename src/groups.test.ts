@@ -692,7 +692,18 @@ describe("wa chats events", () => {
     expect(listed.items).toHaveLength(1)
     expect(listed.items[0]).toMatchObject({ type: "add", by: { id: seed.person }, people: [{ id: stranger }] })
 
-    const stats = await offline("stats", "chats", "show", seed.busy)
+    const stats = await offline(
+      "stats",
+      "chats",
+      "show",
+      seed.busy,
+      "--since-time",
+      "30d",
+      "--by",
+      "day",
+      "--timezone",
+      "UTC",
+    )
     expect(stats.item.members).toMatchObject({ joined: 1, left: 0 })
   })
 })

@@ -107,9 +107,13 @@ func TestLiveAndHistoryGiveTheSameEvent(t *testing.T) {
 }
 
 func TestStubWithoutAnActorStillMaps(t *testing.T) {
-	got, ok := testConverter().stubEvent(group, stub(waWeb.WebMessageInfo_GROUP_PARTICIPANT_ADD, "", carolLID.String()), known{})
+	c := testConverter()
+	got, ok := c.stubEvent(group, stub(waWeb.WebMessageInfo_GROUP_PARTICIPANT_ADD, "", carolLID.String()), known{})
 	if !ok || got.Event != "join" || got.By != nil || got.ByName != nil {
 		t.Errorf("got %+v", got)
+	}
+	if got, _ := c.stubEvent(group, stub(waWeb.WebMessageInfo_GROUP_PARTICIPANT_REMOVE, "", carolLID.String()), known{}); got.Event != "remove" {
+		t.Errorf("a removal with no actor is still a removal: got %+v", got)
 	}
 }
 

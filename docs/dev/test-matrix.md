@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**237 ✅ · 522 ⛔ · 0 ❌** — 243 commands, 516 options.
+**240 ✅ · 519 ⛔ · 0 ❌** — 243 commands, 516 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -548,9 +548,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `stats contacts evidence` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats contacts evidence` | `--cursor` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats chats show` |  | ✅ |  |
-| `stats chats show` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/stats-command.test.ts |
-| `stats chats show` | `--by` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/stats-command.test.ts |
-| `stats chats show` | `--timezone` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/stats-command.test.ts |
+| `stats chats show` | `--since-time` | ✅ |  |
+| `stats chats show` | `--by` | ✅ |  |
+| `stats chats show` | `--timezone` | ✅ |  |
 | `stats chats newcomers` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats chats newcomers` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats chats newcomers` | `--until-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |

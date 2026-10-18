@@ -78,11 +78,6 @@ export const UNTESTED: Untested[] = [
   })),
   ...cliCore("src/services/account-list.test.ts", [["account list"]]),
   ...cliCore("src/cli/messenger/chats-answers.test.ts and messenger.test.ts", [["chats show"]]),
-  ...cliCore("src/cli/messenger/stats-command.test.ts", [
-    ["stats chats show", "--since-time"],
-    ["stats chats show", "--by"],
-    ["stats chats show", "--timezone"],
-  ]),
   ...cliCore("src/cli/messenger/chats-documents.test.ts", [
     ["chats documents list"],
     ["chats documents list", "--limit"],
