@@ -1,8 +1,9 @@
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, truncateSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import type { Attachment, Message } from "@wirecat/cli-core"
+import { MODELS, modelPath, modelsDirectory, VAD, vadPath } from "@wirecat/cli-core/speech"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, describe, expect, it } from "vitest"
 import type { WhatsAppEngine } from "./engine/contract.js"
@@ -310,6 +311,132 @@ describe("transcribing a voice note", () => {
   it("lists the speech models", async () => {
     const result = await wa(["media", "models", "audio", "list", "--json"])
     expect(result.code).toBe(0)
+  })
+})
+
+// A model counts as downloaded when its files have their pinned sizes; sparse files cost no disk.
+const withModels = (): NodeJS.ProcessEnv => {
+  const state = folder()
+  const directory = modelsDirectory({ WIRECAT_STATE_DIR: state })
+  for (const model of MODELS)
+    for (const [path, bytes] of [
+      ...model.files.map((file) => [modelPath(directory, model)(file.name), file.bytes] as const),
+      [vadPath(directory), VAD.bytes] as const,
+    ]) {
+      mkdirSync(dirname(path), { recursive: true })
+      writeFileSync(path, "")
+      truncateSync(path, bytes)
+    }
+  return { ...process.env, WIRECAT_STATE_DIR: state }
+}
+
+const tone = readFileSync(new URL("./testing/fixtures/tone.ogg", import.meta.url))
+
+// Each on an account of its own: a transcript is kept for the account, and the next read shows it unasked.
+describe("hearing voice notes with a model on this machine", () => {
+  // The newest message of a chat waiting for an answer, which inbox and review show.
+  const waiting: Message = {
+    ...theirs(8, "", [
+      { kind: "voice", size: 900, mime: "audio/ogg; codecs=opus", duration: 3, providerRef: ref("audio", 8) },
+    ]),
+    chatId: base.dialog,
+  }
+  let n = 0
+  let env: NodeJS.ProcessEnv | undefined
+  const listener = async () => {
+    n += 1
+    const profile = `heard${n}`
+    const own = {
+      ...seed,
+      messages: [...seed.messages, waiting],
+      account: { id: `1000000000000${60 + n}@lid`, name: "Synthetic owner", username: null },
+    }
+    const controller = new AbortController()
+    const filling = () => {
+      const engine = fakeEngine(own)
+      const listen = engine.listen
+      engine.listen = (kinds, onEvent) => {
+        const stop = listen(kinds, onEvent)
+        if (kinds.includes("history")) setImmediate(() => controller.abort())
+        return stop
+      }
+      return engine
+    }
+    expect((await wa([profile, "watch", "--jsonl"], filling, controller.signal)).code).toBe(0)
+    env ??= withModels()
+    const heard: string[] = []
+    return async (...argv: string[]) => {
+      const streams = captureStreams()
+      const engines: FakeEngine[] = []
+      const code = await run([profile, ...argv, "--json"], {
+        streams,
+        tty: false,
+        env,
+        engine: () => {
+          const engine = fakeEngine(own)
+          engine.download = async (attachment, path) => {
+            engine.downloads.push(attachment)
+            writeFileSync(path, tone, { mode: 0o600, flag: "wx" })
+          }
+          engines.push(engine)
+          return engine
+        },
+        recognizer: (model) => ({
+          recognize: () => {
+            heard.push(model.id)
+            return "synthetic heard words"
+          },
+          free: () => {},
+        }),
+      })
+      return {
+        code,
+        stdout: streams.stdout.join(""),
+        stderr: streams.stderr.join(""),
+        downloads: engines.flatMap((engine) => engine.downloads.map((attachment) => attachment.ref)),
+        closed: engines.every((engine) => engine.closed),
+        heard,
+      }
+    }
+  }
+
+  it("downloads the voice note through WhatsApp for messages transcribe --local, and keeps what was heard", async () => {
+    const hearing = await listener()
+    const first = await hearing("messages", "transcribe", base.busy, voice.id, "--local")
+    expect(first.code, first.stderr).toBe(0)
+    expect(first.downloads).toEqual([ref("audio", 2)])
+    expect(first.closed).toBe(true)
+    expect(JSON.parse(first.stdout).item).toMatchObject({ text: "synthetic heard words", via: "local" })
+    expect(first.heard).toEqual(["parakeet-v3"])
+
+    const again = await hearing("messages", "transcribe", base.busy, voice.id, "--local")
+    expect(again.downloads).toEqual([])
+    expect(JSON.parse(again.stdout).item).toMatchObject({ text: "synthetic heard words" })
+  })
+
+  it("hears it again with another model named by --model", async () => {
+    const hearing = await listener()
+    await hearing("messages", "transcribe", base.busy, voice.id, "--local")
+    const other = await hearing("messages", "transcribe", base.busy, voice.id, "--model", "gigaam-v3-ctc")
+    expect(other.code, other.stderr).toBe(0)
+    expect(other.downloads).toEqual([ref("audio", 2)])
+    expect(other.heard).toEqual(["parakeet-v3", "gigaam-v3-ctc"])
+  })
+
+  it.each([
+    ["messages list", ["messages", "list", base.dialog], [8]],
+    ["inbox", ["inbox", "--all"], [8]],
+    ["review", ["review", "--all", "date>2026-09-30"], [8, 2]],
+  ])("downloads and hears the voice notes %s shows with --transcribe --model", async (_, argv, notes) => {
+    const hearing = await listener()
+    const plain = await hearing(...argv)
+    expect(plain.downloads).toEqual([])
+    const read = await hearing(...argv, "--transcribe", "--model", "gigaam-v3")
+    expect(read.code, read.stderr).toBe(0)
+    expect(read.downloads).toEqual(notes.map((note) => ref("audio", note)))
+    expect(read.heard).toEqual(notes.map(() => "gigaam-v3"))
+    expect(read.closed).toBe(true)
+    expect(read.stdout).toContain('"transcript":"synthetic heard words"')
   })
 })
 

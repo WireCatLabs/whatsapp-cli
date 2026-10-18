@@ -27,7 +27,6 @@ const SHARED: Record<string, string> = {
   "sends *": "src/cli/messenger/messenger.test.ts and src/sends/journal.test.ts",
   "runs *": "src/cli/runs/command.test.ts and search.test.ts",
   "config *": "src/cli/config-command.test.ts",
-  commands: "src/cli/commands-command.test.ts",
   "commands *": "src/cli/commands-command.test.ts",
   complete: "src/cli/messenger/complete-command.test.ts",
   "mcp *": "src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts",
@@ -85,11 +84,6 @@ export const UNTESTED: Untested[] = [
     ["chats tracking add"],
     ["chats tracking remove"],
   ]),
-  ...cliCore("src/cli/messenger/admin-commands.test.ts", [
-    ["chats rules show"],
-    ["chats rules set"],
-    ["chats rules unset"],
-  ]),
   ...cliCore("src/cli/messenger/people-answers.test.ts", [
     ["contacts list"],
     ["contacts list", "--limit"],
@@ -145,26 +139,35 @@ export const UNTESTED: Untested[] = [
     ["messages links"],
   ]),
   ...cliCore("src/services/messages-link.test.ts", [["messages link"]]),
-  ...cliCore("src/cli/messenger/doctor-command.test.ts", [["doctor report create", "--run"]]),
+  ...["--source", "--exact", "--timezone", "--selection", "--sync-time"].map((option) => ({
+    command: "stats messages counters refresh",
+    option,
+    reason:
+      "which stored messages to refresh, and the time for it; cli-core's shared command, tested in cli-core " +
+      "(src/services/counters.test.ts and src/cli/messenger/stats-command.test.ts); src/message-actions.test.ts " +
+      "drives the refresh, which on WhatsApp has no counter to read and never starts the engine",
+  })),
+  ...["--limit", "--dry-run"].map((option) => ({
+    command: "tags auto",
+    option,
+    reason:
+      "how many stored chats to tag, and a preview from the store; cli-core's shared command, tested in cli-core " +
+      "(src/cli/messenger/tags.test.ts); src/groups.test.ts drives --sync-first, the option that reaches the engine",
+  })),
   {
     command: "config show",
     option: "--bot",
     reason:
-      "a shared cli-core option; src/update.test.ts runs `config show` only to see the update notice after a command",
+      "a shared cli-core option, over the config file only; cli-core's src/cli/config-command.test.ts drives " +
+      "`config show` (not yet --bot); src/update.test.ts runs it only to see the update notice after a command",
   },
-  ...["--limit", "--cursor", "--transcribe", "--model"].map((option) => ({
+  ...["--limit", "--cursor"].map((option) => ({
     command: "messages list",
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); " +
-      "src/message-actions.test.ts drives only --mark-read, the one option that reaches the engine",
-  })),
-  ...["--local", "--model"].map((option) => ({
-    command: "messages transcribe",
-    option,
-    reason:
-      "needs a speech model downloaded, hundreds of MB; src/media.test.ts checks that a transcript asks for one, " +
-      "and cli-core's src/speech tests drive the local model",
+      "src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach " +
+      "the engine",
   })),
   ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
     command: "messages sync",
@@ -173,6 +176,28 @@ export const UNTESTED: Untested[] = [
       "local search preparation after the sync, over the store; tested in cli-core " +
       "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself",
   })),
+  ...["--limit", "--max-gaps", "--repair-time", "--fingerprint"].map((option) => ({
+    command: "store gaps repair",
+    option,
+    reason:
+      "a bound or a plan check cli-core applies before and between the pages it asks for, tested in cli-core " +
+      "(src/services/archive-gaps.test.ts and src/cli/messenger/gaps.test.ts); src/older-history.test.ts drives the " +
+      "repair through wa's history pages",
+  })),
+  ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
+    command: "store gaps repair",
+    option,
+    reason:
+      "local search preparation after the repair, over the store; tested in cli-core " +
+      "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself",
+  })),
+  {
+    command: "store gaps repair",
+    option: "--background",
+    reason:
+      "cli-core runs the repair as a store job, tested in cli-core (src/cli/messenger/gaps.test.ts); the job's " +
+      "repair reaches wa as src/older-history.test.ts drives it",
+  },
   {
     command: "messages sync",
     option: "--background",
@@ -180,26 +205,21 @@ export const UNTESTED: Untested[] = [
       "cli-core runs the sync as a store job, tested in cli-core (src/cli/messenger/backfill.test.ts); the job's " +
       "sync reaches wa as src/older-history.test.ts drives it",
   },
-  {
-    command: "messages forward",
-    option: "--operation-id",
-    reason: "a repeat with the same send id is cli-core's send guard, tested in cli-core (src/sends/guard.test.ts)",
-  },
-  ...["--new", "--limit", "--kind", "--transcribe", "--model"].map((option) => ({
+  ...["--new", "--limit", "--kind"].map((option) => ({
     command: "inbox",
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in " +
-      "src/cli/list-query.test.ts, transcripts in src/mcp/mcp.test.ts); src/message-actions.test.ts drives " +
-      "--mark-read, the option that reaches the engine",
+      "src/cli/list-query.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts " +
+      "--transcribe, the options that reach the engine",
   })),
-  ...["--kind", "--transcribe", "--model", "--new"].map((option) => ({
+  ...["--kind", "--new"].map((option) => ({
     command: "review",
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); " +
-      "src/message-actions.test.ts drives --mark-read and src/groups.test.ts --unanswered, the options that reach " +
-      "the engine",
+      "src/message-actions.test.ts drives --mark-read, src/groups.test.ts --unanswered and src/media.test.ts " +
+      "--transcribe, the options that reach the engine",
   })),
 
   ...["--from-dir", "--cursor", "--limit", "--ocr", "--concurrency"].map((option) => ({
@@ -221,16 +241,16 @@ export const UNTESTED: Untested[] = [
     command: "config set",
     option,
     reason:
-      "cli-core's shared config command, tested in cli-core; src/groups.test.ts uses `config set` only to deny a " +
-      "permission",
+      "cli-core's shared config command, over the config file only, tested in cli-core " +
+      "(src/cli/config-command.test.ts drives --defaults; --personal and --bot not yet); src/groups.test.ts uses " +
+      "`config set` only to deny a permission",
   })),
   ...(
     [
       ["--verbose", "src/cli/messenger/messenger.test.ts (-v)"],
-      ["--quiet", "src/cli/program.test.ts"],
       ["--trace", "src/cli/messenger/messenger.test.ts"],
       ["--debug", "src/errors/reasons.test.ts"],
-      ["--max-input-bytes", "no test of its own yet"],
+      ["--max-input-bytes", "src/cli/input-policy.test.ts (the limit it sets)"],
       ["--max-output-bytes", "src/cli/agent-contract.test.ts"],
       ["--brief", "src/output-detail.test.ts"],
       ["--full", "src/output-detail.test.ts"],

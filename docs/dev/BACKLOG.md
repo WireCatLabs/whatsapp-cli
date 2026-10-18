@@ -61,8 +61,8 @@ Open work, most important first. The plan in flight is
    packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). Next, the owner
    sets npm's trusted publishing on each of the seven packages, so later releases go through `release.yml`, which has
    not published yet. The install tests on three systems (`install-windows.yml`) have run once, by hand.
-8. **Replace the test-matrix waivers with tests.** On 2026-10-18, 132 commands and options have a wa test and 591 are
-   waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
+8. **Replace the test-matrix waivers with tests.** On 2026-10-18, after a second round, 189 commands and options have a
+   wa test and 534 are waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new
    subcommand shows up as missing. Each command that gets an engine path gets tests through `run()`, and its waiver
    goes.
