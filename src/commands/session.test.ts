@@ -286,8 +286,12 @@ describe("wa session end", () => {
     const result = await wa(["relayedend", "session", "end", "--json"], never, {
       relayed: { profile: "relayedend", cwd: process.cwd(), connection: () => whatsAppAdapter(served) },
     })
-    expect(result.code).toBe(12)
-    expect(JSON.parse(result.stderr).error.reason).toBe("device.in-use")
+    expect(result.code).toBe(5)
+    expect(JSON.parse(result.stderr).error).toMatchObject({
+      code: "permission_error",
+      details: { sent: false },
+      message: expect.stringContaining("server stop"),
+    })
     expect(served.loggedOut).toBe(false)
     expect(existsSync(store)).toBe(true)
   })
