@@ -66,7 +66,6 @@ export const UNTESTED: Untested[] = [
     ["chats moderate", "--dry-run"],
     ["chats moderate", "--allow-dangerous"],
     ["chats moderate", "--max-actions"],
-    ["messages pin", "--notify"],
     ["messages comments", "--limit"],
     ["messages comments", "--cursor"],
   ].map(([command, option]) => ({

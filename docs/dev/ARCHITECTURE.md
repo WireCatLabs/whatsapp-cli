@@ -58,7 +58,7 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   name only: the card holds a phone number.
 - **A change to a message starts in the store.** WhatsApp addresses a message by its id, its sender and whether it
   is the account's own, and whatsmeow keeps no messages. So `messages edit`, `messages delete --for-everyone`,
-  `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store first (cli-core's
+  `messages pin`, `messages unpin`, `reactions`, `polls` and `chats mark-read` look the message up in cli-core's store first (cli-core's
   `StoredMessages`, which the shared commands hand `connect` as `options.stored`; without one, nothing is found) and
   send the engine the full key. A message the store lacks is refused as `not_found`: a guessed key is not refused by
   WhatsApp, it is dropped without a word. A reply is the exception: it goes either way, and only carries the quoted
@@ -129,6 +129,11 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   have reached this device). Every poll message carries `poll`: the question, `multiple`, and each answer with an id,
   the start of the SHA-256 of its text that a vote names. The adapter keeps it in the message's `providerMetadata`,
   so `polls show`, `polls vote` and `polls voters` read the poll from the store.
+- **Pin requests** (`engine/cmd/wa-engine/pins.go`): `pin` and `unpin`, each addressed by a stored message's key,
+  send a `PinInChatMessage` (`PIN_FOR_ALL` or `UNPIN_FOR_ALL`, the target's key, the sender's time) with
+  `messageAddOnDurationInSecs` of 7 days, the duration WhatsApp's apps preselect (0 on an unpin); whatsmeow sends it
+  with the pin edit attribute. Every WhatsApp pin is for the whole chat and its members see it, so the adapter
+  refuses `messages pin` without `--notify` rather than pin loudly. A pin that arrives is not stored: it has no text.
 - **Votes** arrive once each, as a message of their own, and nothing on WhatsApp's side counts them. The engine
   decrypts a live one (`DecryptPollVote`, with the poll's secret whatsmeow keeps for every poll this device saw) and
   takes the ones a history push carries already decrypted (`WebMessageInfo.pollUpdates`). Each carries the voter

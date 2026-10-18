@@ -21,7 +21,7 @@ Open work, most important first. The plan in flight is
    `ON_DEMAND` chunk; whether the notification's `PeerDataRequestSessionID` equals the request's message id, which
    would match an answer more surely than its chat.
 5. **Feature groups**: edit, delete for everyone, reactions, mark-read, files, group admin, join requests,
-   profiles, blocking, number lookup, Markdown and polls are built; what they left open:
+   profiles, blocking, number lookup, Markdown, polls and message pins are built; what they left open:
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
      them (cli-core 0.322.0); a live vote whose poll the store does not hold yet is passed over.
    - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and
@@ -53,6 +53,9 @@ Open work, most important first. The plan in flight is
      is in cli-core's watch output, not here.
    - **Media leftovers**: albums (one file per message here), thumbnails on sent photos and videos, files to
      channels, forwarding a place or a contact card, `metadata` (needs the group read).
+   - **Message pins**: a pin always lasts 7 days (cli-core's `messages pin` has no duration to pass 24 hours or 30
+     days); a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned. Live check
+     open: a pin and an unpin in the own chat and in a group addressed by phone numbers.
    - **Live checks** (with item 1): a reaction and a revoke in a group addressed by phone numbers (the own LID chat
      works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.

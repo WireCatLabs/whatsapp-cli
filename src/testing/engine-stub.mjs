@@ -99,6 +99,10 @@ createInterface({ input: process.stdin }).on("line", (line) => {
         },
       })
       break
+    case "pin":
+    case "unpin":
+      say({ id, ok: null })
+      break
     case "download":
       writeFileSync(fields.path, `synthetic ${fields.attachment.kind} bytes`, { mode: 0o600, flag: "wx" })
       say({ id, ok: null })

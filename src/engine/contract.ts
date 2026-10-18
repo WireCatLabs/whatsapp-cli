@@ -329,6 +329,9 @@ export interface WhatsAppEngine extends GroupEngine {
   createPoll(request: WaNewPoll): Promise<WaMessage>
   /** The account's vote in a poll, by the answers' texts; none takes it back. Everyone in the chat sees it. */
   vote(key: WaKey, answers: string[]): Promise<void>
+  /** Pins the message for everyone in the chat, for 7 days: WhatsApp has no pin only the account sees. */
+  pin(key: WaKey): Promise<void>
+  unpin(key: WaKey): Promise<void>
   /**
    * Asks the phone for up to `count` of the chat's messages sent before `anchor`, and waits for its answer. WhatsApp
    * keeps no history on its servers: the phone answers only while it is online, and a phone that does not answer in

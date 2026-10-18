@@ -17,6 +17,7 @@ import type {
   LiveUpdates,
   MessageEditing,
   MessageMedia,
+  MessagePins,
   MessageReactions,
   MessengerCore,
   PushedHistory,
@@ -43,6 +44,7 @@ import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
 import { toChat, toMember, toMessage, toWaAttachment } from "./map.js"
+import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 
 export type WhatsAppAdapter = MessengerCore &
@@ -55,6 +57,7 @@ export type WhatsAppAdapter = MessengerCore &
   Pick<ServerReads, "history"> &
   MarkdownFormatting &
   PollAdapter &
+  MessagePins &
   GroupAdapter
 
 // WhatsApp addresses a message by its sender and by whether it is the account's own, and the engine keeps no
@@ -220,7 +223,7 @@ export const whatsAppAdapter = (
   const titled = async (): Promise<Map<string, WaChat>> =>
     new Map((await translated(engine.directory())).map((chat) => [chat.jid, chat]))
 
-  const core: Omit<WhatsAppAdapter, keyof GroupAdapter | keyof PollAdapter> = {
+  const core: Omit<WhatsAppAdapter, keyof GroupAdapter | keyof PollAdapter | keyof MessagePins> = {
     formatMarkdown: async (text) => parseMarkdownSpans(text),
 
     self: () => engine.self(),
@@ -448,5 +451,6 @@ export const whatsAppAdapter = (
     ...core,
     ...groupAdapter({ engine, resolve: core.resolve, translated, wroteTo: (person) => stored.wroteTo(person) }),
     ...pollAdapter({ engine, stored, held, keyOf, translated }),
+    ...pinAdapter({ engine, held, keyOf, translated }),
   }
 }

@@ -38,6 +38,14 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("pins and unpins by the stored message's key", async () => {
+    const engine = await stub("ok")
+    const key = { chat: "120363000000000001@g.us", id: "3EB0AA", fromMe: false, sender: "100000000000002@lid" }
+    await expect(engine.pin(key)).resolves.toBeUndefined()
+    await expect(engine.unpin(key)).resolves.toBeUndefined()
+    await engine.close()
+  })
+
   it("sends a file, forwards a stored one and writes a download where the CLI asked", async () => {
     const engine = await stub("ok")
     const sent = await engine.sendMedia({

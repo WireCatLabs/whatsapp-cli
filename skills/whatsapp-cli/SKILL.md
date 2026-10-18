@@ -23,11 +23,12 @@ WhatsApp; `effects.local: "write"` alone, a write to this machine. `commands --j
 do answers exit `2` with "this messenger cannot …" or "WhatsApp cannot …". Today `wa` connects for: linking, the
 account, older history of one chat (`messages sync`), sending text (with `--reply-to`) and one file per message,
 `messages edit`, `messages delete --for-everyone`, `messages download`, `messages forward`,
-`messages transcribe --local`, `reactions add|remove`, `polls create|show|vote|voters`, `chats mark-read`, group admin
+`messages transcribe --local`, `messages pin --notify|unpin`, `reactions add|remove`,
+`polls create|show|vote|voters`, `chats mark-read`, group admin
 (`chats create|join|leave|update`, `chats link show|reset`, `chats members list|fetch|add|remove`,
 `chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
-Not built yet: pinning, albums; `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the
+Not built yet: albums; `chats events`; the group photo; adding or renaming contacts (WhatsApp keeps the
 address book on the phone). `chats show` answers from the store; `chats members list` asks WhatsApp, and with
 `--offline` shows the stored members.
 

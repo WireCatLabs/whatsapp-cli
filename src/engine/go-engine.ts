@@ -54,6 +54,8 @@ const WRITES = new Set([
   "read",
   "createPoll",
   "vote",
+  "pin",
+  "unpin",
   "createGroup",
   "join",
   "leave",
@@ -246,6 +248,12 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       request("createPoll", { chat, sendId: id, question, answers, ...(multiple ? { multiple } : {}) }, waMessage),
     vote: async (key, answers) => {
       await request("vote", { ...keyFields(key), answers }, nothing)
+    },
+    pin: async (key) => {
+      await request("pin", keyFields(key), nothing)
+    },
+    unpin: async (key) => {
+      await request("unpin", keyFields(key), nothing)
     },
     link: async (linking, show): Promise<WaAccount> => {
       onCode = show
