@@ -1,13 +1,11 @@
-import { chmodSync, existsSync, rmSync, writeFileSync } from "node:fs"
-import { resolve } from "node:path"
+import { existsSync, rmSync } from "node:fs"
 import { CliError, indent, singleLine } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { qrPng, readSecret, terminalQr } from "@wirecat/cli-core"
+import { atTerminal, loginQr, qrNeedsTerminal, readSecret } from "@wirecat/cli-core"
 import {
   asFirstWord,
   commandWords,
   environmentOf,
-  inputPolicy,
   logsInOrOut,
   type MessengerAdapter,
   type MessengerContext,
@@ -120,26 +118,32 @@ export const startSession = async (
   }: StartSessionOptions,
 ): Promise<Session> => {
   const input = context.stdin
-  const terminal = input.isTTY === true && !inputPolicy(input).noInput
+  const terminal = atTerminal(input)
   if (qrFile !== undefined && method !== "qr")
     throw new CliError("validation_error", "--qr-file is for a QR login", { param: "--qr-file" })
   const unanswerable = () =>
-    new CliError(
-      "validation_error",
-      `${typed} shows a code to scan or type — run it in a terminal, or pass --qr-file`,
-      {
-        reason: "input.required",
-      },
-    )
+    method === "qr"
+      ? qrNeedsTerminal(typed)
+      : new CliError("validation_error", `${typed} asks questions — run it in a terminal`, { reason: "input.required" })
   // A device that is linked already asks nothing, so only a profile without one is refused before the engine starts.
   if (!terminal && qrFile === undefined && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
-  const qrPath = qrFile === undefined ? undefined : resolve(qrFile)
+  const qr = loginQr({
+    ...(qrFile === undefined ? {} : { qrFile }),
+    diagnostic: context.streams.diagnostic,
+    note: context.renderer.note,
+    indent: pad,
+  })
   const environment = environmentOf<Environment>(command)
   // A cut command never reaches its own finally in time; the image links the account while it is valid.
-  if (qrPath) environment.trackCloseable?.({ close: async () => rmSync(qrPath, { force: true }) })
+  if (qr.path) environment.trackCloseable?.({ close: async () => qr.close() })
+  // onCode runs inside the engine's line listener, where a throw would crash the process instead of failing the link.
+  let unwritable: (error: CliError) => void = () => {}
+  const failed = new Promise<never>((_, reject) => {
+    unwritable = reject
+  })
 
   try {
-    const linked = await linkDevice(command, context, {
+    const linking = linkDevice(command, context, {
       method,
       beforeLink: () => {
         signal?.throwIfAborted()
@@ -174,16 +178,23 @@ export const startSession = async (
           return
         }
         context.renderer.note("scan in WhatsApp → Settings → Linked devices → Link a device")
-        if (!qrPath) {
-          context.streams.diagnostic(`\n${indent(terminalQr(code).text, pad + 2)}`)
-          return
+        try {
+          qr.show(code)
+        } catch (error) {
+          unwritable(
+            new CliError(
+              "validation_error",
+              `--qr-file ${qr.path} could not be written (${error instanceof Error ? error.message : String(error)})`,
+              { param: "--qr-file", reason: "input.invalid" },
+            ),
+          )
         }
-        writeFileSync(qrPath, qrPng(code), { mode: 0o600 })
-        chmodSync(qrPath, 0o600)
-        context.renderer.note(`the QR code is in ${qrPath} — it is replaced when WhatsApp renews it`)
       },
     })
-    if (qrPath) rmSync(qrPath, { force: true })
+    // The runner closes the tracked engine once the command fails, which rejects the abandoned link.
+    linking.catch(() => {})
+    const linked = await Promise.race([linking, failed])
+    qr.close()
     signal?.throwIfAborted()
 
     const session: Session = { profile: context.profile, account: linked.account, alreadyLinked: linked.alreadyLinked }
@@ -200,8 +211,7 @@ export const startSession = async (
     }
     return session
   } finally {
-    // The image links the account for as long as it is valid; it does not outlive the login.
-    if (qrPath) rmSync(qrPath, { force: true })
+    qr.close()
   }
 }
 
