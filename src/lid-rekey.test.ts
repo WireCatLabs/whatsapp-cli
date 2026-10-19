@@ -43,8 +43,13 @@ afterEach(() => {
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
   const code = await run(argv, { streams, tty: false, ...(engine ? { engine } : {}), ...(signal ? { signal } : {}) })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  const diagnostics = streams.stderr
+  return { code, stdout: streams.stdout.join(""), stderr: diagnostics.join(""), diagnostics }
 }
+
+type LogRecord = { severity: string; attributes: { code?: string } }
+const logRecords = (diagnostics: string[]): LogRecord[] =>
+  diagnostics.filter((chunk) => chunk.startsWith("{")).map((chunk) => JSON.parse(chunk) as LogRecord)
 
 const message = (chat: string, n: number): WaMessage => ({
   id: `3EB00000000000000R${String(n).padStart(2, "0")}`,
@@ -249,8 +254,9 @@ describe("a phone-form chat stored before the engine kept its table", () => {
     }
     const served = await wa([profile, "serve", "--json"], starting, controller.signal)
     expect(served.code, served.stderr).toBe(0)
-    // serve logs a warning as a bare "serve.warning" record, so "N chat re-keys not applied" is not in stderr.
-    expect(served.stderr).not.toContain('"severity":"warn"')
+    const warnings = logRecords(served.diagnostics).filter((record) => record.severity === "warn")
+    expect(warnings.filter((record) => record.attributes.code === "rekeys_not_applied")).toEqual([])
+    expect(warnings).toEqual([])
     expect(fedRekeys).toEqual([500])
 
     const ids = await allChatIds(profile)
