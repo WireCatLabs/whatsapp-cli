@@ -301,7 +301,7 @@ func (e *engine) join(link string) (*waJoined, error) {
 	if err != nil {
 		return nil, err
 	}
-	// The answer is not stored, so the push is how the store gets the group. cli-core clears a left mark after a join.
+	// The answer is not stored, so the push is how the store gets the group. cli-core #1639 will clear a left mark.
 	e.pushChats([]waChat{group.Chat})
 	return &waJoined{Group: group}, nil
 }

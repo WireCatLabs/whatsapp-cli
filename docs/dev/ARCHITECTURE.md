@@ -181,8 +181,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   deletes); every other push leaves the field out, which keeps what the store holds. `"left"` comes only from a
   group notification that names the owner, by LID or phone number, among those who left or were removed
   (`events.GroupInfo.Leave`), or from a deleted group (`Delete`). The engine never sends `null`: cli-core reads it
-  as "no membership state" and would clear `archived` too. cli-core's `chats leave` and `chats join` set and clear
-  the mark themselves (cli-core #1638/#1639). A live read of one group, a `join` that got in, and whatsmeow's
+  as "no membership state" and would clear `archived` too. cli-core's `chats leave` and `chats join` will set and
+  clear the mark themselves, from cli-core #1638/#1639. A live read of one group, a `join` that got in, and whatsmeow's
   `events.JoinedGroup` (only a lone `create` notification makes it) push the group's whole chat with membership
   left out. A live read's 403 or 404 marks nothing: the engine cannot tell a stored group from a typo. A
   notification pushes one chat with the link change and the leave together (`groupNotice`). History pushes say

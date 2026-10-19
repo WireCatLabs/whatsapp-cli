@@ -296,7 +296,9 @@ Open work, most important first. The plan in flight is
       clear it after `chats join`; until a cli-core with them is released, only the notice above marks the group.
     - **A group the owner rejoined stays marked left** until cli-core's rejoin value (one that clears `left` and keeps
       `archived`) ships, or cli-core's `chats join` clears it. The owner-added notice and whatsmeow's
-      `events.JoinedGroup` push the whole group but say nothing of membership.
+      `events.JoinedGroup` push the whole group but say nothing of membership, and a new message does not clear the
+      mark either (cli-core 0.355.0, `store/sqlite/chats.js`). Until then such a group stays out of `chats list`, and
+      `store clear --left --allow-dangerous` deletes it with the messages from after the re-add.
     - **A live read of one group marks nothing.** Its 403 would be a real signal, but the engine cannot tell whether
       the store holds the group, and a mistyped id (404) or a group the owner was never in (403) would store a stray
       untitled row marked left. A read that succeeds pushes the whole group, membership left out, so an archived
