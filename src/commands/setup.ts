@@ -32,7 +32,6 @@ type Agent = (typeof AGENTS)[number]
 type Options = {
   agent?: Agent
   method: "qr" | "phone"
-  qrFile?: string
 }
 
 const STEPS = 5
@@ -87,7 +86,7 @@ export const setupCommand = () =>
     effects: REMOTE_WRITE,
     lifetime: "interactive",
     mcp: false,
-    examples: ["wa personal setup", "wa personal setup --agent codex", "wa personal setup --qr-file login.png --json"],
+    examples: ["wa personal setup", "wa personal setup --agent codex", "wa personal setup --agent claude --json"],
   })
     .description("set up WhatsApp and connect your agent")
     .configureHelp({ showGlobalOptions: true })
@@ -102,9 +101,9 @@ export const setupCommand = () =>
         "\nAllow about 5 minutes: the phone pushes your recent history once, right after linking.\n" +
         "Scan the QR in WhatsApp: Settings > Linked devices > Link a device.\n" +
         "Type your phone number only in the terminal.\n" +
-        "\nAgents: read `wa skill show` first. Without a terminal, an agent can use:\n" +
-        "  wa personal setup --qr-file login.png --agent codex --json\n" +
-        "and pass the image on to be scanned. The QR image is removed when linking ends.\n" +
+        "\nAgents: read `wa skill show` first. Without a terminal, setup prints the QR code as text:\n" +
+        "  wa personal setup --agent codex --json\n" +
+        "Run it in the background and paste each QR block into the chat, as for `session start qr`.\n" +
         "Machine mode skips agent installation unless --agent is given.\n" +
         "A device linked before is checked without linking again.\n" +
         "\nSetup reads five chats from the local store. To keep receiving messages:\n" +
@@ -118,15 +117,12 @@ export const setupCommand = () =>
     .addOption(
       new Option("--method <method>", "how to log in when there is no session").choices(["qr", "phone"]).default("qr"),
     )
-    .option("--qr-file <png>", "write a temporary QR image for an agent to pass on; works without a terminal")
     .action(async function (this: Command) {
       const context = messengerContext(this, WHATSAPP)
       refuseCommandName(context.profile, commandWords(rootOf(this)), "wa")
       const options = this.opts<Options>()
       if (context.settings.offline)
         throw new CliError("validation_error", "wa setup verifies WhatsApp — remove --offline")
-      if (options.qrFile && options.method !== "qr")
-        throw new CliError("validation_error", "--qr-file is for a QR login", { param: "--qr-file" })
       for (const permission of ["account.show", "chats.list"] as const) {
         if (levelFor(context.settings.permissions, permission).level === "deny")
           throw new CliError(
@@ -136,10 +132,10 @@ export const setupCommand = () =>
           )
       }
       const devicePath = privateStore(context.profile, context.env)
-      if (!existsSync(devicePath) && !context.stdin.isTTY && !options.qrFile)
+      if (!existsSync(devicePath) && !context.stdin.isTTY && options.method === "phone")
         throw new CliError(
           "validation_error",
-          "wa setup needs a terminal to link a device — run it locally, or pass --qr-file for an agent",
+          "wa setup --method phone needs a terminal to ask for the number — run it locally, or link by QR",
           { reason: "input.required" },
         )
       const environment = environmentOf(this)
@@ -172,7 +168,6 @@ export const setupCommand = () =>
       const session = await startSession(this, linkContext, {
         signal,
         method: options.method,
-        ...(options.qrFile === undefined ? {} : { qrFile: options.qrFile }),
         command: `${prefix}setup`,
         indent: screen.indent,
         stopEndsWait: true,

@@ -92,15 +92,15 @@ on the message text.
 `--no-input` forbids interactive input. JSON, JSONL and a run without a terminal also never ask a question and never
 start an interactive link. Input you pipe in on purpose still works: multi-line message text goes through stdin
 (`printf 'first\n\nthird' | wa personal messages send 100000000000001@lid`). `setup` and `session start` check an
-existing link without a terminal; to link one, an explicit `--qr-file` writes a temporary QR image to scan, and a
-pairing code is refused, since it needs you to type your number.
+existing link without a terminal; to link one, the QR code is printed as plain text for an agent to paste into the
+chat, and a pairing code is refused, since it needs you to type your number.
 
 A write at the `ask` permission level needs an explicit `--yes`; a deletion needs `--allow-dangerous`. These flags
 only answer the question. All other permission checks still apply.
 
 A one-shot command has 30 seconds. `--timeout 2m` changes that, and the time spent waiting for stdin counts too.
 Persistent commands and a link at a terminal have no default limit; a link without a terminal (an agent's
-`session start --qr-file`) has 5 minutes, for a person to scan the code elsewhere;
+`session start qr`) has 5 minutes, for a person to scan the code elsewhere;
 what `setup` does after the history push then has the usual 30 seconds. Ctrl-C (SIGINT) stops a one-shot
 command with exit code 130 and normally ends a persistent command with 0. SIGTERM exits with 143. If the program
 reading the output closes the pipe, `wa` ends quietly. Whatever started the engine stops it on every exit path, so

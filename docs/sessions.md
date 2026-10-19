@@ -52,15 +52,18 @@ command's usual time limit, started afresh. Then keep receiving with `wa persona
 
 ### When an agent runs the link
 
-Your AI agent can start the link for you, but it has no terminal to draw the QR code in. `--qr-file` writes the code
-as a picture (PNG) instead, and the agent shows it to you to scan:
+Your AI agent can start the link for you. Without a terminal, `wa` prints the QR code as plain text, and the agent
+pastes it into the chat for you to scan:
 
 ```sh
-wa personal setup --qr-file login.png --agent claude --json
-wa personal session start --qr-file login.png
+wa personal setup --agent claude --json
+wa personal session start qr
 ```
 
-The file is replaced when the code is renewed, and removed when linking ends, whether it worked or not. A pairing
+The agent runs the command in the background, since it waits for your scan. WhatsApp sends a new code after 60
+seconds and then every 20 seconds; the agent pastes each new one and says the old one expired. With `--json`, each
+code is also one line on stderr: `{"event":"qr","qr":{"text":…,"expires_at":null,"scan":…}}`. The text is about 73
+columns wide. Linking is not offered over MCP: an app that only has MCP asks you to run the command. A pairing
 code is for you to run in your own terminal: an agent never asks you for your phone number or a code in the chat.
 
 ## Check and unlink

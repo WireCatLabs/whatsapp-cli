@@ -24,8 +24,7 @@ wa personal setup --method phone   # a pairing code instead of the QR code
 
 `setup` runs five steps: this computer's folders, the link (an existing device is reused and nothing is asked),
 the account, five chats from the local store, and the agent skill. A device linked before is checked without linking
-again. An agent without a terminal passes `--qr-file <png>` and hands the image on to be scanned; the image is
-removed when linking ends.
+again. Without a terminal the QR code is printed as plain text, and an agent pastes it into the chat to be scanned.
 
 ## Link a profile
 

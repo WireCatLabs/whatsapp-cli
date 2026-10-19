@@ -81,13 +81,13 @@ macOS the unit does not restart it after any failure, since launchd cannot leave
 
 ## "wa setup needs a terminal to link a device"
 
-Linking shows a code to scan or type. Run `setup` in a terminal, or pass `--qr-file <png>` and scan the image it
-writes. A device linked before needs no terminal.
+A pairing-code link asks for your phone number, so it needs a terminal. Run `setup` in a terminal, or link by QR:
+without a terminal the QR code is printed as text to scan. A device linked before needs no terminal.
 
 ## "the terminal is 40 columns wide and the QR code needs 69"
 
 The code is not drawn, because a wrapped code cannot be scanned. Widen the terminal: the next code WhatsApp sends is
-drawn. Or run the link again with `--qr-file login.png` and scan the image.
+drawn.
 
 ## "name a profile"
 

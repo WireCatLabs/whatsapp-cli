@@ -7,6 +7,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **`--qr-file` is gone: without a terminal, `session start` and `setup` print the QR code as text** for an agent to
+  paste into the chat, instead of a PNG the person opens in an image viewer. The text is plain half blocks, no
+  colours, about 73 columns wide. Each code is followed by a note telling an agent to paste it, and with `--json` it is
+  also one stderr line, `{"event":"qr","qr":{"text","expires_at","scan"}}`. A QR link no longer needs a terminal; a
+  pairing-code link (`phone`) still does. A script that passed `--qr-file` now fails with an unknown option. In a
+  terminal the code is drawn as before (cli-core's `loginQr`).
 - **A one-to-one chat typed by its phone number is addressed by its LID**, the id WhatsApp files that chat under,
   when WhatsApp has already given it. WhatsApp answers a send by the number with the LID, so a later
   `messages delete`, `messages star`, `reactions add` or `polls vote` by the number could miss the message: the

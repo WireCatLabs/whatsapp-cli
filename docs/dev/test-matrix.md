@@ -7,17 +7,15 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**246 ✅ · 516 ⛔ · 0 ❌** — 244 commands, 518 options.
+**244 ✅ · 516 ⛔ · 0 ❌** — 244 commands, 516 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
 | `session start` |  | ✅ |  |
-| `session start` | `--qr-file` | ✅ |  |
 | `session end` |  | ✅ |  |
 | `setup` |  | ✅ |  |
 | `setup` | `--agent` | ✅ |  |
 | `setup` | `--method` | ✅ |  |
-| `setup` | `--qr-file` | ✅ |  |
 | `account list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/account-list.test.ts |
 | `account show` |  | ✅ |  |
 | `account show` | `--show-phone` | ✅ |  |
