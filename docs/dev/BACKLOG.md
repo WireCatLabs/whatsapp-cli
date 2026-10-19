@@ -281,17 +281,13 @@ Open work, most important first. The plan in flight is
     stored phone-form chat whose LID is known. Batching them is cli-core's.
 20. **Groups the owner left: built, not checked live** (found 2026-10-19, wa #149 review, narrowed in the wa #151
     review). The engine pushes `membershipState: "left"` (ARCHITECTURE §4, `membership.go`) only from WhatsApp's
-    group notifications: the owner among those who left or were removed, and a deleted group. It never sends `null`:
-    under cli-core's rule (cli-core #1621) `null` clears any stored state, `archived` included. Left open:
-    - **Live check**: whether WhatsApp's notice of the owner's own leave or removal reaches the owner's linked device,
-      and in which form it names the owner.
-    - **A group the owner was added back to stays marked left** until cli-core's rejoin value (one that clears
-      `left` and keeps `archived`, cli-core #1640) ships; then the owner-added notice and `events.JoinedGroup` send
-      it. Since cli-core 0.356.0 a `chats leave` that succeeds marks the group left and a `chats join` that gets in
-      clears the mark, so only a re-add by someone else is left. That notice and whatsmeow's `events.JoinedGroup` push
-      the whole group but say nothing of membership, and a new message does not clear the mark either. Until then
-      such a group stays out of `chats list`, and `store clear --left --allow-dangerous` deletes it with the messages
-      from after the re-add.
+    group notifications: the owner among those who left or were removed, and a deleted group; and `"member"` when a
+    notification or whatsmeow's `events.JoinedGroup` says the owner was added back (cli-core 0.357.0), which takes
+    the mark off and keeps `archived`. It never sends `null`: under cli-core's rule (cli-core #1621) `null` clears
+    any stored state, `archived` included. Since cli-core 0.356.0 `chats leave` and `chats join` set and clear the
+    mark too. A re-added group is no longer left (RISK-1264 closed). Left open:
+    - **Live check**: whether WhatsApp's notices of the owner's own leave, removal and re-add reach the owner's
+      linked device, and in which form they name the owner.
     - **A live read of one group marks nothing.** Its 403 would be a real signal, but the engine cannot tell whether
       the store holds the group, and a mistyped id (404) or a group the owner was never in (403) would store a stray
       untitled row marked left. A read that succeeds pushes the whole group, membership left out, so an archived

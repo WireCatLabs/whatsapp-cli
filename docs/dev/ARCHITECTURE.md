@@ -178,17 +178,19 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   source does not say; `name` and `participants` are always sent.
 - **Where the owner stands in a group** (`membership.go`): wa has no chat list for cli-core to mark left chats
   from, so the engine says so itself, as `membershipState: "left"` on a pushed chat (what `store clear --left`
-  deletes); every other push leaves the field out, which keeps what the store holds. `"left"` comes only from a
-  group notification that names the owner, by LID or phone number, among those who left or were removed
-  (`events.GroupInfo.Leave`), or from a deleted group (`Delete`). The engine never sends `null`: cli-core reads it
-  as "no membership state" and would clear `archived` too. cli-core's `chats leave` and `chats join` set and clear
-  the mark themselves after they succeed (cli-core 0.356.0), so the adapter's `leave` and `join` push no
-  membership; a group the owner is added back to by someone else stays marked left until cli-core's rejoin value
-  ships (cli-core #1640). A live read of one group, a `join` that got in, and whatsmeow's
-  `events.JoinedGroup` (only a lone `create` notification makes it) push the group's whole chat with membership
-  left out. A live read's 403 or 404 marks nothing: the engine cannot tell a stored group from a typo. A
-  notification pushes one chat with the link change and the leave together (`groupNotice`). History pushes say
-  nothing: a conversation has no field that tells whether the owner is still in the group.
+  deletes), and `"member"` when the owner is back; every other push leaves the field out, which keeps what the
+  store holds. `"left"` comes only from a group notification that names the owner, by LID or phone number, among
+  those who left or were removed (`events.GroupInfo.Leave`), or from a deleted group (`Delete`). `"member"` comes
+  only from a notification that names the owner among those added (`events.GroupInfo.Join`) and from whatsmeow's
+  `events.JoinedGroup` (only a lone `create` notification makes it); a notice that names the owner in both says
+  `"left"`. cli-core takes `"member"` off a `"left"` mark and keeps any other state, `archived` included, and
+  never stores it (cli-core 0.357.0). The engine never sends `null`: cli-core reads it as "no membership state"
+  and would clear `archived` too. cli-core's `chats leave` and `chats join` set and clear the mark themselves after
+  they succeed (cli-core 0.356.0), so the adapter's `leave` and `join` push no membership. A live read of one group
+  and a `join` that got in push the group's whole chat with membership left out. A live read's 403 or 404 marks
+  nothing: the engine cannot tell a stored group from a typo. A notification pushes one chat with the link change
+  and the membership together (`groupNotice`). History pushes say nothing: a conversation has no field that tells
+  whether the owner is still in the group.
 - **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
   [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
   skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and

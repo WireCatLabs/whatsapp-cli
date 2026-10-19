@@ -198,11 +198,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **A group you left, were removed from, or that was deleted is marked left in the store**, so
   `wa <profile> store clear --left` finds it; until now it found nothing. The mark comes from WhatsApp's group
   notice while `serve` or `watch` runs, and from a `wa <profile> chats leave` that succeeds; a `chats join` that gets
-  in takes it off (cli-core 0.356.0). Being added back by someone else does not take it off yet: such a group stays
-  marked left, and `store clear --left` would delete it, so run it with `--dry-run` first. A group left while
-  nothing was connected is not marked. A group marked left drops out of `chats list`; `chats show` shows it and says
-  you left it, and its messages stay in the store and in search until you clear it.
-  Engine wire change: `membershipState` on a pushed chat. Engine protocol 39.
+  in takes it off (cli-core 0.356.0), and so does WhatsApp's notice that someone added you back (cli-core 0.357.0);
+  a group you had archived stays archived. A group left while nothing was connected is not marked. A group marked
+  left drops out of `chats list`; `chats show` shows it and says you left it, and its messages stay in the store and
+  in search until you clear it.
+  Engine wire change: `membershipState` on a pushed chat, `"left"` (protocol 39) and `"member"` (protocol 40).
 - **`setup`'s link step is headed "Link this device"** and no longer asks you to scan a QR code before one is
   drawn. The line under the code says where to scan; a narrow terminal shows only the hint to widen it.
 - **A terminal too narrow for the QR code no longer asks you to scan it** (cli-core 0.350.0). `session start` and

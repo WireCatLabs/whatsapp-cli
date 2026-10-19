@@ -235,9 +235,8 @@ wa personal chats leave 120363000000000001@g.us
   that matches several stored chats is refused; name one by its `…@g.us` id. A group the store does not hold yet
   is found by its `…@g.us` id only: a command that connects learns the joined groups after it looks the name up.
 - `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
-- **`leave` marks the group left in the local store**, and `wa personal store clear --left` lists it; a `join` that
-  gets in takes the mark off. A group someone adds you back to stays marked left for now, so run
-  `store clear --left` with `--dry-run` first.
+- **`leave` marks the group left in the local store**, and `wa personal store clear --left` lists it. A `join` that
+  gets in takes the mark off, and so does being added back while `serve` or `watch` runs.
 
 With `--offline`, `chats members list` shows the members stored before instead of asking WhatsApp.
 `chats members fetch` keeps the member list in the local store. `chats members history` shows what the fetches

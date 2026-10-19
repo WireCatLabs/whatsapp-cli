@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
+import { openStore } from "@wirecat/cli-core/store"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { EngineError, type EngineEvent, type WaChat, type WaChatEvent, type WhatsAppEngine } from "./engine/contract.js"
@@ -563,6 +564,30 @@ describe("a group the owner left", () => {
     expect(result.code, result.stderr).toBe(0)
     expect(await leftIds()).toContain(left)
     expect((await offline("chats", "show", left)).item).toMatchObject({ id: left, membership_state: "left" })
+  })
+
+  it("is no longer left once WhatsApp says the owner was added back, and an archived group stays archived", async () => {
+    const readded = "120363000000000082@g.us"
+    const archived = "120363000000000083@g.us"
+    await watching([
+      pushing({ jid: readded, name: "Back club", kind: "group", participants: 4 }),
+      pushing({ jid: readded, kind: "group", membershipState: "left" }),
+    ])
+    expect(await leftIds()).toContain(readded)
+    // wa never says "archived"; another writer of the store may, and "member" must not clear it as null would.
+    const opened = await openStore({ env: { ...process.env, MESSAGING_STORE: store }, command: "wa" })
+    await opened.chats.saveChats({ provider: "whatsapp", account: seed.account?.id ?? "" }, [
+      { id: archived, title: "Quiet club", kind: "group", membershipState: "archived" },
+    ])
+    await opened.close()
+
+    await watching([
+      pushing({ jid: readded, kind: "group", membershipState: "member" }),
+      pushing({ jid: archived, kind: "group", membershipState: "member" }),
+    ])
+    expect(await leftIds()).not.toContain(readded)
+    expect((await offline("chats", "show", readded)).item).toMatchObject({ id: readded, title: "Back club" })
+    expect((await offline("chats", "show", archived)).item).toMatchObject({ membership_state: "archived" })
   })
 })
 
