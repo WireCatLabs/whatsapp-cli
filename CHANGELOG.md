@@ -201,6 +201,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **More of `serve`'s warnings carry a code in its log**, so a script can match the code instead of the sentence: a
+  flood wait (`flood_wait`) or a long pace wait (`pace_wait`), both with `counts.seconds`, a held account
+  (`account_frozen`, `account_limited`, `account_banned`), a send missing from the send journal
+  (`send_not_journaled`), a recipient list that could not be re-keyed or read, and the reply audience and template
+  warnings. The log record holds no sentence, chat id or name; the sentence at a terminal is unchanged
+  (cli-core 0.364.0).
 - **The first `serve` after an upgrade hands its chat re-keys to the store together**, up to 500 at a time, instead
   of one at a time. On an account with thousands of chats stored by phone number, that start announces a re-key for
   each, and every one was saved as a batch of its own. A re-key that arrives alone waits at most 0.1 s. The store
