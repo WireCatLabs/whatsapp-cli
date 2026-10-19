@@ -147,6 +147,28 @@ describe("a phone-form chat stored before the engine kept its table", () => {
     expect(JSON.parse(listed.stdout).items.map((one: { id: string }) => one.id)).toContain(message(LID, 11).id)
   })
 
+  it("re-keys as serve starts, and serve stops cleanly after it", async () => {
+    const profile = "stored-phone-chats-served"
+    await storeInPhoneForm(profile, 31)
+    const controller = new AbortController()
+    const starting = () => {
+      const engine = fakeEngine(seed, { lids: { [PHONE]: LID } })
+      const handOver = engine.storedChats
+      engine.storedChats = async (chats) => {
+        await handOver(chats)
+        setImmediate(() => controller.abort())
+      }
+      return engine
+    }
+    const served = await wa([profile, "serve", "--json"], starting, controller.signal)
+    expect(served.code, served.stderr).toBe(0)
+    expect(served.stderr).not.toContain("stored_chats")
+
+    expect(await chatIds(profile)).not.toContain(PHONE)
+    const listed = await wa([profile, "--offline", "messages", "list", LID, "--json"])
+    expect(JSON.parse(listed.stdout).items.map((one: { id: string }) => one.id)).toContain(message(LID, 31).id)
+  })
+
   it("warns once when the engine cannot take them, and watch goes on", async () => {
     const profile = "stored-phone-chats-refused"
     await storeInPhoneForm(profile, 21)
