@@ -358,8 +358,8 @@ bulk query per 500, then records them in one transaction: a known LID is a re-ke
 announced again (the store still holding the phone form means the CLI missed it), and the rest wait for the lookups
 below, which it schedules. Measured in its test: 5,000 ids in about 50 ms; cli-core waits at most 5 s for it at
 shutdown, and a failure is one `stored_chats_failed` warning while `feed` goes on. The store's chats come from
-history pushes, messages and the owner's own sends, never from the address book: wa has no online chat list that
-would save the directory. The directory, a chat card, a mute and a chat pin do not record: they take a typed id or an
+history pushes, messages and the owner's own sends: wa gives cli-core no online chat list, so the directory, and the
+address book in it, is never saved as chats. The directory, a chat card, a mute and a chat pin do not record: they take a typed id or an
 address-book name, not a chat the account has. Once re-keyed, a chat is never emitted in phone form again — not in a
 message, a history push, a send's result or the chat directory: the engine takes its LID from the table wherever
 whatsmeow's store does not answer, and keeps the row after the 30 days of repeats. A re-keyed chat named in phone
