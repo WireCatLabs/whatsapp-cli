@@ -8,9 +8,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Changed — may break callers
 
 - **A one-to-one chat typed by its phone number is addressed by its LID**, the id WhatsApp files that chat under,
-  when WhatsApp has already given it. A send by the number is stored under the LID (cli-core 0.350.0), so a later
-  `messages delete`, `messages star`, `reactions add` or `polls vote` by the number used to miss it: the deleted text stayed
-  searchable, the star was lost, and the vote made a second chat. Every command that names a chat now looks the
+  when WhatsApp has already given it. WhatsApp answers a send by the number with the LID, so a later
+  `messages delete`, `messages star`, `reactions add` or `polls vote` by the number could miss the message: the
+  deleted text stayed searchable, the star was lost, and the vote made a second chat. Every command that names a chat now looks the
   number up in the LIDs this device knows; nothing is asked of WhatsApp and nothing is recorded. A number with no
   known LID, a group, a LID or a channel is used as typed, and an `--offline` command uses the id as typed too.
   Engine wire change: a `canonicalChat` request. Engine protocol 38. Two things the owner may notice:
