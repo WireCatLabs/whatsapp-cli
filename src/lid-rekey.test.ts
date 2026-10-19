@@ -223,7 +223,7 @@ describe("a phone-form chat stored before the engine kept its table", () => {
               kind: "recent",
               chats: phones.map(dm),
               contacts: [],
-              messages: phones.map((phone, n) => ({ ...message(phone, 0), id: `3EB0000000000000M${n}` })),
+              messages: [],
               votes: [],
             },
           })
