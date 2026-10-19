@@ -357,8 +357,10 @@ each history push checks them against what that message or push says and against
 every mapping WhatsApp sends — in history, in a message's alternate address, in a lookup's answer — before the event
 reaches the engine. A chat whose person now has a LID is announced as a re-key `{from, to}`: in the history push's
 `rekeys`, or as a `rekey` event sent before the message under the new id. The adapter's `feed` hands both to cli-core
-as `HistoryBatch.rekeys` (a `rekey` event as a batch of its own), and cli-core moves the stored chat to the new id
-before the batch's messages land. A live message comes through `watch`, whose events cannot carry a re-key, and need
+as `HistoryBatch.rekeys`, and cli-core moves the stored chat to the new id before the batch's messages land. `rekey`
+events that come within 100 ms of the first one go together, as one batch of up to 500. At a `serve` start the engine
+can announce thousands of them, and one batch each would mean thousands of separate saves. A history push hands the
+held re-keys on before its own batch, and so does `feed` when it stops. A live message comes through `watch`, whose events cannot carry a re-key, and need
 not: `serve` and `watch` run `feed` beside it. cli-core saves the two on separate paths, so the message may land
 first, in a new chat under the LID; the re-key then merges the two. At each start the engine announces the
 re-keys whatsmeow learned while it was not running, and repeats those of the last 30 days: a one-shot command does

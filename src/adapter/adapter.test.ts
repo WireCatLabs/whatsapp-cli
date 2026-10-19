@@ -1,7 +1,7 @@
 import type { MessageEvent } from "@wirecat/cli-core"
 import type { HistoryBatch } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { EngineError, type WaMessage } from "../engine/contract.js"
 import { fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
 import { whatsAppAdapter } from "./adapter.js"
@@ -132,7 +132,7 @@ describe("whatsAppAdapter", () => {
     await expect(feeding).rejects.toMatchObject({ code: "authentication_error" })
   })
 
-  it("passes a re-key on as a batch of its own, and a push's re-keys with the push", async () => {
+  it("hands held re-keys on before a push that follows them, and a push's re-keys with the push", async () => {
     const engine = fakeEngine(seed)
     const controller = new AbortController()
     const batches: HistoryBatch[] = []
@@ -149,6 +149,84 @@ describe("whatsAppAdapter", () => {
       { rekeys: [rekey] },
       { rekeys: [rekey], messages: [{ id: incoming().id }] },
     ])
+  })
+
+  describe("re-keys that arrive together", () => {
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+    const rekeyOf = (n: number) => ({
+      from: `7${String(n).padStart(10, "0")}@s.whatsapp.net`,
+      to: `1${String(n).padStart(14, "0")}@lid`,
+    })
+    const feeding = (onBatch: (batch: HistoryBatch) => void = () => {}, warn: (line: string) => void = () => {}) => {
+      const engine = fakeEngine(seed)
+      const controller = new AbortController()
+      const batches: HistoryBatch[] = []
+      // The fake engine's seed history comes first; only the re-key batches are looked at.
+      const done = whatsAppAdapter(engine, undefined, undefined, warn).feed((batch) => {
+        if (batch.messages) return
+        batches.push(batch)
+        onBatch(batch)
+      }, controller.signal)
+      return { engine, controller, batches, done }
+    }
+
+    it("go to cli-core as one batch per 500, in arrival order", async () => {
+      vi.useFakeTimers()
+      const { engine, controller, batches, done } = feeding()
+      const rekeys = Array.from({ length: 1200 }, (_, n) => rekeyOf(n))
+      for (const rekey of rekeys) engine.push({ event: "rekey", ...rekey })
+      await vi.advanceTimersByTimeAsync(100)
+      expect(batches.map((batch) => batch.rekeys?.length)).toEqual([500, 500, 200])
+      expect(batches.flatMap((batch) => batch.rekeys)).toEqual(rekeys)
+      controller.abort()
+      await done
+      expect(batches).toHaveLength(3)
+    })
+
+    it("hand a single re-key on within 100 ms, while feed runs", async () => {
+      vi.useFakeTimers()
+      const { engine, controller, batches, done } = feeding()
+      engine.push({ event: "rekey", ...rekeyOf(1) })
+      await vi.advanceTimersByTimeAsync(99)
+      expect(batches).toEqual([])
+      await vi.advanceTimersByTimeAsync(1)
+      expect(batches).toEqual([{ rekeys: [rekeyOf(1)] }])
+      controller.abort()
+      await done
+    })
+
+    it("are handed on when feed stops before the window closes", async () => {
+      vi.useFakeTimers()
+      const { engine, controller, batches, done } = feeding()
+      for (const n of [1, 2, 3]) engine.push({ event: "rekey", ...rekeyOf(n) })
+      controller.abort()
+      await done
+      expect(batches).toEqual([{ rekeys: [rekeyOf(1), rekeyOf(2), rekeyOf(3)] }])
+      expect(vi.getTimerCount()).toBe(0)
+    })
+
+    it("are skipped with a warning when cli-core refuses them at the window's end, and feed goes on", async () => {
+      vi.useFakeTimers()
+      const warnings: string[] = []
+      const { engine, controller, batches, done } = feeding(
+        (batch) => {
+          if (batch.rekeys?.length === 1) throw new TypeError("refused")
+        },
+        (line) => warnings.push(line),
+      )
+      engine.push({ event: "rekey", ...rekeyOf(1) })
+      await vi.advanceTimersByTimeAsync(100)
+      engine.push({ event: "rekey", ...rekeyOf(2) })
+      engine.push({ event: "rekey", ...rekeyOf(3) })
+      controller.abort()
+      await expect(done).resolves.toBeUndefined()
+      expect(batches.at(-1)).toEqual({ rekeys: [rekeyOf(2), rekeyOf(3)] })
+      expect(warnings).toEqual([
+        expect.stringContaining("rekey event could not be handled and was skipped (TypeError)"),
+      ])
+    })
   })
 
   it("skips a pushed history event that fails, says so once on stderr, and stores the ones after it", async () => {

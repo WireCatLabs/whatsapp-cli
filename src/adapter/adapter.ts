@@ -171,12 +171,21 @@ const listening = (
   warn: (message: string) => void,
   handle: (event: EngineEvent) => void | Promise<void>,
   expected: (state: ConnectionState) => boolean = () => false,
-): { done: Promise<void>; stop: () => void; drained: () => Promise<void> } => {
+): {
+  done: Promise<void>
+  stop: () => void
+  drained: () => Promise<void>
+  run: (kind: string, work: () => void | Promise<void>) => void
+} => {
   let stop = () => {}
   let queue = Promise.resolve()
   let skipped = 0
+  let fail: (kind: string, error: unknown) => void = () => {}
+  const run = (kind: string, work: () => void | Promise<void>) => {
+    queue = queue.then(work).catch((error: unknown) => fail(kind, error))
+  }
   const done = new Promise<void>((resolve, reject) => {
-    const failed = (kind: string, error: unknown) => {
+    fail = (kind: string, error: unknown) => {
       if (ends(error)) return reject(error instanceof EngineError ? fromEngine(error) : error)
       skipped += 1
       if (skipped > 1) return
@@ -190,7 +199,7 @@ const listening = (
       if (event.event === "connection" && expected(event.state)) return resolve()
       const ended = event.event === "connection" ? ENDED[event.state]?.(words, event.until) : undefined
       if (ended) reject(ended)
-      else queue = queue.then(() => handle(event)).catch((error: unknown) => failed(event.event, error))
+      else run(event.event, () => handle(event))
     })
     const aborted = () => resolve()
     signal.addEventListener("abort", aborted, { once: true })
@@ -206,8 +215,12 @@ const listening = (
     queue.then(() => {
       if (skipped > 1) warn(`${skipped} pushed events could not be handled and were skipped in all`)
     })
-  return { done, stop, drained }
+  return { done, stop, drained, run }
 }
+
+/** Re-keys that arrive this close together go to cli-core as one batch, up to this many. */
+const REKEY_WINDOW_MS = 100
+const REKEY_BATCH = 500
 
 const VIDEO = new Set([".mp4", ".m4v", ".mov"])
 
@@ -354,10 +367,28 @@ export const whatsAppAdapter = (
     signal: AbortSignal,
     expected?: (state: ConnectionState) => boolean,
   ) => {
+    // cli-core saves each batch's re-keys apart, so thousands at a serve's start must not come one batch each; a push
+    // hands on the held ones before its own, as they arrived.
+    let held: { from: string; to: string }[] = []
+    let due: ReturnType<typeof setTimeout> | undefined
+    const flush = () => {
+      clearTimeout(due)
+      due = undefined
+      if (held.length === 0) return
+      const rekeys = held
+      held = []
+      onBatch({ rekeys })
+    }
     // In arrival order: a push waits for its store reads, and a re-key after it must not overtake it.
     const handed = async (event: EngineEvent) => {
-      if (event.event === "rekey") onBatch({ rekeys: [{ from: event.from, to: event.to }] })
+      if (event.event === "rekey") {
+        held.push({ from: event.from, to: event.to })
+        if (held.length >= REKEY_BATCH) flush()
+        else due ??= setTimeout(() => pushes.run("rekey", flush), REKEY_WINDOW_MS)
+        return
+      }
       if (event.event !== "history") return
+      flush()
       const { rekeys, chats, contacts, messages, votes, events } = event.history
       onBatch({
         rekeys: rekeys ?? [],
@@ -373,6 +404,7 @@ export const whatsAppAdapter = (
       await pushes.done
     } finally {
       pushes.stop()
+      pushes.run("rekey", flush)
       await pushes.drained()
     }
   }
