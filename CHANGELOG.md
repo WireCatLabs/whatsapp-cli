@@ -159,6 +159,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A terminal too narrow for the QR code no longer asks you to scan it** (cli-core 0.350.0). `session start` and
+  `setup` said where to scan in WhatsApp before the code; when the code did not fit, only the hint to widen the
+  terminal or pass `--qr-file` followed. Now the scan line comes after the drawn code or the `--qr-file` note, and a
+  narrow terminal shows only the hint.
 - **A one-shot command now saves the history WhatsApp pushes to it.** WhatsApp sends a history push to a linked
   device once. A command such as `messages send` with no `serve` running received it and dropped it. It is now saved
   to the store like the messages queued for it, and the command waits up to 3 seconds at exit for a push still

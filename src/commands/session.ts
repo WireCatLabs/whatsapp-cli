@@ -192,9 +192,8 @@ export const startSession = async (
           )
           return
         }
-        context.renderer.note("scan in WhatsApp → Settings → Linked devices → Link a device")
         try {
-          qr.show(code)
+          qr.show(code, "scan in WhatsApp → Settings → Linked devices → Link a device")
         } catch (error) {
           unwritable(
             new CliError(
