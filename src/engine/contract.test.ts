@@ -28,3 +28,14 @@ describe("a star on the wire", () => {
     })
   })
 })
+
+describe("a community link on the wire", () => {
+  it("reads the line the engine writes for a group's notice that it joined a community", () => {
+    const line =
+      '{"event":"history","history":{"kind":"other","chats":[{"jid":"120363000000000001@g.us","kind":"group",' +
+      '"parent":"120363000000000002@g.us"}],"contacts":[],"messages":[],"votes":[]}}'
+    expect(v.parse(engineEvent, JSON.parse(line))).toMatchObject({
+      history: { chats: [{ jid: "120363000000000001@g.us", kind: "group", parent: "120363000000000002@g.us" }] },
+    })
+  })
+})

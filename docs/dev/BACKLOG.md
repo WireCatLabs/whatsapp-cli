@@ -102,7 +102,8 @@ Open work, most important first. The plan in flight is
      **Built (2026-10-19, cli-core 0.348.0):** WhatsApp's unlink notification (`events.GroupInfo.Unlink`, on the
      group's own side) is pushed as a chat with only `jid`, `kind` and `parent: null`, so the store clears the parent
      and keeps the title, counts and last activity. Not verified live: which side of an unlink a member's device
-     receives (the community's `sub_group` side is ignored), and a link notification (`Link`) is not read.
+     receives (the community's `sub_group` side is ignored). The link notification (`Link`, `parent_group` side) is
+     read the same way and sets the parent to the community.
      `community` stays true-only: a community does not turn back into a plain group.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
@@ -276,3 +277,12 @@ Open work, most important first. The plan in flight is
     command touches it. One nothing touches stays in phone form, and a message under its LID later splits it. The
     engine cannot read cli-core's store; the fix is a cli-core port that hands the messenger the stored chat ids once
     (at `feed`'s start, say), which the adapter passes on to the engine.
+17. **The first test of `src/groups.test.ts` once hit vitest's 5 s timeout** (found 2026-10-19, in a local
+    `pnpm test:coverage` for wa #144, which changed nothing that test runs). Not reproduced: in three later coverage
+    runs it took 64 to 130 ms, and CI stayed green. Probably the cold start of a file's first test while other agents'
+    suites load the machine. If it comes back, give the first test of a file a longer timeout, or warm the import in
+    a setup file, rather than raising the timeout for the whole suite.
+18. **A notice for a group the owner left would mark it rejoined** (found 2026-10-19, needs cli-core). cli-core's
+    `upsertChat` (0.348.0) clears a stored `left` membership whenever a saved chat leaves membership out, as the
+    community link and unlink notices do. WhatsApp probably sends a group's notices only to its members, so it should
+    not arise; the fix is in cli-core: a chat that leaves out every kept field is a notice, not the list naming it.

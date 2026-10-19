@@ -170,6 +170,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   source does not say, no longer erases a stored unread count and last activity either (cli-core 0.348.0). Engine
   wire change: `unread` and `lastMessageAt` may be absent, and `name` and `participants` too, on that notice. Engine
   protocol 36.
+- **A group added to a WhatsApp community names it in the store at once.** `wa` saves WhatsApp's notice that a group
+  joined a community and sets the group's `parent_chat_id`, keeping its title, counts and last activity. Before, the
+  parent showed only after a live read of that one group.
 - **`session start` no longer gives up right after the phone confirms the link.** WhatsApp restarts the connection
   once pairing is done, and wa took the start of that restart for a failure: it said "linked, but could not reconnect
   to WhatsApp in time" and exited 10, the device linked but the history never received, while the phone's linking

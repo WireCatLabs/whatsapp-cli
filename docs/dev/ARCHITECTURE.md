@@ -171,10 +171,11 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   one chat, not separate groups. A history push's group conversation carries the same two (`ParentGroupID`,
   `IsParentGroup`), so the store keeps them. `parent` has three states (`parentField`): a live read of one group sends
   `null` for a group in no community, which clears a stored parent; a push and the joined-groups list leave it out,
-  which keeps one. WhatsApp's notice that a group left its community (`events.GroupInfo.Unlink`, on the group's own
-  side) is pushed as a chat with only `jid`, `kind` and `parent: null`, so the store clears the parent and keeps the
-  title, counts and last activity (cli-core 0.348.0 keeps what a saved chat leaves out). For the same reason a chat
-  leaves out `unread` and `lastMessageAt` when its source does not say; `name` and `participants` are always sent.
+  which keeps one. WhatsApp's notice that a group joined or left its community (`events.GroupInfo.Link` or `Unlink`,
+  on the group's own side, `linkNotice`) is pushed as a chat with only `jid`, `kind` and `parent` (the community, or
+  `null`), so the store sets or clears the parent and keeps the title, counts and last activity (cli-core 0.348.0
+  keeps what a saved chat leaves out). For the same reason a chat leaves out `unread` and `lastMessageAt` when its
+  source does not say; `name` and `participants` are always sent.
 - **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
   [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
   skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and
