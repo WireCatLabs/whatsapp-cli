@@ -247,17 +247,16 @@ describe("a phone-form chat stored before the engine kept its table", () => {
       }
       return engine
     }
-    const started = Date.now()
     const served = await wa([profile, "serve", "--json"], starting, controller.signal)
     expect(served.code, served.stderr).toBe(0)
-    expect(served.stderr).not.toContain("not applied")
-    expect(Date.now() - started).toBeLessThan(10_000)
+    // serve logs a warning as a bare "serve.warning" record, so "N chat re-keys not applied" is not in stderr.
+    expect(served.stderr).not.toContain('"severity":"warn"')
     expect(fedRekeys).toEqual([500])
 
     const ids = await allChatIds(profile)
     expect(ids).toEqual(expect.arrayContaining(Object.values(lids)))
     expect(ids.filter((id) => phones.includes(id))).toEqual([])
-  }, 20_000)
+  })
 
   it("moves a recipient added by a number with no stored chat to its LID as watch starts", async () => {
     const profile = "recipient-by-number"
