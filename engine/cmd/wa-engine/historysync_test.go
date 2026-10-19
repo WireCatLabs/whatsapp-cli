@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"errors"
+	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/proto/waHistorySync"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types/events"
 )
 
@@ -33,6 +37,62 @@ func TestCloseWaitsForAHistoryPushStillDownloading(t *testing.T) {
 	}
 	if len(handed) != 2 {
 		t.Fatalf("handed on %d pushes, want 2", len(handed))
+	}
+}
+
+func closingEngine(fetch func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error),
+	delivered *atomic.Bool) *engine {
+	e, _ := followingEngine(&fakeFollows{})
+	e.stop = func() {}
+	e.client = whatsmeow.NewClient(&store.Device{}, nil)
+	e.downloads = newHistoryDownloads(fetch, func(context.Context, *events.HistorySync) { delivered.Store(true) })
+	return e
+}
+
+func TestTheEngineHandsOnAPushStillDownloadingBeforeItCloses(t *testing.T) {
+	release := make(chan struct{})
+	var delivered atomic.Bool
+	e := closingEngine(func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error) {
+		<-release
+		return &waHistorySync.HistorySync{}, nil
+	}, &delivered)
+	e.downloads.add(&waE2E.HistorySyncNotification{})
+
+	ran := make(chan struct{})
+	go func() {
+		e.run(strings.NewReader(`{"id":1,"op":"close"}` + "\n"))
+		close(ran)
+	}()
+	select {
+	case <-ran:
+		t.Fatal("the engine closed while a push was still downloading")
+	case <-time.After(50 * time.Millisecond):
+	}
+	close(release)
+	<-ran
+	if !delivered.Load() {
+		t.Fatal("the push was not handed on before the engine closed")
+	}
+}
+
+func TestTheEngineClosesWhenAPushNeverFinishesDownloading(t *testing.T) {
+	defer func(wait time.Duration) { historyWait = wait }(historyWait)
+	historyWait = 20 * time.Millisecond
+	var delivered atomic.Bool
+	e := closingEngine(func(ctx context.Context, _ *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error) {
+		select {}
+	}, &delivered)
+	e.downloads.add(&waE2E.HistorySyncNotification{})
+
+	ran := make(chan struct{})
+	go func() {
+		e.run(strings.NewReader(`{"id":1,"op":"close"}` + "\n"))
+		close(ran)
+	}()
+	select {
+	case <-ran:
+	case <-time.After(2 * time.Second):
+		t.Fatal("the engine did not close past its wait")
 	}
 }
 

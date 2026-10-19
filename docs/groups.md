@@ -260,7 +260,8 @@ An agent connected over the [MCP server](mcp.md) can run the same commands, as f
 A WhatsApp community holds several groups under one name. In `wa` a community is a group too, with
 `provider_metadata.community: true`, and a group in a community names it in `parent_chat_id`. Both come with what
 WhatsApp says about the group, so they show in the answers of `chats update`, `chats create` and `chats join`. The
-local store keeps them from the history the phone pushes, so `chats list` and `chats show` show them too. A group
-taken out of its community keeps naming it in the store.
+local store keeps them from the history the phone pushes, so `chats list` and `chats show` show them too. When a
+group is taken out of its community while `wa` is connected, the store stops naming the community and keeps the
+group's title and counts.
 
 Listing a community's groups, and adding a group to a community or taking it out, are done on the phone.

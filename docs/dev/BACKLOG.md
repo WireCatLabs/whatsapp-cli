@@ -25,8 +25,8 @@ Open work, most important first. The plan in flight is
    logout check as `listen`. The engine now downloads history itself (`ManualHistorySyncDownload`, receipt unchanged,
    `historysync.go`), and close waits up to 3 s for a push still downloading, inside the CLI's 5 s close budget.
    Tested with the fake engine and Go tests; the live re-check is left. Not verified: a push announced after that wait
-   ends and before the disconnect is still lost. The note below is how it stood before. Not covered: a history push
-   received by a one-shot connection is still dropped, and
+   ends and before the disconnect is still lost. **Before this (2026-10-18), kept for the research:** a history push
+   received by a one-shot connection was dropped, and
    nothing asks the phone to send it again — whatsmeow sends the `hist_sync` receipt as soon as the notification arrives
    ([`message.go:899-906`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L899-L906)) and deletes the
    blob from WhatsApp's servers once it is handed on (`message.go:735-736`); re-keys are covered, as the engine
@@ -99,13 +99,11 @@ Open work, most important first. The plan in flight is
      groups (`GetSubGroups`, which also names groups the owner is not in), linking and unlinking (`LinkGroup`,
      `UnlinkGroup`) and creating a group in a community (`ReqCreateGroup.LinkedParentJID`) wait for cli-core: a
      `parent_chat_id` field in the chat-list query and a `GroupAdmin` method for link and unlink behind the send guard.
-     A group taken out of its community still names it in the store. cli-core 0.346 clears a stored parent when a
-     saved chat says `parentChatId: null`, and the engine says `parent: null` on a live read of one group (a push and
-     the joined-groups list leave the field out, so they keep the stored one). But nothing that knows "no parent"
-     reaches the store: the store takes chats only from pushes, and a chat saved from WhatsApp's unlink notification
-     (`events.GroupInfo.Unlink`) would overwrite the stored title, unread count and last message time, which the
-     notification does not carry. That waits for cli-core to save part of a chat, or to take a chat change as an
-     event. `community` stays true-only: a community does not turn back into a plain group.
+     **Built (2026-10-19, cli-core 0.348.0):** WhatsApp's unlink notification (`events.GroupInfo.Unlink`, on the
+     group's own side) is pushed as a chat with only `jid`, `kind` and `parent: null`, so the store clears the parent
+     and keeps the title, counts and last activity. Not verified live: which side of an unlink a member's device
+     receives (the community's `sub_group` side is ignored), and a link notification (`Link`) is not read.
+     `community` stays true-only: a community does not turn back into a plain group.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.
    - **Live checks of the chat-state writes** in the own chat (2026-10-18, `bin/live-chat-state`): `account privacy
