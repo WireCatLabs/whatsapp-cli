@@ -555,6 +555,15 @@ describe("a group the owner left", () => {
     expect(await leftIds()).toEqual([])
     expect((await offline("chats", "show", seed.busy)).item.id).toBe(seed.busy)
   })
+
+  it("is marked left by a chats leave that succeeds, and chats show still shows it", async () => {
+    const left = "120363000000000081@g.us"
+    await watching([pushing({ jid: left, name: "Quit club", kind: "group", participants: 3 })])
+    const result = await acting("chats", "leave", left)
+    expect(result.code, result.stderr).toBe(0)
+    expect(await leftIds()).toContain(left)
+    expect((await offline("chats", "show", left)).item).toMatchObject({ id: left, membership_state: "left" })
+  })
 })
 
 describe("wa chats requests", () => {

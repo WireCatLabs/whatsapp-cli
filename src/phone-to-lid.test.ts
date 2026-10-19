@@ -86,6 +86,21 @@ describe("a one-to-one chat typed by its phone number", () => {
     expect(engine.canonicalAsked).toEqual([UNKNOWN])
   })
 
+  it("moves a chat the store holds by the number to its LID on the first command that names it", async () => {
+    const profile = "stored-phone"
+    await wa([profile, "messages", "send", PHONE, TEXT, "--json"], fakeEngine(seed))
+    const engine = lidEngine()
+    const stored = JSON.parse((await wa([profile, "--offline", "messages", "list", PHONE, "--json"])).stdout).items
+    await wa([profile, "messages", "star", PHONE, stored[0].id, "--json"], engine)
+    await wa([profile, "messages", "send", PHONE, "synthetic second text", "--json"], engine)
+
+    expect(engine.actions.map((action) => [action.op, action.key.chat])).toEqual([["star", LID]])
+    const chats = JSON.parse((await wa([profile, "--offline", "chats", "list", "--json"])).stdout).items
+    expect(chats.map((chat: { id: string }) => chat.id)).not.toContain(PHONE)
+    const listed = JSON.parse((await wa([profile, "--offline", "messages", "list", LID, "--json"])).stdout).items
+    expect(listed.map((one: { text: string }) => one.text).sort()).toEqual(["synthetic second text", TEXT])
+  })
+
   it("offline, never starts the engine and reads the chat by the id as typed", async () => {
     const profile = "offline-phone"
     await wa([profile, "messages", "send", PHONE, TEXT, "--json"], fakeEngine(seed))
