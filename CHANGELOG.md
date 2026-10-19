@@ -22,9 +22,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
     the `storedChats` request. Engine protocol 40.
   - A chat the store already holds under the phone number, such as one wa 0.1.0 saved, moves to its LID on the spot
     (cli-core 0.356.0): the first command that names it by the number, a send, `delete`, `star` or reaction
-    included, moves the stored chat and its messages to the LID, then acts on the LID chat. Before, it stayed under
-    the number until a `serve` or `watch` start. An `--offline` command moves nothing: it reads the store by the id
-    as typed.
+    included, moves the stored chat, its messages and its recipient-list entry to the LID, then acts on the LID
+    chat. An `--offline` command moves nothing: it reads the store by the id as typed.
 - **`wa --help` and a bare `wa` show a short first screen** instead of every command and option: what `wa` is for,
   the usage line, the other WireCat tools it works with, and where to start. `wa --help-all` prints the old help and `wa help options` the
   options of every command. Each command's own `--help` now ends with what it returns, the commands that usually
