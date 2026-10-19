@@ -383,6 +383,22 @@ row of `wa_lid_asks` too, so a restart does not let the write through; it is pai
 minutes. `serve` goes
 on: ending it would make its unit start it again, and a new run with it.
 
+**A chat the owner types by its phone number is addressed by its LID.** cli-core stores a send under the chat the
+engine answered, the LID, so a delete, a star or a vote by the typed number would miss that message, and a vote would
+make a bare phone-form chat. The adapter's `resolve` therefore hands a typed `digits@s.whatsapp.net` to the engine's
+`canonicalChat` request (`engine/cmd/wa-engine/canonicalchat.go`), which answers the id a send would: the LID when
+whatsmeow's map or `wa_phone_chats` knows it, the self LID for the owner's own number, else the id as typed. It reads
+those two local tables only — no lookup, no request to WhatsApp — and records nothing, since a typed number need not
+be a chat the account has. Every command that names a chat goes through `resolve`, the send itself included; groups,
+LIDs and channels pass through without the request. An `--offline` command never starts the engine and never calls
+`resolve`: it reads cli-core's store by the id as typed, so `messages list <number> --offline` shows only what is
+stored under the phone form. Typing the LID, or the chat's name, reads the whole chat; mapping offline would need the
+LID map in cli-core's store. A recipients-list entry added by the phone number before this no longer matches once the
+number maps to a LID; the send is refused until the chat is added again. A chat cli-core stored in phone form before
+`wa_phone_chats` existed, whose LID whatsmeow already knows, is found by its number again only after a `serve` or
+`watch` start has re-keyed it (`storedChats`); until then a delete, a star or a reaction by the number answers "not in
+the store" and sends nothing.
+
 ## 6. One connection per linked device
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot

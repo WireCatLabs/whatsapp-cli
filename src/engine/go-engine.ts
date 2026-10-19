@@ -200,6 +200,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
 
   let connecting: Promise<unknown> | undefined
   const nothing = v.nullable(v.unknown())
+  const jidAnswer = v.pipe(v.string(), v.includes("@"))
 
   return {
     self: () => self,
@@ -258,6 +259,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     storedChats: async (chats) => {
       await request("storedChats", { chats }, nothing)
     },
+    canonicalChat: (jid) => request("canonicalChat", { jid }, jidAnswer),
     listen: (kinds, onEvent) => hub.listen(kinds, onEvent),
     close,
     ...goGroups(request),

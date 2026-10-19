@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 37
+export const PROTOCOL = 38
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -80,6 +80,8 @@ export const ENGINE_OPS = {
   channelMessages: "read",
   // Records the store's phone-form chats in the engine's own table; nothing reaches WhatsApp.
   storedChats: "read",
+  // Reads whatsmeow's LID map for a typed phone-form chat; nothing reaches WhatsApp.
+  canonicalChat: "read",
 } as const
 
 export type EngineOp = keyof typeof ENGINE_OPS
@@ -535,6 +537,11 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngi
    * paced lookups if not. Never connects.
    */
   storedChats(chats: string[]): Promise<void>
+  /**
+   * The chat id the store keeps a typed one-to-one chat under: its LID when whatsmeow's map knows it, else the id as
+   * typed. Reads the map only, never connects, and records nothing.
+   */
+  canonicalChat(jid: string): Promise<string>
   /** Events of the given kinds until the returned function is called. */
   listen(kinds: readonly EngineEvent["event"][], onEvent: (event: EngineEvent) => void): () => void
   close(): Promise<void>

@@ -133,6 +133,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, Fak
   markedRead: WaAnchor[]
   /** Each `storedChats` request, by the chat ids it carried. */
   storedAsked: string[][]
+  /** Each id `canonicalChat` was asked for. */
+  canonicalAsked: string[]
   closed: boolean
   loggedOut: boolean
 }
@@ -205,6 +207,7 @@ export const fakeEngine = (
   const markedUnread: WaAnchor[] = []
   const markedRead: WaAnchor[] = []
   const storedAsked: string[][] = []
+  const canonicalAsked: string[] = []
   const keysMissing = () =>
     new EngineError(
       "provider_unavailable",
@@ -254,6 +257,7 @@ export const fakeEngine = (
     markedUnread,
     markedRead,
     storedAsked,
+    canonicalAsked,
     closed: false,
     loggedOut: false,
     push,
@@ -454,6 +458,10 @@ export const fakeEngine = (
     logout: async () => {
       engine.loggedOut = true
       self = null
+    },
+    canonicalChat: async (jid) => {
+      canonicalAsked.push(jid)
+      return lids[jid] ?? jid
     },
     storedChats: async (chats) => {
       storedAsked.push(chats)
