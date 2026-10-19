@@ -32,7 +32,14 @@ export const BAN_WARNING = [
 ].join("\n")
 
 /** The phone pushes its history right after linking, once; how long to keep receiving it. */
-export const HISTORY_WAIT = { firstMs: 120_000, quietMs: 45_000 }
+export const HISTORY_WAIT: HistoryWait = { firstMs: 120_000, quietMs: 45_000, slowMs: 20_000 }
+
+/** `slowMs`: with nothing pushed by then, say once that the wait goes on, so the silence does not read as a hang. */
+export interface HistoryWait {
+  firstMs: number
+  quietMs: number
+  slowMs?: number
+}
 
 export interface Received {
   chats: number
@@ -44,11 +51,17 @@ export interface Received {
  * Saves what the phone pushes until it goes quiet or `signal` aborts. Live messages that arrive meanwhile are saved
  * too, through the same connection.
  */
-const receiveHistory = async (adapter: MessengerAdapter, wait: typeof HISTORY_WAIT, signal?: AbortSignal) => {
+const receiveHistory = async (
+  adapter: MessengerAdapter,
+  wait: HistoryWait,
+  onSlow: () => void,
+  signal?: AbortSignal,
+) => {
   const received: Received = { chats: 0, messages: 0, people: 0 }
   const stop = new AbortController()
   const end = () => stop.abort()
   let timer = setTimeout(end, wait.firstMs)
+  const slow = wait.slowMs === undefined ? undefined : setTimeout(onSlow, wait.slowMs)
   signal?.addEventListener("abort", end, { once: true })
   try {
     await Promise.all([
@@ -56,12 +69,14 @@ const receiveHistory = async (adapter: MessengerAdapter, wait: typeof HISTORY_WA
         received.chats += batch.chats?.length ?? 0
         received.messages += batch.messages?.length ?? 0
         received.people += batch.people?.length ?? 0
+        clearTimeout(slow)
         clearTimeout(timer)
         timer = setTimeout(end, wait.quietMs)
       }, stop.signal),
       adapter.watch?.(() => {}, stop.signal),
     ])
   } finally {
+    clearTimeout(slow)
     clearTimeout(timer)
     signal?.removeEventListener("abort", end)
   }
@@ -205,7 +220,16 @@ export const startSession = async (
       const stop = stopEndsWait ? environment.untilStopped?.() : environment.signal
       const ended = AbortSignal.any([signal, stop].filter((one) => one !== undefined))
       session.received = await context.withMessenger(
-        (adapter) => receiveHistory(adapter, environment.historyWait ?? HISTORY_WAIT, ended),
+        (adapter) =>
+          receiveHistory(
+            adapter,
+            environment.historyWait ?? HISTORY_WAIT,
+            () =>
+              context.renderer.note(
+                "still waiting for the phone's history — keep WhatsApp open on the phone; it can take a minute",
+              ),
+            ended,
+          ),
         { listen: true },
       )
     }

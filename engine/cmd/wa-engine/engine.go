@@ -213,20 +213,7 @@ func (e *engine) connect() error {
 			return err
 		}
 	}
-	// In slices, so a refusal WhatsApp sends while connecting answers at once rather than after the whole wait.
-	deadline := time.Now().Add(connectWait)
-	for !e.client.WaitForConnection(250 * time.Millisecond) {
-		if ended := e.endedBy(); ended != nil {
-			return ended
-		}
-		if err := e.ctx.Err(); err != nil {
-			return err
-		}
-		if time.Now().After(deadline) {
-			return &failure{"network_error", "could not connect to WhatsApp in time"}
-		}
-	}
-	return nil
+	return e.awaitLogin(e.client.WaitForConnection, waitSlice, connectWait, "could not connect to WhatsApp in time")
 }
 
 func (e *engine) send(req request) (*waMessage, error) {
