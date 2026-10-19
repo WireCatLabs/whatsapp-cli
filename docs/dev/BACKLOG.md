@@ -277,3 +277,12 @@ Open work, most important first. The plan in flight is
     command touches it. One nothing touches stays in phone form, and a message under its LID later splits it. The
     engine cannot read cli-core's store; the fix is a cli-core port that hands the messenger the stored chat ids once
     (at `feed`'s start, say), which the adapter passes on to the engine.
+17. **The first test of `src/groups.test.ts` once hit vitest's 5 s timeout** (found 2026-10-19, in a local
+    `pnpm test:coverage` for wa #144, which changed nothing that test runs). Not reproduced: in three later coverage
+    runs it took 64 to 130 ms, and CI stayed green. Probably the cold start of a file's first test while other agents'
+    suites load the machine. If it comes back, give the first test of a file a longer timeout, or warm the import in
+    a setup file, rather than raising the timeout for the whole suite.
+18. **A notice for a group the owner left would mark it rejoined** (found 2026-10-19, needs cli-core). cli-core's
+    `upsertChat` (0.348.0) clears a stored `left` membership whenever a saved chat leaves membership out, as the
+    community link and unlink notices do. WhatsApp probably sends a group's notices only to its members, so it should
+    not arise; the fix is in cli-core: a chat that leaves out every kept field is a notice, not the list naming it.

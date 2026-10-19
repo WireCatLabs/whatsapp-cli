@@ -173,8 +173,9 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `null` for a group in no community, which clears a stored parent; a push and the joined-groups list leave it out,
   which keeps one. WhatsApp's notice that a group joined or left its community (`events.GroupInfo.Link` or `Unlink`,
   on the group's own side, `linkNotice`) is pushed as a chat with only `jid`, `kind` and `parent` (the community, or
-  `null`), so the store sets or clears the parent and keeps the title, counts and last activity (cli-core 0.348.0 keeps what a saved chat leaves out). For the same reason a chat
-  leaves out `unread` and `lastMessageAt` when its source does not say; `name` and `participants` are always sent.
+  `null`), so the store sets or clears the parent and keeps the title, counts and last activity (cli-core 0.348.0
+  keeps what a saved chat leaves out). For the same reason a chat leaves out `unread` and `lastMessageAt` when its
+  source does not say; `name` and `participants` are always sent.
 - **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
   [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
   skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and
