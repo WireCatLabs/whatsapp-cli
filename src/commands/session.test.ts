@@ -80,6 +80,37 @@ describe("wa session start", () => {
     expect(engine.closed).toBe(true)
   })
 
+  it("says once that it is still waiting when the phone's history is slow to come", async () => {
+    const engine = fakeEngine(seed, { linked: false })
+    const listen = engine.listen
+    engine.listen = (kinds, onEvent) => {
+      if (!kinds.includes("history")) return listen(kinds, onEvent)
+      let unlisten = () => {}
+      const late = setTimeout(() => {
+        unlisten = listen(kinds, onEvent)
+      }, 100)
+      return () => {
+        clearTimeout(late)
+        unlisten()
+      }
+    }
+    const result = await wa(
+      ["slow", "session", "start", "--qr-file", `${process.env.TMPDIR}/s.png`, "--json"],
+      () => engine,
+      { historyWait: { firstMs: 5_000, quietMs: 0, slowMs: 10 } },
+    )
+    expect(result.code, result.stderr).toBe(0)
+    expect(result.stderr.match(/still waiting for the phone's history/g)).toHaveLength(1)
+    expect(JSON.parse(result.stdout).item.received.messages).toBe(seed.messages.length)
+
+    const quick = await wa(
+      ["quick", "session", "start", "--qr-file", `${process.env.TMPDIR}/q.png`, "--json"],
+      () => fakeEngine(seed, { linked: false }),
+      { historyWait: { ...QUICK, slowMs: 1_000 } },
+    )
+    expect(quick.stderr).not.toContain("still waiting")
+  })
+
   it("asks nothing and counts nothing when the profile is already linked", async () => {
     const result = await wa(["linked", "session", "start", "--qr-file", `${process.env.TMPDIR}/x.png`, "--json"], () =>
       fakeEngine(seed),
