@@ -51,6 +51,13 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("asks for a typed chat's canonical id and takes the engine's answer", async () => {
+    const engine = await stub("ok")
+    expect(await engine.canonicalChat("70000000009@s.whatsapp.net")).toBe("100000000000002@lid")
+    expect(await engine.canonicalChat("70000000008@s.whatsapp.net")).toBe("70000000008@s.whatsapp.net")
+    await engine.close()
+  })
+
   it("pins and unpins by the stored message's key, with the pin's duration when given", async () => {
     const engine = await stub("ok")
     const key = { chat: "120363000000000001@g.us", id: "3EB0AA", fromMe: false, sender: "100000000000002@lid" }

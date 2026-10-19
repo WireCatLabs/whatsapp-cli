@@ -413,10 +413,12 @@ export const whatsAppAdapter = (
 
     me: async () => toAccount(await translated(engine.me())),
 
+    // A send to a phone-form chat lands under the LID the engine answers, so every later command must address that
+    // chat too, or a delete, a star or a vote by the typed number misses the stored message (§5).
     resolve: async (query: string): Promise<Chat> => {
       if (query.includes("@"))
         return {
-          id: query,
+          id: PHONE_CHAT.test(query) ? await translated(engine.canonicalChat(query)) : query,
           title: null,
           kind: "unknown",
           unreadCount: null,
