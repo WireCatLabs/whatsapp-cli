@@ -24,6 +24,11 @@ const (
 	// A row of wa_lid_asks no phone number can be: when WhatsApp last asked this account to slow down. No lookup
 	// goes out for lidAskAgain after it, across restarts, since WhatsApp's 429 says nothing of how long to wait.
 	lidAskHeld = "rate-limited"
+	// Another such row: a 429 a background lookup met, owed to the next write (engine.answer). It outlives a restart,
+	// which would otherwise let a write through inside the hold the CLI never heard of.
+	lidAskOwed = "write-owed"
+	// The CLI's hold after a 429, RATE_LIMIT_HOLD_MS in src/adapter/errors.ts: a 429 older than that is owed to nobody.
+	writeHold = 15 * time.Minute
 )
 
 type lidAsker struct {
@@ -111,6 +116,31 @@ func (a *lidAsker) hold(ctx context.Context) {
 	}
 }
 
+// owe keeps a background 429 for the next write. Unlike hold's row, it is set only where no command carries the 429.
+func (a *lidAsker) owe(ctx context.Context) {
+	if a != nil {
+		_ = a.mark(ctx, lidAskOwed, a.now())
+	}
+}
+
+// owed takes a background 429 for this write, at most once: the refusal makes the CLI hold the rest, and `flood clear`
+// must be able to lift that hold.
+func (a *lidAsker) owed(ctx context.Context) bool {
+	if a == nil {
+		return false
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	var at int64
+	if a.db.QueryRowContext(ctx, `SELECT asked_at FROM wa_lid_asks WHERE pn = ?`, lidAskOwed).Scan(&at) != nil {
+		return false
+	}
+	if _, err := a.db.ExecContext(ctx, `DELETE FROM wa_lid_asks WHERE pn = ?`, lidAskOwed); err != nil {
+		return false
+	}
+	return at >= a.now().Add(-writeHold).Unix()
+}
+
 func (a *lidAsker) mark(ctx context.Context, pn string, at time.Time) error {
 	_, err := a.db.ExecContext(ctx, `INSERT INTO wa_lid_asks (pn, asked_at) VALUES (?, ?)
 		ON CONFLICT (pn) DO UPDATE SET asked_at = excluded.asked_at`, pn, at.Unix())
@@ -175,7 +205,7 @@ func (e *engine) lookUpMissing() {
 	}
 	// whatsmeow stores each LID the answer carries; settle then turns them into re-keys.
 	if e.asks.run(e.ctx, e.phones.waiting()) {
-		e.limited.Store(true)
+		e.asks.owe(e.ctx)
 	}
 	for _, rekey := range e.phones.settle(e.ctx, e.lidOf(nil), time.Now()) {
 		e.out.rekey(rekey)

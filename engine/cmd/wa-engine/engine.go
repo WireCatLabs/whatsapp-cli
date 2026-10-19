@@ -7,7 +7,6 @@ import (
 	"errors"
 	"io"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"go.mau.fi/whatsmeow"
@@ -36,9 +35,6 @@ type engine struct {
 
 	phones *phoneChats // nil when private.db could not hold the table: chats are then never re-keyed
 	asks   *lidAsker   // nil while linking, and without the phone-form chats
-	// A 429 a background lookup met, owed to the next write: that write's refusal is what makes the CLI hold the
-	// profile's writes (WC-PERM-18), as no request of its own carried the 429.
-	limited atomic.Bool
 
 	olderOne  sync.Mutex // one request for older history at a time, so its answer is known by its chat
 	olderAsks olderWaiter
@@ -131,7 +127,9 @@ func (e *engine) answer(req request) {
 			e.out.fail(req.ID, &refusal{failure: failure{"provider_error", "the engine failed on this request"}})
 		}
 	}()
-	if writes[req.Op] && e.limited.Swap(false) {
+	// A 429 a background lookup met: this write's refusal is what makes the CLI hold the profile's writes
+	// (WC-PERM-18), as no request of its own carried the 429.
+	if writes[req.Op] && e.asks.owed(e.ctx) {
 		e.out.fail(req.ID, rateLimited)
 		return
 	}
@@ -140,6 +138,7 @@ func (e *engine) answer(req request) {
 		e.out.fail(req.ID, e.refusalFor(req.Op, err))
 		return
 	}
+	e.noteNamed(req)
 	e.out.ok(req.ID, value)
 }
 

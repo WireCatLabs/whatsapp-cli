@@ -341,8 +341,12 @@ not: `serve` and `watch` run `feed` beside it. cli-core saves the two on separat
 first, in a new chat under the LID; the re-key then merges the two. At each start the engine announces the
 re-keys whatsmeow learned while it was not running, and repeats those of the last 30 days: a one-shot command does
 not save history, so the first announcement may have had no listener, and cli-core takes a repeat as a no-op. Only
-chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward, a poll or an edit —
-never senders or contacts. Once re-keyed, a chat is never emitted in phone form again — not in a message, a
+chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward, a poll or a vote, of a
+star or a delete made on another device, and the chat a request on stored messages or a stored chat names (`react`,
+`read`, `older`, `mute`, `archiveChat` and the like) — never senders or contacts. The last is how a chat cli-core stored
+in phone form before the table existed comes in, since the engine cannot read that store; one nothing names stays
+out (BACKLOG). The directory and a chat card do not record: their phone-form people are the address book, not chats,
+and a request that later names one records it then. Once re-keyed, a chat is never emitted in phone form again — not in a message, a
 history push, a send's result or the chat directory: the engine takes its LID from the table wherever whatsmeow's
 store does not answer, and keeps the row after the 30 days of repeats.
 
@@ -359,7 +363,9 @@ none. Each LID found goes out as a re-key.
 
 WhatsApp's 429, on a lookup or on any other request, stops the lookups for a week, across restarts (a row of
 `wa_lid_asks`). A 429 a lookup met has no command to refuse, so the engine refuses the next write with
-`account.rate-limited`, and the CLI holds the profile's writes from there as after any 429 (WC-PERM-18). `serve` goes
+`account.rate-limited`, and the CLI holds the profile's writes from there as after any 429 (WC-PERM-18). That debt is a
+row of `wa_lid_asks` too, so a restart does not let the write through; it is paid once, and lapses after the CLI's 15
+minutes. `serve` goes
 on: ending it would make its unit start it again, and a new run with it.
 
 ## 6. One connection per linked device

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -156,15 +157,58 @@ func TestAnAskThatCannotBeRecordedFirstIsNotSent(t *testing.T) {
 	}
 }
 
-func TestTheWriteAfterABackgroundRateLimitIsRefusedSoTheCLIHoldsWrites(t *testing.T) {
+func writeRefused(e *engine) bool {
 	var out bytes.Buffer
-	e := &engine{out: newWire(&out)}
-	e.limited.Store(true)
+	e.out = newWire(&out)
 	e.answer(request{ID: 1, Op: "send"})
-	if !strings.Contains(out.String(), `"reason":"account.rate-limited"`) {
-		t.Fatalf("the write went on: %s", out.String())
+	return strings.Contains(out.String(), `"reason":"account.rate-limited"`)
+}
+
+func TestTheWriteAfterABackgroundRateLimitIsRefusedSoTheCLIHoldsWrites(t *testing.T) {
+	clock := time.Date(2026, 10, 18, 10, 0, 0, 0, time.UTC)
+	path := filepath.Join(t.TempDir(), "private.db")
+	a, _ := fakeAsker(t, path, &clock, nil)
+	a.owe(context.Background())
+	restarted, _ := fakeAsker(t, path, &clock, nil)
+	e := &engine{ctx: context.Background(), asks: restarted}
+	if !writeRefused(e) {
+		t.Fatal("a restart let the write through inside the hold")
 	}
-	if e.limited.Load() {
+	if writeRefused(e) {
 		t.Error("the 429 was owed to more than one write; the CLI's hold covers the rest")
+	}
+	again, _ := fakeAsker(t, path, &clock, nil)
+	if writeRefused(&engine{ctx: context.Background(), asks: again}) {
+		t.Error("a 429 already handed to a write was owed again after a restart")
+	}
+}
+
+func TestA429OlderThanTheCLIsHoldIsOwedToNoWrite(t *testing.T) {
+	clock := time.Date(2026, 10, 18, 10, 0, 0, 0, time.UTC)
+	a, _ := fakeAsker(t, filepath.Join(t.TempDir(), "private.db"), &clock, nil)
+	a.owe(context.Background())
+	clock = clock.Add(writeHold + time.Minute)
+	if writeRefused(&engine{ctx: context.Background(), asks: a}) {
+		t.Error("refused a write after the hold had ended")
+	}
+}
+
+func TestA429ACommandMetIsNotOwedToTheNextWrite(t *testing.T) {
+	clock := time.Date(2026, 10, 18, 10, 0, 0, 0, time.UTC)
+	a, _ := fakeAsker(t, filepath.Join(t.TempDir(), "private.db"), &clock, nil)
+	e := &engine{ctx: context.Background(), asks: a}
+	e.refusalFor("send", &whatsmeow.IQError{Code: 429})
+	if writeRefused(e) {
+		t.Error("the 429 was refused twice: once to its command, once to the next write")
+	}
+}
+
+func TestTheWriteHoldMatchesTheCLIs(t *testing.T) {
+	source, err := os.ReadFile(filepath.Join("..", "..", "..", "src", "adapter", "errors.ts"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if writeHold != 15*time.Minute || !strings.Contains(string(source), "RATE_LIMIT_HOLD_MS = 15 * 60_000") {
+		t.Error("writeHold and RATE_LIMIT_HOLD_MS in src/adapter/errors.ts differ")
 	}
 }

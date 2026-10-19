@@ -146,6 +146,7 @@ func (e *engine) pollVote(evt *events.Message) {
 		return
 	}
 	if vote, ok := e.conv.vote(evt, decrypted); ok {
+		e.phones.note(e.ctx, vote.Chat)
 		e.out.event("vote", vote)
 	}
 }

@@ -54,7 +54,7 @@ func (e *engine) handle(raw any) {
 			e.out.event("history", history)
 		}
 	case *events.Star:
-		if chat, ok := e.conv.appStateMessage(evt.ChatJID, evt.MessageID); ok && evt.Action != nil {
+		if chat, ok := e.appStateChat(evt.ChatJID, evt.MessageID); ok && evt.Action != nil {
 			e.out.starred(chat, evt.MessageID, evt.Action.GetStarred())
 		}
 	case *events.GroupInfo:
@@ -62,7 +62,7 @@ func (e *engine) handle(raw any) {
 			e.out.event("chat_event", change)
 		}
 	case *events.DeleteForMe:
-		if chat, ok := e.conv.appStateMessage(evt.ChatJID, evt.MessageID); ok {
+		if chat, ok := e.appStateChat(evt.ChatJID, evt.MessageID); ok {
 			e.out.deleted(chat, evt.MessageID)
 		}
 	case *events.MediaRetry:
