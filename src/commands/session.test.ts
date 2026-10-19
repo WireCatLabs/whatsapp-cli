@@ -288,11 +288,30 @@ describe("wa session start at a terminal", () => {
     expect(`${again.stderr}${later.stderr}`).not.toContain(BAN_WARNING)
   })
 
-  it("draws the QR code in the terminal", async () => {
-    const result = await wa(["scanned", "session", "start"], () => fakeEngine(seed, { linked: false }), terminal())
-    expect(result.code).toBe(0)
-    expect(result.stderr).toContain("Linked devices")
-    expect(result.stderr.split("\n").length).toBeGreaterThan(10)
+  const drawnAt = async (columns: number) => {
+    const before = Object.getOwnPropertyDescriptor(process.stderr, "columns")
+    Object.defineProperty(process.stderr, "columns", { value: columns, configurable: true })
+    try {
+      const result = await wa(["scanned", "session", "start"], () => fakeEngine(seed, { linked: false }), terminal())
+      expect(result.code).toBe(0)
+      return result.stderr
+    } finally {
+      if (before) Object.defineProperty(process.stderr, "columns", before)
+      else delete (process.stderr as { columns?: number }).columns
+    }
+  }
+
+  it("draws the QR code in the terminal, then says where to scan it", async () => {
+    const shown = await drawnAt(200)
+    expect(shown).toMatch(/[█▀▄]/)
+    expect(shown.indexOf("Linked devices")).toBeGreaterThan(shown.lastIndexOf("▀"))
+  })
+
+  it("does not ask to scan a code a narrow terminal could not draw", async () => {
+    const shown = await drawnAt(20)
+    expect(shown).toContain("20 columns wide")
+    expect(shown).not.toMatch(/[█▀▄]/)
+    expect(shown).not.toContain("Linked devices")
   })
 
   it("tells a person the profile is linked already, and how to link again", async () => {
