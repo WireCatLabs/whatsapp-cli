@@ -276,16 +276,10 @@ Open work, most important first. The plan in flight is
     runs it took 64 to 130 ms, and CI stayed green. Probably the cold start of a file's first test while other agents'
     suites load the machine. If it comes back, give the first test of a file a longer timeout, or warm the import in
     a setup file, rather than raising the timeout for the whole suite.
-18. **A notice for a group the owner left would mark it rejoined** (found 2026-10-19, needs cli-core). cli-core's
-    `upsertChat` (0.348.0) clears a stored `left` membership whenever a saved chat leaves membership out, as the
-    community link and unlink notices do. WhatsApp probably sends a group's notices only to its members, so it should
-    not arise; the fix is in cli-core: a chat that leaves out every kept field is a notice, not the list naming it.
-19. **A send typed to a re-keyed person's phone number can undo the owner's settings on their chat** (found
-    2026-10-19, wa #148 review, needs cli-core). cli-core saves a send under the id the owner typed, so a send to the
-    old phone-form id stores a new phone-form chat beside the LID chat. At the next `serve` or `watch` start the
-    engine announces that re-key again (within 30 days before #148; since #148, whenever the store holds the phone
-    form), and cli-core merges into the row of the old id: here the new phone-form chat. Its `scope` and `searchable` win, so
-    a LID chat the owner had hidden from search becomes searchable again. Not a loop: once merged, the phone form is
-    gone. The fix is in cli-core: save a send under the chat id the messenger answered, or keep the owner's fields of
-    the row the merge absorbs. Also cli-core's, for scale only: each re-key is its own store write, so the first
-    start after upgrading writes once per stored phone-form chat whose LID is known.
+19. **A send typed to a re-keyed person's phone number is saved beside their LID chat** (found 2026-10-19, wa #148
+    review, needs cli-core). cli-core saves a send under the id the owner typed, so a send to the old phone-form id
+    stores a new phone-form chat beside the LID chat until the next `serve` or `watch` start merges it again. Since
+    cli-core 0.353.0 the merge keeps the stricter `searchable` and `scope` of the two rows, so this no longer loosens
+    the owner's settings; the fix is in cli-core: save a send under the chat id the messenger answered. Also
+    cli-core's, for scale only: each re-key is its own store write, so the first start after upgrading writes once
+    per stored phone-form chat whose LID is known.

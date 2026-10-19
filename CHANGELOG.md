@@ -61,11 +61,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   stored chat and its messages to the LID, so `messages list` and `search` show one chat, and no chat is left under
   the phone-number id (`…@s.whatsapp.net`). A script that saved that id must take the new one from `chats list`. The
   move is repeated at each start for 30 days, so one that came while only a one-shot command ran still lands. A
-  send typed to the old id stores a chat under it again, which a later repeat of the move merges. A chat stored
-  under a phone number by wa 0.1.0 moves too: `serve` and `watch` hand the stored chat ids to the engine as they
-  start, and one whose LID WhatsApp already gave moves at once (cli-core 0.350.0, `storedChats`). If that fails,
-  `wa` says so once on stderr (`stored_chats_failed` in the run record) and goes on. Engine wire change: a
-  `storedChats` request. Engine protocol 37.
+  send typed to the old id stores a chat under it again, which a later repeat of the move merges. The merged chat
+  keeps the stricter privacy of its two forms: hidden from search if either was, personal if they disagree, and a
+  scope pinned on either stays pinned (cli-core 0.353.0). A chat stored under a phone number by wa 0.1.0 moves too:
+  `serve` and `watch` hand the stored chat ids to the engine as they start, and one whose LID WhatsApp already gave
+  moves at once (cli-core 0.350.0, `storedChats`). If that fails, `wa` says so once on stderr (`stored_chats_failed`
+  in the run record) and goes on. Engine wire change: a `storedChats` request. Engine protocol 37.
 - **`serve` asks WhatsApp for the LID of a chat still in phone form**, so that chat moves too. It asks a minute after
   history stops coming or `serve` or `watch` starts, for chats the account already has only: five people per
   request, one request every 10 seconds, at most 20 people per run, and each person at most once a week. The owner's
@@ -148,6 +149,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **A chat hidden from search no longer turns up in a search that does not name it** (cli-core 0.353.0). The
+  messages by and about a person in `contacts context`, the pictures lane of `search messages`, and the meaning half
+  of `search conversations` and `conversations related` left it in, and the search answers listed it as not yet
+  embedded. A sender-only lookup no longer counts its messages. `wa` has no command that hides a chat from search,
+  so only a store edited by hand was affected.
 - **The QR login is cli-core's `loginQr`, as in tg and max.** `--qr-file` is written as a temporary file created
   with mode `0600` and renamed over the path, instead of being written and then chmodded. A terminal too narrow
   for the code draws nothing and says to widen it or pass `--qr-file`. Without a terminal, `session start` says
@@ -270,6 +276,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> store clear --left` lists the chats it would delete**, by id, title and message count, when it
+  refuses without `--allow-dangerous`, and after deleting lists what it deleted; `--dry-run` lists them all and
+  deletes nothing (cli-core 0.353.0).
 - **`wa <profile> chats events <group>` lists who joined, left, was added, removed, promoted or demoted, and each new
   title**, from the local store, without connecting. `wa` keeps the group service messages the phone pushes with the
   history and, under `wa serve` and `wa watch`, each change as it happens; a change seen both ways is kept once.
