@@ -65,8 +65,12 @@ func (e *engine) handle(raw any) {
 		for _, change := range e.conv.groupChanges(evt) {
 			e.out.event("chat_event", change)
 		}
-		if notice, ok := linkNotice(evt); ok {
+		if notice, ok := e.conv.groupNotice(evt); ok {
 			e.pushChats([]waChat{notice})
+		}
+	case *events.JoinedGroup:
+		if chat, ok := e.conv.joined(evt); ok {
+			e.pushChats([]waChat{chat})
 		}
 	case *events.DeleteForMe:
 		if chat, ok := e.appStateChat(evt.ChatJID, evt.MessageID); ok {

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**242 ✅ · 520 ⛔ · 0 ❌** — 244 commands, 518 options.
+**246 ✅ · 516 ⛔ · 0 ❌** — 244 commands, 518 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -309,10 +309,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `store export` | `--include` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store export` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store export` | `--encrypt` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
-| `store clear` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
-| `store clear` | `--left` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
-| `store clear` | `--allow-dangerous` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
-| `store clear` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store clear` |  | ✅ |  |
+| `store clear` | `--left` | ✅ |  |
+| `store clear` | `--allow-dangerous` | ✅ |  |
+| `store clear` | `--dry-run` | ✅ |  |
 | `store info` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store check` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store migrate` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |

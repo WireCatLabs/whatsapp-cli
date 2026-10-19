@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 38
+export const PROTOCOL = 39
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -108,6 +108,8 @@ export const waChat = v.strictObject({
   parent: v.optional(v.nullable(jid)),
   /** A community itself: a group that holds other groups. */
   community: v.optional(v.literal(true)),
+  /** `left` when WhatsApp said the owner left the group or was removed; never `null`, which clears `archived` too. */
+  membershipState: v.optional(v.literal("left")),
 })
 
 export const waContact = v.strictObject({ jid, name: v.nullable(v.string()) })

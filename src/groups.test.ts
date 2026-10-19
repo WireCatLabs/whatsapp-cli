@@ -515,6 +515,48 @@ describe("wa communities", () => {
   })
 })
 
+describe("a group the owner left", () => {
+  const pushing = (chat: WaChat): EngineEvent => ({
+    event: "history",
+    history: { kind: "other", chats: [chat], contacts: [], messages: [], votes: [] },
+  })
+  const leftChats = async () => {
+    const result = await wa([PROFILE, "store", "clear", "--left", "--dry-run", "--json"])
+    expect(result.code, result.stderr).toBe(0)
+    const answer = JSON.parse(result.stdout)
+    return (answer.item ?? answer).left as { id: string; title: string | null }[]
+  }
+  const leftIds = async () => (await leftChats()).map(({ id }) => id)
+
+  it("is listed by store clear --left once WhatsApp says so, and stays listed after a full push", async () => {
+    const left = "120363000000000079@g.us"
+    const lastMessageAt = "2026-09-03T10:00:00.000Z"
+    await watching([pushing({ jid: left, name: "Old club", kind: "group", unread: 1, lastMessageAt, participants: 6 })])
+    expect(await leftIds()).not.toContain(left)
+
+    await watching([pushing({ jid: left, kind: "group", membershipState: "left" })])
+    expect(await leftChats()).toContainEqual(expect.objectContaining({ id: left, title: "Old club" }))
+
+    await watching([pushing({ jid: left, name: "Old club", kind: "group", participants: 6 })])
+    expect(await leftIds()).toContain(left)
+  })
+
+  it("is out of chats list, and deleted by store clear --left --allow-dangerous, only it", async () => {
+    const left = "120363000000000080@g.us"
+    await watching([
+      pushing({ jid: left, name: "Gone club", kind: "group", participants: 2 }),
+      pushing({ jid: left, kind: "group", membershipState: "left" }),
+    ])
+    expect(await leftIds()).toEqual([left])
+    const listed = (await offline("chats", "list", "--all")).items.map(({ id }: { id: string }) => id)
+    expect(listed).not.toContain(left)
+    const result = await wa([PROFILE, "store", "clear", "--left", "--allow-dangerous", "--json"])
+    expect(result.code, result.stderr).toBe(0)
+    expect(await leftIds()).toEqual([])
+    expect((await offline("chats", "show", seed.busy)).item.id).toBe(seed.busy)
+  })
+})
+
 describe("wa chats requests", () => {
   it("lists who asked to join and lets one in", async () => {
     const listed = await acting("chats", "requests", "list", seed.busy, "--limit", "1", "--page", "1")

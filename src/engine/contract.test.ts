@@ -39,3 +39,12 @@ describe("a community link on the wire", () => {
     })
   })
 })
+
+describe("the owner's membership on the wire", () => {
+  it("reads the line the engine writes when the owner leaves a group", () => {
+    const left =
+      '{"event":"history","history":{"kind":"other","chats":[{"jid":"120363000000000001@g.us","kind":"group",' +
+      '"membershipState":"left"}],"contacts":[],"messages":[],"votes":[]}}'
+    expect(v.parse(engineEvent, JSON.parse(left))).toMatchObject({ history: { chats: [{ membershipState: "left" }] } })
+  })
+})
