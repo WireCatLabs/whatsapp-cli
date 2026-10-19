@@ -7,6 +7,20 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **A one-to-one chat typed by its phone number is addressed by its LID**, the id WhatsApp files that chat under,
+  when WhatsApp has already given it. A send by the number is stored under the LID (cli-core 0.350.0), so a later
+  `messages delete`, `messages star`, `reactions add` or `polls vote` by the number used to miss it: the deleted text stayed
+  searchable, the star was lost, and the vote made a second chat. Every command that names a chat now looks the
+  number up in the LIDs this device knows; nothing is asked of WhatsApp and nothing is recorded. A number with no
+  known LID, a group, a LID or a channel is used as typed, and an `--offline` command uses the id as typed too.
+  Engine wire change: a `canonicalChat` request. Engine protocol 38. Two things the owner may notice:
+  - A recipient list entry added by the phone number stops matching once that number has a LID, and a send to it
+    is refused with exit 7. The refusal names the id to allow: run `recipients add` with it, or with the number
+    again, which now saves the LID. An entry whose chat the store holds under the number moves to the LID by itself
+    at the next `serve` or `watch` start; one for a number with no stored chat does not.
+  - A chat stored under the phone number by wa 0.1.0 whose LID is known, but which no `serve` or `watch` has moved
+    yet: a `delete`, `star` or reaction by the number now answers "not in the store" and sends nothing. Start
+    `serve` or `watch` once to move the chat, then run the command again.
 - **`wa --help` and a bare `wa` show a short first screen** instead of every command and option: what `wa` is for,
   the usage line, the other WireCat tools it works with, and where to start. `wa --help-all` prints the old help and `wa help options` the
   options of every command. Each command's own `--help` now ends with what it returns, the commands that usually

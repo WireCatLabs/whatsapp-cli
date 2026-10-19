@@ -394,7 +394,10 @@ LIDs and channels pass through without the request. An `--offline` command never
 `resolve`: it reads cli-core's store by the id as typed, so `messages list <number> --offline` shows only what is
 stored under the phone form. Typing the LID, or the chat's name, reads the whole chat; mapping offline would need the
 LID map in cli-core's store. A recipients-list entry added by the phone number before this no longer matches once the
-number maps to a LID; the send is refused until the chat is added again.
+number maps to a LID; the send is refused until the chat is added again. A chat cli-core stored in phone form before
+`wa_phone_chats` existed, whose LID whatsmeow already knows, is found by its number again only after a `serve` or
+`watch` start has re-keyed it (`storedChats`); until then a delete, a star or a reaction by the number answers "not in
+the store" and sends nothing.
 
 ## 6. One connection per linked device
 

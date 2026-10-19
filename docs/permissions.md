@@ -70,6 +70,11 @@ wa work recipients list
 wa work recipients remove 100000000000001@lid
 ```
 
+A chat added by its phone number (`…@s.whatsapp.net`) is saved under its LID when WhatsApp has already given one,
+because a send to that number goes to the LID. An entry saved under the phone number earlier stops matching once the
+number has a LID: the send is refused with exit code `7`, and the message names the id to add. `recipients remove`
+with the number takes the old entry off.
+
 Two changes to the list at the same time cannot undo each other. When another process holds the list for 5 s,
 the change is refused with exit code `9` and the list stays as it was.
 
