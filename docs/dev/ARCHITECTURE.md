@@ -398,8 +398,8 @@ LID map in cli-core's store. A recipients-list entry added by the phone number b
 number maps to a LID; the send is refused until the chat is added again. A chat cli-core stored in phone form before
 `wa_phone_chats` existed, whose LID whatsmeow already knows, is still addressed by its number until a `serve` or
 `watch` start has re-keyed it (`storedChats`). wa declares `history: "store"` (`src/messenger.ts:154`), so cli-core
-0.354.0's `resolve` looks in its store first and answers a stored chat with the typed id without calling the adapter
-([`stored.ts:147` and `:171`](https://github.com/WireCatLabs/cli-core/blob/v0.354.0/src/cli/messenger/stored.ts#L147-L171),
+0.355.0's `resolve` looks in its store first and answers a stored chat with the typed id without calling the adapter
+([`stored.ts:147` and `:171`](https://github.com/WireCatLabs/cli-core/blob/v0.355.0/src/cli/messenger/stored.ts#L147-L171),
 read, not run). Until the re-key, a delete, a star or a
 reaction by the number therefore acts on the messages stored under the phone form, and one stored under the LID is
 refused by `held` (`src/adapter/adapter.ts:272`) with "that message is not in the local store". cli-core is changing

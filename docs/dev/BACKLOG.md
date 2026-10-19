@@ -279,7 +279,7 @@ Open work, most important first. The plan in flight is
 19. **A send typed to a phone number is saved under the number while the store still holds that phone-form chat**
     (found 2026-10-19, wa #148 review, narrowed by wa #150, needs cli-core). A send now resolves the chat first, and
     wa's `resolve` answers the LID, so a send to a re-keyed person's number is saved in the LID chat. But cli-core
-    0.354.0 answers a chat it already stores without asking wa (ARCHITECTURE §5). Until a `serve` or `watch` start
+    0.355.0 answers a chat it already stores without asking wa (ARCHITECTURE §5). Until a `serve` or `watch` start
     re-keys a phone-form chat, a send by that number is saved under the number, though wa answers it with the LID
     chat. Since cli-core 0.353.0 the re-key merge keeps the stricter `searchable` and `scope` of the two rows, so the
     split does not loosen the owner's settings. The fix is in cli-core:
