@@ -282,6 +282,16 @@ describe("whatsAppAdapter", () => {
     expect(engine.storedAsked).toEqual([["70000000009@s.whatsapp.net", "70000000008@s.whatsapp.net"]])
   })
 
+  it("hands the engine the phone-form recipients the store lacks, in the same request", async () => {
+    const engine = fakeEngine(seed)
+    const adapter = whatsAppAdapter(engine)
+    await adapter.storedChats?.([seed.busy], [seed.person, "100000000000004@lid"])
+    expect(engine.storedAsked).toEqual([])
+    await adapter.storedChats?.([], ["70000000007@s.whatsapp.net", "120363000000000001@g.us"])
+    expect(engine.storedAsked).toEqual([[]])
+    expect(engine.recipientsAsked).toEqual([["70000000007@s.whatsapp.net"]])
+  })
+
   it("ends the history listen quietly when this process logged the device out, and with why when the phone did", async () => {
     const engine = fakeEngine(seed)
     const adapter = whatsAppAdapter(engine)

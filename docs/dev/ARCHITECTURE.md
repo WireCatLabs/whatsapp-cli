@@ -178,15 +178,20 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   source does not say; `name` and `participants` are always sent.
 - **Where the owner stands in a group** (`membership.go`): wa has no chat list for cli-core to mark left chats
   from, so the engine says so itself, as `membershipState: "left"` on a pushed chat (what `store clear --left`
-  deletes); every other push leaves the field out, which keeps what the store holds. `"left"` comes only from a
-  group notification that names the owner, by LID or phone number, among those who left or were removed
-  (`events.GroupInfo.Leave`), or from a deleted group (`Delete`). The engine never sends `null`: cli-core reads it
-  as "no membership state" and would clear `archived` too. cli-core's `chats leave` and `chats join` will set and
-  clear the mark themselves, from cli-core #1638/#1639. A live read of one group, a `join` that got in, and whatsmeow's
-  `events.JoinedGroup` (only a lone `create` notification makes it) push the group's whole chat with membership
-  left out. A live read's 403 or 404 marks nothing: the engine cannot tell a stored group from a typo. A
-  notification pushes one chat with the link change and the leave together (`groupNotice`). History pushes say
-  nothing: a conversation has no field that tells whether the owner is still in the group.
+  deletes), and `"member"` when the owner is back; every other push leaves the field out, which keeps what the
+  store holds. `"left"` comes only from a group notification that names the owner, by LID or phone number, among
+  those who left or were removed (`events.GroupInfo.Leave`), or from a deleted group (`Delete`). `"member"` comes
+  only from a notification that names the owner among those added (`events.GroupInfo.Join`) and from whatsmeow's
+  `events.JoinedGroup` (only a lone `create` notification makes it); a notice that names the owner in both says
+  `"left"`, as whatsmeow's own member cache reads it (it keeps no order between the two lists and applies `Join`
+  first). cli-core takes `"member"` off a `"left"` mark and keeps any other state, `archived` included, and
+  never stores it (cli-core 0.357.0). The engine never sends `null`: cli-core reads it as "no membership state"
+  and would clear `archived` too. cli-core's `chats leave` and `chats join` set and clear the mark themselves after
+  they succeed (cli-core 0.356.0), so the adapter's `leave` and `join` push no membership. A live read of one group
+  and a `join` that got in push the group's whole chat with membership left out. A live read's 403 or 404 marks
+  nothing: the engine cannot tell a stored group from a typo. A notification pushes one chat with the link change
+  and the membership together (`groupNotice`). History pushes say nothing: a conversation has no field that tells
+  whether the owner is still in the group.
 - **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
   [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
   skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and
@@ -368,7 +373,12 @@ chat cli-core stored in phone form before the table existed comes in, since the 
 bulk query per 500, then records them in one transaction: a known LID is a re-key at once, a chat re-keyed earlier is
 announced again (the store still holding the phone form means the CLI missed it), and the rest wait for the lookups
 below, which it schedules. Measured in its test: 5,000 ids in about 50 ms; cli-core waits at most 5 s for it at
-shutdown, and a failure is one `stored_chats_failed` warning while `feed` goes on. The store's chats come from
+shutdown, and a failure is one `stored_chats_failed` warning while `feed` goes on. With them cli-core hands over the
+recipient-list ids the store holds no chat for (`storedChats(ids, recipients)`, cli-core 0.356.0); the adapter
+passes the phone-form ones in the same request, as `recipients`. The engine answers each as `canonicalChat` does,
+from whatsmeow's map and `wa_phone_chats` only, and sends a `rekey` for one whose LID it knows, which moves the list
+entry. A recipient is typed by the owner, not a chat the account has, so it is never looked up and never recorded
+(NEED-1441); one with no known LID stays as typed. The store's chats come from
 history pushes, messages and the owner's own sends: wa gives cli-core no online chat list, so the directory, and the
 address book in it, is never saved as chats. The directory, a chat card, a mute and a chat pin do not record: they take a typed id or an
 address-book name, not a chat the account has. Once re-keyed, a chat is never emitted in phone form again — not in a
@@ -400,22 +410,23 @@ make a bare phone-form chat. The adapter's `resolve` therefore hands a typed `di
 `canonicalChat` request (`engine/cmd/wa-engine/canonicalchat.go`), which answers the id a send would: the LID when
 whatsmeow's map or `wa_phone_chats` knows it, the self LID for the owner's own number, else the id as typed. It reads
 those two local tables only — no lookup, no request to WhatsApp — and records nothing, since a typed number need not
-be a chat the account has. Every command that names a chat goes through `resolve`, the send itself included, unless
-cli-core's store already holds a chat by that id (below); groups, LIDs and channels pass through without the request.
+be a chat the account has. Every command that names a chat goes through `resolve`, the send itself included, and
+since cli-core 0.356.0 also when cli-core's store already holds a chat by that id (below); groups, LIDs and channels
+pass through without the request.
 An `--offline` command never starts the engine and never calls
 `resolve`: it reads cli-core's store by the id as typed, so `messages list <number> --offline` shows only what is
 stored under the phone form. Typing the LID, or the chat's name, reads the whole chat; mapping offline would need the
 LID map in cli-core's store. A recipients-list entry added by the phone number before this no longer matches once the
-number maps to a LID; the send is refused until the chat is added again. A chat cli-core stored in phone form before
-`wa_phone_chats` existed, whose LID whatsmeow already knows, is still addressed by its number until a `serve` or
-`watch` start has re-keyed it (`storedChats`). wa declares `history: "store"` (`src/messenger.ts:154`), so cli-core
-0.355.0's `resolve` looks in its store first and answers a stored chat with the typed id without calling the adapter
-([`stored.ts:147` and `:171`](https://github.com/WireCatLabs/cli-core/blob/v0.355.0/src/cli/messenger/stored.ts#L147-L171),
-read, not run). Until the re-key, a delete, a star or a
-reaction by the number therefore acts on the messages stored under the phone form, and one stored under the LID is
-refused by `held` (`src/adapter/adapter.ts:272`) with "that message is not in the local store". cli-core is changing
-its `resolve` to ask the messenger for a stored chat too
-([cli-core #1635](https://github.com/WireCatLabs/cli-core/pull/1635), not released).
+number maps to a LID; the send is refused until a `serve` or `watch` start moves the entry (`storedChats`, above) or
+the chat is added again. A chat cli-core stored in phone form, whose LID whatsmeow already knows, is re-keyed to it on
+the spot by the first command that names it by the number: wa declares `history: "store"` (`src/messenger.ts:154`),
+and cli-core 0.356.0's `resolve` asks the adapter for a stored chat too
+([cli-core #1635](https://github.com/WireCatLabs/cli-core/pull/1635)); an answer under another id re-keys the stored
+chat, its messages and its recipient-list entry to it before the command acts (`src/phone-to-lid.test.ts`). A send is
+then saved under the chat the engine answered, and a chat row made for it takes the stricter search visibility and
+scope of the two ([cli-core #1624](https://github.com/WireCatLabs/cli-core/pull/1624)); the engine already answers
+every send, file, album, forward and poll with the LID chat (`e.conv.canonical`), so wa fills nothing new for it. An
+`--offline` command re-keys nothing.
 
 ## 6. One connection per linked device
 

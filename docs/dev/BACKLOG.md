@@ -276,29 +276,18 @@ Open work, most important first. The plan in flight is
     runs it took 64 to 130 ms, and CI stayed green. Probably the cold start of a file's first test while other agents'
     suites load the machine. If it comes back, give the first test of a file a longer timeout, or warm the import in
     a setup file, rather than raising the timeout for the whole suite.
-19. **A send typed to a phone number is saved under the number while the store still holds that phone-form chat**
-    (found 2026-10-19, wa #148 review, narrowed by wa #150, needs cli-core). A send now resolves the chat first, and
-    wa's `resolve` answers the LID, so a send to a re-keyed person's number is saved in the LID chat. But cli-core
-    0.355.0 answers a chat it already stores without asking wa (ARCHITECTURE §5). Until a `serve` or `watch` start
-    re-keys a phone-form chat, a send by that number is saved under the number, though wa answers it with the LID
-    chat. Since cli-core 0.353.0 the re-key merge keeps the stricter `searchable` and `scope` of the two rows, so the
-    split does not loosen the owner's settings. The fix is in cli-core:
-    [#1635](https://github.com/WireCatLabs/cli-core/pull/1635) asks the messenger for a stored chat too, and
-    [#1624](https://github.com/WireCatLabs/cli-core/pull/1624) saves a send under the chat id the messenger answered. Also cli-core's, for scale only: each re-key is its own store write, so the first start
-    after upgrading writes once per stored phone-form chat whose LID is known.
+19. **Each re-key of a stored phone-form chat is its own store write** (found 2026-10-19, wa #148 review; the rest
+    closed by cli-core 0.356.0). For scale only: the first `serve` or `watch` start after upgrading writes once per
+    stored phone-form chat whose LID is known. Batching them is cli-core's.
 20. **Groups the owner left: built, not checked live** (found 2026-10-19, wa #149 review, narrowed in the wa #151
     review). The engine pushes `membershipState: "left"` (ARCHITECTURE §4, `membership.go`) only from WhatsApp's
-    group notifications: the owner among those who left or were removed, and a deleted group. It never sends `null`:
-    under cli-core's rule (cli-core #1621) `null` clears any stored state, `archived` included. Left open:
-    - **Live check**: whether WhatsApp's notice of the owner's own leave or removal reaches the owner's linked device,
-      and in which form it names the owner.
-    - **`chats leave` marks nothing yet.** cli-core #1638/#1639 set the mark after a successful `chats leave` and
-      clear it after `chats join`; until a cli-core with them is released, only the notice above marks the group.
-    - **A group the owner rejoined stays marked left** until cli-core's rejoin value (one that clears `left` and keeps
-      `archived`) ships, or cli-core's `chats join` clears it. The owner-added notice and whatsmeow's
-      `events.JoinedGroup` push the whole group but say nothing of membership, and a new message does not clear the
-      mark either (cli-core 0.355.0, `store/sqlite/chats.js`). Until then such a group stays out of `chats list`, and
-      `store clear --left --allow-dangerous` deletes it with the messages from after the re-add.
+    group notifications: the owner among those who left or were removed, and a deleted group; and `"member"` when a
+    notification or whatsmeow's `events.JoinedGroup` says the owner was added back (cli-core 0.357.0), which takes
+    the mark off and keeps `archived`. It never sends `null`: under cli-core's rule (cli-core #1621) `null` clears
+    any stored state, `archived` included. Since cli-core 0.356.0 `chats leave` and `chats join` set and clear the
+    mark too. A re-added group is no longer left (RISK-1264 closed). Left open:
+    - **Live check**: whether WhatsApp's notices of the owner's own leave, removal and re-add reach the owner's
+      linked device, and in which form they name the owner.
     - **A live read of one group marks nothing.** Its 403 would be a real signal, but the engine cannot tell whether
       the store holds the group, and a mistyped id (404) or a group the owner was never in (403) would store a stray
       untitled row marked left. A read that succeeds pushes the whole group, membership left out, so an archived
@@ -306,6 +295,5 @@ Open work, most important first. The plan in flight is
     - **A group left while nothing was connected** stays unmarked until a notice: a history push has no field that
       says the owner is gone. Its `GROUP_PARTICIPANT_LEAVE` and `REMOVE` service messages could say so, but only read
       in order with a later re-add; not built.
-    - **A chat marked left drops out of `chats list` and `chats show`** (cli-core); its messages stay searchable.
-      `chats show` then answers "nothing stored for this chat yet — keep `wa <profile> serve` running", which is
-      wrong for a chat the store holds as left. Asked of cli-core.
+    - **A chat marked left drops out of `chats list`** (cli-core); its messages stay searchable, and since cli-core
+      0.356.0 `chats show` shows it with `membership_state: "left"`.

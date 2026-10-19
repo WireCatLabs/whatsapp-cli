@@ -256,8 +256,8 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       await request("logout", {}, nothing)
       self = null
     },
-    storedChats: async (chats) => {
-      await request("storedChats", { chats }, nothing)
+    storedChats: async (chats, recipients) => {
+      await request("storedChats", { chats, ...(recipients?.length ? { recipients } : {}) }, nothing)
     },
     canonicalChat: (jid) => request("canonicalChat", { jid }, jidAnswer),
     listen: (kinds, onEvent) => hub.listen(kinds, onEvent),

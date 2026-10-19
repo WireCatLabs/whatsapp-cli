@@ -43,10 +43,12 @@ describe("startGoEngine", () => {
     const rekeys: EngineEvent[] = []
     const stop = engine.listen(["rekey"], (event) => rekeys.push(event))
     await engine.storedChats(["70000000009@s.whatsapp.net", "70000000008@s.whatsapp.net"])
+    await engine.storedChats([], ["70000000007@s.whatsapp.net"])
     stop()
     expect(rekeys.map((event) => event.event === "rekey" && event.from)).toEqual([
       "70000000009@s.whatsapp.net",
       "70000000008@s.whatsapp.net",
+      "70000000007@s.whatsapp.net",
     ])
     await engine.close()
   })

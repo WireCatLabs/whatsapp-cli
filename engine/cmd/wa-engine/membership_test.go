@@ -28,11 +28,26 @@ func TestADeletedGroupIsLeft(t *testing.T) {
 	assertJSON(t, notice, leftNotice)
 }
 
-func TestSomeoneElsesLeaveAndTheOwnersJoinSayNothing(t *testing.T) {
+func TestTheOwnerAddedBackInEitherFormIsAMemberAgain(t *testing.T) {
+	c := testConverter()
+	for _, owner := range []types.JID{selfLID, selfPN} {
+		notice, ok := c.groupNotice(&events.GroupInfo{JID: group, Sender: &annLID, Join: []types.JID{annPN, owner}})
+		if !ok {
+			t.Fatalf("%s: no notice", owner)
+		}
+		assertJSON(t, notice, `{"jid":"120363000000000001@g.us","kind":"group","membershipState":"member"}`)
+	}
+}
+
+func TestTheOwnersLeaveWinsOverTheirJoinInOneNotice(t *testing.T) {
+	notice, _ := testConverter().groupNotice(&events.GroupInfo{JID: group, Join: []types.JID{selfLID},
+		Leave: []types.JID{selfLID}})
+	assertJSON(t, notice, leftNotice)
+}
+
+func TestSomeoneElsesLeaveAndJoinSayNothing(t *testing.T) {
 	c := testConverter()
 	for _, evt := range []*events.GroupInfo{
-		{JID: group, Join: []types.JID{selfLID}},
-		{JID: group, Join: []types.JID{selfPN}},
 		{JID: group, Leave: []types.JID{annLID, bobPN}},
 		{JID: group, Join: []types.JID{annLID}},
 		{JID: group, Sender: &selfLID, Leave: []types.JID{annLID}},
@@ -56,12 +71,12 @@ func TestAFullChatLeavesTheMembershipUnsaid(t *testing.T) {
 		`{"jid":"120363000000000001@g.us","name":null,"kind":"group","participants":3}`)
 }
 
-func TestTheNoticeThatTheOwnerWasAddedPushesTheWholeGroupWithMembershipUnsaid(t *testing.T) {
+func TestTheNoticeThatTheOwnerWasAddedPushesTheWholeGroupAsAMember(t *testing.T) {
 	e, out := followingEngine(&fakeFollows{})
 	e.conv = testConverter()
 	e.handle(&events.JoinedGroup{GroupInfo: *groupInfo()})
 	want := `{"event":"history","history":{"kind":"other","chats":[{"jid":"120363000000000001@g.us",` +
-		`"name":"Book club","kind":"group","participants":3,"parent":null}],` +
+		`"name":"Book club","kind":"group","participants":3,"parent":null,"membershipState":"member"}],` +
 		`"contacts":[],"messages":[],"votes":[]}}`
 	if got := out.next(t); got != want {
 		t.Fatalf("got  %s\nwant %s", got, want)

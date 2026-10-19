@@ -5,9 +5,12 @@ import (
 	"go.mau.fi/whatsmeow/types/events"
 )
 
-// leftGroup is the only membership the engine says. cli-core's null clears any stored state, "archived" too, so a
-// rejoin stays unsaid until cli-core has a value that clears "left" alone.
-const leftGroup = "left"
+// The two memberships the engine says, only from WhatsApp's notices. "member" takes a "left" mark off and keeps
+// "archived" (cli-core 0.357.0); cli-core's null would clear both, so the engine never sends it.
+const (
+	leftGroup   = "left"
+	memberAgain = "member"
+)
 
 // isOwner matches the account in either form a group notification names it by: LID, or phone number in a group
 // still addressed by phone numbers.
@@ -39,25 +42,48 @@ func (c *converter) ownLeave(evt *events.GroupInfo) bool {
 	return false
 }
 
-// groupNotice is the one chat a group notification pushes: its community link and the owner's leave, whichever it
-// carries, and nothing else, so the store keeps the group's name, count and activity.
+// ownJoin reads whether a group notification says the owner was added back.
+func (c *converter) ownJoin(evt *events.GroupInfo) bool {
+	if evt.JID.Server != types.GroupServer {
+		return false
+	}
+	for _, jid := range evt.Join {
+		if c.isOwner(jid) {
+			return true
+		}
+	}
+	return false
+}
+
+// groupNotice is the one chat a group notification pushes: its community link and the owner's leave or re-add,
+// whichever it carries, and nothing else, so the store keeps the group's name, count and activity. A leave wins over
+// a join in the same notice: whatsmeow keeps no order between the two lists and applies Join before Leave to its own
+// member cache, so its answer is that the owner is out.
 func (c *converter) groupNotice(evt *events.GroupInfo) (waChat, bool) {
 	notice, linkChanged := linkNotice(evt)
-	if !c.ownLeave(evt) {
+	membership := ""
+	if c.ownLeave(evt) {
+		membership = leftGroup
+	} else if c.ownJoin(evt) {
+		membership = memberAgain
+	}
+	if membership == "" {
 		return notice, linkChanged
 	}
 	if !linkChanged {
 		notice = waChat{JID: evt.JID.String(), Kind: "group", notice: true}
 	}
-	notice.Membership = leftGroup
+	notice.Membership = membership
 	return notice, true
 }
 
 // joined is the chat WhatsApp's notice that the owner was added to a group, or created one, gives: the group's whole
-// info, so the store gets the group in full.
+// info, so the store gets the group in full, and a group the owner had left is a member's again.
 func (c *converter) joined(evt *events.JoinedGroup) (waChat, bool) {
 	if evt.JID.Server != types.GroupServer {
 		return waChat{}, false
 	}
-	return c.group(&evt.GroupInfo, nil).Chat, true
+	chat := c.group(&evt.GroupInfo, nil).Chat
+	chat.Membership = memberAgain
+	return chat, true
 }

@@ -16,13 +16,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   Engine wire change: a `canonicalChat` request. Engine protocol 38. Two things the owner may notice:
   - A recipient list entry added by the phone number stops matching once that number has a LID, and a send to it
     is refused with exit 7. The refusal names the id to allow: run `recipients add` with it, or with the number
-    again, which now saves the LID. An entry whose chat the store holds under the number moves to the LID by itself
-    at the next `serve` or `watch` start; one for a number with no stored chat does not.
-  - A chat the store already holds under the phone number, such as one wa 0.1.0 saved, is still addressed by the
-    number until a `serve` or `watch` start moves it to its LID. Until then a `delete`, `star` or reaction by the
-    number acts on the messages stored under the number, as in 0.1.0, and a message stored under the LID is refused
-    with "that message is not in the local store" and nothing is sent. Start `serve` or `watch` once, or type the
-    LID.
+    again, which now saves the LID. An entry added by the number moves to the LID by itself at the next `serve` or
+    `watch` start, when this device already knows the number's LID, whether or not the store holds a chat under it
+    (cli-core 0.356.0). The number is not asked of WhatsApp and is not recorded. Engine wire change: `recipients` on
+    the `storedChats` request. Engine protocol 40.
+  - A chat the store already holds under the phone number, such as one wa 0.1.0 saved, moves to its LID on the spot
+    (cli-core 0.356.0): the first command that names it by the number, a send, `delete`, `star` or reaction
+    included, moves the stored chat, its messages and its recipient-list entry to the LID, then acts on the LID
+    chat. An `--offline` command moves nothing: it reads the store by the id as typed.
 - **`wa --help` and a bare `wa` show a short first screen** instead of every command and option: what `wa` is for,
   the usage line, the other WireCat tools it works with, and where to start. `wa --help-all` prints the old help and `wa help options` the
   options of every command. Each command's own `--help` now ends with what it returns, the commands that usually
@@ -165,6 +166,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **A message sent to a phone number is saved in the chat WhatsApp answered, with that chat's privacy kept**
+  (cli-core 0.356.0). `wa` answers a send to a person who has a LID with their LID chat, but the message was saved
+  under the number that was typed, in a second chat. Now `messages send`, `polls create` and `messages forward` save
+  it in the answered chat. A chat made for it takes the typed chat's search visibility and scope; a chat that exists
+  already keeps the stricter of the two, so a chat hidden from search does not come back into search under its other
+  id. `wa <profile> sends list` names the answered chat beside the typed one when they differ.
 - **A failed background `messages sync` no longer writes a chat title or a name into its job file** (cli-core
   0.355.0). The file keeps the error's code and points at `wa store jobs show <id>`, which prints the path of the
   job's log. The full message stays in that log, which only you can read (mode `0600`).
@@ -190,12 +197,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - **A group you left, were removed from, or that was deleted is marked left in the store**, so
   `wa <profile> store clear --left` finds it; until now it found nothing. The mark comes from WhatsApp's group
-  notice while `serve` or `watch` runs. Not yet from `chats leave`, and being added again does not take it off:
-  both wait for a cli-core release. Until then a group you were added back to stays marked left, and
-  `store clear --left` would delete it: run it with `--dry-run` first. A group left while nothing was connected is
-  not marked. A group marked left drops out of `chats list` and `chats show`; its messages stay in the store and in
-  search until you clear it.
-  Engine wire change: `membershipState` on a pushed chat. Engine protocol 39.
+  notice while `serve` or `watch` runs, and from a `wa <profile> chats leave` that succeeds; a `chats join` that gets
+  in takes it off (cli-core 0.356.0), and so does WhatsApp's notice that someone added you back (cli-core 0.357.0);
+  a group you had archived stays archived. A group left while nothing was connected is not marked. A group marked
+  left drops out of `chats list`; `chats show` shows it and says you left it, and its messages stay in the store and
+  in search until you clear it.
+  Engine wire change: `membershipState` on a pushed chat, `"left"` (protocol 39) and `"member"` (protocol 40).
 - **`setup`'s link step is headed "Link this device"** and no longer asks you to scan a QR code before one is
   drawn. The line under the code says where to scan; a narrow terminal shows only the hint to widen it.
 - **A terminal too narrow for the QR code no longer asks you to scan it** (cli-core 0.350.0). `session start` and

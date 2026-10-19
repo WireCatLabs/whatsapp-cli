@@ -181,6 +181,31 @@ describe("a phone-form chat stored before the engine kept its table", () => {
     expect(JSON.parse(listed.stdout).items.map((one: { id: string }) => one.id)).toContain(message(LID, 31).id)
   })
 
+  it("moves a recipient added by a number with no stored chat to its LID as watch starts", async () => {
+    const profile = "recipient-by-number"
+    const added = await wa([profile, "recipients", "add", UNKNOWN, "--json"], () => fakeEngine(seed))
+    expect(added.code, added.stderr).toBe(0)
+
+    const controller = new AbortController()
+    let recipients: string[][] = []
+    const starting = () => {
+      const engine = fakeEngine(seed, { lids: { [UNKNOWN]: LID } })
+      recipients = engine.recipientsAsked
+      const handOver = engine.storedChats
+      engine.storedChats = async (chats, typed) => {
+        await handOver(chats, typed)
+        setImmediate(() => controller.abort())
+      }
+      return engine
+    }
+    const watched = await wa([profile, "watch", "--jsonl"], starting, controller.signal)
+    expect(watched.code, watched.stderr).toBe(0)
+
+    expect(recipients).toEqual([[UNKNOWN]])
+    const listed = await wa([profile, "recipients", "list", "--json"])
+    expect(JSON.parse(listed.stdout).items.map((one: { id: string }) => one.id)).toEqual([LID])
+  })
+
   it("warns once when the engine cannot take them, and watch goes on", async () => {
     const profile = "stored-phone-chats-refused"
     await storeInPhoneForm(profile, 21)

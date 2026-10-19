@@ -664,9 +664,11 @@ export const whatsAppAdapter = (
     feed: (onBatch, signal) => pushing(onBatch, signal),
 
     // Only phone-form one-to-one chats can need a re-key, and in one request: cli-core waits at most 5 s for it.
-    storedChats: async (ids) => {
+    storedChats: async (ids, recipients = []) => {
       const phones = ids.filter((id) => PHONE_CHAT.test(id))
-      if (phones.length > 0) await translated(engine.storedChats(phones))
+      const typed = recipients.filter((id) => PHONE_CHAT.test(id))
+      if (phones.length > 0 || typed.length > 0)
+        await translated(engine.storedChats(phones, typed.length > 0 ? typed : undefined))
     },
   }
 
