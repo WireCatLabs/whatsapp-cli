@@ -187,9 +187,10 @@ unlink it. A store that was never created reads "nothing", not a count.
 
 When `session start` fails but the device is linked, the result block says to run `--finish`. That refuses a profile
 `account list` does not show, one without device keys, and one whose lock is held, and goes on only after `yes`. It
-runs `watch --timeout 5m` with stdout to `/dev/null` and the same throwaway store, so whatever the phone still pushes,
-and whatever WhatsApp queued for that device, lands there and is counted the same way. It is only for a profile this
-script linked: the queued messages are gone with the throwaway store.
+runs `watch --jsonl --timeout 5m` with stdout to `/dev/null` and the same throwaway store, so whatever the phone still
+pushes, and whatever WhatsApp queued for that device, lands there and is counted the same way. `--jsonl`, because a
+stdout that is not a terminal gets `--json`, which `watch` refuses. It is only for a profile this script linked: the
+queued messages are gone with the throwaway store.
 
 **`live-chat-state`** needs `serve` running, and works in the own chat only, by its LID id from `account list`,
 never printed. After each step it asks the owner what the phone shows and records yes or no:
