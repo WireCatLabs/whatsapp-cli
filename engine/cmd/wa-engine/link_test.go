@@ -103,7 +103,8 @@ func TestLinkConnectsAgainOnlyOnce(t *testing.T) {
 		d.connects.Add(1)
 		return errors.New("dial failed")
 	}
-	if err := e.awaitLogin(d.wait, time.Millisecond, 50*time.Millisecond, "late", retry); !isFailure(err, "network_error") {
+	err := e.awaitLogin(d.wait, time.Millisecond, 50*time.Millisecond, "late", retry)
+	if !isFailure(err, "network_error") {
 		t.Fatalf("got %v", err)
 	}
 	if n := d.connects.Load(); n != 1 {
