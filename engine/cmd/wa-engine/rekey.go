@@ -220,12 +220,13 @@ func (e *engine) noteNamed(req request) {
 	}
 }
 
-// appStateChat is the chat of a star or a delete for the owner alone made on another device, recorded: the CLI's store
-// holds the message, so it holds the chat too.
+// appStateChat is the chat of a star or a delete for the owner alone made on another device. The CLI's store holds the
+// message, so it holds the chat, perhaps in the phone form WhatsApp names it by: that is the id recorded, so a chat
+// stored so before the table existed re-keys even when its LID is known already.
 func (e *engine) appStateChat(chat types.JID, id string) (string, bool) {
 	named, ok := e.conv.appStateMessage(chat, id)
 	if ok {
-		e.phones.note(e.ctx, named)
+		e.phones.note(e.ctx, chat.ToNonAD().String())
 	}
 	return named, ok
 }

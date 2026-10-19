@@ -168,13 +168,14 @@ func TestTheChatARequestNamesIsRecordedOnceTheRequestWentThrough(t *testing.T) {
 	}
 }
 
-func TestTheChatOfAStarOrADeleteFromAnotherDeviceIsRecorded(t *testing.T) {
+func TestTheChatOfAStarOrADeleteFromAnotherDeviceIsRecordedAsWhatsAppNamesIt(t *testing.T) {
 	p := testPhoneChats(t, filepath.Join(t.TempDir(), "private.db"))
+	lid := types.NewJID("100000000000001", types.HiddenUserServer)
 	e := &engine{ctx: context.Background(), phones: p, conv: &converter{lidFor: func(types.JID) (types.JID, bool) {
-		return types.JID{}, false
+		return lid, true
 	}}}
 	chat, ok := e.appStateChat(types.NewJID("70000000009", types.DefaultUserServer), "3EB000000000000000000001")
-	if !ok || chat != fakePN || !reflect.DeepEqual(p.waiting(), []string{"70000000009"}) {
+	if !ok || chat != fakeLID || !reflect.DeepEqual(p.waiting(), []string{"70000000009"}) {
 		t.Errorf("chat %q, recorded %v", chat, p.waiting())
 	}
 }
