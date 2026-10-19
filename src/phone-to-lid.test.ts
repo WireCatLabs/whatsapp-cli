@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import type { WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 
@@ -33,9 +34,13 @@ const lidEngine = (): FakeEngine => {
   return engine
 }
 
-const wa = async (argv: string[], engine?: FakeEngine) => {
+const neverStarted = (): WhatsAppEngine => {
+  throw new Error("this command must never start the engine")
+}
+
+const wa = async (argv: string[], engine: FakeEngine | (() => WhatsAppEngine) = neverStarted) => {
   const streams = captureStreams()
-  const code = await run(argv, { streams, tty: false, ...(engine ? { engine: () => engine } : {}) })
+  const code = await run(argv, { streams, tty: false, engine: typeof engine === "function" ? engine : () => engine })
   const result = { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
   expect(result.code, result.stderr).toBe(0)
   return result
@@ -79,5 +84,12 @@ describe("a one-to-one chat typed by its phone number", () => {
     await wa([profile, "messages", "send", seed.busy, TEXT, "--json"], engine)
     expect(engine.sends.map((one) => one.chat)).toEqual([UNKNOWN, seed.busy])
     expect(engine.canonicalAsked).toEqual([UNKNOWN])
+  })
+
+  it("offline, never starts the engine and reads the chat by the id as typed", async () => {
+    const profile = "offline-phone"
+    await wa([profile, "messages", "send", PHONE, TEXT, "--json"], fakeEngine(seed))
+    const listed = await wa([profile, "--offline", "messages", "list", PHONE, "--json"])
+    expect(JSON.parse(listed.stdout).items.map((one: { text: string }) => one.text)).toEqual([TEXT])
   })
 })
