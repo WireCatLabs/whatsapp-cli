@@ -1,6 +1,9 @@
+import { mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import type { WaMessage, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
@@ -8,6 +11,15 @@ import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 const seed = contractSeed({ ids: whatsAppIds })
 const PHONE = "70000000009@s.whatsapp.net"
 const LID = "100000000000001@lid"
+
+// Every fake engine links the same account, so separate profiles would still share its chats in the file's store.
+const fileStore = process.env.MESSAGING_STORE
+beforeEach(() => {
+  process.env.MESSAGING_STORE = join(mkdtempSync(join(tmpdir(), "store-")), "messages.db")
+})
+afterEach(() => {
+  process.env.MESSAGING_STORE = fileStore
+})
 
 const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortSignal) => {
   const streams = captureStreams()
