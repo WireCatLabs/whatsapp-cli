@@ -183,7 +183,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   those who left or were removed (`events.GroupInfo.Leave`), or from a deleted group (`Delete`). `"member"` comes
   only from a notification that names the owner among those added (`events.GroupInfo.Join`) and from whatsmeow's
   `events.JoinedGroup` (only a lone `create` notification makes it); a notice that names the owner in both says
-  `"left"`. cli-core takes `"member"` off a `"left"` mark and keeps any other state, `archived` included, and
+  `"left"`, as whatsmeow's own member cache reads it (it keeps no order between the two lists and applies `Join`
+  first). cli-core takes `"member"` off a `"left"` mark and keeps any other state, `archived` included, and
   never stores it (cli-core 0.357.0). The engine never sends `null`: cli-core reads it as "no membership state"
   and would clear `archived` too. cli-core's `chats leave` and `chats join` set and clear the mark themselves after
   they succeed (cli-core 0.356.0), so the adapter's `leave` and `join` push no membership. A live read of one group

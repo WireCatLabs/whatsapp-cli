@@ -57,7 +57,8 @@ func (c *converter) ownJoin(evt *events.GroupInfo) bool {
 
 // groupNotice is the one chat a group notification pushes: its community link and the owner's leave or re-add,
 // whichever it carries, and nothing else, so the store keeps the group's name, count and activity. A leave wins over
-// a join in the same notice.
+// a join in the same notice: whatsmeow keeps no order between the two lists and applies Join before Leave to its own
+// member cache, so its answer is that the owner is out.
 func (c *converter) groupNotice(evt *events.GroupInfo) (waChat, bool) {
 	notice, linkChanged := linkNotice(evt)
 	membership := ""
