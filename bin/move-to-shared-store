@@ -1,0 +1,109 @@
+#!/usr/bin/env sh
+# Moves the main checkout's `wa` from its own .wa/messages.db to the shared WireCat store, once, after the build
+# whose bin/wa leaves MESSAGING_STORE unset there. The owner runs it from a terminal, with serve stopped; an agent
+# never does. It stops nothing and sends nothing to WhatsApp.
+#
+#   bin/move-to-shared-store <profile>           checks, counts the old store, backs up the shared one, prints the rest
+#   bin/move-to-shared-store <profile> compare   after the re-sync: the old counts beside the shared store's
+#
+# Before the backup only `config show`, `doctor` and `server status` touch the shared file, and they open it without
+# migrating. `account list` and every messages or store command (other than `store backup`) migrate it to this
+# build's schema, which cannot be undone, so none of them runs before the backup.
+# shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+[ "$root" = "$main" ] || die "run this in the main checkout, $main — a worktree keeps its own store"
+[ -z "${MESSAGING_STORE+set}" ] || die "MESSAGING_STORE is set in this shell, and bin/wa keeps using it — unset it, then run again"
+
+profile=${1:-}
+known=$(wa_json config show --timeout 30s | json 'd.item.profiles.join(" ")') || die "wa config show failed"
+[ -n "$profile" ] || die "name the profile: $(basename -- "$0") <profile> — profiles here: ${known:-none}"
+case " $known " in
+  *" $profile "*) ;;
+  *) die "no profile $profile here — profiles here: ${known:-none}" ;;
+esac
+
+old="$main/.wa/messages.db"
+counts="$main/.wa/before-shared-store.counts"
+
+# The profile's WhatsApp in a store, as `store status` gives it per chat: "<chats> <messages>".
+wa_counts() {
+  wa_json "$profile" store status --timeout 120s |
+    json '`${d.items.length} ${d.items.reduce((sum, one) => sum + one.messages, 0)}`'
+}
+
+if [ "${2:-}" = compare ]; then
+  [ -f "$counts" ] || die "no counts saved at $counts — run $(basename -- "$0") $profile first"
+  now=$(wa_counts) || die "wa store status failed on the shared store"
+  echo "before, in .wa/messages.db: $(cut -d' ' -f1 <"$counts") chats, $(cut -d' ' -f2 <"$counts") messages"
+  echo "now, in the shared store:   ${now%% *} chats, ${now#* } messages"
+  echo "When the own chat has at least as many as before, the old store can go: $old (with -wal and -shm)."
+  exit 0
+fi
+[ -z "${2:-}" ] || die "unknown argument $2 — the only one is compare"
+
+doctor=$(wa_json "$profile" doctor --timeout 30s) || die "wa doctor failed"
+field() {
+  printf '%s' "$doctor" | json "$1"
+}
+
+if [ "$(field 'd.item.whatsapp.lock.running')" = true ]; then
+  die "$(field 'd.item.whatsapp.lock.holder') holds profile $profile's device — stop it (Ctrl-C in serve's terminal), then run this again"
+fi
+server=$(wa_json "$profile" server status --timeout 30s) || die "wa server status failed"
+if [ "$(printf '%s' "$server" | json 'd.item.running')" = true ]; then
+  die "serve runs for profile $profile (pid $(printf '%s' "$server" | json 'd.item.pid')) — stop it, then run this again"
+fi
+
+shared=$(field 'd.item.store.path')
+case "$shared" in
+  "$main"/*) die "doctor still names $shared — pull and build this checkout first" ;;
+esac
+[ "$(field 'd.item.store.exists')" = true ] || die "no shared store at $shared yet — nothing to back up; tg or max makes it"
+[ "$(field 'd.item.store.writable')" = true ] ||
+  die "the shared store is at schema $(field 'd.item.store.schema'), newer than this build reads — update cli-core first"
+
+backup="$HOME/wirecat-before-wa-$(date +%Y%m%d-%H%M%S).db"
+wa_json "$profile" store backup "$backup" --timeout 600s >/dev/null || die "wa store backup failed; nothing else ran"
+chmod 600 "$backup"
+echo "Backed up the shared store to $backup (mode 600)."
+
+if [ -f "$old" ]; then
+  # `store status` migrates the old file; nothing reads it after this move.
+  before=$(
+    MESSAGING_STORE=$old
+    export MESSAGING_STORE
+    wa_counts
+  ) || die "wa store status failed on $old"
+  printf '%s\n' "$before" >"$counts"
+  echo "The old store holds ${before%% *} chats and ${before#* } messages for $profile (saved in $counts)."
+else
+  echo "There is no $old, so there is nothing to count or re-sync."
+fi
+
+if [ "$(printf '%s' "$server" | json 'd.item.unit.installed')" = true ]; then
+  unit=$(printf '%s' "$server" | json 'd.item.unit.path')
+  if grep -q MESSAGING_STORE -- "$unit" 2>/dev/null; then
+    echo
+    echo "The service file $unit still names the old store. Write it again first:"
+    echo "  $wa $profile server install"
+  fi
+fi
+
+cat <<EOF
+
+What is left, by hand:
+1. Start serve: $wa $profile serve   (or $wa $profile server start, with a service)
+2. From the phone, send yourself one message in your own chat. A sync counts back from the oldest message held,
+   so an empty chat cannot be asked about.
+3. Your own chat's id is the …@lid value under "account" in: $wa account list --json
+4. Keep WhatsApp open on the phone. Run, until it brings nothing new:
+   $wa $profile messages sync <own chat id>
+5. Compare: $main/bin/move-to-shared-store $profile compare
+6. When the shared store holds at least as many, list these in ~/Projects/AI/CLEANUP.md for removal:
+   $old (with -wal and -shm) and $counts.
+   Keep $backup until you are sure.
+EOF
