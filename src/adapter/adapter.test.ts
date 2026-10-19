@@ -207,6 +207,26 @@ describe("whatsAppAdapter", () => {
       expect(vi.getTimerCount()).toBe(0)
     })
 
+    it("reach cli-core before a live message that follows them", async () => {
+      vi.useFakeTimers()
+      const engine = fakeEngine(seed)
+      const adapter = whatsAppAdapter(engine)
+      const controller = new AbortController()
+      const order: string[] = []
+      const fed = adapter.feed((batch) => {
+        if (batch.rekeys?.length) order.push("rekey")
+      }, controller.signal)
+      const listened = adapter.listen(() => order.push("message"), controller.signal)
+      await vi.advanceTimersByTimeAsync(0)
+      engine.push({ event: "rekey", ...rekeyOf(1) })
+      engine.push({ event: "message", message: incoming() })
+      await vi.advanceTimersByTimeAsync(0)
+      expect(order).toEqual(["rekey", "message"])
+      controller.abort()
+      await Promise.all([fed, listened])
+      expect(order).toEqual(["rekey", "message"])
+    })
+
     it("are skipped with a warning when cli-core refuses them at the window's end, and feed goes on", async () => {
       vi.useFakeTimers()
       const warnings: string[] = []

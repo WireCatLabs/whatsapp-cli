@@ -360,9 +360,10 @@ reaches the engine. A chat whose person now has a LID is announced as a re-key `
 as `HistoryBatch.rekeys`, and cli-core moves the stored chat to the new id before the batch's messages land. `rekey`
 events that come within 100 ms of the first one go together, as one batch of up to 500. At a `serve` start the engine
 can announce thousands of them, and one batch each would mean thousands of separate saves. A history push hands the
-held re-keys on before its own batch, and so does `feed` when it stops. A live message comes through `watch`, whose events cannot carry a re-key, and need
-not: `serve` and `watch` run `feed` beside it. cli-core saves the two on separate paths, so the message may land
-first, in a new chat under the LID; the re-key then merges the two. At each start the engine announces the
+held re-keys on before its own batch, and so does `feed` when it stops. A live message comes through `watch`, whose
+events cannot carry a re-key, and need not: `serve` and `watch` run `feed` beside it, and `watch` hands the held
+re-keys on before each live event. cli-core still saves the two on separate paths, so the message may land first, in
+a new chat under the LID; the re-key then merges the two. At each start the engine announces the
 re-keys whatsmeow learned while it was not running, and repeats those of the last 30 days: a one-shot command does
 not save history, so the first announcement may have had no listener, and cli-core takes a repeat as a no-op. Only
 chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward, a poll or a vote, of a

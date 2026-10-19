@@ -293,12 +293,15 @@ export const whatsAppAdapter = (
   }
   // Set by `session end`: WhatsApp then ends the connection as logged out, which is the answer, not a failure.
   let loggingOut = false
+  // Held re-keys of a running `feed`: a live event may name the new id, and must not reach cli-core before them (§5).
+  const holding = new Set<() => void>()
   const handingOn = (
     onEvent: (event: MessageEvent) => void,
     signal: AbortSignal,
     expected?: (state: ConnectionState) => boolean,
   ) => {
     const handed = async (event: EngineEvent) => {
+      for (const handOn of holding) handOn()
       if (event.event === "message") onEvent({ event: "message", message: hit(toMessage(event.message)) })
       else if (event.event === "edit") onEvent({ event: "edit", message: hit(toMessage(event.message)) })
       else if (event.event === "delete")
@@ -400,9 +403,18 @@ export const whatsAppAdapter = (
       })
     }
     const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, warn, handed, expected)
+    const handOn = () => {
+      try {
+        flush()
+      } catch (error) {
+        pushes.run("rekey", () => Promise.reject(error))
+      }
+    }
+    holding.add(handOn)
     try {
       await pushes.done
     } finally {
+      holding.delete(handOn)
       pushes.stop()
       pushes.run("rekey", flush)
       await pushes.drained()
