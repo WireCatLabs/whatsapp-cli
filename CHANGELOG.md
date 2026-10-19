@@ -195,6 +195,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **The first `serve` after an upgrade hands its chat re-keys to the store together**, up to 500 at a time, instead
+  of one at a time. On an account with thousands of chats stored by phone number, that start announces a re-key for
+  each, and every one was saved as a batch of its own. A re-key that arrives alone waits at most 0.1 s. Another
+  `wa` command run during that start can still wait a few seconds for the store: each re-key is still saved on its
+  own, and saving them in short passes that let other commands in needs a later cli-core release.
 - **A group you left, were removed from, or that was deleted is marked left in the store**, so
   `wa <profile> store clear --left` finds it; until now it found nothing. The mark comes from WhatsApp's group
   notice while `serve` or `watch` runs, and from a `wa <profile> chats leave` that succeeds; a `chats join` that gets
