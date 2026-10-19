@@ -3,10 +3,29 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { contractSeed } from "@wirecat/cli-core/testing"
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { WaMessage, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+
+const fedRekeys: number[] = []
+vi.mock("./adapter/adapter.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("./adapter/adapter.js")>()
+  return {
+    ...original,
+    whatsAppAdapter: (...args: Parameters<typeof original.whatsAppAdapter>) => {
+      const adapter = original.whatsAppAdapter(...args)
+      return {
+        ...adapter,
+        feed: (onBatch, signal) =>
+          adapter.feed((batch) => {
+            if (batch.rekeys?.length) fedRekeys.push(batch.rekeys.length)
+            return onBatch(batch)
+          }, signal),
+      } satisfies typeof adapter
+    },
+  }
+})
 
 const seed = contractSeed({ ids: whatsAppIds })
 const PHONE = "70000000009@s.whatsapp.net"
@@ -130,6 +149,11 @@ describe("a phone-form chat stored before the engine kept its table", () => {
       (chat: { id: string }) => chat.id,
     )
 
+  const allChatIds = async (profile: string): Promise<string[]> =>
+    JSON.parse((await wa([profile, "--offline", "chats", "list", "--all", "--json"])).stdout).items.map(
+      (chat: { id: string }) => chat.id,
+    )
+
   it("re-keys as watch starts when its LID is known, and goes to the engine for a lookup when not", async () => {
     const profile = "stored-phone-chats"
     await storeInPhoneForm(profile, 11)
@@ -180,6 +204,60 @@ describe("a phone-form chat stored before the engine kept its table", () => {
     const listed = await wa([profile, "--offline", "messages", "list", LID, "--json"])
     expect(JSON.parse(listed.stdout).items.map((one: { id: string }) => one.id)).toContain(message(LID, 31).id)
   })
+
+  it("re-keys 500 stored phone-form chats as serve starts, and stops cleanly after them", async () => {
+    const profile = "many-stored-phone-chats"
+    const phones = Array.from({ length: 500 }, (_, n) => `7100000${String(n).padStart(4, "0")}@s.whatsapp.net`)
+    const lids = Object.fromEntries(phones.map((phone, n) => [phone, `2000000000${String(n).padStart(5, "0")}@lid`]))
+
+    const seeding = new AbortController()
+    const seeded = await wa(
+      [profile, "watch", "--jsonl"],
+      () => {
+        const engine = fakeEngine(seed)
+        engine.storedChats = async () => {}
+        setImmediate(() => {
+          engine.push({
+            event: "history",
+            history: {
+              kind: "recent",
+              chats: phones.map(dm),
+              contacts: [],
+              messages: phones.map((phone, n) => ({ ...message(phone, 0), id: `3EB0000000000000M${n}` })),
+              votes: [],
+            },
+          })
+          setImmediate(() => seeding.abort())
+        })
+        return engine
+      },
+      seeding.signal,
+    )
+    expect(seeded.code, seeded.stderr).toBe(0)
+    expect(await allChatIds(profile)).toEqual(expect.arrayContaining(phones))
+
+    fedRekeys.length = 0
+    const controller = new AbortController()
+    const starting = () => {
+      const engine = fakeEngine(seed, { lids })
+      const handOver = engine.storedChats
+      engine.storedChats = async (chats) => {
+        await handOver(chats)
+        setImmediate(() => controller.abort())
+      }
+      return engine
+    }
+    const started = Date.now()
+    const served = await wa([profile, "serve", "--json"], starting, controller.signal)
+    expect(served.code, served.stderr).toBe(0)
+    expect(served.stderr).not.toContain("not applied")
+    expect(Date.now() - started).toBeLessThan(10_000)
+    expect(fedRekeys).toEqual([500])
+
+    const ids = await allChatIds(profile)
+    expect(ids).toEqual(expect.arrayContaining(Object.values(lids)))
+    expect(ids.filter((id) => phones.includes(id))).toEqual([])
+  }, 20_000)
 
   it("moves a recipient added by a number with no stored chat to its LID as watch starts", async () => {
     const profile = "recipient-by-number"
