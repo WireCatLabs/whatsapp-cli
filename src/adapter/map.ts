@@ -28,6 +28,7 @@ export const toChatUpdate = (chat: WaChat): ChatUpdate => ({
   ...(chat.unread === undefined ? {} : { unreadCount: chat.unread }),
   ...(chat.lastMessageAt === undefined ? {} : { lastMessageAt: chat.lastMessageAt }),
   ...(chat.participants === undefined ? {} : { participantsCount: chat.participants }),
+  ...(chat.membershipState === undefined ? {} : { membershipState: chat.membershipState }),
   ...rest(chat),
 })
 

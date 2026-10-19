@@ -187,7 +187,14 @@ func (e *engine) group(raw string, withLink bool) (*waGroup, error) {
 	if err := e.connect(); err != nil {
 		return nil, err
 	}
-	return e.readGroup(jid, withLink)
+	group, err := e.readGroup(jid, withLink)
+	if err != nil {
+		return nil, err
+	}
+	// The whole chat, so a group the store does not hold yet gets its title. Membership stays unsaid: the engine
+	// cannot tell a refused read of a stored group from a typo, and cli-core's null would clear "archived".
+	e.pushChats([]waChat{group.Chat})
+	return group, nil
 }
 
 func (e *engine) readGroup(jid types.JID, withLink bool) (*waGroup, error) {
@@ -294,6 +301,8 @@ func (e *engine) join(link string) (*waJoined, error) {
 	if err != nil {
 		return nil, err
 	}
+	// The answer is not stored, so the push is how the store gets the group. cli-core clears a left mark after a join.
+	e.pushChats([]waChat{group.Chat})
 	return &waJoined{Group: group}, nil
 }
 
