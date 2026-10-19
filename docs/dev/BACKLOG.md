@@ -102,7 +102,8 @@ Open work, most important first. The plan in flight is
      **Built (2026-10-19, cli-core 0.348.0):** WhatsApp's unlink notification (`events.GroupInfo.Unlink`, on the
      group's own side) is pushed as a chat with only `jid`, `kind` and `parent: null`, so the store clears the parent
      and keeps the title, counts and last activity. Not verified live: which side of an unlink a member's device
-     receives (the community's `sub_group` side is ignored), and a link notification (`Link`) is not read.
+     receives (the community's `sub_group` side is ignored). The link notification (`Link`, `parent_group` side) is
+     read the same way and sets the parent to the community.
      `community` stays true-only: a community does not turn back into a plain group.
    - **Live checks** of every group write and of `profile` on a `@lid` person: whatsmeow's `GetUserInfo` has only
      been read, not run, with a LID.

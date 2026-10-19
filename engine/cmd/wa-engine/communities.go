@@ -58,14 +58,25 @@ type parentField struct {
 
 func (p parentField) IsZero() bool { return !p.said }
 
-// unlinked reads WhatsApp's notice that a group left its community, or that the community was deleted, from the
+// linkNotice reads WhatsApp's notice that a group joined a community, left it, or lost it to a deletion, from the
 // group's own notice, as mautrix-whatsapp does (pkg/connector/chatinfo.go, wrapGroupInfoChange). The community's side
 // names the group instead; it is left alone, so a member of the community only is not given a chat it is not in.
-func unlinked(evt *events.GroupInfo) (waChat, bool) {
-	if evt.Unlink == nil || evt.Unlink.Type == types.GroupLinkChangeTypeSub || evt.JID.Server != types.GroupServer {
+// A notice that carries both is read as mautrix-whatsapp reads it: the link wins.
+func linkNotice(evt *events.GroupInfo) (waChat, bool) {
+	if evt.JID.Server != types.GroupServer {
 		return waChat{}, false
 	}
-	return waChat{JID: evt.JID.String(), Kind: "group", Parent: parentField{said: true}, notice: true}, true
+	notice := waChat{JID: evt.JID.String(), Kind: "group", notice: true}
+	if link := evt.Link; link != nil && link.Type == types.GroupLinkChangeTypeParent &&
+		link.Group.JID.Server == types.GroupServer {
+		notice.Parent = parentField{said: true, jid: link.Group.JID.String()}
+		return notice, true
+	}
+	if evt.Unlink != nil && evt.Unlink.Type != types.GroupLinkChangeTypeSub {
+		notice.Parent = parentField{said: true}
+		return notice, true
+	}
+	return waChat{}, false
 }
 
 // MarshalJSON gives a notice only what it says, so the store keeps the group's name, count and activity.

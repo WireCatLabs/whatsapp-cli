@@ -98,7 +98,7 @@ func TestAGroupsNoticeThatItLeftItsCommunitySaysOnlyThat(t *testing.T) {
 		evt := &events.GroupInfo{JID: group, Unlink: &types.GroupLinkChange{
 			Type: types.GroupLinkChangeTypeParent, UnlinkReason: reason, Group: types.GroupLinkTarget{JID: community},
 		}}
-		notice, ok := unlinked(evt)
+		notice, ok := linkNotice(evt)
 		if !ok {
 			t.Fatalf("%s: no notice", reason)
 		}
@@ -106,15 +106,58 @@ func TestAGroupsNoticeThatItLeftItsCommunitySaysOnlyThat(t *testing.T) {
 	}
 }
 
-func TestTheCommunitysSideOfAnUnlinkIsLeftAlone(t *testing.T) {
-	evt := &events.GroupInfo{JID: community, Unlink: &types.GroupLinkChange{
-		Type: types.GroupLinkChangeTypeSub, Group: types.GroupLinkTarget{JID: group},
+func TestAGroupsNoticeThatItJoinedACommunityNamesOnlyTheCommunity(t *testing.T) {
+	evt := &events.GroupInfo{JID: group, Link: &types.GroupLinkChange{
+		Type: types.GroupLinkChangeTypeParent, Group: types.GroupLinkTarget{JID: community},
 	}}
-	if _, ok := unlinked(evt); ok {
-		t.Fatal("the community's notice made a chat")
+	notice, ok := linkNotice(evt)
+	if !ok {
+		t.Fatal("no notice")
 	}
-	if _, ok := unlinked(&events.GroupInfo{JID: group}); ok {
-		t.Fatal("a notice with no unlink made a chat")
+	assertJSON(t, notice, `{"jid":"120363000000000001@g.us","kind":"group","parent":"120363000000000002@g.us"}`)
+}
+
+func TestALinkAndAnUnlinkInOneNoticeLeaveTheGroupInTheNewCommunity(t *testing.T) {
+	evt := &events.GroupInfo{JID: group,
+		Unlink: &types.GroupLinkChange{Type: types.GroupLinkChangeTypeParent},
+		Link:   &types.GroupLinkChange{Type: types.GroupLinkChangeTypeParent, Group: types.GroupLinkTarget{JID: community}},
+	}
+	notice, _ := linkNotice(evt)
+	assertJSON(t, notice, `{"jid":"120363000000000001@g.us","kind":"group","parent":"120363000000000002@g.us"}`)
+}
+
+func TestTheCommunitysSideOfALinkOrUnlinkIsLeftAlone(t *testing.T) {
+	for _, evt := range []*events.GroupInfo{
+		{JID: community, Unlink: &types.GroupLinkChange{
+			Type: types.GroupLinkChangeTypeSub, Group: types.GroupLinkTarget{JID: group},
+		}},
+		{JID: community, Link: &types.GroupLinkChange{
+			Type: types.GroupLinkChangeTypeSub, Group: types.GroupLinkTarget{JID: group},
+		}},
+		{JID: group, Link: &types.GroupLinkChange{
+			Type: types.GroupLinkChangeTypeParent, Group: types.GroupLinkTarget{JID: annLID},
+		}},
+		{JID: group},
+	} {
+		if notice, ok := linkNotice(evt); ok {
+			t.Errorf("made a chat: %+v", notice)
+		}
+	}
+}
+
+func TestALinkNoticeIsPushedAsAChatAndNotRemembered(t *testing.T) {
+	e, out := followingEngine(&fakeFollows{})
+	e.chats = map[string]waChat{}
+	e.handle(&events.GroupInfo{JID: group, Link: &types.GroupLinkChange{
+		Type: types.GroupLinkChangeTypeParent, Group: types.GroupLinkTarget{JID: community},
+	}})
+	want := `{"event":"history","history":{"kind":"other","chats":[{"jid":"120363000000000001@g.us","kind":"group",` +
+		`"parent":"120363000000000002@g.us"}],"contacts":[],"messages":[],"votes":[]}}`
+	if got := out.next(t); got != want {
+		t.Fatalf("got  %s\nwant %s", got, want)
+	}
+	if len(e.chats) != 0 {
+		t.Fatal("the notice was remembered as the group's chat")
 	}
 }
 

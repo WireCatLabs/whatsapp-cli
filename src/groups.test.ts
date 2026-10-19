@@ -491,6 +491,28 @@ describe("wa communities", () => {
     expect(group).toMatchObject(kept)
     expect(group.parent_chat_id).toBeUndefined()
   })
+
+  it("a notice that a group joined a community sets only its parent", async () => {
+    const pushing = (chat: WaChat): EngineEvent => ({
+      event: "history",
+      history: { kind: "other", chats: [chat], contacts: [], messages: [], votes: [] },
+    })
+    const joining = "120363000000000078@g.us"
+    const lastMessageAt = "2026-09-02T10:00:00.000Z"
+    await watching([
+      pushing({ jid: joining, name: "Chess club", kind: "group", unread: 2, lastMessageAt, participants: 4 }),
+    ])
+    expect((await offline("chats", "show", joining)).item.parent_chat_id).toBeUndefined()
+
+    await watching([pushing({ jid: joining, kind: "group", parent: community })])
+    expect((await offline("chats", "show", joining)).item).toMatchObject({
+      title: "Chess club",
+      unread_count: 2,
+      last_message_at: lastMessageAt,
+      participants_count: 4,
+      parent_chat_id: community,
+    })
+  })
 })
 
 describe("wa chats requests", () => {
