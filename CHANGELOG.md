@@ -159,6 +159,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`setup`'s link step is headed "Link this device"** and no longer asks you to scan a QR code before one is
+  drawn. The line under the code says where to scan; a narrow terminal shows only the hint to widen it.
 - **A terminal too narrow for the QR code no longer asks you to scan it** (cli-core 0.350.0). `session start` and
   `setup` said where to scan in WhatsApp before the code; when the code did not fit, only the hint to widen the
   terminal or pass `--qr-file` followed. Now the scan line comes after the drawn code or the `--qr-file` note, and a

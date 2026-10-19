@@ -168,7 +168,7 @@ export const setupCommand = () =>
           "Windows: use wa.cmd or npm.cmd if PowerShell blocks scripts. Open a new terminal after installing Node.js.",
         )
 
-      screen.step(2, existsSync(devicePath) ? "Link" : "Link: scan the QR code or type the pairing code")
+      screen.step(2, "Link this device")
       const session = await startSession(this, linkContext, {
         signal,
         method: options.method,

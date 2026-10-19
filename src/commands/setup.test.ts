@@ -276,6 +276,8 @@ describe("wa setup", () => {
     )
     expect(result.code).toBe(0)
     expect(input.prompts).toEqual([expect.stringMatching(/^ {6}phone number/)])
+    expect(result.stderr).toContain("[2/5] Link this device")
+    expect(result.stderr).not.toMatch(/scan/i)
     expect(result.stderr).toContain("Link with phone number instead")
     const warning = BAN_WARNING.replace(/^/gm, "      ")
     expect(result.stderr.indexOf(warning)).toBeGreaterThan(result.stderr.indexOf("[2/5] Link"))
