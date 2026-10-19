@@ -273,6 +273,15 @@ describe("whatsAppAdapter", () => {
     expect(batches.at(-1)?.chats?.[0]).not.toHaveProperty("unreadCount")
   })
 
+  it("hands the engine only the stored phone-form one-to-one chats, in one request, and none when there are none", async () => {
+    const engine = fakeEngine(seed)
+    const adapter = whatsAppAdapter(engine)
+    await adapter.storedChats?.([seed.busy, seed.person, "120363000000000001@newsletter", "status@broadcast"])
+    expect(engine.storedAsked).toEqual([])
+    await adapter.storedChats?.(["70000000009@s.whatsapp.net", seed.busy, "70000000008@s.whatsapp.net"])
+    expect(engine.storedAsked).toEqual([["70000000009@s.whatsapp.net", "70000000008@s.whatsapp.net"]])
+  })
+
   it("ends the history listen quietly when this process logged the device out, and with why when the phone did", async () => {
     const engine = fakeEngine(seed)
     const adapter = whatsAppAdapter(engine)

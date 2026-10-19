@@ -146,6 +146,10 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "directory":
       say({ id, ok: [] })
       break
+    case "storedChats":
+      for (const chat of fields.chats) say({ event: "rekey", from: chat, to: "100000000000002@lid" })
+      say({ id, ok: null })
+      break
     // The same lines engine/cmd/wa-engine's wire-shape tests expect the Go engine to write.
     case "group":
       process.stdout.write(

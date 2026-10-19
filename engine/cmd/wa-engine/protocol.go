@@ -52,6 +52,7 @@ type request struct {
 	privacyFields
 	settingsFields
 	channelFields
+	storedChatsFields
 }
 
 // failure carries a code from the contract's closed list and fixed wording: never a JID, a name or anything typed.

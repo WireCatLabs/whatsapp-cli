@@ -76,3 +76,91 @@ describe("a person who gains a LID", () => {
     expect(chats.filter((chat: { id: string }) => chat.id === LID)).toHaveLength(1)
   })
 })
+
+describe("a phone-form chat stored before the engine kept its table", () => {
+  const UNKNOWN = "70000000008@s.whatsapp.net"
+  const dm = (jid: string) => ({
+    jid,
+    name: null,
+    kind: "dm" as const,
+    unread: null,
+    lastMessageAt: null,
+    participants: null,
+  })
+
+  // An engine that records nothing, as one older than the table: the two chats are stored in phone form only.
+  const storeInPhoneForm = async (profile: string, n: number) => {
+    const controller = new AbortController()
+    const seeding = () => {
+      const engine = fakeEngine(seed)
+      engine.storedChats = async () => {}
+      setImmediate(() => {
+        engine.push({
+          event: "history",
+          history: {
+            kind: "recent",
+            chats: [dm(PHONE), dm(UNKNOWN)],
+            contacts: [],
+            messages: [message(PHONE, n), message(UNKNOWN, n + 1)],
+            votes: [],
+          },
+        })
+        setImmediate(() => controller.abort())
+      })
+      return engine
+    }
+    const seeded = await wa([profile, "watch", "--jsonl"], seeding, controller.signal)
+    expect(seeded.code, seeded.stderr).toBe(0)
+  }
+
+  const chatIds = async (profile: string): Promise<string[]> =>
+    JSON.parse((await wa([profile, "--offline", "chats", "list", "--json"])).stdout).items.map(
+      (chat: { id: string }) => chat.id,
+    )
+
+  it("re-keys as watch starts when its LID is known, and goes to the engine for a lookup when not", async () => {
+    const profile = "stored-phone-chats"
+    await storeInPhoneForm(profile, 11)
+    expect(await chatIds(profile)).toEqual(expect.arrayContaining([PHONE, UNKNOWN]))
+
+    const controller = new AbortController()
+    let asked: string[][] = []
+    const starting = () => {
+      const engine = fakeEngine(seed, { lids: { [PHONE]: LID } })
+      asked = engine.storedAsked
+      const handOver = engine.storedChats
+      engine.storedChats = async (chats) => {
+        await handOver(chats)
+        setImmediate(() => controller.abort())
+      }
+      return engine
+    }
+    const watched = await wa([profile, "watch", "--jsonl"], starting, controller.signal)
+    expect(watched.code, watched.stderr).toBe(0)
+
+    expect(asked.map((chats) => [...chats].sort())).toEqual([[UNKNOWN, PHONE]])
+    const ids = await chatIds(profile)
+    expect(ids).toContain(LID)
+    expect(ids).toContain(UNKNOWN)
+    expect(ids).not.toContain(PHONE)
+    const listed = await wa([profile, "--offline", "messages", "list", LID, "--json"])
+    expect(JSON.parse(listed.stdout).items.map((one: { id: string }) => one.id)).toContain(message(LID, 11).id)
+  })
+
+  it("warns once when the engine cannot take them, and watch goes on", async () => {
+    const profile = "stored-phone-chats-refused"
+    await storeInPhoneForm(profile, 21)
+    const controller = new AbortController()
+    const refusing = () => {
+      const engine = fakeEngine(seed)
+      engine.storedChats = async () => {
+        setImmediate(() => controller.abort())
+        throw new Error("synthetic refusal")
+      }
+      return engine
+    }
+    const watched = await wa([profile, "watch", "--jsonl"], refusing, controller.signal)
+    expect(watched.code, watched.stderr).toBe(0)
+    expect(watched.stderr.match(/not told the stored chats: synthetic refusal/g)).toHaveLength(1)
+  })
+})

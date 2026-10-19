@@ -255,6 +255,9 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       await request("logout", {}, nothing)
       self = null
     },
+    storedChats: async (chats) => {
+      await request("storedChats", { chats }, nothing)
+    },
     listen: (kinds, onEvent) => hub.listen(kinds, onEvent),
     close,
     ...goGroups(request),

@@ -106,6 +106,8 @@ const translated = async <T>(work: Promise<T>): Promise<T> => {
 
 const hit = (message: Message): MessageHit => ({ ...message, chatTitle: null })
 
+const PHONE_CHAT = /^\d+@s\.whatsapp\.net$/
+
 const ENDED: Partial<Record<ConnectionState, (words: Words, until?: string) => CliError>> = {
   logged_out: (words) =>
     fromEngine(
@@ -658,6 +660,12 @@ export const whatsAppAdapter = (
     listenHistory: (onBatch, signal) => pushing(onBatch, signal, ownLogout),
 
     feed: (onBatch, signal) => pushing(onBatch, signal),
+
+    // Only phone-form one-to-one chats can need a re-key, and in one request: cli-core waits at most 5 s for it.
+    storedChats: async (ids) => {
+      const phones = ids.filter((id) => PHONE_CHAT.test(id))
+      if (phones.length > 0) await translated(engine.storedChats(phones))
+    },
   }
 
   const polls = pollAdapter({ engine, stored, held, keyOf, translated })

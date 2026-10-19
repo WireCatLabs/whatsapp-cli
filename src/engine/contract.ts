@@ -78,6 +78,8 @@ export const ENGINE_OPS = {
   privacy: "read",
   channel: "read",
   channelMessages: "read",
+  // Records the store's phone-form chats in the engine's own table; nothing reaches WhatsApp.
+  storedChats: "read",
 } as const
 
 export type EngineOp = keyof typeof ENGINE_OPS
@@ -527,6 +529,12 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngi
    */
   link(request: WaLink, onCode: (code: LoginCode) => void): Promise<WaAccount>
   logout(): Promise<void>
+  /**
+   * The store's one-to-one chats in phone form, once as `serve` or `watch` starts. One stored so before the engine kept
+   * its table of them is known to it no other way: it goes out as a `rekey` event if its LID is known, and waits for the
+   * paced lookups if not. Never connects.
+   */
+  storedChats(chats: string[]): Promise<void>
   /** Events of the given kinds until the returned function is called. */
   listen(kinds: readonly EngineEvent["event"][], onEvent: (event: EngineEvent) => void): () => void
   close(): Promise<void>
