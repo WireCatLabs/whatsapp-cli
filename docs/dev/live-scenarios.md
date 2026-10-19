@@ -15,8 +15,10 @@ which is the private repository and never part of this one.
 - **Sends go only to the owner's own chat**, the chat with the account's own LID (`…@lid`). No other chat is
   written to, not even a group the owner runs. WhatsApp bans accounts for messages to strangers and for bulk sends,
   so a live check never risks either.
-- **The device is the main install's.** A worktree's `bin/wa` keeps its own `.wa/` folder with no device, and no
-  worktree links one: a second linked device is a change to the owner's account. Live checks run the owner's
+- **The device is the main install's.** A worktree's `bin/wa` keeps its own `.wa/` folder with no device and its
+  own store, and no worktree links one: a second linked device is a change to the owner's account. The main
+  checkout's `bin/wa` keeps its device in `.wa/` but writes the shared WireCat store, so the scripts below read and
+  count what tg and max search too. Live checks run the owner's
   installed `wa` against the owner's profile, by the owner or with the owner's yes for that run.
 - **One connection per device.** The owner's `wa <profile> serve` holds it, and a command that connects goes
   through it (C1). W and C2 need `serve` stopped by the owner first and started again after; an agent never stops

@@ -379,7 +379,7 @@ pnpm install
 pnpm lint && pnpm typecheck && pnpm test
 pnpm engine:build && pnpm engine:test   # the Go engine; needs Go
 pnpm generate                           # rewrites docs/commands.md from the command tree
-bin/wa personal chats list              # everything under .wa/ in this checkout, never the real profile
+bin/wa personal chats list              # config, state and device under .wa/; a worktree's store too
 ```
 
 Everything that is not specific to WhatsApp — the commands, the store, the send guard, the MCP server — lives in

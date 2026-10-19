@@ -14,7 +14,11 @@ worktree's folder; the guards in `.claude/` keep it inside. This file is how, an
 
 - **Never link a worktree.** A `session start` per worktree would add a device to the owner's account, and WhatsApp
   drops the older of two connections for one device. `bin/wa` keeps each worktree's config, state and store in its
-  own `.wa/`, which holds no device, so a branch build never opens the owner's real one.
+  own `.wa/`, which holds no device, so a branch build never opens the owner's real device or the shared store.
+  Only the main checkout's `bin/wa` writes the shared WireCat store (`~/.local/share/WireCat/wirecat.db`), the one
+  tg and max write; it tells the two apart by `.git`, a folder in the main checkout and a file in a worktree. A
+  second full clone has a `.git` folder too, so it counts as main. The owner moves a main checkout that had its own
+  store with [`bin/move-to-shared-store`](../../bin/move-to-shared-store) `<profile>`, once; an agent never runs it.
 - **The skills are linked, never tracked.** `release` and `test-live` live in [`skills/`](skills/); a checkout needs
   `ln -s ../docs/dev/skills .claude/skills` once, from a terminal. A tracked `.claude/skills` breaks every checkout
   that lacks it: inside the sandbox it cannot be created, and the switch is refused.
