@@ -186,6 +186,7 @@ describe("wa setup", () => {
     expect(result.code).toBe(0)
     const answer = JSON.parse(result.stdout).item
     expect(answer).toMatchObject({ device: { reused: true } })
+    expect(result.stderr).toContain("2/5 — Link this device")
     expect(answer).not.toHaveProperty("history")
     expect(result.stderr).not.toContain(BAN_WARNING)
     expect(input.prompts).toEqual([])
