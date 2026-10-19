@@ -157,3 +157,31 @@ func TestThousandsOfStoredChatsAreRecordedInOneRequestWellInsideTheCLIsWait(t *t
 		t.Errorf("took %v; the CLI abandons the request after 5 s", took)
 	}
 }
+
+func TestRecipientsTheStoreLacksAreMappedFromLocalTablesAndNothingIsRecorded(t *testing.T) {
+	e, out := storedChatsEngine(t, true, mapping("70000000009", "100000000000003"))
+	e.conv = &converter{lidFor: e.lidFor, self: selfLID, selfPN: selfPN}
+	e.phones.note(e.ctx, "70000000007@s.whatsapp.net")
+	e.phones.settle(e.ctx, lidsFrom(map[string]types.JID{"70000000007": types.NewJID("100000000000007", types.HiddenUserServer)}),
+		time.Now())
+
+	e.answer(request{ID: 1, Op: "storedChats", storedChatsFields: storedChatsFields{Recipients: []string{
+		fakePN, "70000000007@s.whatsapp.net", "70000000008@s.whatsapp.net", "100000000000004@lid", "120363000000000001@g.us",
+	}}})
+
+	want := []map[string]any{
+		{"event": "rekey", "from": fakePN, "to": "100000000000003@lid"},
+		{"event": "rekey", "from": "70000000007@s.whatsapp.net", "to": "100000000000007@lid"},
+		{"id": float64(1), "ok": nil},
+	}
+	if got := wireLines(t, out); !reflect.DeepEqual(got, want) {
+		t.Errorf("wrote %v", got)
+	}
+	if got := e.phones.waiting(); len(got) != 0 {
+		t.Errorf("a typed number reached the lookups: %v", got)
+	}
+	var rows int
+	if err := e.phones.db.QueryRow(`SELECT count(*) FROM wa_phone_chats`).Scan(&rows); err != nil || rows != 1 {
+		t.Errorf("recorded %d rows (%v); only the chat noted before", rows, err)
+	}
+}

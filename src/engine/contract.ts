@@ -536,9 +536,10 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngi
   /**
    * The store's one-to-one chats in phone form, once as `serve` or `watch` starts. One stored so before the engine kept
    * its table of them is known to it no other way: it goes out as a `rekey` event if its LID is known, and waits for the
-   * paced lookups if not. Never connects.
+   * paced lookups if not. `recipients` are recipient-list ids the store holds no chat for: one in phone form whose LID
+   * the device knows goes out as a `rekey` event too, and none is looked up or recorded. Never connects.
    */
-  storedChats(chats: string[]): Promise<void>
+  storedChats(chats: string[], recipients?: string[]): Promise<void>
   /**
    * The chat id the store keeps a typed one-to-one chat under: its LID when whatsmeow's map knows it, else the id as
    * typed. Reads the map only, never connects, and records nothing.

@@ -13,12 +13,14 @@ const lidQueryChunk = 500
 type storedChatsFields struct {
 	// storedChats: every chat id cli-core's store holds for this account.
 	Chats []string `json:"chats,omitempty"`
+	// storedChats: recipient-list ids the store holds no chat for, typed by the owner.
+	Recipients []string `json:"recipients,omitempty"`
 }
 
 func (e *engine) dispatchStoredChats(req request) (any, bool, error) {
 	switch req.Op {
 	case "storedChats":
-		return nil, true, e.storedChats(req.Chats)
+		return nil, true, e.storedChats(req.Chats, req.Recipients)
 	}
 	return nil, false, nil
 }
@@ -28,27 +30,38 @@ func (e *engine) dispatchStoredChats(req request) (any, bool, error) {
 // nothing names it again (§5). A chat whose LID whatsmeow knows re-keys at once; the rest wait for the paced lookups,
 // which ask only for chats the account has, as these are. The CLI waits at most 5 s for this at shutdown, and the
 // account may hold thousands of chats: one bulk read of the LID map, then one transaction.
-func (e *engine) storedChats(chats []string) error {
+func (e *engine) storedChats(chats, recipients []string) error {
 	if e.phones == nil || !e.linked() {
 		return nil
 	}
-	users := phoneUsers(chats)
-	if len(users) == 0 {
-		return nil
+	if users := phoneUsers(chats); len(users) > 0 {
+		known, err := e.knownLIDs(users)
+		if err != nil {
+			return err
+		}
+		rekeys, err := e.phones.adopt(e.ctx, users, known, time.Now())
+		if err != nil {
+			return err
+		}
+		for _, rekey := range rekeys {
+			e.out.rekey(rekey)
+		}
+		// Lookups otherwise start only after a history push, and a `serve` that reconnects may get none.
+		e.lookLater()
 	}
-	known, err := e.knownLIDs(users)
-	if err != nil {
-		return err
+	return e.mapRecipients(recipients)
+}
+
+// mapRecipients re-keys the recipient-list entries the owner typed by a phone number whose LID this device already
+// knows, so the send guard follows them. A typed number need not be a chat the account has: it is read against the
+// two local tables only, as `canonicalChat` reads them, never looked up and never recorded (NEED-1441).
+func (e *engine) mapRecipients(recipients []string) error {
+	for _, user := range phoneUsers(recipients) {
+		pn := types.NewJID(user, types.DefaultUserServer)
+		if to := e.conv.canonical(pn, nil); to != pn {
+			e.out.rekey(waRekey{From: pn.String(), To: to.String()})
+		}
 	}
-	rekeys, err := e.phones.adopt(e.ctx, users, known, time.Now())
-	if err != nil {
-		return err
-	}
-	for _, rekey := range rekeys {
-		e.out.rekey(rekey)
-	}
-	// Lookups otherwise start only after a history push, and a `serve` that reconnects may get none.
-	e.lookLater()
 	return nil
 }
 
