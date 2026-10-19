@@ -271,12 +271,6 @@ Open work, most important first. The plan in flight is
     a way for an adapter to give an ending its own exit. Also cli-core's: no cap on restarts (`RestartSec=30`, so
     systemd's start limit never trips), no restart on macOS once `noRestartOn` is set (launchd cannot exclude one
     code), none for a `serve` started by hand, and no way to open the connection again inside `serve`.
-16. **Phone-form chats stored before the re-key table need cli-core** (found 2026-10-19, ARCHITECTURE §5). The engine
-    records a phone-form chat when it emits it, or when a request names it, so a chat cli-core stored in phone form
-    before `wa_phone_chats` existed (wa #73) re-keys and gets a LID lookup only once a message, a history push or a
-    command touches it. One nothing touches stays in phone form, and a message under its LID later splits it. The
-    engine cannot read cli-core's store; the fix is a cli-core port that hands the messenger the stored chat ids once
-    (at `feed`'s start, say), which the adapter passes on to the engine.
 17. **The first test of `src/groups.test.ts` once hit vitest's 5 s timeout** (found 2026-10-19, in a local
     `pnpm test:coverage` for wa #144, which changed nothing that test runs). Not reproduced: in three later coverage
     runs it took 64 to 130 ms, and CI stayed green. Probably the cold start of a file's first test while other agents'
@@ -286,3 +280,12 @@ Open work, most important first. The plan in flight is
     `upsertChat` (0.348.0) clears a stored `left` membership whenever a saved chat leaves membership out, as the
     community link and unlink notices do. WhatsApp probably sends a group's notices only to its members, so it should
     not arise; the fix is in cli-core: a chat that leaves out every kept field is a notice, not the list naming it.
+19. **A send typed to a re-keyed person's phone number can undo the owner's settings on their chat** (found
+    2026-10-19, wa #148 review, needs cli-core). cli-core saves a send under the id the owner typed, so a send to the
+    old phone-form id stores a new phone-form chat beside the LID chat. At the next `serve` or `watch` start the
+    engine announces that re-key again (within 30 days before #148; since #148, whenever the store holds the phone
+    form), and cli-core merges into the row of the old id: here the new phone-form chat. Its `scope` and `searchable` win, so
+    a LID chat the owner had hidden from search becomes searchable again. Not a loop: once merged, the phone form is
+    gone. The fix is in cli-core: save a send under the chat id the messenger answered, or keep the owner's fields of
+    the row the merge absorbs. Also cli-core's, for scale only: each re-key is its own store write, so the first
+    start after upgrading writes once per stored phone-form chat whose LID is known.

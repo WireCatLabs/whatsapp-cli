@@ -65,6 +65,19 @@ func TestAPhoneChatIsRekeyedOnceItsPersonHasALID(t *testing.T) {
 	}
 }
 
+func TestARekeyedChatNamedInPhoneFormAgainIsNotLookedUpAgain(t *testing.T) {
+	ctx := context.Background()
+	p := testPhoneChats(t, filepath.Join(t.TempDir(), "private.db"))
+	p.note(ctx, fakePN)
+	lid := lidsFrom(map[string]types.JID{"70000000009": types.NewJID("100000000000001", types.HiddenUserServer)})
+	p.settle(ctx, lid, time.Now())
+
+	p.note(ctx, fakePN)
+	if got := p.waiting(); len(got) != 0 {
+		t.Errorf("a re-keyed chat went back to the lookups: %v", got)
+	}
+}
+
 func TestPhoneChatsOutliveTheProcessAndRecentRekeysAreRepeated(t *testing.T) {
 	ctx, now := context.Background(), time.Now()
 	path := filepath.Join(t.TempDir(), "private.db")

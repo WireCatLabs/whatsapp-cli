@@ -348,13 +348,22 @@ first, in a new chat under the LID; the re-key then merges the two. At each star
 re-keys whatsmeow learned while it was not running, and repeats those of the last 30 days: a one-shot command does
 not save history, so the first announcement may have had no listener, and cli-core takes a repeat as a no-op. Only
 chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward, a poll or a vote, of a
-star or a delete made on another device, and the chat of a stored message a request names (`react`, `read`, `older`,
-`archiveChat` and the like) — never senders or contacts. The last is how a chat cli-core stored in phone form before
-the table existed comes in, since the engine cannot read that store; one nothing names stays out (BACKLOG). The
-directory, a chat card, a mute and a chat pin do not record: they take a typed id or an address-book name, not a
-chat the account has. Once re-keyed, a chat is never emitted in phone form again — not in a message, a
-history push, a send's result or the chat directory: the engine takes its LID from the table wherever whatsmeow's
-store does not answer, and keeps the row after the 30 days of repeats.
+star or a delete made on another device, the chat of a stored message a request names (`react`, `read`, `older`,
+`archiveChat` and the like), and the store's own phone-form chats — never senders or contacts. The last two are how a
+chat cli-core stored in phone form before the table existed comes in, since the engine cannot read that store. As
+`feed` starts, in `serve` and `watch`, cli-core hands the adapter every chat id it holds for the account
+(`PushedHistory.storedChats`, cli-core 0.350.0); the adapter passes the phone-form one-to-one ids to the engine in one
+`storedChats` request (`engine/cmd/wa-engine/storedchats.go`). The engine reads their LIDs from whatsmeow's map in one
+bulk query per 500, then records them in one transaction: a known LID is a re-key at once, a chat re-keyed earlier is
+announced again (the store still holding the phone form means the CLI missed it), and the rest wait for the lookups
+below, which it schedules. Measured in its test: 5,000 ids in about 50 ms; cli-core waits at most 5 s for it at
+shutdown, and a failure is one `stored_chats_failed` warning while `feed` goes on. The store's chats come from
+history pushes, messages and the owner's own sends: wa gives cli-core no online chat list, so the directory, and the
+address book in it, is never saved as chats. The directory, a chat card, a mute and a chat pin do not record: they take a typed id or an
+address-book name, not a chat the account has. Once re-keyed, a chat is never emitted in phone form again — not in a
+message, a history push, a send's result or the chat directory: the engine takes its LID from the table wherever
+whatsmeow's store does not answer, and keeps the row after the 30 days of repeats. A re-keyed chat named in phone
+form again is not put back on the lookups' list.
 
 For a chat still in phone form the engine asks WhatsApp itself, with the request `contacts profile` makes
 (`GetUserInfo`), whose answer whatsmeow stores with the LID. Many such requests in a row are what a scraper sends,
@@ -363,9 +372,9 @@ per 10 seconds (the number lookup's gap, with a pace of their own so the owner's
 them), at most 20 people per run, each person at most once a week (`wa_lid_asks` in `private.db`, written before
 the request goes out; a request that cannot be recorded is not sent), and a request that fails ends the run. The
 10 seconds hold within one process; after a restart the minute's wait below keeps them apart. A run starts a minute
-after the last history push, so the pushes after connecting have settled and a one-shot command, which ends sooner,
-never makes one; the on-demand pushes that answer `messages sync` start none, and the run that links the device makes
-none. Each LID found goes out as a re-key.
+after the last history push or the stored chats' hand-over (which only `serve` and `watch` make), so the pushes
+after connecting have settled and a one-shot command, which ends sooner, never makes one; the on-demand pushes that
+answer `messages sync` start none, and the run that links the device makes none. Each LID found goes out as a re-key.
 
 WhatsApp's 429, on a lookup or on any other request, stops the lookups for a week, across restarts (a row of
 `wa_lid_asks`). A 429 a lookup met has no command to refuse, so the engine refuses the next write with

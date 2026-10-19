@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 36, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 37, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -145,6 +145,10 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       break
     case "directory":
       say({ id, ok: [] })
+      break
+    case "storedChats":
+      for (const chat of fields.chats) say({ event: "rekey", from: chat, to: "100000000000002@lid" })
+      say({ id, ok: null })
       break
     // The same lines engine/cmd/wa-engine's wire-shape tests expect the Go engine to write.
     case "group":

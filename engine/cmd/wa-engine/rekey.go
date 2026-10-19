@@ -82,7 +82,8 @@ func (p *phoneChats) note(ctx context.Context, chat string) {
 	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.pending[jid.User] {
+	// A re-keyed chat named in phone form again (a typed id) would otherwise be looked up weekly.
+	if _, rekeyed := p.rekeyed[jid.User]; p.pending[jid.User] || rekeyed {
 		return
 	}
 	if _, err := p.db.ExecContext(ctx, `INSERT OR IGNORE INTO wa_phone_chats (pn) VALUES (?)`, jid.User); err == nil {

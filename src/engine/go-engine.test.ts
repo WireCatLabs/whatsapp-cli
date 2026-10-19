@@ -38,6 +38,19 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("hands the stored chats over in one request, and the re-keys the engine sends back reach a listener", async () => {
+    const engine = await stub("ok")
+    const rekeys: EngineEvent[] = []
+    const stop = engine.listen(["rekey"], (event) => rekeys.push(event))
+    await engine.storedChats(["70000000009@s.whatsapp.net", "70000000008@s.whatsapp.net"])
+    stop()
+    expect(rekeys.map((event) => event.event === "rekey" && event.from)).toEqual([
+      "70000000009@s.whatsapp.net",
+      "70000000008@s.whatsapp.net",
+    ])
+    await engine.close()
+  })
+
   it("pins and unpins by the stored message's key, with the pin's duration when given", async () => {
     const engine = await stub("ok")
     const key = { chat: "120363000000000001@g.us", id: "3EB0AA", fromMe: false, sender: "100000000000002@lid" }

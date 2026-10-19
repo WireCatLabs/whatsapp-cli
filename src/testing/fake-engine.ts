@@ -131,6 +131,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, Fak
   markedUnread: WaAnchor[]
   /** Each read patch, by the message it was bounded by; the read receipts are in `actions`. */
   markedRead: WaAnchor[]
+  /** Each `storedChats` request, by the chat ids it carried. */
+  storedAsked: string[][]
   closed: boolean
   loggedOut: boolean
 }
@@ -140,7 +142,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, Fak
  * right after linking, and drops a repeated message id as WhatsApp does. `phone` is what the phone still holds and
  * sends when asked for older history; without it the phone is offline and every such request times out. With
  * `channel`, the account follows one channel in that role; the directory names it, and connecting pushes it as the
- * Go engine does. A download of a path in `expired` asks the phone, which uploads it again under a new path.
+ * Go engine does. A download of a path in `expired` asks the phone, which uploads it again under a new path. `lids` is
+ * the LID map whatsmeow holds, by phone-form chat: a stored chat in it is re-keyed as `storedChats` names it.
  */
 export const fakeEngine = (
   seed: Seed,
@@ -151,6 +154,7 @@ export const fakeEngine = (
     settingsKeys = true,
     channel,
     expired,
+    lids = {},
   }: {
     linked?: boolean
     phone?: WaMessage[]
@@ -158,6 +162,7 @@ export const fakeEngine = (
     settingsKeys?: boolean
     channel?: WaChannel["role"]
     expired?: ExpiredFiles
+    lids?: Record<string, string>
   } = {},
 ): FakeEngine => {
   const hub = eventHub()
@@ -199,6 +204,7 @@ export const fakeEngine = (
   const chatPins: FakeEngine["chatPins"] = []
   const markedUnread: WaAnchor[] = []
   const markedRead: WaAnchor[] = []
+  const storedAsked: string[][] = []
   const keysMissing = () =>
     new EngineError(
       "provider_unavailable",
@@ -247,6 +253,7 @@ export const fakeEngine = (
     chatPins,
     markedUnread,
     markedRead,
+    storedAsked,
     closed: false,
     loggedOut: false,
     push,
@@ -447,6 +454,13 @@ export const fakeEngine = (
     logout: async () => {
       engine.loggedOut = true
       self = null
+    },
+    storedChats: async (chats) => {
+      storedAsked.push(chats)
+      for (const chat of chats) {
+        const lid = lids[chat]
+        if (lid) push({ event: "rekey", from: chat, to: lid })
+      }
     },
     listen: (kinds, onEvent) => hub.listen(kinds, onEvent),
     close: async () => {
