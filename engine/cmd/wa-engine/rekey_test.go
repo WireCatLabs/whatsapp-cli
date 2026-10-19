@@ -150,7 +150,10 @@ func TestTheChatARequestNamesIsRecordedOnceTheRequestWentThrough(t *testing.T) {
 	p := testPhoneChats(t, filepath.Join(t.TempDir(), "private.db"))
 	e := &engine{ctx: ctx, phones: p}
 	e.noteNamed(request{Op: "react", Chat: "70000000001@s.whatsapp.net"})
-	e.noteNamed(request{Op: "mute", JID: "70000000002@s.whatsapp.net"})
+	e.noteNamed(request{Op: "read", Chat: "70000000002@s.whatsapp.net"})
+	e.noteNamed(request{Op: "mute", JID: "70000000007@s.whatsapp.net"})
+	e.noteNamed(request{Op: "pinChat", JID: "70000000008@s.whatsapp.net"})
+	e.noteNamed(request{Op: "react", Chat: "120363000000000001@g.us"})
 	e.noteNamed(request{Op: "chat", JID: "70000000003@s.whatsapp.net"})
 	e.noteNamed(request{Op: "profile", JID: "70000000004@s.whatsapp.net"})
 	e.noteNamed(request{Op: "block", JID: "70000000005@s.whatsapp.net"})

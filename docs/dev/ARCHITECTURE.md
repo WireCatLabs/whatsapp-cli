@@ -342,11 +342,11 @@ first, in a new chat under the LID; the re-key then merges the two. At each star
 re-keys whatsmeow learned while it was not running, and repeats those of the last 30 days: a one-shot command does
 not save history, so the first announcement may have had no listener, and cli-core takes a repeat as a no-op. Only
 chat ids are recorded — a message's chat, a history chat, the chat of a send, a file, a forward, a poll or a vote, of a
-star or a delete made on another device, and the chat a request on stored messages or a stored chat names (`react`,
-`read`, `older`, `mute`, `archiveChat` and the like) — never senders or contacts. The last is how a chat cli-core stored
-in phone form before the table existed comes in, since the engine cannot read that store; one nothing names stays
-out (BACKLOG). The directory and a chat card do not record: their phone-form people are the address book, not chats,
-and a request that later names one records it then. Once re-keyed, a chat is never emitted in phone form again — not in a message, a
+star or a delete made on another device, and the chat of a stored message a request names (`react`, `read`, `older`,
+`archiveChat` and the like) — never senders or contacts. The last is how a chat cli-core stored in phone form before
+the table existed comes in, since the engine cannot read that store; one nothing names stays out (BACKLOG). The
+directory, a chat card, a mute and a chat pin do not record: they take a typed id or an address-book name, not a
+chat the account has. Once re-keyed, a chat is never emitted in phone form again — not in a message, a
 history push, a send's result or the chat directory: the engine takes its LID from the table wherever whatsmeow's
 store does not answer, and keeps the row after the 30 days of repeats.
 

@@ -196,17 +196,15 @@ func (e *engine) historyRekeys(h waHistory) []waRekey {
 	return rekeys
 }
 
-// namedByChat are the requests whose `chat` is a chat the CLI's store already holds, and namedByJID those whose `jid`
-// is. A send, a file, a forward or a poll records its own chat; a chat card, a profile or a block may name a number
-// the owner typed, which would widen the lookups past the account's chats.
-var (
-	namedByChat = map[string]bool{
-		"older": true, "read": true, "react": true, "edit": true, "revoke": true, "star": true, "deleteForMe": true,
-		"deleteChat": true, "clearChat": true, "archiveChat": true, "unarchiveChat": true, "markChatRead": true,
-		"markChatUnread": true, "pin": true, "unpin": true, "vote": true,
-	}
-	namedByJID = map[string]bool{"mute": true, "pinChat": true, "unpinChat": true}
-)
+// namedByChat are the requests whose `chat` is that of a message the CLI's store holds: the adapter sends none of
+// them without one. A send, a file, a forward or a poll records its own chat. A mute, a chat pin, a chat card, a
+// profile or a block take whatever id the owner typed or a directory name gave, which would widen the lookups past
+// the account's chats (NEED-1441).
+var namedByChat = map[string]bool{
+	"older": true, "read": true, "react": true, "edit": true, "revoke": true, "star": true, "deleteForMe": true,
+	"deleteChat": true, "clearChat": true, "archiveChat": true, "unarchiveChat": true, "markChatRead": true,
+	"markChatUnread": true, "pin": true, "unpin": true, "vote": true,
+}
 
 // noteNamed records the chat a request that went through names. The CLI may have stored it in phone form before the
 // engine kept the table, and the engine cannot read that store: this is how such a chat reaches the re-keys and the
@@ -214,9 +212,6 @@ var (
 func (e *engine) noteNamed(req request) {
 	if namedByChat[req.Op] {
 		e.phones.note(e.ctx, req.Chat)
-	}
-	if namedByJID[req.Op] {
-		e.phones.note(e.ctx, req.JID)
 	}
 }
 

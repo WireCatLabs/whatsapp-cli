@@ -119,6 +119,8 @@ func (a *lidAsker) hold(ctx context.Context) {
 // owe keeps a background 429 for the next write. Unlike hold's row, it is set only where no command carries the 429.
 func (a *lidAsker) owe(ctx context.Context) {
 	if a != nil {
+		a.mu.Lock()
+		defer a.mu.Unlock()
 		_ = a.mark(ctx, lidAskOwed, a.now())
 	}
 }
