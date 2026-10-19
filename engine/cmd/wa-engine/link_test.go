@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -39,7 +41,7 @@ func (r *restarting) wait(time.Duration) bool {
 func TestLinkWaitsOutTheRestartAfterPairing(t *testing.T) {
 	e := &engine{ctx: context.Background()}
 	r := &restarting{falses: 3}
-	if err := e.awaitLogin(r.wait, time.Millisecond, time.Minute, "late"); err != nil {
+	if err := e.awaitLogin(r.wait, time.Millisecond, time.Minute, "late", nil); err != nil {
 		t.Fatalf("the restart ended the wait: %v", err)
 	}
 	if r.calls != 4 {
@@ -50,7 +52,7 @@ func TestLinkWaitsOutTheRestartAfterPairing(t *testing.T) {
 func TestLinkGivesUpAtTheDeadline(t *testing.T) {
 	e := &engine{ctx: context.Background()}
 	r := &restarting{falses: 1 << 30}
-	if err := e.awaitLogin(r.wait, time.Millisecond, 20*time.Millisecond, "late"); !isFailure(err, "network_error") {
+	if err := e.awaitLogin(r.wait, time.Millisecond, 20*time.Millisecond, "late", nil); !isFailure(err, "network_error") {
 		t.Fatalf("got %v", err)
 	}
 	if r.calls > 25 {
@@ -60,7 +62,63 @@ func TestLinkGivesUpAtTheDeadline(t *testing.T) {
 
 func TestLinkStopsAtARefusalWhatsAppSent(t *testing.T) {
 	e := &engine{ctx: context.Background(), ended: loggedOut}
-	if err := e.awaitLogin((&restarting{falses: 1 << 30}).wait, time.Millisecond, time.Minute, "late"); err != loggedOut {
+	never := (&restarting{falses: 1 << 30}).wait
+	if err := e.awaitLogin(never, time.Millisecond, time.Minute, "late", nil); err != loggedOut {
+		t.Fatalf("got %v", err)
+	}
+}
+
+// droppedReconnect is the client after whatsmeow's own reconnect after the 515 failed: down until wa connects.
+type droppedReconnect struct {
+	up       atomic.Bool
+	connects atomic.Int32
+}
+
+func (d *droppedReconnect) wait(time.Duration) bool { return d.up.Load() }
+
+func (d *droppedReconnect) retry() *loginRetry {
+	return &loginRetry{connected: d.up.Load, after: 5 * time.Millisecond, reconnect: func() error {
+		d.connects.Add(1)
+		d.up.Store(true)
+		return nil
+	}}
+}
+
+func TestLinkConnectsOnceMoreWhenWhatsmeowsReconnectFailed(t *testing.T) {
+	e := &engine{ctx: context.Background()}
+	d := &droppedReconnect{}
+	if err := e.awaitLogin(d.wait, time.Millisecond, time.Minute, "late", d.retry()); err != nil {
+		t.Fatalf("got %v", err)
+	}
+	if n := d.connects.Load(); n != 1 {
+		t.Errorf("connected %d times, want 1", n)
+	}
+}
+
+func TestLinkConnectsAgainOnlyOnce(t *testing.T) {
+	e := &engine{ctx: context.Background()}
+	d := &droppedReconnect{}
+	retry := d.retry()
+	retry.reconnect = func() error {
+		d.connects.Add(1)
+		return errors.New("dial failed")
+	}
+	if err := e.awaitLogin(d.wait, time.Millisecond, 50*time.Millisecond, "late", retry); !isFailure(err, "network_error") {
+		t.Fatalf("got %v", err)
+	}
+	if n := d.connects.Load(); n != 1 {
+		t.Errorf("connected %d times, want 1", n)
+	}
+}
+
+func TestLinkNeverConnectsBesideALiveConnection(t *testing.T) {
+	e := &engine{ctx: context.Background()}
+	r := &restarting{falses: 30}
+	retry := &loginRetry{connected: func() bool { return true }, after: time.Nanosecond, reconnect: func() error {
+		t.Error("connected while a connection was live")
+		return nil
+	}}
+	if err := e.awaitLogin(r.wait, time.Millisecond, time.Minute, "late", retry); err != nil {
 		t.Fatalf("got %v", err)
 	}
 }
@@ -69,7 +127,8 @@ func TestLinkStopsWhenTheEngineIsClosed(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	e := &engine{ctx: ctx}
-	if err := e.awaitLogin((&restarting{falses: 1 << 30}).wait, time.Hour, time.Hour, "late"); err != context.Canceled {
+	never := (&restarting{falses: 1 << 30}).wait
+	if err := e.awaitLogin(never, time.Hour, time.Hour, "late", nil); err != context.Canceled {
 		t.Fatalf("got %v", err)
 	}
 }
