@@ -7,7 +7,7 @@
 #   bin/live-fresh-link <profile> --finish
 #
 # The device keys go to the main checkout's .wa/state, as for any profile there; the pushed history goes to a
-# throwaway store, removed at the end, so the owner's store is not written. wa draws the QR code in the terminal; the
+# throwaway store, removed at the end, so the owner's shared store is not written. wa draws the QR code in the terminal; the
 # result block holds counts only. It leaves the device linked and says how to unlink it.
 #
 # --finish is for a profile this script linked whose session start ended before the history came: it connects that
@@ -77,7 +77,7 @@ EOF
 trap finish EXIT
 on_signals
 
-# Not bin/wa: it points MESSAGING_STORE at the checkout's own store, and the push must land in the throwaway one.
+# Not bin/wa: in the main checkout it opens the shared store, and the push must land in the throwaway one.
 fresh() {
   WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACHE_DIR="$main/.wa/cache" \
     MESSAGING_STORE="$store/messages.db" node "$main/dist/bin/wa.js" "$@"

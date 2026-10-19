@@ -7,7 +7,8 @@
 #   pnpm build
 #   bin/check-agents
 #
-# Item 4 runs `bin/wa doctor`, which reads this checkout's .wa/ folder and connects to nothing: no probe may link a
+# Item 4 runs `bin/wa doctor`, which reads this checkout's .wa/ folder and the shared store, writes neither and
+# connects to nothing: no probe may link a
 # device or open the owner's WhatsApp, so whether `bin/wa` reaches WhatsApp from outside the sandbox is not checked here.
 set -eu
 

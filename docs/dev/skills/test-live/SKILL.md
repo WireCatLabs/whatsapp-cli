@@ -37,7 +37,7 @@ owner's `serve` stopped. Wait for the owner's yes. A scenario not on the approve
 
 ## 3. Run on the owner's install, not on `bin/wa`
 
-A worktree's `bin/wa` keeps its own `.wa/` folder, which has no linked device; **never link one** — that is a new
+A worktree's `bin/wa` keeps its own `.wa/` folder and store, which have no linked device; **never link one** — that is a new
 device on the owner's account. Live scenarios run the owner's installed `wa` (a release, or the main checkout's build
 the owner installed) against the owner's profile:
 

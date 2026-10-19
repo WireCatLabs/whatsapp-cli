@@ -1,15 +1,19 @@
 #!/usr/bin/env sh
 # Runs this checkout's build of `wa` with its config, state and cache inside the checkout, in .wa/, so a branch
-# build never opens the owner's real store or linked device.
+# build never opens the owner's linked device.
 #
 #   pnpm build
 #   bin/wa personal chats list
+#
+# The message store depends on the checkout. The main checkout, the one whose `serve` holds the owner's device, writes
+# the shared WireCat store, so WhatsApp is searched together with tg and max. A worktree keeps its own
+# .wa/messages.db: a store migration only goes forward, so a branch build must never open the shared file.
+# A worktree has a .git file, the main checkout a .git folder; a second full clone would count as main.
 set -eu
 
 root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 [ -f "$root/dist/bin/wa.js" ] || { echo "no build in $root — run pnpm build first" >&2; exit 1; }
 
 export WA_CONFIG_DIR="$root/.wa/config" WA_STATE_DIR="$root/.wa/state" WA_CACHE_DIR="$root/.wa/cache"
-# The shared message store lives outside all three; a branch never writes the real one.
-export MESSAGING_STORE="$root/.wa/messages.db"
+[ -d "$root/.git" ] || export MESSAGING_STORE="$root/.wa/messages.db"
 exec node "$root/dist/bin/wa.js" "$@"
