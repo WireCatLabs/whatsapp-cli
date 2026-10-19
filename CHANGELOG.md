@@ -174,9 +174,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   once pairing is done, and wa took the start of that restart for a failure: it said "linked, but could not reconnect
   to WhatsApp in time" and exited 10, the device linked but the history never received, while the phone's linking
   screen hung waiting for it. wa now waits for the new connection, up to a minute, and then receives the history as
-  before. Both the QR code and the pairing code went this way. Every other command's wait for its connection uses the
-  same loop now, so it no longer spins while the old connection is being closed. When the phone has pushed nothing
-  after 20 seconds, `session start` says once that it is still waiting, so the pause does not look like a hang.
+  before. Both the QR code and the pairing code went this way. If that new connection fails, wa connects once more
+  itself a few seconds later, within the same minute, instead of waiting the minute out. Every other command's wait
+  for its connection uses the same loop now, so it no longer spins while the old connection is being closed. When the
+  phone has pushed nothing after 20 seconds, `session start` says once that it is still waiting, so the pause does not
+  look like a hang.
 - **A pushed community no longer loses its mark.** The store replaced a chat's `provider_metadata` whole on every
   push, so a later push that did not say a group was a community took `community: true` off it. A key a push leaves
   out now keeps its stored value, and so does a group's `parent_chat_id` (cli-core 0.346.0). Engine protocol

@@ -221,7 +221,7 @@ func (e *engine) connect() error {
 			return err
 		}
 	}
-	return e.awaitLogin(e.client.WaitForConnection, waitSlice, connectWait, "could not connect to WhatsApp in time")
+	return e.awaitLogin(e.client.WaitForConnection, waitSlice, connectWait, "could not connect to WhatsApp in time", nil)
 }
 
 func (e *engine) send(req request) (*waMessage, error) {
