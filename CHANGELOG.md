@@ -163,6 +163,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **A failed background `messages sync` no longer writes a chat title or a name into its job file** (cli-core
+  0.355.0). The file keeps the error's code and points at `wa store jobs show <id>`, which prints the path of the
+  job's log. The full message stays in that log, which only you can read (mode `0600`).
 - **A chat hidden from search no longer turns up in a search that does not name it** (cli-core 0.353.0). The
   messages by and about a person in `contacts context`, the pictures lane of `search messages`, and the meaning half
   of `search conversations` and `conversations related` left it in, and the search answers listed it as not yet
