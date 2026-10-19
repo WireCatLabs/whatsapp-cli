@@ -20,7 +20,13 @@ Open work, most important first. The plan in flight is
    arrives (`PassiveUpdates.listen`), and wa's adapter implements it over `engine.listen`: the same events as `watch`,
    without connecting. `session end` ends that listen quietly, since the logout it asked for is not a failure. Tested
    with the fake engine (`src/oneshot-listen.test.ts`). Left: the live re-check, the owner's `bin/live-oneshot-drop`
-   (NEED-1387, own chat only). Not covered: a history push received by a one-shot connection is still dropped, and
+   (NEED-1387, own chat only). **History pushes, built (2026-10-19, RISK-1258 = A):** cli-core 0.348.0 adds
+   `PassiveUpdates.listenHistory`; the adapter implements it with `feed`'s handler (re-keys first) and the same
+   logout check as `listen`. The engine now downloads history itself (`ManualHistorySyncDownload`, receipt unchanged,
+   `historysync.go`), and close waits up to 3 s for a push still downloading, inside the CLI's 5 s close budget.
+   Tested with the fake engine and Go tests; the live re-check is left. Not verified: a push announced after that wait
+   ends and before the disconnect is still lost. The note below is how it stood before. Not covered: a history push
+   received by a one-shot connection is still dropped, and
    nothing asks the phone to send it again — whatsmeow sends the `hist_sync` receipt as soon as the notification arrives
    ([`message.go:899-906`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L899-L906)) and deletes the
    blob from WhatsApp's servers once it is handed on (`message.go:735-736`); re-keys are covered, as the engine

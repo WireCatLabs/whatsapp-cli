@@ -46,8 +46,10 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
 - **Writes connect.** `messages send` opens the engine, sends, and closes it.
 - **Every connection saves what arrives.** WhatsApp hands a message queued while nothing was connected to the next
   connection once, so a one-shot command keeps it too: the adapter's `listen` (cli-core's `PassiveUpdates`) hands on
-  what `watch` would, without connecting, and cli-core saves it before the command exits. A history push such a
-  command receives is not saved; whatsmeow has already acknowledged it.
+  what `watch` would, without connecting, and cli-core saves it before the command exits. A history push is saved
+  the same way: `listenHistory` hands on what `feed` would. whatsmeow acknowledges a push as it is announced, so the
+  engine downloads pushes itself (`historysync.go`, one at a time in arrival order, as whatsmeow's own loop) and
+  close waits up to 3 s for one still downloading, inside the 5 s the CLI gives the engine to exit.
 - **Older history is asked of the phone.** The adapter's `history` (cli-core's `ServerReads.history`, what
   `messages sync` pages through) sends the engine's `older` request, counting back from a stored message: the oldest
   one of the chat on the first page, then the newest stored at or before the time the last page reached. Its
@@ -169,7 +171,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   one chat, not separate groups. A history push's group conversation carries the same two (`ParentGroupID`,
   `IsParentGroup`), so the store keeps them. `parent` has three states (`parentField`): a live read of one group sends
   `null` for a group in no community, which clears a stored parent; a push and the joined-groups list leave it out,
-  which keeps one.
+  which keeps one. WhatsApp's notice that a group left its community (`events.GroupInfo.Unlink`, on the group's own
+  side) is pushed as a chat with only `jid`, `kind` and `parent: null`, so the store clears the parent and keeps the
+  title, counts and last activity (cli-core 0.348.0 keeps what a saved chat leaves out). For the same reason a chat
+  leaves out `unread` and `lastMessageAt` when its source does not say; `name` and `participants` are always sent.
 - **Privacy requests** (`engine/cmd/wa-engine/privacy.go`; the contract in
   [`src/engine/privacy.ts`](../../src/engine/privacy.ts)): `privacy` (`TryFetchPrivacySettings` with the cache
   skipped, since another device may have changed a setting) and `setPrivacy` (`privacy`: a list of WhatsApp names and

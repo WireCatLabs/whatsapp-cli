@@ -9,8 +9,6 @@ const CHANNEL_CHAT: WaChat = {
   jid: CHANNEL,
   name: "Synthetic news",
   kind: "newsletter",
-  unread: null,
-  lastMessageAt: null,
   participants: 42,
 }
 
@@ -19,7 +17,7 @@ export const CHANNEL_POSTS: WaMessage[] = Array.from({ length: 60 }, (_, n) => (
   id: `3EB00000000000000C${String(n + 1).padStart(4, "0")}`,
   chat: CHANNEL,
   sender: CHANNEL,
-  senderName: CHANNEL_CHAT.name,
+  senderName: CHANNEL_CHAT.name ?? null,
   fromMe: false,
   timestamp: new Date(Date.parse("2026-09-01T00:00:00.000Z") + n * 3_600_000).toISOString(),
   editedAt: null,

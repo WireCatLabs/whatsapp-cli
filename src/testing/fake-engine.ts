@@ -47,8 +47,8 @@ const waChatOf = (chat: Chat): WaChat => ({
   jid: chat.id,
   name: chat.title,
   kind: KINDS[chat.kind],
-  unread: chat.unreadCount,
-  lastMessageAt: chat.lastMessageAt,
+  ...(chat.unreadCount === null ? {} : { unread: chat.unreadCount }),
+  ...(chat.lastMessageAt === null ? {} : { lastMessageAt: chat.lastMessageAt }),
   participants: chat.participantsCount,
 })
 

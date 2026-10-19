@@ -89,11 +89,15 @@ const time = v.pipe(v.string(), v.isoTimestamp())
 
 export const waChat = v.strictObject({
   jid,
-  name: v.nullable(v.string()),
+  /**
+   * `unread` and `lastMessageAt` are absent when the source does not say. Only a notice, such as a group leaving its
+   * community, leaves out `name` and `participants`: a pushed chat keeps the stored value of whatever is absent.
+   */
+  name: v.optional(v.nullable(v.string())),
   kind: v.picklist(["dm", "self", "group", "newsletter", "broadcast"]),
-  unread: v.nullable(v.number()),
-  lastMessageAt: v.nullable(time),
-  participants: v.nullable(v.number()),
+  unread: v.optional(v.nullable(v.number())),
+  lastMessageAt: v.optional(v.nullable(time)),
+  participants: v.optional(v.nullable(v.number())),
   archived: v.optional(v.boolean()),
   muted: v.optional(v.boolean()),
   /** The community a group is linked to; `null` when a live read says it is in none, absent when nothing said. */

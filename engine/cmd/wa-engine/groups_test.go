@@ -62,7 +62,7 @@ func TestGroupWireShape(t *testing.T) {
 	info.Participants = info.Participants[:1]
 	link := "https://chat.whatsapp.com/AAAAAAAAAAAAAAAAAAAAAA"
 	assertJSON(t, testConverter().group(info, &link), `{"chat":{"jid":"120363000000000001@g.us","name":"Book club",`+
-		`"kind":"group","unread":null,"lastMessageAt":null,"participants":1,"parent":null},"description":"synthetic description",`+
+		`"kind":"group","participants":1,"parent":null},"description":"synthetic description",`+
 		`"link":"https://chat.whatsapp.com/AAAAAAAAAAAAAAAAAAAAAA","addMode":"admin_add","approval":true,`+
 		`"announce":true,"locked":false,"ephemeral":0,"members":[{"jid":"100000000000001@lid","name":null,"role":"owner"}]}`)
 	info.Participants = nil

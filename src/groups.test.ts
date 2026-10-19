@@ -462,6 +462,35 @@ describe("wa communities", () => {
     expect(group.parent_chat_id).toBeUndefined()
     expect(group.title).toBe("Book club")
   })
+
+  it("keeps what a group push leaves out, and a notice that the group left its community clears only that", async () => {
+    const pushing = (chat: WaChat): EngineEvent => ({
+      event: "history",
+      history: { kind: "other", chats: [chat], contacts: [], messages: [], votes: [] },
+    })
+    // A group the seed has no messages or members of, so what the store shows is what was pushed.
+    const alone = "120363000000000077@g.us"
+    const lastMessageAt = "2026-09-01T10:00:00.000Z"
+    await watching([
+      pushing({
+        jid: alone,
+        name: "Book club",
+        kind: "group",
+        unread: 3,
+        lastMessageAt,
+        participants: 5,
+        parent: community,
+      }),
+      pushing({ jid: alone, name: "Book club", kind: "group", participants: 5 }),
+    ])
+    const kept = { title: "Book club", unread_count: 3, last_message_at: lastMessageAt, participants_count: 5 }
+    expect((await offline("chats", "show", alone)).item).toMatchObject({ ...kept, parent_chat_id: community })
+
+    await watching([pushing({ jid: alone, kind: "group", parent: null })])
+    const group = (await offline("chats", "show", alone)).item
+    expect(group).toMatchObject(kept)
+    expect(group.parent_chat_id).toBeUndefined()
+  })
 })
 
 describe("wa chats requests", () => {
