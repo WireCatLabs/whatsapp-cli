@@ -49,7 +49,15 @@ func downloadsFor(client *whatsmeow.Client, handle func(any)) *historyDownloads 
 			return client.DownloadHistorySync(ctx, n, true)
 		},
 		func(ctx context.Context, evt *events.HistorySync) {
-			handle(evt)
+			// whatsmeow's dispatch survives a handler's panic and still deletes the blob; so does this.
+			func() {
+				defer func() {
+					if recover() != nil {
+						fmt.Fprintln(os.Stderr, "wa-engine: a history push could not be handled")
+					}
+				}()
+				handle(evt)
+			}()
 			n := evt.Notification
 			_ = client.DeleteMedia(ctx, whatsmeow.MediaHistory, n.GetDirectPath(), n.GetFileEncSHA256(), n.GetEncHandle())
 		},

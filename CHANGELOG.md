@@ -168,7 +168,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   a group left its community, or that the community was deleted, and clears the group's `parent_chat_id`; its title,
   unread count, member count and last activity stay. Each followed channel's push at connect, and any chat whose
   source does not say, no longer erases a stored unread count and last activity either (cli-core 0.348.0). Engine
-  wire change: `unread` and `lastMessageAt` may be absent, and `name` and `participants` too, on that notice.
+  wire change: `unread` and `lastMessageAt` may be absent, and `name` and `participants` too, on that notice. Engine
+  protocol 36.
 - **`session start` no longer gives up right after the phone confirms the link.** WhatsApp restarts the connection
   once pairing is done, and wa took the start of that restart for a failure: it said "linked, but could not reconnect
   to WhatsApp in time" and exited 10, the device linked but the history never received, while the phone's linking
