@@ -46,7 +46,17 @@ import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
-import { isFile, sameFile, toAccount, toChat, toChatEvent, toMember, toMessage, toWaAttachment } from "./map.js"
+import {
+  isFile,
+  sameFile,
+  toAccount,
+  toChat,
+  toChatEvent,
+  toChatUpdate,
+  toMember,
+  toMessage,
+  toWaAttachment,
+} from "./map.js"
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
@@ -337,6 +347,34 @@ export const whatsAppAdapter = (
       }),
     }
   }
+  const pushing = async (
+    onBatch: Parameters<PushedHistory["feed"]>[0],
+    signal: AbortSignal,
+    expected?: (state: ConnectionState) => boolean,
+  ) => {
+    // In arrival order: a push waits for its store reads, and a re-key after it must not overtake it.
+    const handed = async (event: EngineEvent) => {
+      if (event.event === "rekey") onBatch({ rekeys: [{ from: event.from, to: event.to }] })
+      if (event.event !== "history") return
+      const { rekeys, chats, contacts, messages, votes, events } = event.history
+      onBatch({
+        rekeys: rekeys ?? [],
+        chats: chats.map(toChatUpdate),
+        people: contacts.map(toMember),
+        messages: await Promise.all(messages.map((message) => withoutKeptRefs(toMessage(message)))),
+        votes: votes.flatMap((vote) => toHistoryVote(vote) ?? []),
+        events: (events ?? []).map((change) => ({ chatId: change.chat, change: toChatEvent(change) })),
+      })
+    }
+    const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, warn, handed, expected)
+    try {
+      await pushes.done
+    } finally {
+      pushes.stop()
+      await pushes.drained()
+    }
+  }
+  const ownLogout = (state: ConnectionState) => state === "logged_out" && loggingOut
   // A deletion for the account alone, a star and a chat marked read are changes to its synced settings, not messages.
   const synced = settingsWrite(translated, words)
 
@@ -608,7 +646,7 @@ export const whatsAppAdapter = (
     // What a one-shot connection receives: WhatsApp hands a queued message to a linked device once, so it is saved
     // here or lost. Never connects; the command's own request does that.
     listen: async (onEvent, signal) => {
-      const live = handingOn(onEvent, signal, (state) => state === "logged_out" && loggingOut)
+      const live = handingOn(onEvent, signal, ownLogout)
       try {
         await live.done
       } finally {
@@ -616,29 +654,10 @@ export const whatsAppAdapter = (
       }
     },
 
-    feed: async (onBatch, signal) => {
-      // In arrival order: a push waits for its store reads, and a re-key after it must not overtake it.
-      const handed = async (event: EngineEvent) => {
-        if (event.event === "rekey") onBatch({ rekeys: [{ from: event.from, to: event.to }] })
-        if (event.event !== "history") return
-        const { rekeys, chats, contacts, messages, votes, events } = event.history
-        onBatch({
-          rekeys: rekeys ?? [],
-          chats: chats.map(toChat),
-          people: contacts.map(toMember),
-          messages: await Promise.all(messages.map((message) => withoutKeptRefs(toMessage(message)))),
-          votes: votes.flatMap((vote) => toHistoryVote(vote) ?? []),
-          events: (events ?? []).map((change) => ({ chatId: change.chat, change: toChatEvent(change) })),
-        })
-      }
-      const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, warn, handed)
-      try {
-        await pushes.done
-      } finally {
-        pushes.stop()
-        await pushes.drained()
-      }
-    },
+    // The history a one-shot connection is pushed, which WhatsApp likewise sends once. Never connects.
+    listenHistory: (onBatch, signal) => pushing(onBatch, signal, ownLogout),
+
+    feed: (onBatch, signal) => pushing(onBatch, signal),
   }
 
   const polls = pollAdapter({ engine, stored, held, keyOf, translated })

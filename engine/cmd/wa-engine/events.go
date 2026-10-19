@@ -29,7 +29,11 @@ func (e *engine) end(state string, why *refusal) {
 func (e *engine) handle(raw any) {
 	switch evt := raw.(type) {
 	case *events.Message:
-		if evt.Info.Chat.Server == types.NewsletterServer {
+		if n := evt.Message.GetProtocolMessage().GetHistorySyncNotification(); n != nil {
+			if evt.Info.IsFromMe && e.downloads != nil {
+				e.downloads.add(n)
+			}
+		} else if evt.Info.Chat.Server == types.NewsletterServer {
 			if post, ok := e.conv.channelPost(evt); ok {
 				e.out.event("message", post)
 			}
@@ -60,6 +64,9 @@ func (e *engine) handle(raw any) {
 	case *events.GroupInfo:
 		for _, change := range e.conv.groupChanges(evt) {
 			e.out.event("chat_event", change)
+		}
+		if notice, ok := unlinked(evt); ok {
+			e.pushChats([]waChat{notice})
 		}
 	case *events.DeleteForMe:
 		if chat, ok := e.appStateChat(evt.ChatJID, evt.MessageID); ok {

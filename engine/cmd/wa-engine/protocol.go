@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 35
+const protocol = 36
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -76,17 +76,21 @@ func because(reason, code, message string) *refusal {
 }
 
 type waChat struct {
-	JID           string  `json:"jid"`
-	Name          *string `json:"name"`
-	Kind          string  `json:"kind"`
-	Unread        *int    `json:"unread"`
-	LastMessageAt *string `json:"lastMessageAt"`
+	JID  string  `json:"jid"`
+	Name *string `json:"name"`
+	Kind string  `json:"kind"`
+	// Left out when the source does not say, so the store keeps what it holds. Name and Participants are always sent:
+	// a full push with neither clears a stale one. Only a notice (communities.go) leaves them out.
+	Unread        *int    `json:"unread,omitempty"`
+	LastMessageAt *string `json:"lastMessageAt,omitempty"`
 	Participants  *int    `json:"participants"`
 	Archived      *bool   `json:"archived,omitempty"`
 	Muted         *bool   `json:"muted,omitempty"`
 	// Parent is the community a group is linked to; Community marks a community itself.
 	Parent    parentField `json:"parent,omitzero"`
 	Community bool        `json:"community,omitempty"`
+
+	notice bool
 }
 
 type waContact struct {

@@ -58,7 +58,7 @@ func TestConnectingPushesTheFollowedChannelsOnceAsChats(t *testing.T) {
 		t.Fatalf("first line %s", got)
 	}
 	want := `{"event":"history","history":{"kind":"other","chats":[{"jid":"120363000000000001@newsletter",` +
-		`"name":"Synthetic news","kind":"newsletter","unread":null,"lastMessageAt":null,"participants":42}],` +
+		`"name":"Synthetic news","kind":"newsletter","participants":42}],` +
 		`"contacts":[],"messages":[],"votes":[]}}`
 	if got := out.next(t); got != want {
 		t.Fatalf("got  %s\nwant %s", got, want)

@@ -247,6 +247,46 @@ describe("whatsAppAdapter", () => {
     await expect(listened).rejects.toMatchObject({ code: "authentication_error" })
   })
 
+  it("hands on the history a one-shot connection is pushed, re-keys too, without connecting", async () => {
+    const engine = fakeEngine(seed)
+    let connects = 0
+    engine.ready = async () => {
+      connects += 1
+    }
+    const controller = new AbortController()
+    const batches: HistoryBatch[] = []
+    const listened = whatsAppAdapter(engine).listenHistory?.((batch) => batches.push(batch), controller.signal)
+    engine.push({ event: "rekey", from: "70000000001@s.whatsapp.net", to: seed.person })
+    const notice = { jid: seed.busy, kind: "group" as const, parent: null }
+    engine.push({
+      event: "history",
+      history: { kind: "other", chats: [notice], contacts: [], messages: [], votes: [] },
+    })
+    controller.abort()
+    await listened
+    expect(connects).toBe(0)
+    expect(batches.slice(-2)).toMatchObject([
+      { rekeys: [{ from: "70000000001@s.whatsapp.net", to: seed.person }] },
+      { chats: [{ id: seed.busy, kind: "group", parentChatId: null }] },
+    ])
+    expect(batches.at(-1)?.chats?.[0]).not.toHaveProperty("title")
+    expect(batches.at(-1)?.chats?.[0]).not.toHaveProperty("unreadCount")
+  })
+
+  it("ends the history listen quietly when this process logged the device out, and with why when the phone did", async () => {
+    const engine = fakeEngine(seed)
+    const adapter = whatsAppAdapter(engine)
+    const ours = adapter.listenHistory?.(() => {}, new AbortController().signal)
+    await adapter.logout()
+    engine.push({ event: "connection", state: "logged_out" })
+    await expect(ours).resolves.toBeUndefined()
+
+    const phone = fakeEngine(seed)
+    const theirs = whatsAppAdapter(phone).listenHistory?.(() => {}, new AbortController().signal)
+    phone.push({ event: "connection", state: "logged_out" })
+    await expect(theirs).rejects.toMatchObject({ code: "authentication_error" })
+  })
+
   it("maps archived and muted chats, and leaves them out when WhatsApp does not say", () => {
     const chat = {
       jid: seed.busy,

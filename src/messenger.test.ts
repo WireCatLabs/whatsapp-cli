@@ -187,8 +187,13 @@ describe("wa doctor report", () => {
 
 describe("wa doctor report create --run", () => {
   it("reports on the run wa failed, with the account's id as a label, without starting the engine", async () => {
-    // An account of its own, whose store holds nothing of the chat whatever ran before.
-    const own = { ...seed, account: { id: "100000000000059@lid", name: "Synthetic owner", username: null } }
+    // An account of its own, whose store holds nothing of the chat whatever ran before; its phone pushes none of it,
+    // as a one-shot connection saves what is pushed.
+    const own = {
+      ...seed,
+      account: { id: "100000000000059@lid", name: "Synthetic owner", username: null },
+      messages: [],
+    }
     const failed = await wa(["failing", "messages", "sync", seed.busy, "--no-catch-up", "--json"], {
       engine: () => fakeEngine(own),
     })

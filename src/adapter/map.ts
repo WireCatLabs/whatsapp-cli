@@ -1,4 +1,4 @@
-import type { Account, Attachment, Chat, ChatEvent, ChatKind, Member, Message } from "@wirecat/cli-core"
+import type { Account, Attachment, Chat, ChatEvent, ChatKind, ChatUpdate, Member, Message } from "@wirecat/cli-core"
 import * as v from "valibot"
 import {
   type WaAccount,
@@ -20,13 +20,28 @@ const KINDS: Record<WaChat["kind"], ChatKind> = {
   broadcast: "unknown",
 }
 
+/** A pushed chat as the store saves it: what the engine left out keeps the stored value. */
+export const toChatUpdate = (chat: WaChat): ChatUpdate => ({
+  id: chat.jid,
+  ...(chat.name === undefined ? {} : { title: chat.name }),
+  kind: KINDS[chat.kind],
+  ...(chat.unread === undefined ? {} : { unreadCount: chat.unread }),
+  ...(chat.lastMessageAt === undefined ? {} : { lastMessageAt: chat.lastMessageAt }),
+  ...(chat.participants === undefined ? {} : { participantsCount: chat.participants }),
+  ...rest(chat),
+})
+
 export const toChat = (chat: WaChat): Chat => ({
   id: chat.jid,
-  title: chat.name,
+  title: chat.name ?? null,
   kind: KINDS[chat.kind],
-  unreadCount: chat.unread,
-  lastMessageAt: chat.lastMessageAt,
-  participantsCount: chat.participants,
+  unreadCount: chat.unread ?? null,
+  lastMessageAt: chat.lastMessageAt ?? null,
+  participantsCount: chat.participants ?? null,
+  ...rest(chat),
+})
+
+const rest = (chat: WaChat) => ({
   ...(chat.archived === undefined ? {} : { archived: chat.archived }),
   ...(chat.muted === undefined ? {} : { muted: chat.muted }),
   // cli-core has a parent chat but no kind of chat that holds groups, so a community is a group marked as one.

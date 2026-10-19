@@ -29,7 +29,7 @@ func channelMeta(role types.NewsletterRole) *types.NewsletterMetadata {
 
 func TestChannelWireShape(t *testing.T) {
 	assertJSON(t, channelOf(channelMeta(types.NewsletterRoleAdmin)), `{"chat":{"jid":"120363000000000001@newsletter",`+
-		`"name":"Synthetic news","kind":"newsletter","unread":null,"lastMessageAt":null,"participants":42},`+
+		`"name":"Synthetic news","kind":"newsletter","participants":42},`+
 		`"description":"synthetic description","link":"https://whatsapp.com/channel/FAKE0000000000000000AA","role":"admin"}`)
 }
 

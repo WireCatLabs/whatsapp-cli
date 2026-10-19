@@ -22,7 +22,9 @@ const queued: WaMessage = {
   replyTo: null,
   attachments: [],
 }
+const pushed: WaMessage = { ...queued, id: "3EB0000000000000000H01", text: "synthetic pushed text" }
 const NOT_SAVED = "messages arriving during this command are not saved"
+const HISTORY_NOT_SAVED = "history batches arriving during this command are not saved"
 
 let store = ""
 const wa = async (argv: string[], engine?: () => WhatsAppEngine) => {
@@ -68,11 +70,30 @@ describe("a one-shot command with no serve running", () => {
     expect(JSON.parse(listed.stdout).items.map((message: { id: string }) => message.id)).toContain(queued.id)
   })
 
+  it("saves the history WhatsApp pushed to it, which it sends once", async () => {
+    const sent = await wa(["pushed", "messages", "send", seed.dialog, "synthetic text", "--json"], () =>
+      handingOverOnSend((engine) =>
+        engine.push({
+          event: "history",
+          history: { kind: "recent", chats: [], contacts: [], messages: [pushed], votes: [] },
+        }),
+      ),
+    )
+    expect(sent.code).toBe(0)
+    expect(sent.stderr).not.toContain(HISTORY_NOT_SAVED)
+
+    const listed = await wa(["pushed", "messages", "list", seed.dialog, "--json"], () => {
+      throw new Error("a read must never start the engine")
+    })
+    expect(JSON.parse(listed.stdout).items.map((message: { id: string }) => message.id)).toContain(pushed.id)
+  })
+
   it("warns that arrivals are not saved when the phone logs the device out mid-command", async () => {
     const sent = await wa(["phoneout", "messages", "send", seed.dialog, "synthetic text", "--json"], () =>
       handingOverOnSend((engine) => engine.push({ event: "connection", state: "logged_out" })),
     )
     expect(sent.stderr).toContain(NOT_SAVED)
+    expect(sent.stderr).toContain(HISTORY_NOT_SAVED)
   })
 
   it("ends quietly on session end, which logs the device out itself", async () => {
@@ -92,5 +113,6 @@ describe("a one-shot command with no serve running", () => {
     })
     expect(ended.code).toBe(0)
     expect(ended.stderr).not.toContain(NOT_SAVED)
+    expect(ended.stderr).not.toContain(HISTORY_NOT_SAVED)
   })
 })

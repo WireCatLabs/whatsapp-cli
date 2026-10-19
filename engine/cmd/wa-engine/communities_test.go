@@ -16,7 +16,7 @@ func TestAGroupInACommunityNamesItsParent(t *testing.T) {
 	info := groupInfo()
 	info.LinkedParentJID = community
 	assertJSON(t, testConverter().group(info, nil).Chat, `{"jid":"120363000000000001@g.us","name":"Book club",`+
-		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"parent":"120363000000000002@g.us"}`)
+		`"kind":"group","participants":3,"parent":"120363000000000002@g.us"}`)
 }
 
 func TestACommunityIsMarked(t *testing.T) {
@@ -24,17 +24,17 @@ func TestACommunityIsMarked(t *testing.T) {
 	info.JID = community
 	info.IsParent = true
 	assertJSON(t, testConverter().group(info, nil).Chat, `{"jid":"120363000000000002@g.us","name":"Book club",`+
-		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"parent":null,"community":true}`)
+		`"kind":"group","participants":3,"parent":null,"community":true}`)
 }
 
 func TestALiveReadOfAGroupInNoCommunitySaysItHasNoParent(t *testing.T) {
 	assertJSON(t, testConverter().group(groupInfo(), nil).Chat, `{"jid":"120363000000000001@g.us","name":"Book club",`+
-		`"kind":"group","unread":null,"lastMessageAt":null,"participants":3,"parent":null}`)
+		`"kind":"group","participants":3,"parent":null}`)
 }
 
 func TestTheJoinedGroupsListLeavesAMissingParentUnsaid(t *testing.T) {
 	assertJSON(t, listedLinked(testConverter().group(groupInfo(), nil).Chat), `{"jid":"120363000000000001@g.us",`+
-		`"name":"Book club","kind":"group","unread":null,"lastMessageAt":null,"participants":3}`)
+		`"name":"Book club","kind":"group","participants":3}`)
 	info := groupInfo()
 	info.LinkedParentJID = community
 	if got := listedLinked(testConverter().group(info, nil).Chat).Parent; got.jid != community.String() {
@@ -45,7 +45,7 @@ func TestTheJoinedGroupsListLeavesAMissingParentUnsaid(t *testing.T) {
 func TestAPushedGroupInNoCommunityLeavesTheParentUnsaid(t *testing.T) {
 	assertJSON(t, pushedChats(&waHistorySync.Conversation{ID: proto.String(group.String())})[0],
 		`{"jid":"120363000000000001@g.us","name":null,"kind":"group","unread":0,`+
-			`"lastMessageAt":null,"participants":null,"archived":false,"muted":false}`)
+			`"participants":null,"archived":false,"muted":false}`)
 }
 
 func pushedChats(conversations ...*waHistorySync.Conversation) []waChat {
@@ -61,9 +61,9 @@ func TestAPushedGroupNamesItsCommunityAndThePushedCommunityIsMarked(t *testing.T
 		&waHistorySync.Conversation{ID: proto.String(community.String()), IsParentGroup: proto.Bool(true)},
 	)
 	assertJSON(t, chats[0], `{"jid":"120363000000000001@g.us","name":null,"kind":"group","unread":0,`+
-		`"lastMessageAt":null,"participants":null,"archived":false,"muted":false,"parent":"120363000000000002@g.us"}`)
+		`"participants":null,"archived":false,"muted":false,"parent":"120363000000000002@g.us"}`)
 	assertJSON(t, chats[1], `{"jid":"120363000000000002@g.us","name":null,"kind":"group","unread":0,`+
-		`"lastMessageAt":null,"participants":null,"archived":false,"muted":false,"community":true}`)
+		`"participants":null,"archived":false,"muted":false,"community":true}`)
 }
 
 func TestAPushedGroupGivesTheCommunityFieldsALiveReadGives(t *testing.T) {
@@ -90,5 +90,44 @@ func TestOnlyAGroupTakesACommunityAndOnlyAGroupIsOne(t *testing.T) {
 		if !chat.Parent.IsZero() || chat.Community {
 			t.Errorf("chat %d: parent=%v community=%v", i, chat.Parent, chat.Community)
 		}
+	}
+}
+
+func TestAGroupsNoticeThatItLeftItsCommunitySaysOnlyThat(t *testing.T) {
+	for _, reason := range []types.GroupUnlinkReason{types.GroupUnlinkReasonDefault, types.GroupUnlinkReasonDelete} {
+		evt := &events.GroupInfo{JID: group, Unlink: &types.GroupLinkChange{
+			Type: types.GroupLinkChangeTypeParent, UnlinkReason: reason, Group: types.GroupLinkTarget{JID: community},
+		}}
+		notice, ok := unlinked(evt)
+		if !ok {
+			t.Fatalf("%s: no notice", reason)
+		}
+		assertJSON(t, notice, `{"jid":"120363000000000001@g.us","kind":"group","parent":null}`)
+	}
+}
+
+func TestTheCommunitysSideOfAnUnlinkIsLeftAlone(t *testing.T) {
+	evt := &events.GroupInfo{JID: community, Unlink: &types.GroupLinkChange{
+		Type: types.GroupLinkChangeTypeSub, Group: types.GroupLinkTarget{JID: group},
+	}}
+	if _, ok := unlinked(evt); ok {
+		t.Fatal("the community's notice made a chat")
+	}
+	if _, ok := unlinked(&events.GroupInfo{JID: group}); ok {
+		t.Fatal("a notice with no unlink made a chat")
+	}
+}
+
+func TestAnUnlinkNoticeIsPushedAsAChatAndNotRemembered(t *testing.T) {
+	e, out := followingEngine(&fakeFollows{})
+	e.chats = map[string]waChat{}
+	e.handle(&events.GroupInfo{JID: group, Unlink: &types.GroupLinkChange{Type: types.GroupLinkChangeTypeParent}})
+	want := `{"event":"history","history":{"kind":"other","chats":[{"jid":"120363000000000001@g.us","kind":"group",` +
+		`"parent":null}],"contacts":[],"messages":[],"votes":[]}}`
+	if got := out.next(t); got != want {
+		t.Fatalf("got  %s\nwant %s", got, want)
+	}
+	if len(e.chats) != 0 {
+		t.Fatal("the notice was remembered as the group's chat")
 	}
 }

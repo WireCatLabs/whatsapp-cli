@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"sync"
 	"time"
 
@@ -41,6 +43,8 @@ type engine struct {
 
 	retries retryWaiter // downloads waiting for the phone to upload a file again
 
+	downloads *historyDownloads
+
 	following follows // e.client; a test answers for WhatsApp here
 
 	// Why WhatsApp ended the connection, until it connects again. Later requests answer with it instead of
@@ -56,6 +60,8 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	e.following = e.client
 	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf}
 	e.refreshSelf()
+	e.client.ManualHistorySyncDownload = true
+	e.downloads = downloadsFor(e.client, e.handle)
 	e.client.AddEventHandler(e.handle)
 	return e
 }
@@ -115,6 +121,9 @@ func (e *engine) run(in io.Reader) {
 			defer pending.Done()
 			e.answer(req)
 		}()
+	}
+	if !e.downloads.settled(historyWait) {
+		fmt.Fprintln(os.Stderr, "wa-engine: a history push was still downloading at exit; it is not saved")
 	}
 	e.stop()
 	e.client.Disconnect()
