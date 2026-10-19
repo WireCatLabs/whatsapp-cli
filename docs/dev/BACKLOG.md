@@ -280,6 +280,9 @@ Open work, most important first. The plan in flight is
     `upsertChat` (0.348.0) clears a stored `left` membership whenever a saved chat leaves membership out, as the
     community link and unlink notices do. WhatsApp probably sends a group's notices only to its members, so it should
     not arise; the fix is in cli-core: a chat that leaves out every kept field is a notice, not the list naming it.
+    **Fixed (2026-10-19, cli-core 0.352.0):** a saved chat without `membershipState` keeps the stored one; the
+    adapter's `chats` list still rejoins the chats it names. wa saves no chat list of its own, so it needs no
+    `rejoinChats` call.
 19. **A send typed to a re-keyed person's phone number can undo the owner's settings on their chat** (found
     2026-10-19, wa #148 review, needs cli-core). cli-core saves a send under the id the owner typed, so a send to the
     old phone-form id stores a new phone-form chat beside the LID chat. At the next `serve` or `watch` start the
@@ -289,3 +292,7 @@ Open work, most important first. The plan in flight is
     gone. The fix is in cli-core: save a send under the chat id the messenger answered, or keep the owner's fields of
     the row the merge absorbs. Also cli-core's, for scale only: each re-key is its own store write, so the first
     start after upgrading writes once per stored phone-form chat whose LID is known.
+    **Fixed (2026-10-19, cli-core 0.353.0):** the merge keeps the stricter of the two rows' `searchable` and `scope`,
+    and a scope either row pinned stays pinned, so a stray phone-form row can no longer loosen the LID chat. Still
+    open, both cli-core's: a send to a phone number is still saved under the phone form (only harmless now), and one
+    store write per re-key.

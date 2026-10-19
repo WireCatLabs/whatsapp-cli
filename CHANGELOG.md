@@ -148,6 +148,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **A chat you hid from search stays hidden when `wa` merges its phone-number form into its LID form** (cli-core
+  0.353.0). `wa serve` moves each one-to-one chat stored under a phone number to the LID WhatsApp gives for it; the
+  merged chat kept the privacy settings of the old row, so a stray phone-form row, such as one a send to the phone
+  number leaves, could make a hidden chat searchable again or move it between `personal` and `work`. The merged chat
+  is now hidden if either half was, personal if the halves disagree, and a scope you set on either half stays set.
+  `wa` has no command that sets these yet, so only a store edited by hand was affected.
+- **A chat hidden from search no longer turns up in a search that does not name it** (cli-core 0.353.0): the plain
+  text and sender search behind `contacts context`, the store's mention lookups, and the meaning half of
+  `search conversations` and `conversations related` left it in, and the search answers listed it as not yet
+  embedded. A sender-only lookup no longer counts its messages. As above, only a store edited by hand was affected.
 - **The QR login is cli-core's `loginQr`, as in tg and max.** `--qr-file` is written as a temporary file created
   with mode `0600` and renamed over the path, instead of being written and then chmodded. A terminal too narrow
   for the code draws nothing and says to widen it or pass `--qr-file`. Without a terminal, `session start` says
@@ -163,6 +173,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A group's community notice no longer marks a group you left as rejoined** (cli-core 0.352.0). A chat saved
+  without its membership keeps the stored one; `wa chats list` still shows a rejoined group again once WhatsApp's
+  chat list names it.
 - **`setup`'s link step is headed "Link this device"** and no longer asks you to scan a QR code before one is
   drawn. The line under the code says where to scan; a narrow terminal shows only the hint to widen it.
 - **A terminal too narrow for the QR code no longer asks you to scan it** (cli-core 0.350.0). `session start` and
@@ -270,6 +283,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> store clear --left` lists the chats it would delete**, by id, title and message count, when it
+  refuses without `--allow-dangerous`, and after deleting lists what it deleted; `--dry-run` lists them all and
+  deletes nothing (cli-core 0.353.0).
 - **`wa <profile> chats events <group>` lists who joined, left, was added, removed, promoted or demoted, and each new
   title**, from the local store, without connecting. `wa` keeps the group service messages the phone pushes with the
   history and, under `wa serve` and `wa watch`, each change as it happens; a change seen both ways is kept once.
