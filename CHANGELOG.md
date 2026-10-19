@@ -18,9 +18,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
     is refused with exit 7. The refusal names the id to allow: run `recipients add` with it, or with the number
     again, which now saves the LID. An entry whose chat the store holds under the number moves to the LID by itself
     at the next `serve` or `watch` start; one for a number with no stored chat does not.
-  - A chat stored under the phone number by wa 0.1.0 whose LID is known, but which no `serve` or `watch` has moved
-    yet: a `delete`, `star` or reaction by the number now answers "not in the store" and sends nothing. Start
-    `serve` or `watch` once to move the chat, then run the command again.
+  - A chat the store already holds under the phone number, such as one wa 0.1.0 saved, is still addressed by the
+    number until a `serve` or `watch` start moves it to its LID. Until then a `delete`, `star` or reaction by the
+    number acts on the messages stored under the number, as in 0.1.0, and a message stored under the LID is refused
+    with "that message is not in the local store" and nothing is sent. Start `serve` or `watch` once, or type the
+    LID.
 - **`wa --help` and a bare `wa` show a short first screen** instead of every command and option: what `wa` is for,
   the usage line, the other WireCat tools it works with, and where to start. `wa --help-all` prints the old help and `wa help options` the
   options of every command. Each command's own `--help` now ends with what it returns, the commands that usually

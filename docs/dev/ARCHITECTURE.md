@@ -389,15 +389,22 @@ make a bare phone-form chat. The adapter's `resolve` therefore hands a typed `di
 `canonicalChat` request (`engine/cmd/wa-engine/canonicalchat.go`), which answers the id a send would: the LID when
 whatsmeow's map or `wa_phone_chats` knows it, the self LID for the owner's own number, else the id as typed. It reads
 those two local tables only — no lookup, no request to WhatsApp — and records nothing, since a typed number need not
-be a chat the account has. Every command that names a chat goes through `resolve`, the send itself included; groups,
-LIDs and channels pass through without the request. An `--offline` command never starts the engine and never calls
+be a chat the account has. Every command that names a chat goes through `resolve`, the send itself included, unless
+cli-core's store already holds a chat by that id (below); groups, LIDs and channels pass through without the request.
+An `--offline` command never starts the engine and never calls
 `resolve`: it reads cli-core's store by the id as typed, so `messages list <number> --offline` shows only what is
 stored under the phone form. Typing the LID, or the chat's name, reads the whole chat; mapping offline would need the
 LID map in cli-core's store. A recipients-list entry added by the phone number before this no longer matches once the
 number maps to a LID; the send is refused until the chat is added again. A chat cli-core stored in phone form before
-`wa_phone_chats` existed, whose LID whatsmeow already knows, is found by its number again only after a `serve` or
-`watch` start has re-keyed it (`storedChats`); until then a delete, a star or a reaction by the number answers "not in
-the store" and sends nothing.
+`wa_phone_chats` existed, whose LID whatsmeow already knows, is still addressed by its number until a `serve` or
+`watch` start has re-keyed it (`storedChats`). wa declares `history: "store"` (`src/messenger.ts:154`), so cli-core
+0.354.0's `resolve` looks in its store first and answers a stored chat with the typed id without calling the adapter
+([`stored.ts:147` and `:171`](https://github.com/WireCatLabs/cli-core/blob/v0.354.0/src/cli/messenger/stored.ts#L147-L171),
+read, not run). Until the re-key, a delete, a star or a
+reaction by the number therefore acts on the messages stored under the phone form, and one stored under the LID is
+refused by `held` (`src/adapter/adapter.ts:272`) with "that message is not in the local store". cli-core is changing
+its `resolve` to ask the messenger for a stored chat too
+([cli-core #1624](https://github.com/WireCatLabs/cli-core/pull/1624), not released).
 
 ## 6. One connection per linked device
 
