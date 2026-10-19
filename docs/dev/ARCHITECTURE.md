@@ -404,7 +404,7 @@ read, not run). Until the re-key, a delete, a star or a
 reaction by the number therefore acts on the messages stored under the phone form, and one stored under the LID is
 refused by `held` (`src/adapter/adapter.ts:272`) with "that message is not in the local store". cli-core is changing
 its `resolve` to ask the messenger for a stored chat too
-([cli-core #1624](https://github.com/WireCatLabs/cli-core/pull/1624), not released).
+([cli-core #1635](https://github.com/WireCatLabs/cli-core/pull/1635), not released).
 
 ## 6. One connection per linked device
 

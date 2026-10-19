@@ -276,10 +276,13 @@ Open work, most important first. The plan in flight is
     runs it took 64 to 130 ms, and CI stayed green. Probably the cold start of a file's first test while other agents'
     suites load the machine. If it comes back, give the first test of a file a longer timeout, or warm the import in
     a setup file, rather than raising the timeout for the whole suite.
-19. **A send typed to a re-keyed person's phone number is saved beside their LID chat** (found 2026-10-19, wa #148
-    review, needs cli-core). cli-core saves a send under the id the owner typed, so a send to the old phone-form id
-    stores a new phone-form chat beside the LID chat until the next `serve` or `watch` start merges it again. Since
-    cli-core 0.353.0 the merge keeps the stricter `searchable` and `scope` of the two rows, so this no longer loosens
-    the owner's settings; the fix is in cli-core: save a send under the chat id the messenger answered. Also
-    cli-core's, for scale only: each re-key is its own store write, so the first start after upgrading writes once
-    per stored phone-form chat whose LID is known.
+19. **A send typed to a phone number is saved under the number while the store still holds that phone-form chat**
+    (found 2026-10-19, wa #148 review, narrowed by wa #150, needs cli-core). A send now resolves the chat first, and
+    wa's `resolve` answers the LID, so a send to a re-keyed person's number is saved in the LID chat. But cli-core
+    0.354.0 answers a chat it already stores without asking wa (ARCHITECTURE §5). Until a `serve` or `watch` start
+    re-keys a phone-form chat, a send by that number is saved under the number, though wa answers it with the LID
+    chat. Since cli-core 0.353.0 the re-key merge keeps the stricter `searchable` and `scope` of the two rows, so the
+    split does not loosen the owner's settings. The fix is in cli-core:
+    [#1635](https://github.com/WireCatLabs/cli-core/pull/1635) asks the messenger for a stored chat too, and
+    [#1624](https://github.com/WireCatLabs/cli-core/pull/1624) saves a send under the chat id the messenger answered. Also cli-core's, for scale only: each re-key is its own store write, so the first start
+    after upgrading writes once per stored phone-form chat whose LID is known.
