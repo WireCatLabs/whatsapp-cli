@@ -3,6 +3,7 @@ import { dirname, join } from "node:path"
 import { PassThrough } from "node:stream"
 import { fileURLToPath } from "node:url"
 import { CliError, captureStreams } from "@wirecat/cli-base"
+import { PASTE_QR, plainQr } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "../adapter/adapter.js"
@@ -38,8 +39,7 @@ describe("wa session start", () => {
   it("links, keeps the history the phone pushes, and answers reads from it afterwards", async () => {
     const requests: EngineRequest[] = []
     let engine: FakeEngine | undefined
-    const qrFile = `${process.env.TMPDIR}/login-qr.png`
-    const linked = await wa(["fresh", "session", "start", "--qr-file", qrFile, "--json"], (request) => {
+    const linked = await wa(["fresh", "session", "start", "--json"], (request) => {
       requests.push(request)
       engine ??= fakeEngine(seed, { linked: false })
       return engine
@@ -51,7 +51,13 @@ describe("wa session start", () => {
     expect(requests[0]).toMatchObject({ link: true, holder: "session start" })
     expect(requests).toHaveLength(1)
     expect(engine?.closed).toBe(true)
-    expect(existsSync(qrFile)).toBe(false)
+    expect(linked.stderr).toContain(plainQr("FAKECODE"))
+    expect(linked.stderr).toContain(PASTE_QR)
+    const event = linked.stderr.match(/\{"event":"qr".*?\}\}/)?.[0]
+    expect(JSON.parse(event ?? "{}")).toEqual({
+      event: "qr",
+      qr: { text: plainQr("FAKECODE"), expires_at: null, scan: expect.stringContaining("Linked devices") },
+    })
 
     const listed = await wa(["fresh", "chats", "list", "--json"], never)
     expect(listed.code).toBe(0)
@@ -67,14 +73,10 @@ describe("wa session start", () => {
       if (kinds.includes("history")) setImmediate(() => stop.abort())
       return unlisten
     }
-    const result = await wa(
-      ["cancelled", "session", "start", "--qr-file", `${process.env.TMPDIR}/c.png`, "--json"],
-      () => engine,
-      {
-        signal: stop.signal,
-        historyWait: { firstMs: 60_000, quietMs: 60_000 },
-      },
-    )
+    const result = await wa(["cancelled", "session", "start", "--json"], () => engine, {
+      signal: stop.signal,
+      historyWait: { firstMs: 60_000, quietMs: 60_000 },
+    })
     expect(result.code, result.stderr).toBe(0)
     expect(JSON.parse(result.stdout).item.received.messages).toBe(seed.messages.length)
     expect(engine.closed).toBe(true)
@@ -94,49 +96,36 @@ describe("wa session start", () => {
         unlisten()
       }
     }
-    const result = await wa(
-      ["slow", "session", "start", "--qr-file", `${process.env.TMPDIR}/s.png`, "--json"],
-      () => engine,
-      { historyWait: { firstMs: 5_000, quietMs: 0, slowMs: 10 } },
-    )
+    const result = await wa(["slow", "session", "start", "--json"], () => engine, {
+      historyWait: { firstMs: 5_000, quietMs: 0, slowMs: 10 },
+    })
     expect(result.code, result.stderr).toBe(0)
     expect(result.stderr.match(/still waiting for the phone's history/g)).toHaveLength(1)
     expect(JSON.parse(result.stdout).item.received.messages).toBe(seed.messages.length)
 
-    const quick = await wa(
-      ["quick", "session", "start", "--qr-file", `${process.env.TMPDIR}/q.png`, "--json"],
-      () => fakeEngine(seed, { linked: false }),
-      { historyWait: { ...QUICK, slowMs: 1_000 } },
-    )
+    const quick = await wa(["quick", "session", "start", "--json"], () => fakeEngine(seed, { linked: false }), {
+      historyWait: { ...QUICK, slowMs: 1_000 },
+    })
     expect(quick.stderr).not.toContain("still waiting")
   })
 
   it("asks nothing and counts nothing when the profile is already linked", async () => {
-    const result = await wa(["linked", "session", "start", "--qr-file", `${process.env.TMPDIR}/x.png`, "--json"], () =>
-      fakeEngine(seed),
-    )
+    const result = await wa(["linked", "session", "start", "--json"], () => fakeEngine(seed))
     expect(result.code).toBe(0)
     const answer = JSON.parse(result.stdout).item
     expect(answer).toMatchObject({ already_linked: true })
     expect(answer).not.toHaveProperty("received")
   })
 
-  it("refuses to run without a terminal unless the QR goes to a file", async () => {
-    const result = await wa(["headless", "session", "start", "--json"], () => fakeEngine(seed, { linked: false }))
-    expect(result.code).toBe(2)
-    const { error } = JSON.parse(result.stderr)
-    expect(error.reason).toBe("input.required")
-    expect(error.message).toContain("--qr-file")
-  })
-
-  it("refuses a store left without a device by an unfinished link, when nobody can scan", async () => {
+  it("refuses a phone link without a terminal, with a store left without a device by an unfinished link", async () => {
     const store = privateStore("halfdone")
     mkdirSync(dirname(store), { recursive: true })
     writeFileSync(store, "")
     const engine = fakeEngine(seed, { linked: false })
-    const result = await wa(["halfdone", "session", "start", "--json"], () => engine)
+    const result = await wa(["halfdone", "session", "start", "phone", "--json"], () => engine)
     expect(result.code).toBe(2)
-    expect(JSON.parse(result.stderr).error.message).toContain("--qr-file")
+    const { error } = JSON.parse(result.stderr)
+    expect(error).toMatchObject({ reason: "input.required", message: expect.stringContaining("run it in a terminal") })
     expect(engine.closed).toBe(true)
   })
 
@@ -150,72 +139,37 @@ describe("wa session start", () => {
     return engine
   }
 
-  it("closes the engine and removes the QR image when the login is interrupted", async () => {
+  it("closes the engine when the login is interrupted", async () => {
     const stop = new AbortController()
     const engine = neverScanned(stop)
-    const qrFile = `${process.env.TMPDIR}/interrupted.png`
-    const result = await wa(["interrupted", "session", "start", "--qr-file", qrFile, "--json"], () => engine, {
+    const result = await wa(["interrupted", "session", "start", "--json"], () => engine, {
       signal: stop.signal,
     })
     expect(result.code).toBe(130)
     expect(engine.closed).toBe(true)
-    expect(existsSync(qrFile)).toBe(false)
   })
 
-  it("fails the link, without crashing, when the --qr-file path cannot be written", async () => {
-    const engine = fakeEngine(seed, { linked: false })
-    // As the real engine does: the code arrives from a stream listener, outside the link's promise.
-    engine.link = (_request, onCode) => {
-      setImmediate(() => onCode({ login: "qr", code: "FAKECODE" }))
-      return new Promise(() => {})
-    }
-    const blocker = `${process.env.TMPDIR}/not-a-folder`
-    writeFileSync(blocker, "")
-    const result = await wa(
-      ["unwritable", "session", "start", "--qr-file", `${blocker}/login.png`, "--json"],
-      () => engine,
-    )
-    expect(result.code).toBe(2)
-    expect(JSON.parse(result.stderr.slice(result.stderr.lastIndexOf('{"error"'))).error).toMatchObject({
-      code: "validation_error",
-      message: expect.stringContaining("could not be written"),
-    })
-    expect(engine.closed).toBe(true)
-  })
-
-  it("closes the engine and removes the QR image when the login runs past its deadline", async () => {
+  it("closes the engine when the login runs past its deadline", async () => {
     const engine = neverScanned()
-    const qrFile = `${process.env.TMPDIR}/late.png`
-    const result = await wa(
-      ["late", "session", "start", "--qr-file", qrFile, "--timeout", "50ms", "--json"],
-      () => engine,
-    )
+    const result = await wa(["late", "session", "start", "--timeout", "50ms", "--json"], () => engine)
     expect(result.code).toBe(9)
     expect(engine.closed).toBe(true)
-    expect(existsSync(qrFile)).toBe(false)
   })
 
   it("refuses to link under WA_READ_ONLY", async () => {
     const engine = fakeEngine(seed, { linked: false })
     let opened = false
-    const qrFile = `${process.env.TMPDIR}/locked.png`
     const opening = () => {
       opened = true
       return engine
     }
-    const result = await wa(["unlinked", "session", "start", "--qr-file", qrFile, "--json"], opening, {
+    const result = await wa(["unlinked", "session", "start", "--json"], opening, {
       env: { ...process.env, WA_READ_ONLY: "1" },
     })
     expect(result.code).toBe(5)
     expect(JSON.parse(result.stderr).error.message).toContain("cannot log in or out")
     expect(engine.self()).toBeNull()
     expect(opened).toBe(false)
-  })
-
-  it("refuses --qr-file with the phone method", async () => {
-    const result = await wa(["both", "session", "start", "phone", "--qr-file", "x.png", "--json"])
-    expect(result.code).toBe(2)
-    expect(JSON.parse(result.stderr).error.param).toBe("--qr-file")
   })
 })
 
@@ -330,8 +284,7 @@ describe("wa session start at a terminal", () => {
     engine.link = async () => {
       throw new EngineError("timeout", "the login code expired before the phone confirmed it")
     }
-    const qrFile = `${process.env.TMPDIR}/expired.png`
-    const result = await wa(["expired", "session", "start", "--qr-file", qrFile, "--json"], () => engine)
+    const result = await wa(["expired", "session", "start", "--json"], () => engine)
     expect(result.stderr.startsWith(BAN_WARNING)).toBe(true)
     expect(JSON.parse(result.stderr.slice(BAN_WARNING.length)).error).toMatchObject({ code: "timeout" })
     expect(engine.closed).toBe(true)

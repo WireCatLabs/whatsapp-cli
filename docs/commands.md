@@ -54,16 +54,12 @@ link by QR code (default) or a pairing code, then keep the pushed history
 **Changes something in WhatsApp.**
 
 ```sh
-wa session start [method] [options]
+wa session start [method]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `method` | optional | how to link. One of: `qr`, `phone`. Default: `qr`. |
-
-| Option | What it does |
-|---|---|
-| `--qr-file <png>` | write the QR code to this PNG instead of drawing it, for an agent to pass on. |
 
 ### `wa session end`
 
@@ -89,7 +85,6 @@ wa setup [options]
 |---|---|
 | `--agent <agent>` | install the skill for this agent; asks at a terminal, otherwise none. One of: `none`, `codex`, `cursor`, `claude`, `gemini`, `all`. |
 | `--method <method>` | how to log in when there is no session. One of: `qr`, `phone`. Default: `qr`. |
-| `--qr-file <png>` | write a temporary QR image for an agent to pass on; works without a terminal. |
 
 ## `wa account`
 

@@ -164,10 +164,12 @@ never pick one.
 
 - **The owner has a terminal:** `wa personal setup --agent claude` (or `codex`, `cursor`, `gemini`, `all`, `none`)
   in their own terminal. It checks the computer, links, reads the account and shows five chats.
-- **You have no terminal:** `wa personal setup --qr-file login.png --agent claude --json`. Show the image to the
-  owner to scan in WhatsApp → Settings → Linked devices → Link a device. Setup removes it when linking ends.
-  `wa personal session start --qr-file login.png` links without the other steps. Either waits up to 5 minutes for
-  the scan without a terminal.
+- **You have no terminal:** run `wa personal session start qr` (or `wa personal setup --agent claude --json`) in
+  the background — it waits up to 5 minutes for the scan, and a shell tool shows nothing until it exits. Read its
+  output and paste the QR text block into the chat as a code block, exactly as printed, for the owner to scan in
+  WhatsApp → Settings → Linked devices → Link a device. WhatsApp renews the code after 60 seconds and then about
+  every 20 seconds: paste each new block at once and say the old one expired. With `--json` each code is also a
+  stderr line `{"event":"qr","qr":{"text",…}}`. Linking is not on MCP; with only MCP, ask the owner to run it.
 - **Never ask for the phone number or a pairing code in the chat.** A pairing-code link (`--method phone`, or
   `session start phone`) is for the owner to run in their own terminal.
 

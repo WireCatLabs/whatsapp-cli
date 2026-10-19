@@ -449,8 +449,8 @@ engine open and hands it to cli-core's own connection (`withMessenger`, which sa
 receiving until the phone has been quiet for 45 seconds, or Ctrl+C. Nothing here saves to the store itself.
 
 `session start` and `setup` share this as `startSession` (`src/commands/session.ts`), as tg's two commands do. A
-linked device asks nothing, so only a profile that would have to show a code is refused without a terminal or
-`--qr-file`; a `private.db` left without a device by an unfinished link counts as unlinked. `setup` then reads the
+linked device asks nothing, so only a profile that would have to ask for a phone number is refused without a
+terminal; without one a QR code is printed as plain text (cli-core's `loginQr`). A `private.db` left without a device by an unfinished link counts as unlinked. `setup` then reads the
 account through one more connection and five chats from cli-core's store, since WhatsApp has no chat list to ask for.
 
 `wa doctor` reads the engine binary, the device keys' modes and the lock's holder text from disk

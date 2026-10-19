@@ -4,6 +4,7 @@ import { PassThrough, Readable } from "node:stream"
 import { stripVTControlCharacters } from "node:util"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { installSkill } from "@wirecat/cli-base/skill"
+import { plainQr } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { EngineError } from "../engine/contract.js"
@@ -111,10 +112,8 @@ describe("wa setup", () => {
     expect(result.requests).toEqual([])
   })
 
-  it("links through a QR image, keeps the pushed history, checks five chats and installs the skill", async () => {
-    const qrFile = join(env.WA_CACHE_DIR ?? "", "login.png")
-    mkdirSync(dirname(qrFile), { recursive: true })
-    const result = await execute(["setup", "--qr-file", qrFile, "--agent", "codex", "--json"], {}, unlinked())
+  it("links through a QR code printed as text, keeps the pushed history, checks five chats and installs the skill", async () => {
+    const result = await execute(["setup", "--agent", "codex", "--json"], {}, unlinked())
     expect(result.code).toBe(0)
     const answer = JSON.parse(result.stdout).item
     expect(answer).toMatchObject({
@@ -126,10 +125,9 @@ describe("wa setup", () => {
       agent: { name: "codex" },
     })
     expect(answer.next).toMatchObject({ inbox: "wa default inbox --limit 5", receive: "wa default server install" })
-    expect(existsSync(qrFile)).toBe(false)
-    expect(result.stderr).toContain(qrFile)
+    expect(result.stderr).toContain(plainQr("FAKECODE"))
     expect(result.stderr.indexOf(BAN_WARNING)).toBeGreaterThan(-1)
-    expect(result.stderr.indexOf(BAN_WARNING)).toBeLessThan(result.stderr.indexOf(qrFile))
+    expect(result.stderr.indexOf(BAN_WARNING)).toBeLessThan(result.stderr.indexOf(plainQr("FAKECODE")))
     expect(result.stdout).not.toContain("ban")
     expect(result.requests[0]).toMatchObject({ link: true, holder: "setup" })
     expect(result.engine.closed).toBe(true)
@@ -138,8 +136,6 @@ describe("wa setup", () => {
   })
 
   it("a cancel during the history wait ends only the wait, and setup finishes with exit 0", async () => {
-    const qrFile = join(env.WA_CACHE_DIR ?? "", "early.png")
-    mkdirSync(dirname(qrFile), { recursive: true })
     const stop = new AbortController()
     const engine = unlinked()
     const listen = engine.listen
@@ -149,7 +145,7 @@ describe("wa setup", () => {
       return unlisten
     }
     const result = await execute(
-      ["setup", "--qr-file", qrFile, "--agent", "none", "--json"],
+      ["setup", "--agent", "none", "--json"],
       { signal: stop.signal, historyWait: { firstMs: 60_000, quietMs: 60_000 } },
       engine,
     )
@@ -159,19 +155,13 @@ describe("wa setup", () => {
   })
 
   it("a cancel after the history wait still ends setup and closes the engine", async () => {
-    const qrFile = join(env.WA_CACHE_DIR ?? "", "cut.png")
-    mkdirSync(dirname(qrFile), { recursive: true })
     const stop = new AbortController()
     const engine = unlinked()
     engine.me = () => {
       stop.abort()
       return new Promise(() => {})
     }
-    const result = await execute(
-      ["setup", "--qr-file", qrFile, "--agent", "none", "--json"],
-      { signal: stop.signal },
-      engine,
-    )
+    const result = await execute(["setup", "--agent", "none", "--json"], { signal: stop.signal }, engine)
     expect(result.code).toBe(130)
     expect(result.engine.closed).toBe(true)
   })
@@ -243,11 +233,11 @@ describe("wa setup", () => {
     expect(installSkill).not.toHaveBeenCalled()
   })
 
-  it("refuses a first link without a terminal before starting the engine", async () => {
-    const result = await execute(["setup", "--agent", "none", "--json"])
+  it("refuses a first link by phone without a terminal before starting the engine", async () => {
+    const result = await execute(["setup", "--agent", "none", "--method", "phone", "--json"])
     expect(result.code).toBe(2)
     expect(JSON.parse(result.stderr).error).toMatchObject({ reason: "input.required" })
-    expect(JSON.parse(result.stderr).error.message).toContain("--qr-file")
+    expect(JSON.parse(result.stderr).error.message).toContain("needs a terminal")
     expect(result.requests).toEqual([])
   })
 
@@ -260,9 +250,9 @@ describe("wa setup", () => {
     expect(installSkill).not.toHaveBeenCalled()
   })
 
-  it("refuses a store an unfinished link left without a device, when nobody can scan", async () => {
+  it("refuses a phone link for a store an unfinished link left without a device, when nobody can type", async () => {
     linkedDevice()
-    const result = await execute(["setup", "--agent", "none", "--json"], {}, unlinked())
+    const result = await execute(["setup", "--agent", "none", "--method", "phone", "--json"], {}, unlinked())
     expect(result.code).toBe(2)
     expect(result.engine.closed).toBe(true)
     expect(installSkill).not.toHaveBeenCalled()
@@ -299,7 +289,7 @@ describe("wa setup", () => {
     expect(result.requests).toEqual([])
   })
 
-  it.each([{ flags: ["--offline"] }, { flags: ["--method", "phone", "--qr-file", "login.png"] }])(
+  it.each([{ flags: ["--offline"] }, { flags: ["--qr-file", "login.png"] }])(
     "refuses incompatible flags: %s",
     async ({ flags }) => {
       const result = await execute(["setup", "--agent", "none", ...flags])
@@ -346,15 +336,9 @@ describe("wa setup", () => {
   })
 
   it("gives the steps after the history wait a deadline of their own", async () => {
-    const qrFile = join(env.WA_CACHE_DIR ?? "", "stall.png")
-    mkdirSync(dirname(qrFile), { recursive: true })
     input.wait = true
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
-    const running = execute(
-      ["setup", "--qr-file", qrFile, "--timeout", "2s"],
-      { tty: true, stdin: terminal() },
-      unlinked(),
-    )
+    const running = execute(["setup", "--timeout", "2s"], { tty: true, stdin: terminal() }, unlinked())
     for (let step = 0; step < 300 && !input.signal; step++) await vi.advanceTimersByTimeAsync(10)
     expect(input.signal?.aborted).toBe(false)
     await vi.advanceTimersByTimeAsync(2_100)
@@ -377,9 +361,12 @@ describe("wa setup", () => {
   })
 
   it.each(["--json", "--jsonl", "--no-input"])(
-    "refuses a first link with %s even on a terminal, before starting the engine",
+    "refuses a first phone link with %s even on a terminal, before starting the engine",
     async (flag) => {
-      const result = await execute(["setup", "--agent", "none", flag], { tty: true, stdin: terminal() })
+      const result = await execute(["setup", "--agent", "none", "--method", "phone", flag], {
+        tty: true,
+        stdin: terminal(),
+      })
       expect(result.code).toBe(2)
       expect(input.prompts).toEqual([])
       expect(result.requests).toEqual([])
@@ -432,10 +419,8 @@ describe("wa setup", () => {
       chats: [chat],
       messages: seed.messages.filter((message) => message.chatId === chat.id),
     }
-    const qrFile = join(env.WA_CACHE_DIR ?? "", "one.png")
-    mkdirSync(dirname(qrFile), { recursive: true })
     const result = await execute(
-      ["setup", "--qr-file", qrFile, "--agent", "none"],
+      ["setup", "--agent", "none"],
       { tty: true, stdin: terminal() },
       fakeEngine(single, { linked: false }),
     )

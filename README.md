@@ -111,8 +111,8 @@ Your agent. Your WhatsApp. Your rules.
 
 - **Agents with a terminal** (Claude Code, Codex, Gemini CLI) run `wa` commands themselves. The bundled
   [skill](https://github.com/WireCatLabs/whatsapp-cli/blob/main/skills/whatsapp-cli/SKILL.md) tells them how: `wa personal setup --agent …` or `wa skill install` puts it in
-  place, and `wa skill show` prints it before linking. An agent links with `--qr-file` and shows you the picture; it
-  never asks for your phone number or a code.
+  place, and `wa skill show` prints it before linking. An agent links by QR: it pastes the code into the chat as text for you
+  to scan, and never asks for your phone number or a code.
 - **Apps without a terminal** (Claude Desktop, Cursor and other MCP clients) connect to `wa personal mcp`. It
   comes with ready prompts: `/catch-up`, `/review`, `/reply`, `/find` and more.
 
@@ -183,7 +183,6 @@ link once, from the phone, and the device keys go to one file only your user can
 ```sh
 wa personal session start               # a QR code: WhatsApp → Settings → Linked devices → Link a device
 wa personal session start phone         # or your number, then a pairing code you type on the phone
-wa personal session start --qr-file login.png  # the QR code as a picture, for an agent to show you
 wa personal account show                # who this profile is linked as
 wa account list                         # every profile here, and who each is linked as
 wa personal session end                 # unlink, and delete the device keys here

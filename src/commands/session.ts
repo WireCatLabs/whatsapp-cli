@@ -1,7 +1,7 @@
 import { existsSync, rmSync } from "node:fs"
 import { CliError, indent, singleLine } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { atTerminal, loginQr, qrNeedsTerminal, readSecret } from "@wirecat/cli-core"
+import { atTerminal, loginQr, readSecret } from "@wirecat/cli-core"
 import {
   asFirstWord,
   commandWords,
@@ -98,7 +98,6 @@ const linkedText = (profile: string, account: { name: string | null }, got: Rece
 
 export interface StartSessionOptions {
   method: "qr" | "phone"
-  qrFile?: string
   /** The command as typed, for the messages that name it. */
   command?: string
   signal?: AbortSignal
@@ -123,119 +122,86 @@ export interface Session {
 export const startSession = async (
   command: Command,
   context: MessengerContext,
-  {
-    method,
-    qrFile,
-    command: typed = "wa session start",
-    signal,
-    indent: pad = 0,
-    stopEndsWait = false,
-  }: StartSessionOptions,
+  { method, command: typed = "wa session start", signal, indent: pad = 0, stopEndsWait = false }: StartSessionOptions,
 ): Promise<Session> => {
   const input = context.stdin
   const terminal = atTerminal(input)
-  if (qrFile !== undefined && method !== "qr")
-    throw new CliError("validation_error", "--qr-file is for a QR login", { param: "--qr-file" })
   const unanswerable = () =>
-    method === "qr"
-      ? qrNeedsTerminal(typed)
-      : new CliError("validation_error", `${typed} asks questions — run it in a terminal`, { reason: "input.required" })
+    new CliError("validation_error", `${typed} asks questions — run it in a terminal`, {
+      reason: "input.required",
+    })
   // A device that is linked already asks nothing, so only a profile without one is refused before the engine starts.
-  if (!terminal && qrFile === undefined && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
+  if (!terminal && method === "phone" && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
   const qr = loginQr({
-    ...(qrFile === undefined ? {} : { qrFile }),
     diagnostic: context.streams.diagnostic,
     note: context.renderer.note,
     indent: pad,
+    terminal,
+    json: context.format !== "pretty",
   })
   const environment = environmentOf<Environment>(command)
-  // A cut command never reaches its own finally in time; the image links the account while it is valid.
-  if (qr.path) environment.trackCloseable?.({ close: async () => qr.close() })
-  // onCode runs inside the engine's line listener, where a throw would crash the process instead of failing the link.
-  let unwritable: (error: CliError) => void = () => {}
-  const failed = new Promise<never>((_, reject) => {
-    unwritable = reject
-  })
 
-  try {
-    const linking = linkDevice(command, context, {
-      method,
-      beforeLink: () => {
-        signal?.throwIfAborted()
-        if (!terminal && qrFile === undefined) throw unanswerable()
-        context.streams.diagnostic(indent(BAN_WARNING, pad))
-      },
-      phone: async () => {
-        if (!terminal)
-          throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`, {
-            reason: "input.required",
-          })
-        const number = await readSecret(`${" ".repeat(pad)}phone number, international format: `, {
-          ...secretInputOf(command),
-          echo: true,
-          ...(signal === undefined ? {} : { signal }),
+  const linked = await linkDevice(command, context, {
+    method,
+    beforeLink: () => {
+      signal?.throwIfAborted()
+      if (!terminal && method === "phone") throw unanswerable()
+      context.streams.diagnostic(indent(BAN_WARNING, pad))
+    },
+    phone: async () => {
+      if (!terminal)
+        throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`, {
+          reason: "input.required",
         })
-        // WhatsApp reads the leading digits as the country code, so a number typed without one pairs someone else's.
-        if (!number.trim().startsWith("+"))
-          throw new CliError("validation_error", "write the phone number with + and the country code, such as +34", {
-            param: "phone",
-            reason: "input.invalid",
-          })
-        return number
-      },
-      onCode: ({ login, code }) => {
-        if (login === "pair") {
-          context.renderer.note(
-            `pairing code: ${code}\n` +
-              "On the phone: tap the WhatsApp notification, or Settings > Linked devices > Link a device >\n" +
-              "Link with phone number instead, and type the code. It expires in about two minutes.",
-          )
-          return
-        }
-        try {
-          qr.show(code, "scan in WhatsApp → Settings → Linked devices → Link a device")
-        } catch (error) {
-          unwritable(
-            new CliError(
-              "validation_error",
-              `--qr-file ${qr.path} could not be written (${error instanceof Error ? error.message : String(error)})`,
-              { param: "--qr-file", reason: "input.invalid" },
-            ),
-          )
-        }
-      },
-    })
-    // The runner closes the tracked engine once the command fails, which rejects the abandoned link.
-    linking.catch(() => {})
-    const linked = await Promise.race([linking, failed])
-    qr.close()
-    signal?.throwIfAborted()
+      const number = await readSecret(`${" ".repeat(pad)}phone number, international format: `, {
+        ...secretInputOf(command),
+        echo: true,
+        ...(signal === undefined ? {} : { signal }),
+      })
+      // WhatsApp reads the leading digits as the country code, so a number typed without one pairs someone else's.
+      if (!number.trim().startsWith("+"))
+        throw new CliError("validation_error", "write the phone number with + and the country code, such as +34", {
+          param: "phone",
+          reason: "input.invalid",
+        })
+      return number
+    },
+    onCode: ({ login, code }) => {
+      if (login === "pair") {
+        context.renderer.note(
+          `pairing code: ${code}\n` +
+            "On the phone: tap the WhatsApp notification, or Settings > Linked devices > Link a device >\n" +
+            "Link with phone number instead, and type the code. It expires in about two minutes.",
+        )
+        return
+      }
+      qr.show(code, "scan in WhatsApp → Settings → Linked devices → Link a device")
+    },
+  })
+  signal?.throwIfAborted()
 
-    const session: Session = { profile: context.profile, account: linked.account, alreadyLinked: linked.alreadyLinked }
-    if (!linked.alreadyLinked) {
-      context.renderer.note(
-        "receiving history from the phone; keep WhatsApp open on it. Ctrl+C stops — `serve` picks up the rest.",
-      )
-      const stop = stopEndsWait ? environment.untilStopped?.() : environment.signal
-      const ended = AbortSignal.any([signal, stop].filter((one) => one !== undefined))
-      session.received = await context.withMessenger(
-        (adapter) =>
-          receiveHistory(
-            adapter,
-            environment.historyWait ?? HISTORY_WAIT,
-            () =>
-              context.renderer.note(
-                "still waiting for the phone's history — keep WhatsApp open on the phone; it can take a minute",
-              ),
-            ended,
-          ),
-        { listen: true },
-      )
-    }
-    return session
-  } finally {
-    qr.close()
+  const session: Session = { profile: context.profile, account: linked.account, alreadyLinked: linked.alreadyLinked }
+  if (!linked.alreadyLinked) {
+    context.renderer.note(
+      "receiving history from the phone; keep WhatsApp open on it. Ctrl+C stops — `serve` picks up the rest.",
+    )
+    const stop = stopEndsWait ? environment.untilStopped?.() : environment.signal
+    const ended = AbortSignal.any([signal, stop].filter((one) => one !== undefined))
+    session.received = await context.withMessenger(
+      (adapter) =>
+        receiveHistory(
+          adapter,
+          environment.historyWait ?? HISTORY_WAIT,
+          () =>
+            context.renderer.note(
+              "still waiting for the phone's history — keep WhatsApp open on the phone; it can take a minute",
+            ),
+          ended,
+        ),
+      { listen: true },
+    )
   }
+  return session
 }
 
 const end = async (command: Command) => {
@@ -263,6 +229,13 @@ const end = async (command: Command) => {
   printItem(context, { profile: context.profile, ended: true })
 }
 
+export const AGENTS_LINK_BY_QR =
+  "Agents: run `wa <profile> session start qr` in the background — it waits for the scan, and a shell tool\n" +
+  "shows nothing until it exits. Read its output and paste the QR text block into the chat as a code block,\n" +
+  "exactly as printed. WhatsApp renews the code after 60 seconds, then about every 20: paste each new block\n" +
+  'at once and say the old one expired. With --json each code is also a stderr line {"event":"qr","qr":{...}}.\n' +
+  "Linking is not offered over MCP; an agent with only MCP asks the person to run the command.\n"
+
 export const sessionCommand = () => {
   // Linking waits for a person, and unlinking removes the owner's device: neither is an agent's call.
   const session = annotate(new Command("session"), { mcp: false }).description(
@@ -276,7 +249,6 @@ export const sessionCommand = () => {
   })
     .description("link by QR code (default) or a pairing code, then keep the pushed history")
     .addArgument(new Argument("[method]", "how to link").choices(["qr", "phone"]).default("qr"))
-    .option("--qr-file <png>", "write the QR code to this PNG instead of drawing it, for an agent to pass on")
     .addHelpText(
       "after",
       "\nFirst time? Use `wa personal setup` for linking, a check of five chats and an agent skill.\n" +
@@ -285,17 +257,15 @@ export const sessionCommand = () => {
         "the phone.\n" +
         "\nRight after linking, the phone pushes your history once; this command keeps it in the local store\n" +
         "until the phone goes quiet. Then run `wa <profile> server install` to keep receiving.\n" +
-        "Agents: --qr-file writes the QR as a PNG (mode 600) and removes it after the login.\n",
+        `\n${AGENTS_LINK_BY_QR}`,
     )
     .action(async function (this: Command, method: "qr" | "phone") {
       const context = messengerContext(this, WHATSAPP)
       refuseCommandName(context.profile, commandWords(rootOf(this)), "wa")
-      const { qrFile } = this.opts<{ qrFile?: string }>()
       const session = await startSession(this, context, {
         command: `wa ${asFirstWord(context.profile)}session start`,
         method,
         stopEndsWait: true,
-        ...(qrFile === undefined ? {} : { qrFile }),
       })
       if (context.format === "pretty")
         context.streams.data(linkedText(context.profile, session.account, session.received))
