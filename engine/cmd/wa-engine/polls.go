@@ -146,7 +146,8 @@ func (e *engine) pollVote(evt *events.Message) {
 		return
 	}
 	if vote, ok := e.conv.vote(evt, decrypted); ok {
-		e.phones.note(e.ctx, vote.Chat)
+		// As WhatsApp names it, as appStateChat does: vote.Chat is already the LID when one is known.
+		e.phones.note(e.ctx, evt.Info.Chat.ToNonAD().String())
 		e.out.event("vote", vote)
 	}
 }
