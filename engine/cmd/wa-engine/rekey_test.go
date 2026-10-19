@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"testing"
 	"time"
 
@@ -140,5 +142,43 @@ func TestARekeyedChatIsNeverEmittedInPhoneFormAgain(t *testing.T) {
 	changed, ok := c.message(incoming(pn, pn, text("synthetic")), known{})
 	if !ok || changed.message.Chat != fakeLID {
 		t.Errorf("a message in the phone-form chat went to %+v", changed.message)
+	}
+}
+
+func TestTheChatARequestNamesIsRecordedOnceTheRequestWentThrough(t *testing.T) {
+	ctx := context.Background()
+	p := testPhoneChats(t, filepath.Join(t.TempDir(), "private.db"))
+	e := &engine{ctx: ctx, phones: p}
+	e.noteNamed(request{Op: "react", Chat: "70000000001@s.whatsapp.net"})
+	e.noteNamed(request{Op: "read", Chat: "70000000002@s.whatsapp.net"})
+	e.noteNamed(request{Op: "mute", JID: "70000000007@s.whatsapp.net"})
+	e.noteNamed(request{Op: "pinChat", JID: "70000000008@s.whatsapp.net"})
+	e.noteNamed(request{Op: "react", Chat: "120363000000000001@g.us"})
+	e.noteNamed(request{Op: "chat", JID: "70000000003@s.whatsapp.net"})
+	e.noteNamed(request{Op: "profile", JID: "70000000004@s.whatsapp.net"})
+	e.noteNamed(request{Op: "block", JID: "70000000005@s.whatsapp.net"})
+	got := p.waiting()
+	slices.Sort(got)
+	if !reflect.DeepEqual(got, []string{"70000000001", "70000000002"}) {
+		t.Errorf("recorded %v: only a chat the store holds, never a number the owner typed", got)
+	}
+
+	var out bytes.Buffer
+	e.out = newWire(&out)
+	e.answer(request{ID: 1, Op: "react", Chat: "70000000006@s.whatsapp.net"})
+	if slices.Contains(p.waiting(), "70000000006") {
+		t.Error("recorded the chat of a request that was refused")
+	}
+}
+
+func TestTheChatOfAStarOrADeleteFromAnotherDeviceIsRecordedAsWhatsAppNamesIt(t *testing.T) {
+	p := testPhoneChats(t, filepath.Join(t.TempDir(), "private.db"))
+	lid := types.NewJID("100000000000001", types.HiddenUserServer)
+	e := &engine{ctx: context.Background(), phones: p, conv: &converter{lidFor: func(types.JID) (types.JID, bool) {
+		return lid, true
+	}}}
+	chat, ok := e.appStateChat(types.NewJID("70000000009", types.DefaultUserServer), "3EB000000000000000000001")
+	if !ok || chat != fakeLID || !reflect.DeepEqual(p.waiting(), []string{"70000000009"}) {
+		t.Errorf("chat %q, recorded %v", chat, p.waiting())
 	}
 }

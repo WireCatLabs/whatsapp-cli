@@ -266,3 +266,9 @@ Open work, most important first. The plan in flight is
     a way for an adapter to give an ending its own exit. Also cli-core's: no cap on restarts (`RestartSec=30`, so
     systemd's start limit never trips), no restart on macOS once `noRestartOn` is set (launchd cannot exclude one
     code), none for a `serve` started by hand, and no way to open the connection again inside `serve`.
+16. **Phone-form chats stored before the re-key table need cli-core** (found 2026-10-19, ARCHITECTURE §5). The engine
+    records a phone-form chat when it emits it, or when a request names it, so a chat cli-core stored in phone form
+    before `wa_phone_chats` existed (wa #73) re-keys and gets a LID lookup only once a message, a history push or a
+    command touches it. One nothing touches stays in phone form, and a message under its LID later splits it. The
+    engine cannot read cli-core's store; the fix is a cli-core port that hands the messenger the stored chat ids once
+    (at `feed`'s start, say), which the adapter passes on to the engine.
