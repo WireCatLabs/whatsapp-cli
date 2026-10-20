@@ -18,7 +18,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `messages delete`, `messages star`, `reactions add` or `polls vote` by the number could miss the message: the
   deleted text stayed searchable, the star was lost, and the vote made a second chat. Every command that names a chat now looks the
   number up in the LIDs this device knows; nothing is asked of WhatsApp and nothing is recorded. A number with no
-  known LID, a group, a LID or a channel is used as typed, and an `--offline` command uses the id as typed too.
+  known LID, a group, a LID or a channel is used as typed. An `--offline` command reads the store by the id as typed,
+  and finds a chat that moved from that number to its LID once the store recorded the move (see Added).
   Engine wire change: a `canonicalChat` request. Engine protocol 38. Two things the owner may notice:
   - A recipient list entry added by the phone number stops matching once that number has a LID, and a send to it
     is refused with exit 7. The refusal names the id to allow: run `recipients add` with it, or with the number
@@ -29,7 +30,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   - A chat the store already holds under the phone number, such as one wa 0.1.0 saved, moves to its LID on the spot
     (cli-core 0.356.0): the first command that names it by the number, a send, `delete`, `star` or reaction
     included, moves the stored chat, its messages and its recipient-list entry to the LID, then acts on the LID
-    chat. An `--offline` command moves nothing: it reads the store by the id as typed.
+    chat. An `--offline` command moves nothing; it finds such a chat by the number once the store recorded the move.
 - **`wa --help` and a bare `wa` show a short first screen** instead of every command and option: what `wa` is for,
   the usage line, the other WireCat tools it works with, and where to start. `wa --help-all` prints the old help and `wa help options` the
   options of every command. Each command's own `--help` now ends with what it returns, the commands that usually
@@ -327,6 +328,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`messages list <old id> --offline` finds the chat that id moved to**, and so does every other command that
+  names a chat by the phone-number id it had before WhatsApp gave the person a LID. The store now keeps each chat's
+  history: its id, title, membership, scope, search visibility and parent, one row per change. A read by an old id
+  follows it within the account; a chat the account left is still refused (cli-core 0.366.0). Only a move the store
+  recorded is followed: one `serve` or `watch` makes from now on, or one they repeat. The engine repeats the moves of
+  the last 30 days at each start, so those are recorded at the first start after the upgrade. An older move, and a
+  number that was never a stored chat, still read as typed. The store moves to version 25 the first time this
+  version opens it. That cannot be undone, but `wa` 0.1.0 and older tg and max builds still open it.
 - **`wa <profile> store clear --left` lists the chats it would delete**, by id, title and message count, when it
   refuses without `--allow-dangerous`, and after deleting lists what it deleted; `--dry-run` lists them all and
   deletes nothing (cli-core 0.353.0).

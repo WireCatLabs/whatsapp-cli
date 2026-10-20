@@ -419,9 +419,13 @@ be a chat the account has. Every command that names a chat goes through `resolve
 since cli-core 0.356.0 also when cli-core's store already holds a chat by that id (below); groups, LIDs and channels
 pass through without the request.
 An `--offline` command never starts the engine and never calls
-`resolve`: it reads cli-core's store by the id as typed, so `messages list <number> --offline` shows only what is
-stored under the phone form. Typing the LID, or the chat's name, reads the whole chat; mapping offline would need the
-LID map in cli-core's store. A recipients-list entry added by the phone number before this no longer matches once the
+`resolve`: it reads cli-core's store by the id as typed. Since cli-core 0.366.0 (store version 25) the store keeps
+each chat's past ids (`chat_revisions`), and a read by an id the chat was re-keyed from finds the chat it became, per
+account (`store.chats.renamedChatId`), so `messages list <number> --offline` reads the LID chat
+(`src/lid-rekey.test.ts`). The history holds only re-keys recorded on a version-25 store: those made since, and the
+repeats of the last 30 days the engine announces at each start, which cli-core records for a chat already stored
+under the LID. A number whose chat was never stored, or whose move is older, still reads as typed; typing the LID,
+or the chat's name, reads the whole chat. A recipients-list entry added by the phone number before this no longer matches once the
 number maps to a LID; the send is refused until a `serve` or `watch` start moves the entry (`storedChats`, above) or
 the chat is added again. A chat cli-core stored in phone form, whose LID whatsmeow already knows, is re-keyed to it on
 the spot by the first command that names it by the number: wa declares `history: "store"` (`src/messenger.ts:154`),
