@@ -32,6 +32,13 @@ func ref(media string) *waMediaRef {
 		FileEncSHA256: syntheticEnc}
 }
 
+// uploaded is a ref as an upload or a phone's message leaves it: with the URL and the key's time.
+func uploaded(media string) *waMediaRef {
+	r := ref(media)
+	r.URL, r.MediaKeyTimestamp = "https://mmg.whatsapp.net/v/t62/synthetic&mms3=true", 1760000000
+	return r
+}
+
 func TestAttachmentsOfEachKind(t *testing.T) {
 	path, key, sum, enc := proto.String("/v/t62/synthetic"), syntheticKey, syntheticSum, syntheticEnc
 	cases := []struct {
@@ -61,6 +68,14 @@ func TestAttachmentsOfEachKind(t *testing.T) {
 			FileSHA256: sum, FileEncSHA256: enc, Mimetype: proto.String("image/webp"), Width: proto.Uint32(512),
 			Height: proto.Uint32(512)}},
 			[]waAttachment{{Kind: "sticker", Width: 512, Height: 512, Mime: "image/webp", Ref: ref("sticker")}}},
+		{"a photo keeps its URL and its key's time", &waE2E.Message{ImageMessage: &waE2E.ImageMessage{
+			URL: proto.String(uploaded("image").URL), DirectPath: path, MediaKey: key, MediaKeyTimestamp: proto.Int64(1760000000),
+			FileSHA256: sum, FileEncSHA256: enc}},
+			[]waAttachment{{Kind: "photo", Ref: uploaded("image")}}},
+		{"a captioned document as WhatsApp's apps wrap it", &waE2E.Message{DocumentWithCaptionMessage: &waE2E.FutureProofMessage{
+			Message: &waE2E.Message{DocumentMessage: &waE2E.DocumentMessage{DirectPath: path, MediaKey: key,
+				FileSHA256: sum, FileEncSHA256: enc, FileName: proto.String("report.pdf"), Caption: proto.String("caption")}}}},
+			[]waAttachment{{Kind: "document", Name: "report.pdf", Ref: ref("document")}}},
 		{"a place", &waE2E.Message{LocationMessage: &waE2E.LocationMessage{DegreesLatitude: proto.Float64(39.47),
 			DegreesLongitude: proto.Float64(-0.376), Name: proto.String("Synthetic Square")}},
 			[]waAttachment{{Kind: "location", URL: "geo:39.470000,-0.376000", Title: "Synthetic Square",
@@ -108,11 +123,11 @@ func TestAViewOnceFileKeepsNoKeys(t *testing.T) {
 func TestContentOfSendsTheStoredKeysAgain(t *testing.T) {
 	forwarded := &waE2E.ContextInfo{IsForwarded: proto.Bool(true), ForwardingScore: proto.Uint32(1)}
 	for _, a := range []waAttachment{
-		{Kind: "photo", Width: 640, Height: 480, Size: 1200, Mime: "image/jpeg", Ref: ref("image")},
-		{Kind: "video", Size: 3000, Mime: "video/mp4", Duration: 4, Ref: ref("video")},
-		{Kind: "voice", Size: 900, Mime: "audio/ogg; codecs=opus", Duration: 7, Ref: ref("audio")},
-		{Kind: "document", Name: "report.pdf", Size: 5000, Mime: "application/pdf", Ref: ref("document")},
-		{Kind: "sticker", Width: 512, Height: 512, Mime: "image/webp", Ref: ref("sticker")},
+		{Kind: "photo", Width: 640, Height: 480, Size: 1200, Mime: "image/jpeg", Ref: uploaded("image")},
+		{Kind: "video", Size: 3000, Mime: "video/mp4", Duration: 4, Ref: uploaded("video")},
+		{Kind: "voice", Size: 900, Mime: "audio/ogg; codecs=opus", Duration: 7, Ref: uploaded("audio")},
+		{Kind: "document", Name: "report.pdf", Size: 5000, Mime: "application/pdf", Ref: uploaded("document")},
+		{Kind: "sticker", Width: 512, Height: 512, Mime: "image/webp", Ref: uploaded("sticker")},
 		{Kind: "location", URL: "geo:39.470000,-0.376000", Title: "Synthetic Square", Ref: &waMediaRef{Place: &waPlace{
 			Latitude: 39.47, Longitude: -0.376, Name: "Synthetic Square", Address: "1 Synthetic St", URL: "https://example.com"}}},
 		{Kind: "contact", Name: "Ann Lee", Ref: &waMediaRef{Card: syntheticCard}},
@@ -128,9 +143,36 @@ func TestContentOfSendsTheStoredKeysAgain(t *testing.T) {
 		if got := attachmentsOf(content); !reflect.DeepEqual(got, []waAttachment{a}) {
 			t.Errorf("%s: got %+v", a.Kind, got)
 		}
+		if wrapped := content.GetDocumentWithCaptionMessage(); wrapped != nil {
+			content = wrapped.GetMessage()
+		}
 		if text, _ := textOf(content); text != caption {
 			t.Errorf("%s: caption %q", a.Kind, text)
 		}
+	}
+}
+
+func TestAStoredFileWithoutItsURLGetsOneBuiltFromItsPath(t *testing.T) {
+	content, err := contentOf(waAttachment{Kind: "photo", Ref: ref("image")}, "", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	image := content.GetImageMessage()
+	if image.GetURL() != "https://mmg.whatsapp.net/v/t62/synthetic" || image.MediaKeyTimestamp != nil {
+		t.Errorf("got URL %q, key time %v", image.GetURL(), image.MediaKeyTimestamp)
+	}
+}
+
+func TestACaptionedDocumentGoesWrappedAndABareOneDoesNot(t *testing.T) {
+	a := waAttachment{Kind: "document", Name: "report.pdf", Ref: uploaded("document")}
+	captioned, _ := contentOf(a, "synthetic caption", nil)
+	if captioned.DocumentMessage != nil ||
+		captioned.GetDocumentWithCaptionMessage().GetMessage().GetDocumentMessage().GetCaption() != "synthetic caption" {
+		t.Errorf("captioned: %+v", captioned)
+	}
+	bare, _ := contentOf(a, "", nil)
+	if bare.GetDocumentMessage().GetURL() != uploaded("document").URL || bare.DocumentWithCaptionMessage != nil {
+		t.Errorf("bare: %+v", bare)
 	}
 }
 

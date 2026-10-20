@@ -210,6 +210,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **Photos, videos, voice notes, documents and stickers sent by wa carry the file's URL**, as WhatsApp's own apps and
+  mautrix-whatsapp send them. Without it, the photos and videos wa sent, as an album or a forward too, never appeared
+  on a phone, while wa's own linked devices received them. A message now also carries the time its file's key was made,
+  as Baileys sends it, and a document with a caption goes in the wrapper WhatsApp's apps use. A file stored before
+  this fix, or one the phone uploaded again, gets a URL built from its path when it is forwarded. The URL is kept with
+  the file's keys in the store and is never printed. Engine wire change: `url` and `mediaKeyTimestamp` in a file's
+  ref. Engine protocol 41.
 - **A chat id works in a query without quotes.** `chat:100000000000002@lid` and `chat:120363000000000001@g.us`
   failed with `query.unsupported-operator`, because the `@` was read as an operator; only the quoted form worked.
   Both forms work now (cli-core 0.375.0, cli-base 0.47.3).
