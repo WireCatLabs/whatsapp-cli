@@ -11,8 +11,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   paste into the chat, instead of a PNG the person opens in an image viewer. The text is plain half blocks, no
   colours, about 73 columns wide. Each code is followed by a note telling an agent to paste it, and with `--json` it is
   also one stderr line, `{"event":"qr","qr":{"text","expires_at","scan"}}`. A QR link no longer needs a terminal; a
-  pairing-code link (`phone`) still does. A script that passed `--qr-file` now fails with an unknown option. In a
-  terminal the code is drawn as before (cli-core's `loginQr`).
+  pairing-code link (`phone`) still does, and without one says that it asks questions. A script that passed
+  `--qr-file` now fails with an unknown option. In a terminal the code is drawn as before, as in tg and max.
 - **A one-to-one chat typed by its phone number is addressed by its LID**, the id WhatsApp files that chat under,
   when WhatsApp has already given it. WhatsApp answers a send by the number with the LID, so a later
   `messages delete`, `messages star`, `reactions add` or `polls vote` by the number could miss the message: the
@@ -79,7 +79,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   longer `--timeout`. A new copy that then fails to download is `provider_error` (exit 11, `media.retry-failed`),
   whatever the first failure's code was; when the phone answered an error but still gave a path, it is the phone's
   answer instead (see Fixed). The store keeps the new copy's address, so a later download or forward
-  uses it and does not ask the phone again (see Fixed). Not yet run against WhatsApp.
+  uses it and does not ask the phone again (see Fixed).
+  **Known limitation: a file WhatsApp no longer keeps does not download yet.** On the phones tried, the phone answers
+  that it uploaded the file again, but it encrypts the new copy with a new key that it does not send to linked
+  devices, so `wa` cannot read it. The download then ends with `media.retry-failed` ("the phone uploaded this file
+  again, but the new copy did not download") and saves nothing, rather than a broken file. A file WhatsApp still
+  keeps downloads as before. For an old file, open it on the phone, or ask the sender to send it again.
 - **`messages forward` sends a stored place or contact card, where it used to refuse it.** The store now keeps a
   place's coordinates, name and address, and a contact card itself, next to a file's keys, where no answer shows
   them. A place or card stored before this, a live location and several cards in one message are still refused.
@@ -98,7 +103,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   history stops coming or `serve` or `watch` starts, for chats the account already has only: five people per
   request, one request every 10 seconds, at most 20 people per run, and each person at most once a week. The owner's
   own `lookup` keeps its own pace. If WhatsApp asks to slow down, the lookups stop for a week and the next write is
-  refused with `account.rate-limited`, which holds the profile's writes for 15 minutes. Not yet run against WhatsApp.
+  refused with `account.rate-limited`, which holds the profile's writes for 15 minutes, also when `serve` restarts
+  meanwhile. Not yet run against WhatsApp.
 - **A command cut off by a dropped or ended connection no longer answers `network_error`** (exit 10), which invited
   a retry and a double send. A send, edit, reaction, group change or other write whose request left before the
   network dropped, and could not be sent again, now answers `outcome_unknown`: exit 14, `retry.safe: false`, also
@@ -155,17 +161,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`chats list` and `chats show` answer from the local store and never connect** (cli-core 0.328.0), so they run
   here while `serve` runs. `recipients add` runs through `serve` instead of being refused with exit 12.
 - **A link without a terminal waits 5 minutes by default, not 30 seconds** (cli-core 0.328.0), so an agent's
-  `session start --qr-file` is not cut off before the code is scanned. `--timeout` still decides when given.
+  `session start` is not cut off before the code is scanned. `--timeout` still decides when given.
 - **A command path given as one argument fails** (cli-core 0.328.0): `wa 'chats list'` printed the root help and
   exited 0; it now fails with `validation_error`.
 - **`wa mcp` offers only what `wa` has** (cli-core 0.328.0, 0.335.0): `chats link create`, which failed, is gone,
   and a command that refuses `--offline` no longer has an `offline` input; an agent that passes one gets
   `validation_error`. `metadata get` and `metadata refresh`, which failed too, now work (see Added).
 - **`chats events` answers from the local store** (cli-core 0.336.0): it no longer refuses with exit `2`, never
-  connects, and works with `--offline`. `wa` does not record joins and leaves yet, so the list is empty and `watch
-  --events` has no chat events to show, and `stats chats show` leaves `members` out, sets `complete` to `false` and
-  says in `missing` (and on stderr in text mode) that joins and leaves are not recorded for this chat yet (cli-core
-  0.337.0).
+  connects, and works with `--offline`. What it lists, and how `stats chats show` counts members from it, is under
+  Added.
 - **A chat or person named by name is found in the local store first** (cli-core 0.337.0): part of the name is
   enough, and a name several stored chats match is refused with "… matches N chats", as `chats show` refuses it; a
   caller that matched the old "N chats share that name" must match the new text. Only a name the store does not hold
@@ -195,14 +199,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   of `search conversations` and `conversations related` left it in, and the search answers listed it as not yet
   embedded. A sender-only lookup no longer counts its messages. `wa` has no command that hides a chat from search,
   so only a store edited by hand was affected.
-- **The QR login is cli-core's `loginQr`, as in tg and max.** `--qr-file` is written as a temporary file created
-  with mode `0600` and renamed over the path, instead of being written and then chmodded. A terminal too narrow
-  for the code draws nothing and says to widen it or pass `--qr-file`. Without a terminal, `session start` says
-  "shows a QR code to scan — run it in a terminal, or pass --qr-file <png>", and `session start phone` says it
-  asks questions.
-- **A `--qr-file` path that cannot be written fails the link with exit 2** and says why, instead of crashing wa:
-  the code arrives inside the engine's line listener, where the write error was an uncaught exception. Built on
-  cli-core 0.347.0, whose `close()` removes only an image it wrote.
 - **`WA_READ_ONLY` refuses a write to WhatsApp before anything connects.** `messages send`, `edit`, `delete`,
   `reactions add` and the other commands that change something on WhatsApp used to connect and find the chat first;
   now they exit 5 at once, and a broken login no longer turns the refusal into a network failure. A permission level
@@ -210,18 +206,17 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
-- **Messages wa sends carry a message secret and a reporting token** (all but reactions and poll votes), as WhatsApp
-  Web, Baileys and mautrix-whatsapp send them, and each file of an album points at the album by the chat id WhatsApp
-  delivered it to (the LID when the chat was typed by its phone number). An album of a photo and a video showed on the
-  phone as two separate messages, not one album; these were the two differences from the clients that send albums.
-  Whether the phone now groups it is still to be checked on a phone.
-- **Photos, videos, voice notes, documents and stickers sent by wa carry the file's URL**, as WhatsApp's own apps and
-  mautrix-whatsapp send them. The photos and videos wa sent, as an album or a forward too, never appeared on a phone,
-  while wa's own linked devices received them; the missing URL is the most likely reason. A message now also carries
-  the time its file's key was made, as Baileys sends it, and a document with a caption goes in the wrapper WhatsApp's
-  apps use. A file stored before this fix, or one the phone uploaded again, gets a URL built from its path when it is
-  forwarded. The URL is kept with the file's keys in the store and is never printed. Engine wire change: `url` and
-  `mediaKeyTimestamp` in a file's ref. Engine protocol 41.
+- **An album wa sends shows on the phone as one album.** It showed as two messages, a photo and a video. Messages
+  wa sends now carry a message secret and a reporting token (all but reactions and poll votes), as WhatsApp Web,
+  Baileys and mautrix-whatsapp send them, and each file of an album points at the album by the chat id WhatsApp
+  delivered it to (the LID when the chat was typed by its phone number). Checked on a phone.
+- **Photos and videos wa sends show on the phone.** They never did, as an album or a forward either, while wa's own
+  linked devices received them: the message lacked the file's URL. Photos, videos, voice notes, documents and
+  stickers now carry it, as WhatsApp's own apps and mautrix-whatsapp send them. Checked on a phone. A message now
+  also carries the time its file's key was made, as Baileys sends it, and a document with a caption goes in the
+  wrapper WhatsApp's apps use. A file stored before this fix, or one the phone uploaded again, gets a URL built from
+  its path when it is forwarded. The URL is kept with the file's keys in the store and is never printed. Engine wire
+  change: `url` and `mediaKeyTimestamp` in a file's ref. Engine protocol 41.
 - **A chat id works in a query without quotes.** `chat:100000000000002@lid` and `chat:120363000000000001@g.us`
   failed with `query.unsupported-operator`, because the `@` was read as an operator; only the quoted form worked.
   Both forms work now (cli-core 0.375.0, cli-base 0.47.3).
@@ -262,8 +257,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   drawn. The line under the code says where to scan; a narrow terminal shows only the hint to widen it.
 - **A terminal too narrow for the QR code no longer asks you to scan it** (cli-core 0.350.0). `session start` and
   `setup` said where to scan in WhatsApp before the code; when the code did not fit, only the hint to widen the
-  terminal or pass `--qr-file` followed. Now the scan line comes after the drawn code or the `--qr-file` note, and a
-  narrow terminal shows only the hint.
+  terminal followed. Now the scan line comes after the drawn code, and a narrow terminal shows only the hint.
 - **A one-shot command now saves the history WhatsApp pushes to it.** WhatsApp sends a history push to a linked
   device once. A command such as `messages send` with no `serve` running received it and dropped it. It is now saved
   to the store like the messages queued for it, and the command waits up to 3 seconds at exit for a push still
@@ -306,10 +300,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   while it is offline and hands each one over once, to the next connection. When that connection was a one-shot
   command (`messages send`, `doctor --online`, an MCP session), `wa` received the messages and saved none of them. Now
   every connection saves what arrives, and the command waits for those saves before it exits (cli-core 0.343.0). A
-  history push that arrives during such a command is still not saved; keep `serve` running for those.
-- **A file your phone uploaded again stays downloadable.** `wa` keeps the new copy's address in the store, so a later
-  `messages download` of it no longer asks the phone again, and `messages forward` sends a file that opens instead of
-  the expired one. The same holds for `attachments extract --download`, `messages transcribe --local` and the
+  history push that arrives during such a command is saved too (above).
+- **A file your phone uploaded again stays downloadable, once its new copy downloaded.** On the phones tried so far
+  it does not (see the known limitation under `messages download`). `wa` keeps the new copy's address in the store,
+  so a later `messages download` of it no longer asks the phone again, and `messages forward` sends a file that opens
+  instead of the expired one. The same holds for `attachments extract --download`, `messages transcribe --local` and the
   picture index (`images embed`).
 - **A history push after linking again keeps that address.** The phone pushes each file with the address it had
   before, and the store used to save it over the new one, so the next download asked the phone again. A message the
@@ -327,12 +322,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   line adds the first download's cause and the phone's result. A phone that answered an error but still gave a path is tried as before; when that path
   does not download either, the reason is the phone's answer (`media.phone-failed`, `media.not-on-phone` or
   `media.phone-cannot-decrypt`), not `media.retry-failed`, which now means the phone said it uploaded the file.
-- **An old file your phone encrypted again downloads.** When the phone uploads an old file again, it can encrypt a
-  new copy of it under the same key, so the copy no longer matches the checksums the message carried, and the
-  download failed with `media.retry-failed` ("the encrypted file did not match its checksum"). `wa` now fetches that
-  copy once more and accepts it only when its MAC matches the message's key, which proves it was encrypted by someone
-  holding that key; a copy whose MAC does not match is still refused. The new checksums are stored with the new
-  address, so a later download and a forward use them. Not yet run against WhatsApp.
+- **A new copy that no longer matches the message's checksums is checked against the message's key before it is
+  refused.** If the phone encrypted the old file again under the same key, `wa` accepts the copy when its MAC
+  matches that key, which proves it was encrypted by someone holding the key, and stores the new checksums with the
+  new address; a copy whose MAC does not match is still refused with `media.retry-failed` ("the file did not match
+  its key"). On the phones tried so far, every new copy was encrypted under a different key and was refused this way
+  (see the known limitation under `messages download`).
 - **Node 22 no longer prints `ExperimentalWarning: SQLite is an experimental feature`** on every command that opens
   the store. Other warnings still print.
 - **`wa mcp --help` and the root help suggest `claude mcp add wa -- wa <profile> mcp`**, where they suggested a
@@ -431,8 +426,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   rest). `chats pin` pins the chat, not a message (`messages pin` does that). Archiving a chat also
   unpins it. Archive, unarchive and mark-unread name the chat's newest stored message, as `chats delete` does, and
   refuse a chat the store holds nothing of (exit 6); pin needs no message. WhatsApp's apps keep three pinned chats;
-  `wa` does not count them. A mark-unread sends no receipt; `chats mark-read` sends only a receipt, so it may not
-  clear the mark. Channels are refused. Each answers `settings.keys-missing` as `chats mute` does, and has its own
+  `wa` does not count them. A mark-unread sends no receipt; `chats mark-read` takes the mark off (see Changed).
+  Channels are refused. Each answers `settings.keys-missing` as `chats mute` does, and has its own
   permission key (`chats.archive`, `chats.unarchive`, `chats.pin`, `chats.unpin`, `chats.mark-unread`), allowed by
   default. Not yet checked live on the phone.
 - **`wa <profile> chats delete` and `chats clear`**: delete a chat, or every message in it, from this account's
@@ -486,18 +481,18 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   description or settings given with it, so a refused photo leaves the group unchanged, and a `--title` over 25
   characters is refused before the photo is set. If the rest of the change then fails, the error begins "the photo
   was set", keeping its code. It runs under the same permission and hourly limit as the rest of `chats update`.
-  Removing a group's photo is not built.
+  `--remove-photo` takes it away (above).
 - **A group says which WhatsApp community it is in.** A group linked to a community answers with `parent_chat_id`,
   the community's id; the community itself is a group with `provider_metadata.community: true`. They come with the
   group as WhatsApp gives it: the answers of `chats update`, `chats create` and `chats join`. `wa` also reads them
-  from the history the phone pushes, so the local store keeps them and `chats list` and `chats show` show them; a
-  group taken out of its community keeps naming it there. Listing a community's groups, and linking or unlinking
-  one, are not built.
+  from the history the phone pushes, so the local store keeps them and `chats list` and `chats show` show them, and
+  follows WhatsApp's notices that a group joined or left a community (see Fixed). Listing a community's groups, and
+  linking or unlinking one, are not built.
 - **A photo and a video in one send go as an album** (`messages send --photo … --file clip.mp4`): one message that
   announces the album, then each file tied to it. The text is the photo's caption and the answer is the photo's
   message, under the send id. A repeat with the same `--operation-id` after an unknown outcome sends the same message
   ids, which WhatsApp takes as the same messages, as it does for a single send. A document beside a photo is still
-  refused. Not yet checked against WhatsApp's apps.
+  refused. Checked on a phone: it shows as one album.
 - **A sent photo carries its preview**: the chat shows a small blurred picture before the download. Not yet for a
   video or a WEBP photo.
 - **`wa <profile> metadata get` and `metadata refresh`** read a group's title and description into the store for
