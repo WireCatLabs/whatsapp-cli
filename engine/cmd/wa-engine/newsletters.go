@@ -10,7 +10,6 @@ import (
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
-	"google.golang.org/protobuf/proto"
 )
 
 // WhatsApp channels are whatsmeow's newsletters. Unlike chats, their posts live on WhatsApp's servers, so they are
@@ -354,22 +353,7 @@ func (e *engine) postToChannel(to types.JID, req request, s *staged) (*waMessage
 // the plain file's hash, and no key.
 func channelFile(s *staged, uploaded whatsmeow.UploadResponse, caption string) (*waE2E.Message, error) {
 	s.described.Size = uploaded.FileLength
-	s.described.Ref = &waMediaRef{Media: s.media, DirectPath: uploaded.DirectPath, FileSHA256: uploaded.FileSHA256}
-	content, err := contentOf(s.described, caption, nil)
-	if err != nil {
-		return nil, err
-	}
-	url := proto.String(uploaded.URL)
-	switch {
-	case uploaded.URL == "":
-	case content.ImageMessage != nil:
-		content.ImageMessage.URL = url
-	case content.VideoMessage != nil:
-		content.VideoMessage.URL = url
-	case content.AudioMessage != nil:
-		content.AudioMessage.URL = url
-	case content.DocumentMessage != nil:
-		content.DocumentMessage.URL = url
-	}
-	return content, nil
+	s.described.Ref = &waMediaRef{Media: s.media, DirectPath: uploaded.DirectPath, FileSHA256: uploaded.FileSHA256,
+		URL: uploaded.URL}
+	return contentOf(s.described, caption, nil)
 }
