@@ -69,14 +69,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   levels is, with exit 5. A delete
   of several messages that fails partway, with or without `--for-everyone`, now names the ones already deleted and
   is not marked safe to retry: delete only the rest. A message you delete for yourself on the phone leaves the
-  local store the same way while `serve` or `watch` runs. Not yet checked live on the phone.
+  local store the same way while `serve` or `watch` runs. Checked live on the phone for your own message in your
+  own chat; a message in a group or in a one-to-one chat with someone else, and a delete made on the phone, are not
+  checked yet.
 - **`messages download` asks your phone for a file WhatsApp no longer keeps**, as WhatsApp's apps do, instead of
   answering `not_found` (exit 6) at once. It waits up to 20 seconds for the phone to upload it again and fetches the
   new copy. A phone that does not answer ends the download with `timeout` (exit 9); exit 6 now means the phone no
   longer has the file either. A script that read exit 6 as "expired" must also expect exit 9, and give a slow phone a
   longer `--timeout`. A new copy that then fails to download is `provider_error` (exit 11, `media.retry-failed`),
-  whatever the first failure's code was. The new copy's address is not kept, so each later download asks again, and a
-  forward of such a file may still reach the recipient as one that will not open. Not yet run against WhatsApp.
+  whatever the first failure's code was. The store keeps the new copy's address, so a later download or forward
+  uses it and does not ask the phone again (see Fixed). Not yet run against WhatsApp.
 - **`messages forward` sends a stored place or contact card, where it used to refuse it.** The store now keeps a
   place's coordinates, name and address, and a contact card itself, next to a file's keys, where no answer shows
   them. A place or card stored before this, a live location and several cards in one message are still refused.

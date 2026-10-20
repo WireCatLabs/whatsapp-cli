@@ -226,6 +226,10 @@ Open work, most important first. The plan in flight is
      engine has no pure-Go one (no cgo, no ffmpeg), so a video goes without one. A WEBP photo too: the standard
      library does not decode WEBP. The preview ignores a JPEG's EXIF orientation, so a phone photo taken on its side
      may show a turned preview until the photo downloads.
+   - **Reactions others send are not stored.** The engine drops an incoming `ReactionMessage` (`textOf` in
+     `engine/cmd/wa-engine/convert.go` treats it as not a message), and the adapter maps every message with
+     `reactions: null`, so neither `serve` nor a history push saves one. tg-cli stores live reactions. Planned after
+     0.2.0.
    - **Message pins**: a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned.
      A 24-hour pin and an unpin in the own chat show on the phone (2026-10-18). Open: a group addressed by phone
      numbers, and that a 24-hour pin ends on the phone.

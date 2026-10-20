@@ -41,4 +41,4 @@ mv "$tmp" "$report"
 git -C docs_ai add "releases/whatsapp-cli/$version.md"
 git -C docs_ai commit -q -m "docs(release): sign off whatsapp-cli $version at ${head%"${head#???????}"}"
 git -C docs_ai push -q
-echo "signed $report for $head — now run: bin/release --local"
+echo "signed $report for $head — now run: bin/release (bin/release --local only if release.yml cannot publish)"

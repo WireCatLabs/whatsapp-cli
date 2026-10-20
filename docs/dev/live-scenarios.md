@@ -7,8 +7,9 @@ done. The rules for running them are shared with tg-cli and max-cli: cli-core's
 [RELEASING.md, "Live checks"](https://github.com/WireCatLabs/cli-core/blob/main/docs/dev/RELEASING.md#live-checks).
 
 **Nothing on this page names a real chat, person, number or id.** This repository is public. The scenarios name
-roles. The owner's profile name, ids and the dated results live in `docs_ai/live-cast.md` of the main checkout,
-which is the private repository and never part of this one.
+roles. The owner pastes the results to an agent, who records them in [BACKLOG.md](BACKLOG.md) and in the release
+report, `docs_ai/releases/whatsapp-cli/<version>.md` of the main checkout. `docs_ai/` is the private repository and
+never part of this one.
 
 ## The rules on WhatsApp
 
@@ -237,7 +238,7 @@ line a yes settles:
 | pin, unpin | "Message pins": the pin and unpin in the own chat. A group addressed by phone numbers stays open |
 | star, unstar | "Live check of starring": the owner's own message in the own chat (W7). Someone else's message, in a group or a one-to-one chat, stays open |
 | chats pin, unpin, archive, unarchive, mark-unread | "Live checks of `chats archive`, `unarchive`, `pin`, `unpin` and `mark-unread`": a one-to-one chat addressed by its LID. A fourth pinned chat, pinning an archived chat, and an archived chat that a newer message brings back stay open |
-| mark-read | "`chats mark-read` after a `mark-unread`", for the own chat only. A no is expected: without the read patch, `wa` cannot undo a mark-unread there. Whether a receipt in a chat with someone else clears it stays open |
+| mark-read | "`chats mark-read` after a `mark-unread`", for the own chat only. Yes is the pass: `mark-read` sends the read patch before the receipt. Whether a receipt in a chat with someone else clears it stays open |
 | delete for you only | "Live check of delete for the owner alone": the owner's own message. Someone else's message in a group, a one-to-one chat with another person, and the saved files stay open |
 | sticker, size, shape | "Stickers from a file: live check and the limits": the send to the own chat. A shape yes on a non-square file answers whether a phone shows one well; a still sticker over 100 KB answers the larger still sticker; an animated file, whether it plays without `isAnimated` |
 
