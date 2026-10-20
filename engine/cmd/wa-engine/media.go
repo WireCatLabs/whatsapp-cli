@@ -500,7 +500,7 @@ func (e *engine) download(req request) (*refreshed, error) {
 	err = e.fetch(ref, media, file)
 	// A channel's files have no key, and the phone is asked by the message's key; without both, the expiry stands.
 	if _, keyErr := targetOf(req); expired(err) && len(ref.MediaKey) > 0 && keyErr == nil {
-		renewed, err = e.fetchAgain(req, ref, media, file)
+		renewed, err = e.fetchAgain(req, ref, media, file, err)
 	}
 	closeErr := file.Close()
 	if err == nil {
