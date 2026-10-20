@@ -203,10 +203,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Fixed
 
 - **A group the owner left is found by its name or any id when a command reads its kept history** (cli-core
-  0.368.0): `store export`, `store status`, `messages thread`, a search's `--chat` and `chat:`, `metadata get`,
-  members, stats, events, tags, tasks, pictures and attachments, as `chats show` and `messages list` already did.
-  Before, a left group named by anything but its numeric id was refused. Tracking a left group and `store gaps plan`
-  now refuse it with "you left chat <id>" by a numeric id too, which used to pass as typed.
+  0.368.0): `store export` (also `--output-dir` with named chats), `store status`, `messages context --thread`,
+  `messages evidence`, a search's `--chat` and `chat:`, `metadata get`, `chats members`, `chats events`,
+  `chats documents`, stats, tags, tasks, conversations, embeddings, pictures and attachments, as `chats show` and
+  `messages list` already did. Before, these refused a left group by every name and id. `chats tracking add` and
+  `store gaps plan` still refuse it.
 - **More of `serve`'s warnings carry a code in its log**, so a script can match the code instead of the sentence: a
   flood wait (`flood_wait`) or a long pace wait (`pace_wait`), both with `counts.seconds`, a held account
   (`account_frozen`, `account_limited`, `account_banned`), a wait that could not be remembered
