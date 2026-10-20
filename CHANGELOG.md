@@ -333,9 +333,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   history: its id, title, membership, scope, search visibility and parent, one row per change. A read by an old id
   follows it within the account; a chat the account left is still refused (cli-core 0.366.0). Only a move the store
   recorded is followed: one `serve` or `watch` makes from now on, or one they repeat. The engine repeats the moves of
-  the last 30 days at each start, so those are recorded at the first start after the upgrade. An older move, and a
-  number that was never a stored chat, still read as typed. The store moves to version 25 the first time this
-  version opens it. That cannot be undone, but `wa` 0.1.0 and older tg and max builds still open it.
+  the last 30 days at each start, so those are recorded at the first `serve` or `watch` start after the upgrade. An
+  older move, and a number that was never a stored chat, still read as typed. The store moves to version 25 the
+  first time this version opens it. That cannot be undone, so take a copy first (`wa <profile> store backup <file>`).
+  `wa` 0.1.0 and older tg and max builds still open the upgraded store and write to it.
 - **`wa <profile> store clear --left` lists the chats it would delete**, by id, title and message count, when it
   refuses without `--allow-dangerous`, and after deleting lists what it deleted; `--dry-run` lists them all and
   deletes nothing (cli-core 0.353.0).
