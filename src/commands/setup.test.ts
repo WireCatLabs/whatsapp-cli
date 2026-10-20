@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { PassThrough, Readable } from "node:stream"
 import { stripVTControlCharacters } from "node:util"
-import { CliError, captureStreams } from "@wirecat/cli-base"
+import { captureStreams } from "@wirecat/cli-base"
 import { installSkill } from "@wirecat/cli-base/skill"
 import { plainQr } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
@@ -17,23 +17,12 @@ import { BAN_WARNING } from "./session.js"
 const input = vi.hoisted(() => ({
   answers: [] as string[],
   prompts: [] as string[],
-  cancel: false,
-  wait: false,
-  waiting: () => {},
-  signal: undefined as AbortSignal | undefined,
 }))
 
 vi.mock("@wirecat/cli-core", async (original) => ({
   ...(await original<typeof import("@wirecat/cli-core")>()),
-  readSecret: async (prompt: string, options: { signal?: AbortSignal }) => {
+  readSecret: async (prompt: string) => {
     input.prompts.push(prompt)
-    if (input.cancel) throw new CliError("cancelled", "cancelled")
-    if (input.wait)
-      return new Promise<string>((_resolve, reject) => {
-        input.signal = options.signal
-        options.signal?.addEventListener("abort", () => reject(new CliError("cancelled", "cancelled")), { once: true })
-        input.waiting()
-      })
     return input.answers.shift() ?? ""
   },
 }))
@@ -62,10 +51,6 @@ beforeEach(() => {
   }
   input.answers = []
   input.prompts = []
-  input.cancel = false
-  input.wait = false
-  input.waiting = () => {}
-  input.signal = undefined
   vi.mocked(installSkill).mockClear()
 })
 afterEach(() => vi.useRealTimers())
@@ -75,6 +60,14 @@ const linkedDevice = (profile = "default") => {
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, "")
   return path
+}
+const prompted = () => {
+  const stderr = new PassThrough()
+  let text = ""
+  stderr.on("data", (chunk) => {
+    text += String(chunk)
+  })
+  return { stderr, text: () => stripVTControlCharacters(text) }
 }
 const headless = () => Object.assign(Readable.from([]), { isTTY: false })
 const terminal = (typed = "") => {
@@ -195,10 +188,10 @@ describe("wa setup", () => {
 
   it("asks a person for their agent and prints a readable completion, each step a heading", async () => {
     linkedDevice()
-    input.answers = [" GEMINI "]
-    const result = await execute(["setup"], { tty: true, stdin: terminal() })
+    const asked = prompted()
+    const result = await execute(["setup"], { tty: true, stdin: terminal(" GEMINI \n"), stderr: asked.stderr })
     expect(result.code).toBe(0)
-    expect(input.prompts).toEqual([expect.stringContaining("Agent")])
+    expect(asked.text()).toContain("      Agent [codex/cursor/claude/gemini/all/none] (none): ")
     const out = stripVTControlCharacters(result.stdout)
     expect(out).toContain("WhatsApp is ready")
     expect(out).toContain("installed for gemini")
@@ -209,7 +202,7 @@ describe("wa setup", () => {
 
   it("an empty agent choice skips installation", async () => {
     linkedDevice()
-    const result = await execute(["setup"], { tty: true, stdin: terminal() })
+    const result = await execute(["setup"], { tty: true, stdin: terminal("\n") })
     expect(result.code).toBe(0)
     expect(stripVTControlCharacters(result.stdout)).toMatch(/Agent skill +skipped/)
     expect(installSkill).not.toHaveBeenCalled()
@@ -219,15 +212,13 @@ describe("wa setup", () => {
     linkedDevice()
     const result = await execute(["setup", "--json"], { stdin: terminal() })
     expect(result.code).toBe(0)
-    expect(input.prompts).toEqual([])
     expect(installSkill).not.toHaveBeenCalled()
     expect(JSON.parse(result.stdout).item.next.mcp).toBe("wa default mcp config")
   })
 
   it("rejects an unknown agent choice without installing a skill", async () => {
     linkedDevice()
-    input.answers = ["unknown"]
-    const result = await execute(["setup"], { tty: true, stdin: terminal() })
+    const result = await execute(["setup"], { tty: true, stdin: terminal("unknown\n") })
     expect(result.code).toBe(2)
     expect(result.stdout).toBe("")
     expect(installSkill).not.toHaveBeenCalled()
@@ -336,24 +327,36 @@ describe("wa setup", () => {
   })
 
   it("gives the steps after the history wait a deadline of their own", async () => {
-    input.wait = true
+    const stdin = terminal()
+    const asked = prompted()
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
-    const running = execute(["setup", "--timeout", "2s"], { tty: true, stdin: terminal() }, unlinked())
-    for (let step = 0; step < 300 && !input.signal; step++) await vi.advanceTimersByTimeAsync(10)
-    expect(input.signal?.aborted).toBe(false)
+    let settled = false
+    const running = execute(
+      ["setup", "--timeout", "2s"],
+      { tty: true, stdin, stderr: asked.stderr },
+      unlinked(),
+    ).finally(() => {
+      settled = true
+    })
+    for (let step = 0; step < 300 && stdin.listenerCount("data") === 0; step++) await vi.advanceTimersByTimeAsync(10)
+    expect(stdin.listenerCount("data")).toBeGreaterThan(0)
+    expect(settled).toBe(false)
+    expect(asked.text()).toContain("Agent [codex/cursor/claude/gemini/all/none]")
+    const listening = stdin.listenerCount("data")
     await vi.advanceTimersByTimeAsync(2_100)
     const result = await running
     expect(result.code).toBe(9)
     expect(result.stderr).toContain("did not finish within 2000ms")
-    expect(input.signal?.aborted).toBe(true)
+    expect(stdin.listenerCount("data")).toBe(listening - 1)
     expect(result.engine.closed).toBe(true)
     expect(installSkill).not.toHaveBeenCalled()
   })
 
   it("cancels cleanly at the agent choice and keeps the device", async () => {
     const path = linkedDevice()
-    input.cancel = true
-    const result = await execute(["setup"], { tty: true, stdin: terminal() })
+    const stdin = terminal()
+    stdin.end()
+    const result = await execute(["setup"], { tty: true, stdin })
     expect(result.code).not.toBe(0)
     expect(result.stdout).toBe("")
     expect(existsSync(path)).toBe(true)
@@ -375,18 +378,18 @@ describe("wa setup", () => {
 
   it("cancels a pending agent choice on the whole-command deadline", async () => {
     linkedDevice()
-    input.wait = true
-    const asked = new Promise<void>((resolve) => {
-      input.waiting = resolve
-    })
+    const stdin = terminal()
+    const asked = prompted()
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
-    const running = execute(["setup", "--timeout", "100ms"], { tty: true, stdin: terminal() })
-    await asked
+    const running = execute(["setup", "--timeout", "100ms"], { tty: true, stdin, stderr: asked.stderr })
+    for (let step = 0; step < 300 && stdin.listenerCount("data") === 0; step++) await vi.advanceTimersByTimeAsync(10)
+    expect(asked.text()).toContain("Agent [codex/cursor/claude/gemini/all/none]")
+    const listening = stdin.listenerCount("data")
     await vi.advanceTimersByTimeAsync(1_100)
     const result = await running
     expect(result.code).not.toBe(0)
     expect(result.stderr).toContain("did not finish within 100ms")
-    expect(input.signal?.aborted).toBe(true)
+    expect(stdin.listenerCount("data")).toBe(listening - 1)
     expect(installSkill).not.toHaveBeenCalled()
   })
 
