@@ -216,7 +216,8 @@ or `.mov` goes as a video unless `--as-file`. A `--photo` and a video `--file` t
 the photo's caption. `--sticker-file` sends a `.webp` of at most 500 KiB as a sticker, alone, with no text: WhatsApp
 has no sticker sets to pick one from by id, so there is no `--sticker`. Photos, videos, voice notes, files and stickers that reach the local store
 can be saved and forwarded later, since the store keeps what WhatsApp needs to fetch them again; WhatsApp keeps a file
-for a limited time, and a download of one it no longer keeps asks your phone to upload it again. A place or a
+for a limited time, and a download of one it no longer keeps asks your phone to upload it again, which does not
+work yet ([not in wa yet](#not-in-wa-yet)). A place or a
 contact card is kept too, so it can be forwarded; neither is a file to save. WhatsApp has no speech
 recognition of its own, so `transcribe` uses a model on this machine (`wa models audio list`). What is kept, what
 can be fetched again and how to search the text inside files: [file attachments](attachments.md).
@@ -270,7 +271,9 @@ Not built yet:
 - listing a community's groups, and adding a group to one or taking it out ([communities](groups.md#communities));
 - where an invite link leads, without joining (`chats inspect`);
 - the list of linked devices, and ending the others (`account sessions`);
-- making a channel (`chats create --channel`).
+- making a channel (`chats create --channel`);
+- downloading a file WhatsApp no longer keeps: the phone uploads it again under a key it does not share, so the
+  download ends with `media.retry-failed` and saves nothing ([file attachments](attachments.md)).
 
 WhatsApp has no such thing, or keeps it on the phone:
 

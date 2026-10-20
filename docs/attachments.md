@@ -71,6 +71,11 @@ WhatsApp keeps a file on its servers only for a limited time. When a download fi
 to upload it again, as WhatsApp's own apps do, and fetches the new copy. Your phone must be online and still hold the
 file: one deleted from the phone is gone for good.
 
+**Known limitation: an old file does not download yet.** On the phones tried, the phone uploads the file again but
+encrypts the new copy with a new key that it does not send to linked devices, so `wa` cannot read it. The download
+ends with `media.retry-failed` ("the phone uploaded this file again, but the new copy did not download") and saves
+nothing, rather than a broken file. Open the file on the phone, or ask the sender to send it again.
+
 ## Download
 
 The message id `3EB0A1B2C3D4E5F6A7B8` on this page is made up; take a real one from `messages list -v`.
@@ -82,7 +87,8 @@ wa personal messages download "Book club" --all --output-dir ./book-club
 
 A download fetches the file with the keys in the store; the message must be there, so keep `serve` running. A place,
 a contact card or a file without keys is named in `skipped` and nothing is saved for it. A file WhatsApp no longer
-keeps is asked of your phone again. The phone has about 20 seconds to answer, so with a slow phone give the command a
+keeps is asked of your phone again, and so far fails ([known limitation](#what-the-store-keeps)). The phone has
+about 20 seconds to answer, so with a slow phone give the command a
 longer `--timeout`. The store keeps the new copy's address, so a later download and `messages forward` use it
 without asking the phone again, also after you link the device again and the phone pushes the old address. If the phone no longer has the file, the download ends with exit `6`; ask the sender
 to send it again. `--all` saves every file of the chat, newest first; run it again to continue where it stopped. While
