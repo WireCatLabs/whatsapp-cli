@@ -2,12 +2,13 @@ import { accessSync, constants, existsSync, mkdirSync } from "node:fs"
 import { CliError, indent, renderPretty, singleLine } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { installSkill, type SkillTarget } from "@wirecat/cli-base/skill"
-import { readSecret } from "@wirecat/cli-core"
 import {
+  AGENTS,
+  type Agent,
+  agentFor,
   asFirstWord,
   commandWords,
   environmentOf,
-  inputPolicy,
   logsInOrOut,
   type MessengerContext,
   messengerContext,
@@ -16,6 +17,7 @@ import {
   refuseCommandName,
   rootOf,
   runtime,
+  screenFor,
   secretInputOf,
 } from "@wirecat/cli-core/cli"
 import { levelFor } from "@wirecat/cli-core/sends"
@@ -26,9 +28,6 @@ import { pathsFor, privateStore } from "../paths.js"
 import { installer, PACKAGE } from "../update.js"
 import { startSession } from "./session.js"
 
-const AGENTS = ["none", "codex", "cursor", "claude", "gemini", "all"] as const
-type Agent = (typeof AGENTS)[number]
-
 type Options = {
   agent?: Agent
   method: "qr" | "phone"
@@ -36,50 +35,6 @@ type Options = {
 
 const STEPS = 5
 const chatCount = (count: number) => `${count} ${count === 1 ? "chat" : "chats"}`
-const DETAIL = 6
-
-/**
- * A person sees each step as a heading with its details indented under it. `--quiet` hides both, as it
- * hides notes; a machine mode keeps the plain notes it always had, since stderr there is a log.
- */
-const screenFor = (context: MessengerContext, quiet: boolean) => {
-  const person = context.format === "pretty"
-  const say = (text: string) => {
-    if (!quiet) context.streams.diagnostic(text)
-  }
-  return {
-    step: (index: number, title: string) =>
-      person ? say(`\n[${index}/${STEPS}] ${title}`) : context.renderer.note(`${index}/${STEPS} — ${title}`),
-    detail: (text: string) => (person ? say(indent(text, DETAIL)) : context.renderer.note(text)),
-    title: (text: string) => (person ? say(text) : context.renderer.note(text)),
-    indent: person ? DETAIL : 0,
-  }
-}
-
-const agentFor = async (
-  command: Command,
-  context: MessengerContext,
-  given: Agent | undefined,
-  pad: number,
-  signal: AbortSignal,
-): Promise<Agent> => {
-  if (given) return given
-  if (context.format !== "pretty" || !context.stdin.isTTY || inputPolicy(context.stdin).noInput) return "none"
-  const answer =
-    (
-      await readSecret(`${" ".repeat(pad)}Agent [codex/cursor/claude/gemini/all/none] (none): `, {
-        ...secretInputOf(command),
-        echo: true,
-        signal,
-      })
-    )
-      .trim()
-      .toLowerCase() || "none"
-  const agent = AGENTS.find((known) => known === answer)
-  if (agent === undefined)
-    throw new CliError("validation_error", `unknown agent — choose ${AGENTS.join(", ")} with --agent`)
-  return agent
-}
 
 export const setupCommand = () =>
   annotate(logsInOrOut(new Command("setup")), {
@@ -147,7 +102,7 @@ export const setupCommand = () =>
           : prefix
       // The command's own signal, not a phase's: Ctrl+C during the history wait ends the wait, not setup.
       const signal = environment.commandSignal ?? new AbortController().signal
-      const screen = screenFor(context, this.optsWithGlobals().quiet === true)
+      const screen = screenFor(context, this.optsWithGlobals().quiet === true, STEPS)
       const linkContext: MessengerContext = { ...context, renderer: { ...context.renderer, note: screen.detail } }
       screen.title(
         `WhatsApp setup — profile ${context.profile}. Allow about 5 minutes; the phone sends recent history once.`,
@@ -195,7 +150,7 @@ export const setupCommand = () =>
       if (chats.items.length === 0) screen.detail(`nothing kept yet — \`${command}server install\` starts receiving`)
 
       screen.step(5, "Agent")
-      const agent = await agentFor(this, context, options.agent, screen.indent, signal)
+      const agent = await agentFor(context, options.agent, screen.indent, { ...secretInputOf(this), signal })
       screen.detail(agent === "none" ? "✓ no agent skill installed" : `✓ ${agent}`)
       const targets: readonly SkillTarget[] =
         agent === "all" ? ["claude", "agents"] : [agent === "claude" ? "claude" : "agents"]
