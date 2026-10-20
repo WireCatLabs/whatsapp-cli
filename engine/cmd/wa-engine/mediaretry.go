@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -178,16 +179,16 @@ func refetchFailure(result waMmsRetry.MediaRetryNotification_ResultType, samePat
 // WhatsApp's apps send when a file will not download, and only a download the owner asked for reaches it.
 func (e *engine) reupload(
 	req request, ref *waMediaRef,
-) (string, waMmsRetry.MediaRetryNotification_ResultType, error) {
+) (string, waMmsRetry.MediaRetryNotification_ResultType, bool, error) {
 	t, err := targetOf(req)
 	if err != nil {
-		return "", 0, err
+		return "", 0, false, err
 	}
 	sender := e.quotedSender(t.chat, quote{FromMe: t.mine(), Sender: req.Sender})
 	answer := e.retries.wait(t.id)
 	defer e.retries.forget(t.id, answer)
 	if err := e.client.SendMediaRetryReceipt(e.ctx, retryInfo(t, sender), ref.MediaKey); err != nil {
-		return "", 0, err
+		return "", 0, false, err
 	}
 	select {
 	case evt := <-answer:
@@ -195,11 +196,15 @@ func (e *engine) reupload(
 		if errors.Is(err, phoneAnswerUnreadable) && evt.Error != nil {
 			e.client.Log.Warnf("media.phone-answer-unreadable: WhatsApp answered error code %d", evt.Error.Code)
 		}
-		return path, result, err
+		hasSecret := false
+		if notice, decryptErr := whatsmeow.DecryptMediaRetryNotification(evt, ref.MediaKey); decryptErr == nil {
+			hasSecret = len(notice.GetMessageSecret()) > 0
+		}
+		return path, result, hasSecret, err
 	case <-time.After(retryWait):
-		return "", 0, phoneTimeout
+		return "", 0, false, phoneTimeout
 	case <-e.ctx.Done():
-		return "", 0, retryStopped
+		return "", 0, false, retryStopped
 	}
 }
 
@@ -220,7 +225,11 @@ type refreshed struct {
 func (e *engine) fetchAgain(
 	req request, ref *waMediaRef, media whatsmeow.MediaType, file *os.File, first error,
 ) (*refreshed, error) {
-	path, result, err := e.reupload(req, ref)
+	path, result, hasSecret, err := e.reupload(req, ref)
+	secretNote := "carried no message secret"
+	if hasSecret {
+		secretNote = "carried a message secret"
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -250,11 +259,12 @@ func (e *engine) fetchAgain(
 		return nil, err
 	}
 	if err := e.client.DownloadMediaWithPathToFile(e.ctx, path, nil, nil, nil, media, "", true, file); err != nil {
-		return fail(downloadCause(err))
+		return fail("the copy without checksums: " + downloadCause(err))
 	}
 	renewed, err := openReencrypted(file, ref.MediaKey, media)
 	if err != nil {
-		return fail(downloadCause(err))
+		return fail("the copy without checksums: " + downloadCause(err) + "; " + shapeOf(file) + "; " +
+			probeKeys(file, ref.MediaKey, ref.FileEncSHA256, media) + "; the phone's answer " + secretNote)
 	}
 	renewed.DirectPath = path
 	e.client.Log.Warnf("media.reuploaded: the phone encrypted a file WhatsApp no longer kept again, and the new copy " +
@@ -267,6 +277,74 @@ func (e *engine) fetchAgain(
 // the file's MAC still proves the copy was made by someone holding the stored key.
 func otherChecksums(err error) bool {
 	return errors.Is(err, whatsmeow.ErrInvalidMediaEncSHA256) || errors.Is(err, whatsmeow.ErrInvalidMediaSHA256)
+}
+
+// shapeOf names what a copy that failed its key holds, in fixed words: its size and what it starts like, never a byte
+// of it. An encrypted file is whole 16-byte blocks and a 10-byte MAC; a file the phone uploaded unencrypted starts like
+// one.
+func shapeOf(file *os.File) string {
+	info, err := file.Stat()
+	if err != nil {
+		return "its size is unknown"
+	}
+	head := make([]byte, 12)
+	n, _ := file.ReadAt(head, 0)
+	head = head[:n]
+	like := "other bytes"
+	switch {
+	case bytes.HasPrefix(head, []byte{0xff, 0xd8, 0xff}):
+		like = "a JPEG"
+	case len(head) >= 8 && string(head[4:8]) == "ftyp":
+		like = "an MP4"
+	case bytes.HasPrefix(head, []byte("RIFF")):
+		like = "a WebP"
+	case n > 0 && (head[0] == '<' || head[0] == '{'):
+		like = "text"
+	}
+	fits := "does not fit"
+	if size := info.Size() - mediaMACLength; size > 0 && size%16 == 0 {
+		fits = "fits"
+	}
+	return fmt.Sprintf("the copy is %d bytes, %s an encrypted file's length, and starts like %s", info.Size(), fits, like)
+}
+
+// probeKeys says, in fixed words, which file type's keys the copy's MAC matches under the stored media key, and what
+// the copy decrypts to under the asked type's keys regardless.
+func probeKeys(file *os.File, mediaKey, storedEnc []byte, asked whatsmeow.MediaType) string {
+	raw, err := io.ReadAll(io.NewSectionReader(file, 0, 1<<30))
+	if err != nil || len(raw) <= mediaMACLength {
+		return "the copy could not be probed"
+	}
+	body, mac := raw[:len(raw)-mediaMACLength], raw[len(raw)-mediaMACLength:]
+	matched := "no file type's keys"
+	for _, kind := range []whatsmeow.MediaType{whatsmeow.MediaImage, whatsmeow.MediaVideo, whatsmeow.MediaAudio,
+		whatsmeow.MediaDocument, whatsmeow.MediaHistory, whatsmeow.MediaAppState, whatsmeow.MediaStickerPack,
+		whatsmeow.MediaLinkThumbnail} {
+		keys := hkdfutil.SHA256(mediaKey, nil, []byte(kind), 112)
+		signed := hmac.New(sha256.New, keys[48:80])
+		signed.Write(keys[:16])
+		signed.Write(body)
+		if hmac.Equal(signed.Sum(nil)[:mediaMACLength], mac) {
+			matched = string(kind)
+			break
+		}
+	}
+	keys := hkdfutil.SHA256(mediaKey, nil, []byte(asked), 112)
+	plain, err := cbcutil.Decrypt(keys[16:48], keys[:16], body)
+	decrypts := "does not decrypt (bad padding)"
+	switch {
+	case err != nil:
+	case bytes.HasPrefix(plain, []byte{0xff, 0xd8, 0xff}):
+		decrypts = "decrypts to a JPEG"
+	default:
+		decrypts = "decrypts to other bytes"
+	}
+	same := "differs from"
+	if whole := sha256.Sum256(raw); hmac.Equal(whole[:], storedEnc) {
+		same = "is"
+	}
+	return "its MAC matches " + matched + "; under the stored key it " + decrypts + "; the copy " + same +
+		" the original encrypted file"
 }
 
 func rewind(file *os.File) error {

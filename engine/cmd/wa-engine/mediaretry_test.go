@@ -346,3 +346,29 @@ func TestOnlyACopyFailingTheStoredChecksumsIsOpenedUnderTheKey(t *testing.T) {
 		}
 	}
 }
+
+func TestACopyThatFailsItsKeyIsDescribedBySizeAndStartNeverByItsBytes(t *testing.T) {
+	for _, tc := range []struct {
+		data []byte
+		want string
+	}{
+		{append([]byte{0xff, 0xd8, 0xff, 0xe0}, make([]byte, 96)...),
+			"the copy is 100 bytes, does not fit an encrypted file's length, and starts like a JPEG"},
+		{append([]byte{0x13, 0x37}, make([]byte, 40)...),
+			"the copy is 42 bytes, fits an encrypted file's length, and starts like other bytes"},
+		{[]byte("<html>SECRET-MARKER</html>"),
+			"the copy is 26 bytes, fits an encrypted file's length, and starts like text"},
+	} {
+		file, err := os.CreateTemp(t.TempDir(), "copy")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := file.Write(tc.data); err != nil {
+			t.Fatal(err)
+		}
+		if got := shapeOf(file); got != tc.want {
+			t.Errorf("shape %q, want %q", got, tc.want)
+		}
+		_ = file.Close()
+	}
+}
