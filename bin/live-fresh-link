@@ -11,8 +11,9 @@
 # result block holds counts only. It leaves the device linked and says how to unlink it.
 #
 # --finish is for a profile this script linked whose session start ended before the history came: it connects that
-# device once, listens with `watch`, and counts what arrived. The messages WhatsApp queued for that device land in the
-# throwaway store too, so it is never for a profile in use.
+# device once, listens with `watch`, and counts what arrived. It needs the profile's device keys, not an account
+# record, since a link that ended early may not have saved one; the connection saves it. The messages WhatsApp queued
+# for that device land in the throwaway store too, so it is never for a profile in use.
 # shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
 set -eu
 
@@ -31,11 +32,8 @@ has_device() {
   wa_json "$profile" doctor --timeout 30s | json 'd.item.whatsapp.device.exists'
 }
 if [ "$mode" = --finish ]; then
-  case " $known " in
-    *" $profile "*) ;;
-    *) die "no profile $profile here — profiles here: ${known:-none}" ;;
-  esac
-  [ "$(has_device)" = true ] || die "profile $profile has no device keys — run $(basename -- "$0") $profile to link it"
+  [ "$(has_device)" = true ] ||
+    die "profile $profile has no device keys — link it with $(basename -- "$0") $profile; logged in: ${known:-none}"
   ! lock_held "$profile" || die "something holds profile $profile's device, serve perhaps — --finish is not for one in use"
   cat <<EOF
 
