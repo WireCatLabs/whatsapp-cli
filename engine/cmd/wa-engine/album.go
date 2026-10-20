@@ -49,7 +49,8 @@ func (e *engine) sendAlbum(req request) (*waMessage, error) {
 		}
 	}
 	parent, ids := albumIDs(req.SendID, len(files))
-	if _, err := e.client.SendMessage(e.ctx, to, albumOf(files), whatsmeow.SendRequestExtra{ID: parent}); err != nil {
+	announced, err := e.client.SendMessage(e.ctx, to, albumOf(files), whatsmeow.SendRequestExtra{ID: parent})
+	if err != nil {
 		return nil, err
 	}
 	var first *waMessage
@@ -62,7 +63,7 @@ func (e *engine) sendAlbum(req request) (*waMessage, error) {
 		if err != nil {
 			return nil, partly(err)
 		}
-		content.MessageContextInfo = inAlbum(to, parent)
+		content.MessageContextInfo = inAlbum(announced.Chat, parent)
 		sent, err := e.post(to, whatsmeow.SendRequestExtra{ID: ids[i]}, content, caption, replyTo)
 		if err != nil {
 			return nil, partly(err)
@@ -102,6 +103,7 @@ func albumOf(files []*staged) *waE2E.Message {
 		ExpectedVideoCount: nonZero(videos)}}
 }
 
+// inAlbum keys the parent by the chat whatsmeow actually sent it to, which is the LID when wa was given a phone number.
 func inAlbum(to types.JID, parent string) *waE2E.MessageContextInfo {
 	return &waE2E.MessageContextInfo{MessageAssociation: &waE2E.MessageAssociation{
 		AssociationType:  waE2E.MessageAssociation_MEDIA_ALBUM.Enum(),
