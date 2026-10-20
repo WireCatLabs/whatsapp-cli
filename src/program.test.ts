@@ -7,6 +7,7 @@ import { afterAll, describe, expect, it, vi } from "vitest"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { VERSION } from "./version.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 
@@ -36,7 +37,7 @@ const pushedThenStopped = (controller: AbortController) => (): FakeEngine => {
 describe("wa", () => {
   it("prints its version", async () => {
     const result = await wa(["--version"])
-    expect(result).toMatchObject({ code: 0, stdout: "0.1.0" })
+    expect(result).toMatchObject({ code: 0, stdout: VERSION })
   })
 
   it("keeps every command's options and the full help behind help options and --help-all", async () => {
