@@ -210,11 +210,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
-- **Every message wa sends carries a message secret and a reporting token**, as WhatsApp Web, Baileys and
-  mautrix-whatsapp send them, and each file of an album points at the album by the chat id WhatsApp delivered it to
-  (the LID when the chat was typed by its phone number). An album of a photo and a video showed on the phone as two
-  separate messages, not one album; these were the two differences from the clients that send albums. Whether the phone now
-  groups it is still to be checked on a phone.
+- **Messages wa sends carry a message secret and a reporting token** (all but reactions and poll votes), as WhatsApp
+  Web, Baileys and mautrix-whatsapp send them, and each file of an album points at the album by the chat id WhatsApp
+  delivered it to (the LID when the chat was typed by its phone number). An album of a photo and a video showed on the
+  phone as two separate messages, not one album; these were the two differences from the clients that send albums.
+  Whether the phone now groups it is still to be checked on a phone.
 - **Photos, videos, voice notes, documents and stickers sent by wa carry the file's URL**, as WhatsApp's own apps and
   mautrix-whatsapp send them. The photos and videos wa sent, as an album or a forward too, never appeared on a phone,
   while wa's own linked devices received them; the missing URL is the most likely reason. A message now also carries

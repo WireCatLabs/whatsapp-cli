@@ -61,8 +61,8 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf}
 	e.refreshSelf()
 	e.client.ManualHistorySyncDownload = true
-	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on every message; an
-	// album sent without them showed on the phone as separate files.
+	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on each message, and an
+	// album's files may need them for the phone to group them; on the wire wa should look like those clients.
 	e.client.SendReportingTokens = true
 	e.downloads = downloadsFor(e.client, e.handle)
 	e.client.AddEventHandler(e.handle)
