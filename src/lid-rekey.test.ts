@@ -110,6 +110,44 @@ describe("a person who gains a LID", () => {
     const chats = JSON.parse((await wa([profile, "--offline", "chats", "list", "--json"])).stdout).items
     expect(chats.map((chat: { id: string }) => chat.id)).not.toContain(PHONE)
     expect(chats.filter((chat: { id: string }) => chat.id === LID)).toHaveLength(1)
+
+    const byNumber = await wa([profile, "--offline", "messages", "list", PHONE, "--json"])
+    expect(byNumber.code, byNumber.stderr).toBe(0)
+    expect(JSON.parse(byNumber.stdout).items.map((one: { id: string }) => one.id)).toEqual(
+      JSON.parse(listed.stdout).items.map((one: { id: string }) => one.id),
+    )
+  })
+
+  it("reads by the phone number offline after a repeated re-key of a chat stored only under its LID", async () => {
+    const profile = "repeated-rekey"
+    const controller = new AbortController()
+    const watching = () => {
+      const engine = fakeEngine(seed)
+      engine.storedChats = async () => {}
+      setImmediate(() => {
+        engine.push({
+          event: "history",
+          history: {
+            kind: "recent",
+            chats: [{ jid: LID, name: null, kind: "dm", unread: null, lastMessageAt: null, participants: null }],
+            contacts: [],
+            messages: [message(LID, 41)],
+            votes: [],
+          },
+        })
+        setImmediate(() => {
+          engine.push({ event: "rekey", from: PHONE, to: LID })
+          setTimeout(() => controller.abort(), 200)
+        })
+      })
+      return engine
+    }
+    const watched = await wa([profile, "watch", "--jsonl"], watching, controller.signal)
+    expect(watched.code, watched.stderr).toBe(0)
+
+    const byNumber = await wa([profile, "--offline", "messages", "list", PHONE, "--json"])
+    expect(byNumber.code, byNumber.stderr).toBe(0)
+    expect(JSON.parse(byNumber.stdout).items.map((one: { id: string }) => one.id)).toEqual([message(LID, 41).id])
   })
 })
 
