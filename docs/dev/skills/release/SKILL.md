@@ -100,7 +100,7 @@ The owner merges the pull request once CI is green, then, in the main checkout o
 
 ```sh
 bin/sign-release      # pulls main, checks its tree against the report, writes the commit and the dated sign-off
-bin/release --local   # publishes from this machine
+bin/release           # starts release.yml, which publishes from GitHub Actions
 ```
 
 `bin/release` refuses unless the report has `Commit: <HEAD>` and a dated `Signed off:` line (`WC-REL-10`). It takes
@@ -109,16 +109,19 @@ the release lock (`WC-REL-3`), refuses within two hours of the last version on n
 (`WC-REL-5`) and runs `release:check` again. When it only folds the changelog or renumbers, it carries the report to
 the new commit itself.
 
-`--local` stays the way to publish until npm's trusted publishing is set on all seven packages (BACKLOG item 6). It
-takes the npm token from `NPM_TOKEN` or the keyring without printing it (`WC-REL-14`), builds the six engine
-packages on this machine, publishes them before the CLI ([CONVENTIONS.md](../../CONVENTIONS.md#releases)), waits
-for npm (up to fifteen minutes), pushes the tag and creates the GitHub release from the changelog, as `release.yml` does
-(`WC-REL-13`). Once trusted publishing is set, the owner runs plain `bin/release` instead: it starts
-`release.yml`, which publishes the validated packages with provenance (`WC-REL-11`, `WC-REL-12`). Before that,
-check that no run is in progress, since two releases at once race:
+npm's trusted publishing is set on all seven packages (the owner, 2026-10-20), so plain `bin/release` publishes: it
+starts `release.yml`, which publishes the validated packages with provenance (`WC-REL-11`, `WC-REL-12`), engines
+before the CLI ([CONVENTIONS.md](../../CONVENTIONS.md#releases)). Before it, check that no run is in progress, since
+two releases at once race:
 
 ```sh
 gh run list --workflow release.yml --limit 1
 ```
+
+`bin/release --local` is the fallback, only for when `release.yml` cannot publish. It takes the npm token from
+`NPM_TOKEN` or the keyring without printing it (`WC-REL-14`), builds the six engine packages on this machine,
+publishes them before the CLI, waits for npm (up to fifteen minutes), pushes the tag and creates the GitHub release
+from the changelog, as `release.yml` does (`WC-REL-13`). It publishes without the recorded SHA-256 and without
+provenance.
 
 Report the pull request, the report's path and what the live step did.

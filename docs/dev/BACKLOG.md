@@ -246,9 +246,10 @@ Open work, most important first. The plan in flight is
      unread count (whatsmeow then sends `read-self`, `receipt.go`). cli-core 0.336 has no "contacts except" for
      `chatInvites`, so such a groups setting is left out of `show`; asked of cli-core (upstream queue, S1).
 6. **Distribution — releases from CI.** 0.1.0 of `@wirecat/whatsapp-cli` and the six `@wirecat/whatsapp-engine-*`
-   packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). Next, the owner
-   sets npm's trusted publishing on each of the seven packages, so later releases go through `release.yml`, which has
-   not published yet. The install tests on three systems (`install-windows.yml`) have run once, by hand.
+   packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). The owner set
+   npm's trusted publishing on all seven packages (2026-10-20), so the next release goes through `release.yml`,
+   started by plain `bin/release`; `--local` is a fallback only. Open: `release.yml` has not published yet, so the
+   next release is its first run. The install tests on three systems (`install-windows.yml`) have run once, by hand.
 8. **Replace the test-matrix waivers with tests.** On 2026-10-18, after a third round, 199 commands and options have a
    wa test and 525 are waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new

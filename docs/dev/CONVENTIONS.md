@@ -54,9 +54,9 @@ from developer pages (`WC-DOC-1`), current facts only (`WC-DOC-2`, `WC-DOC-3`), 
 
 ## Releases
 
-`bin/release` publishes; its header says how. Until npm's trusted publishing is set on all seven packages
-(BACKLOG item 6), the owner publishes with `bin/release --local`; `release.yml` has not published yet. The engine
-adds these to tg's process:
+`bin/release` publishes; its header says how. npm's trusted publishing is set on all seven packages (the owner,
+2026-10-20), so `bin/release` starts `release.yml`, which publishes; `bin/release --local` is a fallback only, for
+when the workflow cannot. The engine adds these to tg's process:
 
 - **Seven packages, one version.** `package.json` pins the six engine packages in `optionalDependencies` to its own
   version. `pnpm version:check` (also in CI and `pnpm release:check`) fails when they differ; `pnpm version:sync` and
