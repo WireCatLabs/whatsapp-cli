@@ -176,6 +176,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **The engine log (`WA_ENGINE_LOG`) no longer keeps media download links.** When a download failed on the network,
+  whatsmeow wrote the whole link into the log: the file's path on WhatsApp's servers, its hash and the signed
+  `oh`/`oe` values, which together fetch the file for anyone who has them; a failed delete of history-sync media wrote
+  the media `auth` token the same way. Every link now becomes `[url]`, a server path `[path]`, and those values `…`,
+  before the line is written.
 - **A message sent to a phone number is saved in the chat WhatsApp answered, with that chat's privacy kept**
   (cli-core 0.356.0). `wa` answers a send to a person who has a LID with their LID chat, but the message was saved
   under the number that was typed, in a second chat. Now `messages send`, `polls create` and `messages forward` save
