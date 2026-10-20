@@ -131,9 +131,15 @@ export const waMediaRef = v.strictObject({
 
 /**
  * A download's answer: the new path when the phone had to upload the file again, `null` when WhatsApp still kept it.
- * Only the path changes; the keys and checksums stay those of the stored ref.
+ * The key stays that of the stored ref; the checksums come too when the phone encrypted the file again.
  */
-export const waDownloaded = v.nullable(v.strictObject({ directPath: v.pipe(v.string(), v.nonEmpty()) }))
+export const waDownloaded = v.nullable(
+  v.strictObject({
+    directPath: v.pipe(v.string(), v.nonEmpty()),
+    fileSha256: v.optional(v.string()),
+    fileEncSha256: v.optional(v.string()),
+  }),
+)
 
 /** A place as its message carried it, kept so a forward sends it again; `geo:` in `url` rounds the coordinates. */
 export const waPlaceRef = v.strictObject({

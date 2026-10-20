@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
@@ -15,6 +17,8 @@ import (
 	"go.mau.fi/whatsmeow/proto/waMmsRetry"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
+	"go.mau.fi/whatsmeow/util/cbcutil"
+	"go.mau.fi/whatsmeow/util/hkdfutil"
 )
 
 // retryWait bounds how long the phone may take to upload a file again. mautrix-whatsapp waits 30 s
@@ -200,11 +204,14 @@ func (e *engine) reupload(
 }
 
 // refreshed is a download's answer after the phone uploaded the file again: the new copy's path, which the adapter
-// keeps in the stored ref so a later download or a forward does not use the dead one. Only the path changes: the phone
-// uploads the same encrypted file, as mautrix-whatsapp takes it (connector/directmedia.go, receiveDirectMediaRetry,
-// sets DirectPath alone). A download WhatsApp still served answers nil, which goes out as null.
+// keeps in the stored ref so a later download or a forward does not use the dead one. Usually only the path changes,
+// as mautrix-whatsapp takes it (connector/directmedia.go, receiveDirectMediaRetry, sets DirectPath alone); a copy the
+// phone encrypted again carries its new checksums too, or the next download and a forward would fail on the old ones.
+// A download WhatsApp still served answers nil, which goes out as null.
 type refreshed struct {
-	DirectPath string `json:"directPath"`
+	DirectPath    string `json:"directPath"`
+	FileSHA256    []byte `json:"fileSha256,omitempty"`
+	FileEncSHA256 []byte `json:"fileEncSha256,omitempty"`
 }
 
 // fetchAgain downloads a file WhatsApp no longer keeps once more, from the path the phone's new upload has, and
@@ -226,17 +233,97 @@ func (e *engine) fetchAgain(
 	if !strings.HasPrefix(path, "/") {
 		return fail("the phone's answer held no usable path")
 	}
+	if err := rewind(file); err != nil {
+		return nil, err
+	}
+	again := *ref
+	again.DirectPath = path
+	err = e.fetch(&again, media, file)
+	if !otherChecksums(err) {
+		if err != nil {
+			return fail(downloadCause(err))
+		}
+		e.client.Log.Warnf("media.reuploaded: the phone uploaded a file WhatsApp no longer kept, and the new copy downloaded")
+		return &refreshed{DirectPath: path}, nil
+	}
+	if err := rewind(file); err != nil {
+		return nil, err
+	}
+	if err := e.client.DownloadMediaWithPathToFile(e.ctx, path, nil, nil, nil, media, "", true, file); err != nil {
+		return fail(downloadCause(err))
+	}
+	renewed, err := openReencrypted(file, ref.MediaKey, media)
+	if err != nil {
+		return fail(downloadCause(err))
+	}
+	renewed.DirectPath = path
+	e.client.Log.Warnf("media.reuploaded: the phone encrypted a file WhatsApp no longer kept again, and the new copy " +
+		"downloaded under the stored key")
+	return renewed, nil
+}
+
+// otherChecksums is a copy from the phone's new upload that fails only the stored checksums. The phone can encrypt the
+// file again from what it keeps, and the key fixes the cipher's IV, so a changed file changes both checksums; only
+// the file's MAC still proves the copy was made by someone holding the stored key.
+func otherChecksums(err error) bool {
+	return errors.Is(err, whatsmeow.ErrInvalidMediaEncSHA256) || errors.Is(err, whatsmeow.ErrInvalidMediaSHA256)
+}
+
+func rewind(file *os.File) error {
 	if err := file.Truncate(0); err != nil {
+		return err
+	}
+	_, err := file.Seek(0, io.SeekStart)
+	return err
+}
+
+const mediaMACLength = 10
+
+// openReencrypted checks and decrypts a file downloaded as it lies on WhatsApp's servers, the same way whatsmeow does
+// (download-to-file.go, downloadAndDecryptToFile) minus the stored checksums: the MAC must match the stored key, or
+// nothing is decrypted. It answers the copy's own checksums, for the stored ref.
+func openReencrypted(file *os.File, mediaKey []byte, media whatsmeow.MediaType) (*refreshed, error) {
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	size := info.Size() - mediaMACLength
+	if size <= 0 {
+		return nil, whatsmeow.ErrTooShortFile
+	}
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	keys := hkdfutil.SHA256(mediaKey, nil, []byte(media), 112)
+	iv, cipherKey, macKey := keys[:16], keys[16:48], keys[48:80]
+	encrypted, signed := sha256.New(), hmac.New(sha256.New, macKey)
+	signed.Write(iv)
+	if _, err := io.Copy(io.MultiWriter(encrypted, signed), io.LimitReader(file, size)); err != nil {
+		return nil, err
+	}
+	mac := make([]byte, mediaMACLength)
+	if _, err := io.ReadFull(file, mac); err != nil {
+		return nil, err
+	}
+	encrypted.Write(mac)
+	if !hmac.Equal(signed.Sum(nil)[:mediaMACLength], mac) {
+		return nil, whatsmeow.ErrInvalidMediaHMAC
+	}
+	if err := file.Truncate(size); err != nil {
 		return nil, err
 	}
 	if _, err := file.Seek(0, io.SeekStart); err != nil {
 		return nil, err
 	}
-	again := *ref
-	again.DirectPath = path
-	if err := e.fetch(&again, media, file); err != nil {
-		return fail(downloadCause(err))
+	if err := cbcutil.DecryptFile(cipherKey, iv, file); err != nil {
+		return nil, err
 	}
-	e.client.Log.Warnf("media.reuploaded: the phone uploaded a file WhatsApp no longer kept, and the new copy downloaded")
-	return &refreshed{DirectPath: path}, nil
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	plain := sha256.New()
+	if _, err := io.Copy(plain, file); err != nil {
+		return nil, err
+	}
+	return &refreshed{FileSHA256: plain.Sum(nil), FileEncSHA256: encrypted.Sum(nil)}, nil
 }

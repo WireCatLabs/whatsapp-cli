@@ -111,13 +111,14 @@ export const isFile = (attachment: WaAttachment | undefined): attachment is WaAt
   attachment?.ref !== undefined && "directPath" in attachment.ref
 
 /**
- * Whether two refs name one file, wherever each says it is: the phone keeps a file's keys when it uploads it again.
- * A keyless file (a channel's) is never uploaded again, and without keys two of them cannot be told apart.
+ * Whether two refs name one file, wherever each says it is: the phone keeps a file's key when it uploads it again, but
+ * may encrypt it again, which changes both checksums. A keyless file (a channel's) is never uploaded again, and
+ * without keys two of them cannot be told apart.
  */
 export const sameFile = (one: unknown, other: unknown): boolean => {
   const [a, b] = [v.safeParse(waMediaRef, one), v.safeParse(waMediaRef, other)]
   if (!a.success || !b.success || a.output.mediaKey === undefined) return false
-  return (["media", "mediaKey", "fileSha256", "fileEncSha256"] as const).every((key) => a.output[key] === b.output[key])
+  return a.output.media === b.output.media && a.output.mediaKey === b.output.mediaKey
 }
 
 /** A stored attachment as the engine takes it back, or `undefined` when it is not one this engine wrote. */

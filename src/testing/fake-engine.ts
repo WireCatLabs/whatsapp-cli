@@ -89,6 +89,8 @@ export const syntheticBytes = (attachment: WaAttachment): Buffer => Buffer.from(
 export interface ExpiredFiles {
   paths: Set<string>
   asked: WaKey[]
+  /** The checksums of a copy the phone encrypted again; without them the new copy is the stored one. */
+  reencrypted?: { fileSha256: string; fileEncSha256: string }
 }
 
 export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, FakeChannels {
@@ -359,7 +361,7 @@ export const fakeEngine = (
       writeFileSync(path, syntheticBytes(attachment), { mode: 0o600, flag: "wx" })
       if (!expired?.paths.has(attachment.ref.directPath)) return null
       expired.asked.push(key)
-      return { directPath: `${attachment.ref.directPath}-reuploaded` }
+      return { directPath: `${attachment.ref.directPath}-reuploaded`, ...expired.reencrypted }
     },
     forward: async (request) => {
       const again = sent.find((message) => message.id === request.id && message.chat === request.chat)

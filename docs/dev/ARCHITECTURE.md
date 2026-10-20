@@ -77,7 +77,9 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   `src/reasons.ts`); a download the new upload served logs `media.reuploaded` to `WA_ENGINE_LOG`, the only sign of
   it. The `download` request then answers the new path (`waDownloaded`; `null` when WhatsApp still kept the file),
   and the adapter sets the whole ref with that path as the file's `providerRef`, which cli-core saves on the stored
-  attachment, so a later download and `messages forward` use it. Only the path changes, as mautrix-whatsapp takes it.
+  attachment, so a later download and `messages forward` use it. Usually only the path changes, as mautrix-whatsapp
+  takes it. A phone may encrypt the file again under the same key; that copy fails the stored checksums, so the engine
+  fetches it raw, accepts it only when its MAC matches the key, and answers its new checksums with the path.
   A history push carries the path the phone knew, and cli-core's upsert keeps a stored ref only when the pushed file
   has none, so `feed` leaves the ref off a file whose stored copy, in the same place, has the same keys; another file
   keeps its own. One store read per pushed message with a ref, as `StoredMessages` reads one message at a time.
