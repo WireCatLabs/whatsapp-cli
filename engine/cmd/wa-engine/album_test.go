@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"image"
 	"image/color"
@@ -12,7 +13,9 @@ import (
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
+	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
 func TestAlbumIDsKeepTheSendIDFirstAndRepeatTheRest(t *testing.T) {
@@ -143,4 +146,19 @@ func decoded(t *testing.T, data []byte) image.Image {
 		t.Fatalf("not a JPEG: %v", err)
 	}
 	return img
+}
+
+func TestEveryAlbumMessageGoesWithAMessageSecretAndReportingToken(t *testing.T) {
+	var out lockedBuffer
+	e := newEngine(context.Background(), &store.Device{}, newWire(&out), waLog.Noop)
+	defer e.stop()
+	child := &waE2E.Message{ImageMessage: &waE2E.ImageMessage{},
+		MessageContextInfo: inAlbum(types.NewJID("100000000000001", types.HiddenUserServer), "3EB0CCCCCCCCCCCCCCCCCC")}
+	internals := e.client.DangerousInternals()
+	for name, m := range map[string]*waE2E.Message{"announcement": albumOf([]*staged{{media: "image"}, {media: "video"}}),
+		"file": child} {
+		if !internals.ShouldIncludeReportingToken(m) {
+			t.Errorf("the album's %s would go without a message secret and reporting token", name)
+		}
+	}
 }

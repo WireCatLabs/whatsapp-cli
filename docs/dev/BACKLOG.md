@@ -216,12 +216,19 @@ Open work, most important first. The plan in flight is
      it. The fix is in cli-core (a send that answers several messages). cli-core also passes at most one `--photo`
      and one `--file`, so an album has two files. Receiving: an album's announcement is dropped, and each file is
      stored as its own message if the apps send it unwrapped; one wrapped in `associatedChildMessage` would be dropped.
-   - **Live check of an album**: whether WhatsApp accepts the album and its apps group the files has not been run.
-     The shape matches Baileys 7.0.0-rc14, the one open-source sender found (`lib/Utils/messages.js`, `album` and
-     `albumParentKey`): each file is a plain photo or video whose `messageContextInfo.messageAssociation` is
-     `MEDIA_ALBUM` with the parent key `{remoteJid, fromMe: true, id}`. Baileys, like whatsmeow, sends the
-     `AlbumMessage` with stanza type `text`. whatsmeow and mautrix-whatsapp only read albums. The owner runs
-     `bin/live-album` for it, in the own chat; it also asks whether a sent photo shows its preview.
+   - **Live check of an album**: WhatsApp accepts the album and the phone shows both files, but as two messages, not one
+     album (2026-10-20, before the message secret and the LID parent key). Whether the phone groups them now is not
+     checked; `bin/live-album` sends with a caption, which matters: WhatsApp Web's defaults send an album of fewer than
+     four files only with a caption (`album_v2_min_items_to_send_as_album_enabled` 4,
+     `album_v2_min_items_to_send_album_with_caption` 2). If it still shows two messages, the next difference is the
+     wrapper: WhatsApp Web can wrap each file in `associatedChildMessage` (behind its flag
+     `wa_web_wrap_associated_child_message_enabled`, off by default), which whatsmeow does not unwrap. The shape matches
+     Baileys 7.0.0-rc14, the one open-source sender found (`lib/Utils/messages.js`, `album` and `albumParentKey`): each
+     file is a plain photo or video whose `messageContextInfo.messageAssociation` is `MEDIA_ALBUM` with the parent key
+     `{remoteJid, fromMe: true, id}`. Baileys, like whatsmeow, sends the `AlbumMessage` with stanza type `text`, and
+     puts a message secret and a reporting token on every message, as wa now does. whatsmeow and mautrix-whatsapp only
+     read albums. The owner runs `bin/live-album` for it, in the own chat; it also asks whether a sent photo shows its
+     preview.
    - **No preview on a sent video.** A photo carries a 72-pixel JPEG preview; a video needs a frame decoder, and the
      engine has no pure-Go one (no cgo, no ffmpeg), so a video goes without one. A WEBP photo too: the standard
      library does not decode WEBP. The preview ignores a JPEG's EXIF orientation, so a phone photo taken on its side
