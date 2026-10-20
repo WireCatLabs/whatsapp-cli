@@ -436,7 +436,7 @@ export const whatsAppAdapter = (
       const path = join(folder, "file")
       const renewed = await translated(engine.download(attachment, path, key))
       if (renewed) {
-        attachment.ref = { ...attachment.ref, directPath: renewed.directPath }
+        attachment.ref = { ...attachment.ref, ...renewed }
         file.providerRef = attachment.ref
       }
       yield* createReadStream(path)

@@ -613,6 +613,40 @@ describe("a file the phone uploaded again", () => {
   })
 })
 
+describe("a file the phone encrypted again", () => {
+  const recoded: Message = {
+    ...theirs(16, "", [{ kind: "photo", mime: "image/jpeg", providerRef: ref("image", 16) }]),
+    chatId: base.dialog,
+  }
+  const pushed = { ...seed, messages: [...seed.messages, recoded] }
+  const reencrypted = {
+    fileSha256: Buffer.alloc(32, 40).toString("base64"),
+    fileEncSha256: Buffer.alloc(32, 41).toString("base64"),
+  }
+  const expired: ExpiredFiles = { paths: new Set([ref("image", 16).directPath]), asked: [], reencrypted }
+  const renewed = { ...ref("image", 16), directPath: `${ref("image", 16).directPath}-reuploaded`, ...reencrypted }
+
+  it("keeps the new copy's checksums with its path, for the next download and a forward", async () => {
+    await pushHistory(pushed)
+    let engine: FakeEngine | undefined
+    const withPhone = async (argv: string[]) => {
+      const result = await wa(["media", ...argv, "--json"], () => {
+        engine = fakeEngine(pushed, { expired })
+        return engine
+      })
+      expect(result.code, result.stderr).toBe(0)
+    }
+    await withPhone(["messages", "download", base.dialog, recoded.id, "--output-dir", folder()])
+    await withPhone(["messages", "download", base.dialog, recoded.id, "--output-dir", folder()])
+    expect(expired.asked).toHaveLength(1)
+    expect(engine?.downloads.map((attachment) => attachment.ref)).toEqual([renewed])
+    await withPhone(["messages", "forward", base.dialog, recoded.id, "--to", base.busy])
+    expect(engine?.forwards).toEqual([
+      expect.objectContaining({ attachment: expect.objectContaining({ kind: "photo", ref: renewed }) }),
+    ])
+  })
+})
+
 describe("a history push after the phone uploaded a file again", () => {
   const relinked: Message = {
     ...theirs(13, "", [{ kind: "photo", mime: "image/jpeg", providerRef: ref("image", 13) }]),

@@ -3,19 +3,27 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waMmsRetry"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
+	"go.mau.fi/whatsmeow/util/cbcutil"
 	"go.mau.fi/whatsmeow/util/gcmutil"
 	"go.mau.fi/whatsmeow/util/hkdfutil"
+	waLog "go.mau.fi/whatsmeow/util/log"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -218,5 +226,123 @@ func TestADownloadAnswersTheNewPathOnlyAfterTheRetry(t *testing.T) {
 	want := `{"id":1,"ok":null}` + "\n" + `{"id":2,"ok":{"directPath":"/v/t62/synthetic-again"}}` + "\n"
 	if out.String() != want {
 		t.Errorf("answers %q, want %q", out.String(), want)
+	}
+}
+
+type servedBlob []byte
+
+func (b servedBlob) RoundTrip(*http.Request) (*http.Response, error) {
+	return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(bytes.NewReader(b)), ContentLength: -1}, nil
+}
+
+// encryptedAsWhatsAppDoes builds a file as it lies on WhatsApp's servers: AES-CBC under the key's expansion, then the
+// first ten bytes of the HMAC over the IV and the ciphertext.
+func encryptedAsWhatsAppDoes(t *testing.T, key, plain []byte, media whatsmeow.MediaType) []byte {
+	t.Helper()
+	keys := hkdfutil.SHA256(key, nil, []byte(media), 112)
+	iv, cipherKey, macKey := keys[:16], keys[16:48], keys[48:80]
+	sealed, err := cbcutil.Encrypt(cipherKey, iv, plain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mac := hmac.New(sha256.New, macKey)
+	mac.Write(iv)
+	mac.Write(sealed)
+	return append(sealed, mac.Sum(nil)[:mediaMACLength]...)
+}
+
+// serve hands blob to whatsmeow's own download code through a fake transport, never the network (WC-TEST-3).
+func serve(t *testing.T, blob []byte, key, enc, sum []byte) (*os.File, error) {
+	t.Helper()
+	client := whatsmeow.NewClient(&store.Device{}, waLog.Noop)
+	client.SetMediaHTTPClient(&http.Client{Transport: servedBlob(blob)})
+	file, err := os.OpenFile(filepath.Join(t.TempDir(), "file"), os.O_RDWR|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = file.Close() })
+	err = client.DangerousInternals().DownloadAndDecryptToFile(context.Background(), "https://media.invalid/v/t62/again",
+		key, whatsmeow.MediaImage, enc, sum, file)
+	return file, err
+}
+
+func TestACopyThePhoneEncryptedAgainOpensUnderTheStoredKeyWithItsOwnChecksums(t *testing.T) {
+	stored := []byte("synthetic photo as the sender sent it")
+	again := []byte("synthetic photo as the phone keeps it now, re-encoded")
+	storedSum, storedEnc := sha256.Sum256(stored), sha256.Sum256(encryptedAsWhatsAppDoes(t, syntheticKey, stored,
+		whatsmeow.MediaImage))
+	blob := encryptedAsWhatsAppDoes(t, syntheticKey, again, whatsmeow.MediaImage)
+
+	_, err := serve(t, blob, syntheticKey, storedEnc[:], storedSum[:])
+	if !errors.Is(err, whatsmeow.ErrInvalidMediaEncSHA256) || !otherChecksums(err) {
+		t.Fatalf("the stored checksums: %v, want the live failure, ErrInvalidMediaEncSHA256", err)
+	}
+	raw, err := serve(t, blob, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	renewed, err := openReencrypted(raw, syntheticKey, whatsmeow.MediaImage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved, err := os.ReadFile(raw.Name())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(saved, again) {
+		t.Errorf("saved %q, want %q", saved, again)
+	}
+	if _, err := serve(t, blob, syntheticKey, renewed.FileEncSHA256, renewed.FileSHA256); err != nil {
+		t.Errorf("whatsmeow refuses the new checksums: %v", err)
+	}
+}
+
+func TestACopyWhoseMACDoesNotMatchTheStoredKeyIsNeverDecrypted(t *testing.T) {
+	plain := []byte("synthetic photo")
+	cases := map[string][]byte{
+		"another key": encryptedAsWhatsAppDoes(t, bytes.Repeat([]byte{9}, 32), plain, whatsmeow.MediaImage),
+		"a changed byte": func() []byte {
+			b := encryptedAsWhatsAppDoes(t, syntheticKey, plain, whatsmeow.MediaImage)
+			b[0] ^= 1
+			return b
+		}(),
+		"another kind of file": encryptedAsWhatsAppDoes(t, syntheticKey, plain, whatsmeow.MediaVideo),
+	}
+	for name, blob := range cases {
+		t.Run(name, func(t *testing.T) {
+			raw, err := serve(t, blob, nil, nil, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = openReencrypted(raw, syntheticKey, whatsmeow.MediaImage)
+			if !errors.Is(err, whatsmeow.ErrInvalidMediaHMAC) {
+				t.Errorf("%v, want ErrInvalidMediaHMAC", err)
+			}
+			if kept, _ := os.ReadFile(raw.Name()); !bytes.Equal(kept, blob) {
+				t.Error("the file was changed before its MAC matched")
+			}
+		})
+	}
+	short, err := serve(t, make([]byte, mediaMACLength), nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := openReencrypted(short, syntheticKey, whatsmeow.MediaImage); !errors.Is(err, whatsmeow.ErrTooShortFile) {
+		t.Errorf("a file no longer than its MAC: %v", err)
+	}
+}
+
+func TestOnlyACopyFailingTheStoredChecksumsIsOpenedUnderTheKey(t *testing.T) {
+	for _, err := range []error{whatsmeow.ErrInvalidMediaEncSHA256, whatsmeow.ErrInvalidMediaSHA256,
+		fmt.Errorf("failed to download media from last host: %w", whatsmeow.ErrInvalidMediaEncSHA256)} {
+		if !otherChecksums(err) {
+			t.Errorf("%v is not opened under the key", err)
+		}
+	}
+	for _, err := range []error{nil, whatsmeow.ErrInvalidMediaHMAC, whatsmeow.ErrMediaDownloadFailedWith404,
+		whatsmeow.ErrTooShortFile, errors.New("network")} {
+		if otherChecksums(err) {
+			t.Errorf("%v is opened under the key", err)
+		}
 	}
 }

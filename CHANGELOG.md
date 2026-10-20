@@ -307,6 +307,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   line adds the first download's cause and the phone's result. A phone that answered an error but still gave a path is tried as before; when that path
   does not download either, the reason is the phone's answer (`media.phone-failed`, `media.not-on-phone` or
   `media.phone-cannot-decrypt`), not `media.retry-failed`, which now means the phone said it uploaded the file.
+- **An old file your phone encrypted again downloads.** When the phone uploads an old file again, it can encrypt a
+  new copy of it under the same key, so the copy no longer matches the checksums the message carried, and the
+  download failed with `media.retry-failed` ("the encrypted file did not match its checksum"). `wa` now fetches that
+  copy once more and accepts it only when its MAC matches the message's key, which proves it was encrypted by someone
+  holding that key; a copy whose MAC does not match is still refused. The new checksums are stored with the new
+  address, so a later download and a forward use them. Not yet run against WhatsApp.
 - **Node 22 no longer prints `ExperimentalWarning: SQLite is an experimental feature`** on every command that opens
   the store. Other warnings still print.
 - **`wa mcp --help` and the root help suggest `claude mcp add wa -- wa <profile> mcp`**, where they suggested a
