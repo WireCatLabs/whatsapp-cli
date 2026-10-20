@@ -202,6 +202,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A group the owner left is found by its name or any id when a command reads its kept history** (cli-core
+  0.368.0): `store export` (also `--output-dir` with named chats), `store status`, `messages context --thread`,
+  `messages evidence`, a search's `--chat` and `chat:`, `metadata get`, `chats members`, `chats events`,
+  `chats documents`, stats, tags, tasks, conversations, embeddings, pictures and attachments, as `chats show` and
+  `messages list` already did. Before, these refused a left group by every name and id. `chats tracking add` and
+  `store gaps plan` still refuse it.
 - **More of `serve`'s warnings carry a code in its log**, so a script can match the code instead of the sentence: a
   flood wait (`flood_wait`) or a long pace wait (`pace_wait`), both with `counts.seconds`, a held account
   (`account_frozen`, `account_limited`, `account_banned`), a wait that could not be remembered
@@ -331,7 +337,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`messages list <old id> --offline` finds the chat that id moved to**, and so does every other command that
   names a chat by the phone-number id it had before WhatsApp gave the person a LID. The store now keeps each chat's
   history: its id, title, membership, scope, search visibility and parent, one row per change. A read by an old id
-  follows it within the account; a chat the account left is still refused (cli-core 0.366.0). Only a move the store
+  follows it within the account, also for a chat the account left when the command reads its kept history (cli-core
+  0.368.0). Only a move the store
   recorded is followed: one `serve` or `watch` makes from now on, or one they repeat. The engine repeats the moves of
   the last 30 days at each start, so those are recorded at the first `serve` or `watch` start after the upgrade. An
   older move, and a number that was never a stored chat, still read as typed. The store moves to version 25 the
