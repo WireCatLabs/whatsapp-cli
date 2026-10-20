@@ -61,6 +61,14 @@ const linkedDevice = (profile = "default") => {
   writeFileSync(path, "")
   return path
 }
+const prompted = () => {
+  const stderr = new PassThrough()
+  let text = ""
+  stderr.on("data", (chunk) => {
+    text += String(chunk)
+  })
+  return { stderr, text: () => stripVTControlCharacters(text) }
+}
 const headless = () => Object.assign(Readable.from([]), { isTTY: false })
 const terminal = (typed = "") => {
   const stdin = Object.assign(new PassThrough(), { isTTY: true })
@@ -180,8 +188,10 @@ describe("wa setup", () => {
 
   it("asks a person for their agent and prints a readable completion, each step a heading", async () => {
     linkedDevice()
-    const result = await execute(["setup"], { tty: true, stdin: terminal(" GEMINI \n") })
+    const asked = prompted()
+    const result = await execute(["setup"], { tty: true, stdin: terminal(" GEMINI \n"), stderr: asked.stderr })
     expect(result.code).toBe(0)
+    expect(asked.text()).toContain("      Agent [codex/cursor/claude/gemini/all/none] (none): ")
     const out = stripVTControlCharacters(result.stdout)
     expect(out).toContain("WhatsApp is ready")
     expect(out).toContain("installed for gemini")
@@ -318,18 +328,26 @@ describe("wa setup", () => {
 
   it("gives the steps after the history wait a deadline of their own", async () => {
     const stdin = terminal()
+    const asked = prompted()
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
     let settled = false
-    const running = execute(["setup", "--timeout", "2s"], { tty: true, stdin }, unlinked()).finally(() => {
+    const running = execute(
+      ["setup", "--timeout", "2s"],
+      { tty: true, stdin, stderr: asked.stderr },
+      unlinked(),
+    ).finally(() => {
       settled = true
     })
     for (let step = 0; step < 300 && stdin.listenerCount("data") === 0; step++) await vi.advanceTimersByTimeAsync(10)
     expect(stdin.listenerCount("data")).toBeGreaterThan(0)
     expect(settled).toBe(false)
+    expect(asked.text()).toContain("Agent [codex/cursor/claude/gemini/all/none]")
+    const listening = stdin.listenerCount("data")
     await vi.advanceTimersByTimeAsync(2_100)
     const result = await running
     expect(result.code).toBe(9)
     expect(result.stderr).toContain("did not finish within 2000ms")
+    expect(stdin.listenerCount("data")).toBe(listening - 1)
     expect(result.engine.closed).toBe(true)
     expect(installSkill).not.toHaveBeenCalled()
   })
@@ -361,13 +379,17 @@ describe("wa setup", () => {
   it("cancels a pending agent choice on the whole-command deadline", async () => {
     linkedDevice()
     const stdin = terminal()
+    const asked = prompted()
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
-    const running = execute(["setup", "--timeout", "100ms"], { tty: true, stdin })
+    const running = execute(["setup", "--timeout", "100ms"], { tty: true, stdin, stderr: asked.stderr })
     for (let step = 0; step < 300 && stdin.listenerCount("data") === 0; step++) await vi.advanceTimersByTimeAsync(10)
+    expect(asked.text()).toContain("Agent [codex/cursor/claude/gemini/all/none]")
+    const listening = stdin.listenerCount("data")
     await vi.advanceTimersByTimeAsync(1_100)
     const result = await running
     expect(result.code).not.toBe(0)
     expect(result.stderr).toContain("did not finish within 100ms")
+    expect(stdin.listenerCount("data")).toBe(listening - 1)
     expect(installSkill).not.toHaveBeenCalled()
   })
 
