@@ -22,7 +22,7 @@ WhatsApp has no request for "chats". Three things fill the store, and nothing el
 
 - **The history push** right after linking. `wa <profile> session start` and `setup` keep the connection open and
   save it, until the phone has been quiet for 45 seconds.
-- **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send. An edit
+- **`serve`**, while it runs: new messages, edits and deletions, and the messages you send. An edit
   keeps the message's own time, reply and reactions; only an edit of a message the store lacks is saved with the
   edit's time.
 - **`messages sync <chat>`**: older messages of one chat, asked of your phone
@@ -59,7 +59,8 @@ walk.
 
 ## What it keeps
 
-- **The history push**, and what `serve` and `watch` hear: messages, edits, deletions and reactions.
+- **The history push**, and what `serve` and `watch` hear: messages, edits and deletions. A reaction you send with
+  `reactions add` goes to WhatsApp, but reactions that others send are not stored yet.
 - **The messages you send** with `wa`.
 - **Chats and people** as WhatsApp names them: a person by a `…@lid` id, a group by a `…@g.us` id.
 

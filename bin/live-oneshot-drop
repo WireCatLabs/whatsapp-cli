@@ -100,8 +100,8 @@ case "$code $(seen "$marker_hits") $(seen "$control_hits")" in
   "0 "*" no") echo "No verdict: serve saved not even the control, so it is not saving messages at all." ;;
   "0 no yes") echo "BACKLOG 9 holds: the one-shot connection took the queued message, and it never reached the store." ;;
   "0 yes yes")
-    echo "Not dropped this time: the marker reached the store. This does not clear BACKLOG 9:"
-    echo "doctor --online may have ended before WhatsApp delivered the queue, and serve then got it."
+    echo "The marker reached the store, as the fix for BACKLOG 9 expects. This alone cannot tell whether"
+    echo "doctor --online saved it or WhatsApp delivered it again to the restarted serve."
     ;;
   *) echo "No verdict: doctor --online failed, so the one-shot connection may never have connected." ;;
 esac
