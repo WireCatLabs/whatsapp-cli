@@ -211,6 +211,7 @@ const end = async (command: Command) => {
     printItem(context, { profile: context.profile, ended: false })
     return
   }
+  let dropped = false
   try {
     await context.withMessenger((adapter) => adapter.logout())
   } catch (error) {
@@ -223,9 +224,10 @@ const end = async (command: Command) => {
       )
     // The phone may have removed the device already; the keys here are then worth nothing, and still go.
     if (!(error instanceof CliError && error.code === "authentication_error")) throw error
-    context.renderer.note("WhatsApp no longer knew this device; removing the keys here")
+    dropped = true
   }
   for (const suffix of ["", "-wal", "-shm", ".lock"]) rmSync(`${store}${suffix}`, { force: true })
+  if (dropped) context.renderer.note("WhatsApp had already dropped this device; deleted its keys here")
   printItem(context, { profile: context.profile, ended: true })
 }
 

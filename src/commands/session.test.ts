@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { PassThrough } from "node:stream"
 import { fileURLToPath } from "node:url"
-import { CliError, captureStreams } from "@wirecat/cli-base"
+import { captureStreams } from "@wirecat/cli-base"
 import { PASTE_QR, plainQr } from "@wirecat/cli-core"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
@@ -312,15 +312,34 @@ describe("wa session end", () => {
     expect(existsSync(store)).toBe(false)
   })
 
-  it("still deletes the keys when WhatsApp no longer knows the device", async () => {
+  it("deletes the keys and says so when WhatsApp had already dropped the device", async () => {
     const store = linkedProfile("forgotten")
     const engine = fakeEngine(seed)
     engine.logout = async () => {
-      throw new CliError("authentication_error", "WhatsApp no longer accepts this linked device")
+      engine.push({ event: "connection", state: "logged_out" })
+      await new Promise((next) => setImmediate(next))
+      throw new EngineError("authentication_error", "WhatsApp logged this device out", "device.logged-out")
     }
     const result = await wa(["forgotten", "session", "end", "--json"], () => engine)
     expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout).item).toEqual({ profile: "forgotten", ended: true })
+    expect(result.stderr).toContain("WhatsApp had already dropped this device; deleted its keys here")
     expect(existsSync(store)).toBe(false)
+  })
+
+  it("keeps the keys when the connection broke after the logout left", async () => {
+    const store = linkedProfile("cutoff")
+    const engine = fakeEngine(seed)
+    engine.logout = async () => {
+      throw new EngineError(
+        "outcome_unknown",
+        "the connection to WhatsApp broke before it confirmed the change; it may have gone through — check first",
+      )
+    }
+    const result = await wa(["cutoff", "session", "end", "--json"], () => engine)
+    expect(result.code).not.toBe(0)
+    expect(JSON.parse(result.stderr).error.message).toContain("it may have gone through")
+    expect(existsSync(store)).toBe(true)
   })
 
   it("keeps the keys when the logout fails for another reason", async () => {
