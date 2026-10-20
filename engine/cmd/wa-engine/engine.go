@@ -184,7 +184,7 @@ func (e *engine) dispatch(req request) (any, error) {
 	case "older":
 		return e.older(req)
 	case "logout":
-		return nil, e.client.Logout(e.ctx)
+		return nil, e.logout()
 	}
 	if value, handled, err := e.dispatchGroups(req); handled {
 		return value, err

@@ -202,6 +202,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`session end` unlinks the device again, and deletes the keys of a device WhatsApp had already dropped.** The
+  engine sent the logout without connecting first, so every `session end` failed with "the connection to WhatsApp
+  broke before it confirmed the change; it may have gone through — check first" and kept the keys. It now connects
+  first. When WhatsApp refuses the device on connect (logged out, or removed on the phone), the keys here are deleted,
+  the command exits 0 and says "WhatsApp had already dropped this device". A network failure before the logout is
+  sent keeps the keys; a connection cut after it was sent still answers "may have gone through". No engine wire
+  change.
 - **A group the owner left is found by its name or any id when a command reads its kept history** (cli-core
   0.368.0): `store export` (also `--output-dir` with named chats), `store status`, `messages context --thread`,
   `messages evidence`, a search's `--chat` and `chat:`, `metadata get`, `chats members`, `chats events`,
