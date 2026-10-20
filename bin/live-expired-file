@@ -88,6 +88,8 @@ bytes=$(printf '%s' "$out" | json 'd.item.files.reduce((sum, one) => sum + (one.
 failed=$(printf '%s' "$out" | json 'd.item.batch?.failures?.map((one) => one.error.code).join(", ")' 2>/dev/null) ||
   failed=""
 reason=$(printf '%s' "$out" | json 'd.item.batch?.failures?.[0]?.error.reason ?? ""' 2>/dev/null) || reason=""
+# The engine's fixed words for why the new copy did not download (an HTTP status, a checksum), never a path or a key.
+words=$(printf '%s' "$out" | json 'd.item.batch?.failures?.[0]?.error.message ?? ""' 2>/dev/null) || words=""
 [ -n "$failed" ] || failed=$(error_code || true)
 [ -n "$reason" ] || reason=$(error_reason || true)
 
@@ -95,6 +97,7 @@ echo
 echo "── result ──"
 echo "messages download: exit $rc, $saved file(s) saved, $bytes bytes, error ${failed:-none} (${reason:-no reason}),"
 echo "took $took s"
+[ -z "$words" ] || echo "the engine said: $words"
 echo "the message is $age days old"
 retry=yes
 if [ "$saved" != 0 ]; then
@@ -113,7 +116,9 @@ else
     media.phone-timeout) outcome="the phone did not answer within 20 s — is it online? run again" ;;
     media.not-on-phone) outcome="the phone no longer has the file either" ;;
     media.phone-cannot-decrypt) outcome="the phone could not read the request for the file" ;;
-    media.phone-failed | media.phone-answer-unreadable) outcome="the phone answered with an error" ;;
+    media.phone-failed | media.phone-answer-unreadable)
+      outcome="the phone answered with an error (and, if it still gave a path, that path did not download either)"
+      ;;
     media.retry-failed) outcome="the phone uploaded the file again, but its new copy did not download" ;;
     engine.stopped)
       retry=unknown

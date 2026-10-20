@@ -300,6 +300,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `media.retry-failed` (the new copy did not download) or `engine.stopped`; branch on those, never on the message.
   A download the phone's new upload served writes one line, `media.reuploaded`, to the engine's log when
   `WA_ENGINE_LOG` is set: the download's answer has no field for it.
+- **A new copy that did not download says why.** The failure's message ends with the cause in fixed words: the HTTP
+  status WhatsApp answered, a checksum or key that did not match, a file too short, a network error or the time
+  running out. With `WA_ENGINE_LOG` set, a `media.refetch-failed` line adds the phone's result and whether it gave the
+  same expired path again. A phone that answered an error but still gave a path is tried as before; when that path
+  does not download either, the reason is the phone's answer (`media.phone-failed`, `media.not-on-phone` or
+  `media.phone-cannot-decrypt`), not `media.retry-failed`, which now means the phone said it uploaded the file.
 - **Node 22 no longer prints `ExperimentalWarning: SQLite is an experimental feature`** on every command that opens
   the store. Other warnings still print.
 - **`wa mcp --help` and the root help suggest `claude mcp add wa -- wa <profile> mcp`**, where they suggested a

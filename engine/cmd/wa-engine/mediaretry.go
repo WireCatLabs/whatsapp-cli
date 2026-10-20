@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"io"
+	"net"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -98,48 +102,95 @@ var (
 		"the phone uploaded this file again, but the new copy did not download")
 )
 
-// reuploadedPath reads the phone's answer. A new path counts even with an error result, as mautrix-whatsapp takes it
-// (connector/directmedia.go, receiveDirectMediaRetry).
-func reuploadedPath(evt *events.MediaRetry, mediaKey []byte) (string, error) {
+// reuploadedPath reads the phone's answer: the new path and the phone's result. A new path counts even with an error
+// result, as mautrix-whatsapp takes it (connector/directmedia.go, receiveDirectMediaRetry); the result is kept, so a
+// download from that path that fails answers what the phone said instead of claiming it uploaded the file.
+func reuploadedPath(
+	evt *events.MediaRetry, mediaKey []byte,
+) (string, waMmsRetry.MediaRetryNotification_ResultType, error) {
 	notice, err := whatsmeow.DecryptMediaRetryNotification(evt, mediaKey)
 	switch {
 	case errors.Is(err, whatsmeow.ErrMediaNotAvailableOnPhone):
-		return "", notOnPhone
+		return "", 0, notOnPhone
 	case err != nil:
-		return "", phoneAnswerUnreadable
+		return "", 0, phoneAnswerUnreadable
 	case notice.GetDirectPath() != "":
-		return notice.GetDirectPath(), nil
+		return notice.GetDirectPath(), notice.GetResult(), nil
 	}
-	switch notice.GetResult() {
+	return "", notice.GetResult(), phoneRefusal(notice.GetResult())
+}
+
+func phoneRefusal(result waMmsRetry.MediaRetryNotification_ResultType) *refusal {
+	switch result {
 	case waMmsRetry.MediaRetryNotification_NOT_FOUND:
-		return "", notOnPhone
+		return notOnPhone
 	case waMmsRetry.MediaRetryNotification_DECRYPTION_ERROR:
-		return "", phoneCannotDecrypt
+		return phoneCannotDecrypt
 	}
-	return "", phoneFailed
+	return phoneFailed
+}
+
+// downloadCause names why a download failed in fixed words. Never err.Error(): a network error quotes the whole media
+// URL, its tokens with it (WC-SECR-1).
+func downloadCause(err error) string {
+	var status whatsmeow.DownloadHTTPError
+	var network net.Error
+	switch {
+	case errors.As(err, &status) && status.Response != nil:
+		return fmt.Sprintf("WhatsApp answered HTTP %d", status.StatusCode)
+	case errors.Is(err, whatsmeow.ErrInvalidMediaEncSHA256):
+		return "the encrypted file did not match its checksum"
+	case errors.Is(err, whatsmeow.ErrInvalidMediaHMAC):
+		return "the file did not match its key"
+	case errors.Is(err, whatsmeow.ErrInvalidMediaSHA256), errors.Is(err, whatsmeow.ErrInvalidUnencryptedMediaSHA256):
+		return "the decrypted file did not match its checksum"
+	case errors.Is(err, whatsmeow.ErrTooShortFile):
+		return "the file was too short"
+	case errors.Is(err, context.DeadlineExceeded), errors.Is(err, context.Canceled):
+		return "the download ran out of time"
+	case errors.As(err, &network):
+		return "a network error"
+	}
+	return "an unclassified error"
+}
+
+// refetchFailure answers a download from the phone's new path that failed: what the phone said when its result was an
+// error, else media.retry-failed, each with the cause, so a live run tells a dead path from a file that does not match.
+func refetchFailure(result waMmsRetry.MediaRetryNotification_ResultType, cause string) *refusal {
+	failed := againFailed
+	if result != waMmsRetry.MediaRetryNotification_SUCCESS {
+		failed = phoneRefusal(result)
+	}
+	return because(failed.Reason, failed.Code, failed.Message+": "+cause)
 }
 
 // reupload asks the account's own phone to upload a file WhatsApp no longer keeps, and answers its new path. The
 // receipt goes to the owner's phone (whatsmeow sends it to the account's own JID), not to the sender; it is what
 // WhatsApp's apps send when a file will not download, and only a download the owner asked for reaches it.
-func (e *engine) reupload(req request, ref *waMediaRef) (string, error) {
+func (e *engine) reupload(
+	req request, ref *waMediaRef,
+) (string, waMmsRetry.MediaRetryNotification_ResultType, error) {
 	t, err := targetOf(req)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	sender := e.quotedSender(t.chat, quote{FromMe: t.mine(), Sender: req.Sender})
 	answer := e.retries.wait(t.id)
 	defer e.retries.forget(t.id, answer)
 	if err := e.client.SendMediaRetryReceipt(e.ctx, retryInfo(t, sender), ref.MediaKey); err != nil {
-		return "", err
+		return "", 0, err
 	}
 	select {
 	case evt := <-answer:
-		return reuploadedPath(evt, ref.MediaKey)
+		path, result, err := reuploadedPath(evt, ref.MediaKey)
+		if errors.Is(err, phoneAnswerUnreadable) && evt.Error != nil {
+			e.client.Log.Warnf("media.phone-answer-unreadable: WhatsApp answered error code %d", evt.Error.Code)
+		}
+		return path, result, err
 	case <-time.After(retryWait):
-		return "", phoneTimeout
+		return "", 0, phoneTimeout
 	case <-e.ctx.Done():
-		return "", retryStopped
+		return "", 0, retryStopped
 	}
 }
 
@@ -152,11 +203,22 @@ type refreshed struct {
 }
 
 // fetchAgain downloads a file WhatsApp no longer keeps once more, from the path the phone's new upload has, and
-// answers that path. A success is the one sign the retry ran, so it goes to WA_ENGINE_LOG, in fixed words.
-func (e *engine) fetchAgain(req request, ref *waMediaRef, media whatsmeow.MediaType, file *os.File) (*refreshed, error) {
-	path, err := e.reupload(req, ref)
+// answers that path. A success is the one sign the retry ran, so it goes to WA_ENGINE_LOG, in fixed words; so does a
+// failure, with the first download's cause, the phone's result and whether its path is the dead one again.
+func (e *engine) fetchAgain(
+	req request, ref *waMediaRef, media whatsmeow.MediaType, file *os.File, first error,
+) (*refreshed, error) {
+	path, result, err := e.reupload(req, ref)
 	if err != nil {
 		return nil, err
+	}
+	fail := func(cause string) (*refreshed, error) {
+		e.client.Log.Warnf("media.refetch-failed: first download: %s; the phone answered %s, same path as before: %t; "+
+			"the new copy: %s", downloadCause(first), result, path == ref.DirectPath, cause)
+		return nil, refetchFailure(result, cause)
+	}
+	if !strings.HasPrefix(path, "/") {
+		return fail("the phone's answer held no usable path")
 	}
 	if err := file.Truncate(0); err != nil {
 		return nil, err
@@ -167,7 +229,7 @@ func (e *engine) fetchAgain(req request, ref *waMediaRef, media whatsmeow.MediaT
 	again := *ref
 	again.DirectPath = path
 	if err := e.fetch(&again, media, file); err != nil {
-		return nil, againFailed
+		return fail(downloadCause(err))
 	}
 	e.client.Log.Warnf("media.reuploaded: the phone uploaded a file WhatsApp no longer kept, and the new copy downloaded")
 	return &refreshed{DirectPath: path}, nil
