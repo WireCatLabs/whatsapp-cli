@@ -51,7 +51,7 @@ The names, messages and results below are fictional.
 **Command:**
 
 ```sh
-wa personal review 'chat:"120363000000000001@g.us"' --unanswered 4h --json
+wa personal review 'chat:120363000000000001@g.us' --unanswered 4h --json
 ```
 
 **Example agent answer:**
@@ -74,7 +74,7 @@ A question mark outside a link, or a reply to you or an admin, opens a question;
 **Command:**
 
 ```sh
-wa personal review 'chat:"120363000000000001@g.us" date>7d' --json
+wa personal review 'chat:120363000000000001@g.us date>7d' --json
 ```
 
 **Example agent answer:**
@@ -90,7 +90,7 @@ wa personal review 'chat:"120363000000000001@g.us" date>7d' --json
 No agent is needed for a list of open questions: it is an ordinary command, and it reads only the store.
 
 ```cron
-0 9,21 * * * wa personal review 'chat:"120363000000000001@g.us"' --unanswered --json >> ~/hiking-open.jsonl 2>> ~/wa-cron.log
+0 9,21 * * * wa personal review 'chat:120363000000000001@g.us' --unanswered --json >> ~/hiking-open.jsonl 2>> ~/wa-cron.log
 ```
 
 cron starts jobs with an almost empty environment: see [running on a schedule](recipes.md#running-on-a-schedule).
@@ -137,7 +137,7 @@ See what waits on you, oldest first, then only questions and mentions in one gro
 
 ```sh
 wa personal tasks list state:open
-wa personal tasks list 'chat:"120363000000000001@g.us" (kind:question OR kind:mention)'
+wa personal tasks list 'chat:120363000000000001@g.us (kind:question OR kind:mention)'
 ```
 
 Add what the rules cannot see, such as a promise you made, by the message's locator from a search or a list:
