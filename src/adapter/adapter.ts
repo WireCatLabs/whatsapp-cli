@@ -436,7 +436,9 @@ export const whatsAppAdapter = (
       const path = join(folder, "file")
       const renewed = await translated(engine.download(attachment, path, key))
       if (renewed) {
-        attachment.ref = { ...attachment.ref, ...renewed }
+        // The old URL names the dead copy; without one, the engine builds it from the new path.
+        const { url: _dead, ...kept } = attachment.ref
+        attachment.ref = { ...kept, ...renewed }
         file.providerRef = attachment.ref
       }
       yield* createReadStream(path)

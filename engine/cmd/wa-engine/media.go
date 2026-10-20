@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
@@ -30,6 +31,9 @@ type waMediaRef struct {
 	MediaKey      []byte `json:"mediaKey,omitempty"`
 	FileSHA256    []byte `json:"fileSha256,omitempty"`
 	FileEncSHA256 []byte `json:"fileEncSha256,omitempty"`
+	// A phone does not show a photo or a video whose message lacks the URL, though whatsmeow downloads by DirectPath.
+	URL               string `json:"url,omitempty"`
+	MediaKeyTimestamp int64  `json:"mediaKeyTimestamp,omitempty"`
 
 	// A place or a contact card has no file; what a forward sends again is kept here instead. cli-core never prints
 	// a providerRef, so a vCard's phone number stays in the store.
@@ -86,8 +90,27 @@ func refOf(media string, d whatsmeow.DownloadableMessage) *waMediaRef {
 	if d.GetDirectPath() == "" {
 		return nil
 	}
-	return &waMediaRef{Media: media, DirectPath: d.GetDirectPath(), MediaKey: d.GetMediaKey(),
+	ref := &waMediaRef{Media: media, DirectPath: d.GetDirectPath(), MediaKey: d.GetMediaKey(),
 		FileSHA256: d.GetFileSHA256(), FileEncSHA256: d.GetFileEncSHA256()}
+	if x, ok := d.(interface {
+		GetURL() string
+		GetMediaKeyTimestamp() int64
+	}); ok {
+		ref.URL, ref.MediaKeyTimestamp = x.GetURL(), x.GetMediaKeyTimestamp()
+	}
+	return ref
+}
+
+// mediaHost is where Baileys points a file whose URL it does not hold (Utils/messages-media.ts, getUrlFromDirectPath).
+const mediaHost = "https://mmg.whatsapp.net"
+
+// urlOf is the URL a message carries: the upload's own, or one built from the path for a ref stored without it or
+// renewed by the phone's upload, as Baileys builds it after a media retry.
+func urlOf(ref *waMediaRef) *string {
+	if ref.URL != "" {
+		return proto.String(ref.URL)
+	}
+	return proto.String(mediaHost + ref.DirectPath)
 }
 
 // attachmentsOf lists what a message carries besides its text. A live location keeps no ref: it is not sent again.
@@ -114,6 +137,8 @@ func attachmentsOf(m *waE2E.Message) []waAttachment {
 		}
 		return []waAttachment{{Kind: kind, Size: x.GetFileLength(), Mime: x.GetMimetype(), Duration: x.GetSeconds(),
 			Ref: refOf("audio", x)}}
+	case m.DocumentWithCaptionMessage != nil:
+		return attachmentsOf(m.GetDocumentWithCaptionMessage().GetMessage())
 	case m.DocumentMessage != nil:
 		x := m.GetDocumentMessage()
 		return []waAttachment{{Kind: "document", Name: x.GetFileName(), Size: x.GetFileLength(), Mime: x.GetMimetype(),
@@ -169,7 +194,11 @@ func contentOf(a waAttachment, caption string, info *waE2E.ContextInfo) (*waE2E.
 	if ref == nil || ref.DirectPath == "" {
 		return nil, &failure{"validation_error", "the store does not hold this file's keys, so it cannot be sent again"}
 	}
-	length := proto.Uint64(a.Size)
+	length, url := proto.Uint64(a.Size), urlOf(ref)
+	var keyTime *int64
+	if ref.MediaKeyTimestamp != 0 {
+		keyTime = proto.Int64(ref.MediaKeyTimestamp)
+	}
 	optional := func(s string) *string {
 		if s == "" {
 			return nil
@@ -179,38 +208,46 @@ func contentOf(a waAttachment, caption string, info *waE2E.ContextInfo) (*waE2E.
 	switch {
 	case a.Kind == "photo" && ref.Media == "image":
 		return &waE2E.Message{ImageMessage: &waE2E.ImageMessage{
-			DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, FileSHA256: ref.FileSHA256,
-			FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime), Caption: optional(caption),
-			Width: nonZero(a.Width), Height: nonZero(a.Height), JPEGThumbnail: a.thumb, ContextInfo: info,
+			URL: url, DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, MediaKeyTimestamp: keyTime,
+			FileSHA256: ref.FileSHA256, FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
+			Caption: optional(caption), Width: nonZero(a.Width), Height: nonZero(a.Height), JPEGThumbnail: a.thumb,
+			ContextInfo: info,
 		}}, nil
 	case a.Kind == "video" && ref.Media == "video":
 		return &waE2E.Message{VideoMessage: &waE2E.VideoMessage{
-			DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, FileSHA256: ref.FileSHA256,
-			FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime), Caption: optional(caption),
-			Width: nonZero(a.Width), Height: nonZero(a.Height), Seconds: nonZero(a.Duration), ContextInfo: info,
+			URL: url, DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, MediaKeyTimestamp: keyTime,
+			FileSHA256: ref.FileSHA256, FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
+			Caption: optional(caption), Width: nonZero(a.Width), Height: nonZero(a.Height), Seconds: nonZero(a.Duration),
+			ContextInfo: info,
 		}}, nil
 	case (a.Kind == "voice" || a.Kind == "audio") && ref.Media == "audio":
 		if caption != "" {
 			return nil, &failure{"validation_error", "WhatsApp sends a voice or audio message without text"}
 		}
 		return &waE2E.Message{AudioMessage: &waE2E.AudioMessage{
-			DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, FileSHA256: ref.FileSHA256,
-			FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
+			URL: url, DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, MediaKeyTimestamp: keyTime,
+			FileSHA256: ref.FileSHA256, FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
 			Seconds: nonZero(a.Duration), PTT: proto.Bool(a.Kind == "voice"), ContextInfo: info,
 		}}, nil
 	case a.Kind == "document" && ref.Media == "document":
-		return &waE2E.Message{DocumentMessage: &waE2E.DocumentMessage{
-			DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, FileSHA256: ref.FileSHA256,
-			FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime), Caption: optional(caption),
-			FileName: optional(a.Name), Title: optional(a.Name), ContextInfo: info,
-		}}, nil
+		document := &waE2E.DocumentMessage{
+			URL: url, DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, MediaKeyTimestamp: keyTime,
+			FileSHA256: ref.FileSHA256, FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
+			Caption: optional(caption), FileName: optional(a.Name), Title: optional(a.Name), ContextInfo: info,
+		}
+		// WhatsApp's apps, and mautrix-whatsapp (msgconv/from-matrix.go), send a captioned document wrapped.
+		if caption != "" {
+			return &waE2E.Message{DocumentWithCaptionMessage: &waE2E.FutureProofMessage{
+				Message: &waE2E.Message{DocumentMessage: document}}}, nil
+		}
+		return &waE2E.Message{DocumentMessage: document}, nil
 	case a.Kind == "sticker" && ref.Media == "sticker":
 		if caption != "" {
 			return nil, &failure{"validation_error", "WhatsApp sends a sticker without text"}
 		}
 		return &waE2E.Message{StickerMessage: &waE2E.StickerMessage{
-			DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, FileSHA256: ref.FileSHA256,
-			FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
+			URL: url, DirectPath: proto.String(ref.DirectPath), MediaKey: ref.MediaKey, MediaKeyTimestamp: keyTime,
+			FileSHA256: ref.FileSHA256, FileEncSHA256: ref.FileEncSHA256, FileLength: length, Mimetype: optional(a.Mime),
 			Width: nonZero(a.Width), Height: nonZero(a.Height), ContextInfo: info,
 		}}, nil
 	}
@@ -335,7 +372,8 @@ func (e *engine) upload(s *staged) error {
 	}
 	s.described.Size = uploaded.FileLength
 	s.described.Ref = &waMediaRef{Media: s.media, DirectPath: uploaded.DirectPath, MediaKey: uploaded.MediaKey,
-		FileSHA256: uploaded.FileSHA256, FileEncSHA256: uploaded.FileEncSHA256}
+		FileSHA256: uploaded.FileSHA256, FileEncSHA256: uploaded.FileEncSHA256, URL: uploaded.URL,
+		MediaKeyTimestamp: time.Now().Unix()}
 	return nil
 }
 

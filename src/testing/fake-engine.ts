@@ -338,7 +338,7 @@ export const fakeEngine = (
       uploads.push({ kind: file.kind, name: file.name, size })
       const { kind, media } = UPLOADED[file.kind] as (typeof UPLOADED)[string]
       const key = chat.endsWith("@newsletter") ? {} : { mediaKey: Buffer.from(id).toString("base64") }
-      const ref = { media, directPath: `/v/fake/${id}`, ...key }
+      const ref = { media, directPath: `/v/fake/${id}`, url: `https://mmg.whatsapp.net/v/fake/${id}`, ...key }
       return post(chat, id, text, [{ kind, size, ...(kind === "document" ? { name: file.name } : {}), ref }], replyTo)
     },
     sendAlbum: async (request) => {

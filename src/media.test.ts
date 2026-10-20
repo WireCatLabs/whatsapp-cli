@@ -19,7 +19,10 @@ const ref = (media: string, n: number) => ({
   mediaKey: Buffer.alloc(32, n).toString("base64"),
   fileSha256: Buffer.alloc(32, n + 1).toString("base64"),
   fileEncSha256: Buffer.alloc(32, n + 2).toString("base64"),
+  url: `https://mmg.whatsapp.net/v/t62/synthetic-${n}&mms3=true`,
+  mediaKeyTimestamp: 1_760_000_000 + n,
 })
+const withoutUrl = ({ url: _dead, ...kept }: ReturnType<typeof ref>) => kept
 const theirs = (n: number, text: string, attachments: Attachment[]): Message => ({
   id: `3EB0000000000000000E0${n}`,
   chatId: base.busy,
@@ -124,6 +127,7 @@ describe("attachments in the store", () => {
     expect(result.stdout).toContain('"photo"')
     expect(result.stdout).not.toContain("mediaKey")
     expect(result.stdout).not.toContain("directPath")
+    expect(result.stdout).not.toContain("mmg.whatsapp.net")
   })
 })
 
@@ -356,6 +360,7 @@ describe("wa messages forward", () => {
       }),
     ])
     expect(result.stdout).not.toContain("mediaKey")
+    expect(result.stdout).not.toContain("mmg.whatsapp.net")
   })
 
   it("sends a stored place again, as the store kept it", async () => {
@@ -578,7 +583,7 @@ describe("hearing voice notes with a model on this machine", () => {
 
 describe("a file the phone uploaded again", () => {
   const expired: ExpiredFiles = { paths: new Set([ref("image", 12).directPath]), asked: [] }
-  const reuploaded = { ...ref("image", 12), directPath: `${ref("image", 12).directPath}-reuploaded` }
+  const reuploaded = { ...withoutUrl(ref("image", 12)), directPath: `${ref("image", 12).directPath}-reuploaded` }
   const engines: FakeEngine[] = []
   const withPhone = (argv: string[]) =>
     wa(["media", ...argv, "--json"], () => {
@@ -624,7 +629,11 @@ describe("a file the phone encrypted again", () => {
     fileEncSha256: Buffer.alloc(32, 41).toString("base64"),
   }
   const expired: ExpiredFiles = { paths: new Set([ref("image", 16).directPath]), asked: [], reencrypted }
-  const renewed = { ...ref("image", 16), directPath: `${ref("image", 16).directPath}-reuploaded`, ...reencrypted }
+  const renewed = {
+    ...withoutUrl(ref("image", 16)),
+    directPath: `${ref("image", 16).directPath}-reuploaded`,
+    ...reencrypted,
+  }
 
   it("keeps the new copy's checksums with its path, for the next download and a forward", async () => {
     await pushHistory(pushed)
@@ -681,7 +690,7 @@ describe("a history push after the phone uploaded a file again", () => {
     const again = await downloading(after, relinked)
     expect(expired.asked).toHaveLength(1)
     expect(again.downloads.map((attachment) => attachment.ref)).toEqual([
-      { ...ref("image", 13), directPath: `${ref("image", 13).directPath}-reuploaded` },
+      { ...withoutUrl(ref("image", 13)), directPath: `${ref("image", 13).directPath}-reuploaded` },
     ])
     const added = await downloading(after, fresh)
     expect(added.downloads.map((attachment) => attachment.ref)).toEqual([ref("image", 14)])
