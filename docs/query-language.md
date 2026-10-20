@@ -70,7 +70,7 @@ refused with an error, not ignored. Typos are not corrected: to catch several en
 | `exact` | the exact word or phrase form | `exact:piso`, `exact:"invoice paid"` |
 | `body` | the whole original text, case-sensitive | `body:/.*invoice.*/` |
 | `from` | the sender, by name or id; `me` is you | `from:"Alice Synthetic"`, `from:"100000000000001@lid"` |
-| `chat` | the chat, by name or id | `chat:"Book club"`, `chat:"120363000000000001@g.us"` |
+| `chat` | the chat, by name or id | `chat:"Book club"`, `chat:120363000000000001@g.us` |
 | `date` | when it was sent | `date:today`, `date:7d`, `date:[2026-01-01 TO 2026-02-01}` |
 | `kind` | the kind of chat: `private`, `group`, `channel`, `saved` and the shared rest | `kind:private` |
 | `has` | `link`, and the file kinds of the shared language | `has:link` |

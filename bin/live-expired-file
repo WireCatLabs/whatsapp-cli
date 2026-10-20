@@ -31,8 +31,7 @@ picked="the message you named"
 if [ -z "$message" ]; then
   # Newest first, so the last row is the oldest. The id is the last part of the locator,
   # msg:<provider>/<account>/<chat>/<id>.
-  # Quoted: the @ of a LID is an operator in the query language.
-  message=$(wa_json "$profile" attachments list "chat:\"$own\"" --all --offline --timeout 60s | json '(() => {
+  message=$(wa_json "$profile" attachments list "chat:$own" --all --offline --timeout 60s | json '(() => {
     const files = new Set(["photo", "video", "document", "voice", "audio", "sticker"])
     const mine = d.items.filter((one) => {
       const parts = one.message.split("/").map(decodeURIComponent)

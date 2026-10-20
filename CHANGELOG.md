@@ -210,6 +210,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A chat id works in a query without quotes.** `chat:100000000000002@lid` and `chat:120363000000000001@g.us`
+  failed with `query.unsupported-operator`, because the `@` was read as an operator; only the quoted form worked.
+  Both forms work now (cli-core 0.375.0, cli-base 0.47.3).
 - **`session end` unlinks the device on WhatsApp's side, which it never did before.** Since the first release the
   engine sent the logout without connecting, so every `session end` stopped with "the connection to WhatsApp broke
   before it confirmed the change; it may have gone through — check first", sent nothing and kept the keys. If you
