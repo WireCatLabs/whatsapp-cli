@@ -77,7 +77,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   new copy. A phone that does not answer ends the download with `timeout` (exit 9); exit 6 now means the phone no
   longer has the file either. A script that read exit 6 as "expired" must also expect exit 9, and give a slow phone a
   longer `--timeout`. A new copy that then fails to download is `provider_error` (exit 11, `media.retry-failed`),
-  whatever the first failure's code was. The store keeps the new copy's address, so a later download or forward
+  whatever the first failure's code was; when the phone answered an error but still gave a path, it is the phone's
+  answer instead (see Fixed). The store keeps the new copy's address, so a later download or forward
   uses it and does not ask the phone again (see Fixed). Not yet run against WhatsApp.
 - **`messages forward` sends a stored place or contact card, where it used to refuse it.** The store now keeps a
   place's coordinates, name and address, and a contact card itself, next to a file's keys, where no answer shows
@@ -302,8 +303,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `WA_ENGINE_LOG` is set: the download's answer has no field for it.
 - **A new copy that did not download says why.** The failure's message ends with the cause in fixed words: the HTTP
   status WhatsApp answered, a checksum or key that did not match, a file too short, a network error or the time
-  running out. With `WA_ENGINE_LOG` set, a `media.refetch-failed` line adds the phone's result and whether it gave the
-  same expired path again. A phone that answered an error but still gave a path is tried as before; when that path
+  running out, and whether the phone gave the expired path back. With `WA_ENGINE_LOG` set, a `media.refetch-failed`
+  line adds the first download's cause and the phone's result. A phone that answered an error but still gave a path is tried as before; when that path
   does not download either, the reason is the phone's answer (`media.phone-failed`, `media.not-on-phone` or
   `media.phone-cannot-decrypt`), not `media.retry-failed`, which now means the phone said it uploaded the file.
 - **Node 22 no longer prints `ExperimentalWarning: SQLite is an experimental feature`** on every command that opens

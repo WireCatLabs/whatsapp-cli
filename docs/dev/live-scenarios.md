@@ -266,16 +266,16 @@ failure in `batch.failures`, so it reads the failure's registered reason (WC-OUT
 | none, a file saved, no new `media.reuploaded` line | no | WhatsApp still kept the file |
 | none, a file saved, `serve` runs without `WA_ENGINE_LOG` | unknown | saved; nothing tells the two apart |
 | `media.phone-timeout` | yes | the phone did not answer within 20 s |
-| `media.not-on-phone` | yes | the phone no longer has it either |
-| `media.phone-cannot-decrypt` | yes | the phone could not read the request |
+| `media.not-on-phone` | yes | the phone no longer has it either; a path it gave anyway did not download |
+| `media.phone-cannot-decrypt` | yes | the phone could not read the request; a path it gave anyway did not download |
 | `media.phone-failed`, `media.phone-answer-unreadable` | yes | the phone answered with an error; a path it gave anyway did not download |
 | `media.retry-failed` | yes | the phone uploaded it again, and the new copy did not download |
 
 When the phone gave a path and the download from it failed, the message ends with why, in fixed words: the HTTP
 status WhatsApp answered (`WhatsApp answered HTTP 404`), a checksum or key that did not match, a file too short, a
-network error or the time running out. The script prints it as "the engine said". With `WA_ENGINE_LOG` set, the
-engine also logs a `media.refetch-failed` line: the first download's cause, the phone's result, whether the phone
-gave the same dead path again, and the new copy's cause.
+network error or the time running out, and whether the phone gave the expired path back. The script prints it as
+"the engine said". With `WA_ENGINE_LOG` set, the engine also logs a `media.refetch-failed` line with the first
+download's cause and the phone's result.
 | `engine.stopped` | unknown | the engine stopped, while it waited or before |
 | none, exit 6, `not_found` | no | no verdict: the message has no file to download |
 | none, `validation_error` | no | no verdict: the store holds no keys for that file |

@@ -83,6 +83,15 @@ func TestThePhonesAnswerGivesTheNewPathOrSaysWhy(t *testing.T) {
 	}
 }
 
+func TestAPathGivenWithAnErrorKeepsThePhonesResult(t *testing.T) {
+	failed := waMmsRetry.MediaRetryNotification_GENERAL_ERROR
+	path, result, err := reuploadedPath(phoneAnswer(t, "3EB0A1", &waMmsRetry.MediaRetryNotification{
+		DirectPath: proto.String("/v/t62/again"), Result: failed.Enum()}), syntheticKey)
+	if path != "/v/t62/again" || result != failed || err != nil {
+		t.Errorf("%q, %s, %v; want the path tried, its result kept", path, result, err)
+	}
+}
+
 func TestAFailedDownloadFromTheNewPathSaysWhatThePhoneAnsweredAndWhy(t *testing.T) {
 	for _, tc := range []struct {
 		result       waMmsRetry.MediaRetryNotification_ResultType
@@ -93,7 +102,7 @@ func TestAFailedDownloadFromTheNewPathSaysWhatThePhoneAnsweredAndWhy(t *testing.
 		{waMmsRetry.MediaRetryNotification_NOT_FOUND, "not_found", "media.not-on-phone"},
 		{waMmsRetry.MediaRetryNotification_DECRYPTION_ERROR, "not_found", "media.phone-cannot-decrypt"},
 	} {
-		refused := classify(mediaFailure(refetchFailure(tc.result, "WhatsApp answered HTTP 404")))
+		refused := classify(mediaFailure(refetchFailure(tc.result, false, "WhatsApp answered HTTP 404")))
 		named := strings.HasSuffix(refused.Message, ": WhatsApp answered HTTP 404")
 		if refused.Code != tc.code || refused.Reason != tc.reason || !named {
 			t.Errorf("%s: %s (%s) %q, want %s (%s)", tc.result, refused.Code, refused.Reason, refused.Message, tc.code,
@@ -131,6 +140,13 @@ func TestADownloadFailureIsNamedByItsKindNeverByItsText(t *testing.T) {
 		if strings.Contains(got, "MARKER") || strings.Contains(got, "TOKEN") {
 			t.Errorf("the cause repeats the URL: %q", got)
 		}
+	}
+}
+
+func TestAFailedDownloadSaysWhenThePhoneGaveTheExpiredPathBack(t *testing.T) {
+	refused := refetchFailure(waMmsRetry.MediaRetryNotification_GENERAL_ERROR, true, "WhatsApp answered HTTP 404")
+	if !strings.HasSuffix(refused.Message, ": WhatsApp answered HTTP 404; the phone gave the expired path back") {
+		t.Errorf("message %q", refused.Message)
 	}
 }
 

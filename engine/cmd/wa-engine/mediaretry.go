@@ -155,13 +155,18 @@ func downloadCause(err error) string {
 }
 
 // refetchFailure answers a download from the phone's new path that failed: what the phone said when its result was an
-// error, else media.retry-failed, each with the cause, so a live run tells a dead path from a file that does not match.
-func refetchFailure(result waMmsRetry.MediaRetryNotification_ResultType, cause string) *refusal {
+// error, else media.retry-failed, each with the cause and whether the phone gave the expired path back, so a live run
+// without WA_ENGINE_LOG still tells a dead path from a file that does not match.
+func refetchFailure(result waMmsRetry.MediaRetryNotification_ResultType, samePath bool, cause string) *refusal {
 	failed := againFailed
 	if result != waMmsRetry.MediaRetryNotification_SUCCESS {
 		failed = phoneRefusal(result)
 	}
-	return because(failed.Reason, failed.Code, failed.Message+": "+cause)
+	message := failed.Message + ": " + cause
+	if samePath {
+		message += "; the phone gave the expired path back"
+	}
+	return because(failed.Reason, failed.Code, message)
 }
 
 // reupload asks the account's own phone to upload a file WhatsApp no longer keeps, and answers its new path. The
@@ -212,10 +217,11 @@ func (e *engine) fetchAgain(
 	if err != nil {
 		return nil, err
 	}
+	same := path == ref.DirectPath
 	fail := func(cause string) (*refreshed, error) {
 		e.client.Log.Warnf("media.refetch-failed: first download: %s; the phone answered %s, same path as before: %t; "+
-			"the new copy: %s", downloadCause(first), result, path == ref.DirectPath, cause)
-		return nil, refetchFailure(result, cause)
+			"the new copy: %s", downloadCause(first), result, same, cause)
+		return nil, refetchFailure(result, same, cause)
 	}
 	if !strings.HasPrefix(path, "/") {
 		return fail("the phone's answer held no usable path")

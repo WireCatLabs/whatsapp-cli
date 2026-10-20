@@ -114,8 +114,10 @@ the phone uploaded it again; start serve with WA_ENGINE_LOG set to a file to tel
 else
   case "$reason" in
     media.phone-timeout) outcome="the phone did not answer within 20 s — is it online? run again" ;;
-    media.not-on-phone) outcome="the phone no longer has the file either" ;;
-    media.phone-cannot-decrypt) outcome="the phone could not read the request for the file" ;;
+    media.not-on-phone) outcome="the phone no longer has the file either (a path it gave anyway did not download)" ;;
+    media.phone-cannot-decrypt)
+      outcome="the phone could not read the request for the file (a path it gave anyway did not download)"
+      ;;
     media.phone-failed | media.phone-answer-unreadable)
       outcome="the phone answered with an error (and, if it still gave a path, that path did not download either)"
       ;;
