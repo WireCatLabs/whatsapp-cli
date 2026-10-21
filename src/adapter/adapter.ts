@@ -329,6 +329,15 @@ export const whatsAppAdapter = (
           messageId: event.reaction.message,
           reaction: toPersonReaction(event.reaction),
         })
+      else if (event.event === "receipt")
+        onEvent({
+          event: "delivery",
+          chatId: event.receipt.chat,
+          chatTitle: null,
+          messageId: event.receipt.id,
+          delivery: event.receipt.delivery,
+          at: event.receipt.at,
+        })
       else if (event.event === "vote") {
         const vote = await toVoteEvent(event.vote, stored)
         if (vote) onEvent(vote)
@@ -343,7 +352,7 @@ export const whatsAppAdapter = (
     // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
     const live = listening(
       engine,
-      ["message", "edit", "delete", "vote", "reaction", "star", "chat_event", "connection"],
+      ["message", "edit", "delete", "vote", "reaction", "star", "receipt", "chat_event", "connection"],
       signal,
       words,
       warn,

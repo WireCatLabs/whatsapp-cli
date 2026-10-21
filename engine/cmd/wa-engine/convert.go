@@ -297,6 +297,9 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 				starred := true
 				changed.message.Starred = &starred
 			}
+			if changed.message.FromMe && c.kindOf(raw) == "dm" {
+				changed.message.Delivery = pushedDelivery(item.GetMessage().GetStatus())
+			}
 			out.Messages = append(out.Messages, changed.message)
 			if changed.message.Poll != nil {
 				out.Votes = append(out.Votes, c.historyVotes(changed.message, item.GetMessage(), k)...)
