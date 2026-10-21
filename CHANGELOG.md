@@ -17,6 +17,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`stats chats retention` and `chats stats show` read `--since-time`/`--until-time` in their `--timezone`**, and a
+  date alone in retention's `--until-time` covers that whole local day (cli-core 0.380.0). `stats charts`, `contacts
+  timeline` and the MCP `stats` tool name the zone in `meta.timezone` and give the UTC window in `meta.window`.
+
 - **The ban error says its end time is in UTC.** "the ban ends 2026-10-21T14:03:00.000Z" now ends in "UTC", so it is
   not read as local time. `standing.until` is unchanged.
 
