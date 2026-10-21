@@ -92,6 +92,9 @@ Muting is your own setting, which WhatsApp syncs to your other devices; nobody i
 applies it to a one-to-one chat has not been checked yet. A device linked a few minutes ago may not have WhatsApp's
 settings keys yet; keep `serve` running a while and try again. Mute a channel on the phone.
 
+The local store does not keep whether a chat is muted, whether you mute it with `wa` or on the phone. So `inbox`
+does not leave a muted chat out yet.
+
 ## Archive, pin or mark a chat unread
 
 ```sh
@@ -111,6 +114,11 @@ the phone shows pin, unpin, archive, unarchive and mark-unread (checked 2026-10-
 `--until-id`), then the read receipt; a receipt alone leaves a mark-unread on the phone. Until WhatsApp has sent the
 settings keys it is refused and sends neither. A channel gets the receipt only. That the phone takes the mark off
 this way is not checked yet.
+
+While `serve` or `watch` runs, a chat you read on the phone gets an unread count of 0 in the local store, so `inbox`
+stops showing it. New messages do not raise a stored count, so until the next history push `inbox --new` is the way
+to find them. An archive, a pin, a mark-unread, a deleted or a cleared chat on the phone is not saved yet, so `inbox`
+still lists a chat you archived. `watch --events` prints none of these changes.
 
 A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local store holds shows the quoted text
 and its sender on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's

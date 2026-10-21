@@ -79,7 +79,7 @@ func linkNotice(evt *events.GroupInfo) (waChat, bool) {
 	return waChat{}, false
 }
 
-// MarshalJSON gives a notice only what it says, so the store keeps the group's name, count and activity.
+// MarshalJSON gives a notice only what it says, so the store keeps the chat's name, count and activity.
 func (c waChat) MarshalJSON() ([]byte, error) {
 	type full waChat
 	if !c.notice {
@@ -88,9 +88,12 @@ func (c waChat) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		JID        string      `json:"jid"`
 		Kind       string      `json:"kind"`
+		Unread     *int        `json:"unread,omitempty"`
+		Archived   *bool       `json:"archived,omitempty"`
+		Muted      *bool       `json:"muted,omitempty"`
 		Parent     parentField `json:"parent,omitzero"`
 		Membership string      `json:"membershipState,omitempty"`
-	}{c.JID, c.Kind, c.Parent, c.Membership})
+	}{c.JID, c.Kind, c.Unread, c.Archived, c.Muted, c.Parent, c.Membership})
 }
 
 func (p parentField) MarshalJSON() ([]byte, error) {

@@ -61,6 +61,8 @@ func (e *engine) handle(raw any) {
 		if chat, ok := e.appStateChat(evt.ChatJID, evt.MessageID); ok && evt.Action != nil {
 			e.out.starred(chat, evt.MessageID, evt.Action.GetStarred())
 		}
+	case *events.Archive, *events.Mute, *events.MarkChatAsRead:
+		e.chatStateChanged(evt)
 	case *events.GroupInfo:
 		for _, change := range e.conv.groupChanges(evt) {
 			e.out.event("chat_event", change)

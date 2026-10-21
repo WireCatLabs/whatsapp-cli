@@ -24,7 +24,8 @@ WhatsApp has no request for "chats". Three things fill the store, and nothing el
   save it, until the phone has been quiet for 45 seconds.
 - **`serve`**, while it runs: new messages, edits and deletions, and the messages you send. An edit
   keeps the message's own time, reply and reactions; only an edit of a message the store lacks is saved with the
-  edit's time.
+  edit's time. A chat you read on the phone gets an unread count of 0. Archiving, muting, pinning, marking unread,
+  deleting or clearing a chat on the phone is not saved.
 - **`messages sync <chat>`**: older messages of one chat, asked of your phone
   ([below](#older-history-from-your-phone)).
 
