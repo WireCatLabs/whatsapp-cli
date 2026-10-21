@@ -231,9 +231,10 @@ wa personal chats leave 120363000000000001@g.us
   refused beside `--photo`. The photo is set or removed first: if the title, description or a setting given with it
   then fails, the error says so.
 - **A group's name works too**, as in every command that names a chat: `wa` looks it up in the local store first,
-  where part of the name is enough, and asks WhatsApp's chat list only for a name the store does not hold. A name
-  that matches several stored chats is refused; name one by its `…@g.us` id. A group the store does not hold yet
-  is found by its `…@g.us` id only: a command that connects learns the joined groups after it looks the name up.
+  then in WhatsApp's chat list. Part of the name is enough, case does not matter, and an emoji matches with or
+  without the invisible mark a copied one often carries ("Семья❤️" finds "Семья❤"). A name that matches several
+  chats is refused; name one by its `…@g.us` id. Every connection saves the groups you are in to the local store, so
+  `chats list kind:group` shows them once `serve`, `watch` or any command that connects has run.
 - `join` on a group that approves who joins answers `requested: true`; you are in once an admin lets you in.
 - **`leave` marks the group left in the local store**, and `wa personal store clear --left` lists it. A `join` that
   gets in takes the mark off, and so does being added back while `serve` or `watch` runs.

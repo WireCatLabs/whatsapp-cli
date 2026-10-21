@@ -255,8 +255,8 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   role), `channelMessages` (`jid`, `count` up to 50, `before` a server id; `GetNewsletterMessages`, asked past a page
   of only skipped posts up to three rounds), `followChannel` (a `whatsapp.com/channel/` link:
   `GetNewsletterInfoWithInvite`, then `FollowNewsletter`) and `unfollowChannel`. The followed channels
-  (`GetSubscribedNewsletters`) are asked once per process, like the joined groups: when the engine connects, and by
-  the directory if that came first. The first answer goes out as a `history` push, which `serve`'s and `watch`'s
+  (`GetSubscribedNewsletters`) are asked once per process, as the joined groups are: when the engine connects, and
+  by the directory if that came first. The first answer goes out as a `history` push, which `serve`'s and `watch`'s
   `feed` stores as chats of kind `channel`; `watch` itself titles chats from the store. A live post comes
   through the same conversion with its server id; a live edit or deletion of a post is passed over. In the adapter,
   `chats join` and `chats leave` branch on a channel link or id (`src/adapter/channels.ts`) and hand the rest to the
@@ -300,8 +300,12 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 - **Names without the phone.** WhatsApp has no "list chats" request. cli-core answers a name the store holds, and
   `watch`'s chat titles, from the store (`history: "store"`); only a name it lacks reaches the adapter. The engine
   answers that from what it can see without asking the phone: chats pushed in this process, the address
-  book in `private.db`, and the joined groups (one request per process, then kept;
-  `engine/cmd/wa-engine/directory.go`).
+  book in `private.db`, the joined groups and the followed channels, and matches the name with cli-core's
+  `pickChat`, as the store does. The joined groups (`GetJoinedGroups`, `joinedGroups` in
+  `engine/cmd/wa-engine/directory.go`) are asked once per process, when the engine connects or by the directory if
+  that came first, and the first answer goes out as a `history` push of chats, as the followed channels do: WhatsApp
+  has no chat list, so this push is how `chats list` learns the groups a history push never named. It sends the
+  name and the member count only, so the store keeps a group's parent, unread count, last activity and membership.
 - **One npm package per platform.** The engine ships as `@wirecat/whatsapp-engine-<platform>-<arch>`, named by
   Node's `process.platform` and `process.arch` (`linux-x64`, `darwin-arm64`, `win32-x64`, and the arm64/x64 rest), each
   holding one static binary built without cgo by

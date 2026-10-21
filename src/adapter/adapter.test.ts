@@ -2,7 +2,7 @@ import type { MessageEvent } from "@wirecat/cli-core"
 import type { HistoryBatch } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { EngineError, type WaMessage } from "../engine/contract.js"
+import { EngineError, type WaChat, type WaMessage } from "../engine/contract.js"
 import { fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
 import { whatsAppAdapter } from "./adapter.js"
 import { toChat } from "./map.js"
@@ -61,6 +61,41 @@ describe("whatsAppAdapter", () => {
       expect(message).not.toContain(query)
       for (const chat of seed.chats) expect(message).not.toContain(chat.id)
     }
+  })
+
+  describe("a chat named by its title", () => {
+    const group = (jid: string, name: string): WaChat => ({
+      jid,
+      name,
+      kind: "group",
+      unread: null,
+      lastMessageAt: null,
+      participants: 3,
+    })
+    const named = (...chats: WaChat[]) => {
+      const engine = fakeEngine(seed)
+      engine.directory = async () => chats
+      return whatsAppAdapter(engine)
+    }
+    const family = group("120363000000000011@g.us", "Семья❤")
+
+    it("finds it whatever the case, and by part of the title", async () => {
+      const adapter = named(family, group("120363000000000012@g.us", "Работа"))
+      await expect(adapter.resolve("семья❤")).resolves.toMatchObject({ id: family.jid, kind: "group" })
+      await expect(adapter.resolve("Семь")).resolves.toMatchObject({ id: family.jid })
+    })
+
+    it("finds it when the typed emoji carries a presentation mark the title lacks", async () => {
+      await expect(named(family).resolve("Семья❤\uFE0F")).resolves.toMatchObject({ id: family.jid })
+    })
+
+    it("asks which one when a fragment matches two chats, naming neither", async () => {
+      const refusal = named(family, group("120363000000000013@g.us", "Семья❤ и друзья")).resolve("Семья")
+      await expect(refusal).rejects.toMatchObject({
+        code: "validation_error",
+        message: expect.stringMatching(/^2 chats match that name/),
+      })
+    })
   })
 
   it("passes a reply on to the engine", async () => {
