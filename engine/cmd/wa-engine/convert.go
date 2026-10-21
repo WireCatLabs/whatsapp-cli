@@ -301,6 +301,7 @@ func (c *converter) history(data *waHistorySync.HistorySync, parse parseWeb) waH
 			if changed.message.Poll != nil {
 				out.Votes = append(out.Votes, c.historyVotes(changed.message, item.GetMessage(), k)...)
 			}
+			out.Reactions = append(out.Reactions, c.historyReactions(changed.message, item.GetMessage(), k)...)
 		}
 	}
 	for _, pushName := range data.GetPushnames() {

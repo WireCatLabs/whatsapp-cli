@@ -22,7 +22,7 @@ WhatsApp has no request for "chats". Three things fill the store, and nothing el
 
 - **The history push** right after linking. `wa <profile> session start` and `setup` keep the connection open and
   save it, until the phone has been quiet for 45 seconds.
-- **`serve`**, while it runs: new messages, edits and deletions, and the messages you send. An edit
+- **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send. An edit
   keeps the message's own time, reply and reactions; only an edit of a message the store lacks is saved with the
   edit's time. A chat you read on the phone gets an unread count of 0. Archiving, muting, pinning, marking unread,
   deleting or clearing a chat on the phone is not saved.
@@ -60,8 +60,10 @@ walk.
 
 ## What it keeps
 
-- **The history push**, and what `serve` and `watch` hear: messages, edits and deletions. A reaction you send with
-  `reactions add` goes to WhatsApp, but reactions that others send are not stored yet.
+- **The history push**, and what `serve` and `watch` hear: messages, edits, deletions and reactions. Each person's
+  newest reaction is kept, so a message shows how many people reacted with each emoji and which one is yours. A
+  reaction taken back is dropped, and an older push never brings back a reaction changed since. Your reactions from
+  the phone are stored; one you send with `reactions add` goes to WhatsApp but is not stored.
 - **The messages you send** with `wa`.
 - **Calls to you** that `serve` or `watch` hears, as a message in the caller's chat or in the group: "Incoming voice
   call" while it rings, then "Missed voice call", "Declined voice call" or "Voice call" (answered) when it ends. A

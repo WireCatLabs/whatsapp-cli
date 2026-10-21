@@ -39,6 +39,8 @@ func (e *engine) handle(raw any) {
 			}
 		} else if evt.Message.GetPollUpdateMessage() != nil {
 			e.pollVote(evt)
+		} else if evt.Message.GetReactionMessage() != nil {
+			e.liveReaction(evt)
 		} else if changed, ok := e.liveMessage(evt); ok {
 			if changed.kind == "delete" {
 				e.out.deleted(changed.message.Chat, changed.message.ID)

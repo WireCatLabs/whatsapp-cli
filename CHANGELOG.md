@@ -22,6 +22,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   a person (cli-core 0.381.0). A name that matches several chats is refused as before; the refusal now reads "N chats
   match that name". What to watch for: a part of a name that used to be refused may now name a chat, when exactly
   one chat matches it.
+- **Reactions that other people send are stored** (cli-core 0.381.0). `serve` and `watch` keep each
+  person's newest reaction, live and from the history push, and `watch --events` passes each one on as a
+  `person_reaction` event. A message then shows its reaction counts and your own reaction, from the phone, in
+  `reactions`. A reaction taken back is dropped, and an older history push no longer undoes a newer change. What to
+  watch for: a reaction you send with `reactions add` still goes to WhatsApp only, not to the store. Engine wire
+  change: a `reaction` event and a history push's `reactions`. Engine protocol 43.
 
 ## 0.3.0 — 22.10.2026
 

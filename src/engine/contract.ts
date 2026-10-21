@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 42
+export const PROTOCOL = 43
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -238,6 +238,22 @@ export const waVote = v.strictObject({
 })
 
 /**
+ * One person's reaction change to a message: WhatsApp sends each change on its own, never a message's totals.
+ * `reaction` is the emoji, `null` when they took it back. `reactor` is in LID form like a sender, one id per person on
+ * every path, and the account's own reaction is under `self()` with `own`. `reactedAt` is when the reactor sent it, by
+ * WhatsApp's clock: the store keeps a person's newest reaction by it.
+ */
+export const waReaction = v.strictObject({
+  chat: jid,
+  message: v.pipe(v.string(), v.nonEmpty()),
+  reactor: jid,
+  reactorName: v.nullable(v.string()),
+  own: v.boolean(),
+  reaction: v.nullable(v.pipe(v.string(), v.nonEmpty())),
+  reactedAt: time,
+})
+
+/**
  * A one-to-one chat the engine emitted before in phone form (`from`), now named by its person's LID (`to`). The store
  * moves the old chat to the new id before anything under the new id lands. The engine repeats a re-key for a while,
  * since the CLI may not have been listening; a repeat changes nothing.
@@ -263,7 +279,8 @@ export const waChatEvent = v.strictObject({
 
 /**
  * One push from the phone. `kind` follows whatsmeow's sync types; the adapter treats them all alike. `votes` are the
- * votes in the pushed polls, which the store saves with the push, not as `vote` events. `events` are the groups'
+ * votes in the pushed polls and `reactions` the reactions on the pushed messages, which the store saves with the push,
+ * not as `vote` or `reaction` events. `events` are the groups'
  * service messages in the push, which come as no message. `rekeys` apply first.
  */
 export const waHistory = v.strictObject({
@@ -272,6 +289,7 @@ export const waHistory = v.strictObject({
   contacts: v.array(waContact),
   messages: v.array(waMessage),
   votes: v.array(waVote),
+  reactions: v.optional(v.array(waReaction)),
   rekeys: v.optional(v.array(waRekey)),
   events: v.optional(v.array(waChatEvent)),
 })
@@ -300,6 +318,7 @@ export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("edit"), message: waMessage }),
   v.strictObject({ event: v.literal("delete"), chat: jid, id: v.string() }),
   v.strictObject({ event: v.literal("vote"), vote: waVote }),
+  v.strictObject({ event: v.literal("reaction"), reaction: waReaction }),
   v.strictObject({ event: v.literal("chat_event"), change: waChatEvent }),
   /** The owner starred a message or took the star off on another device. */
   v.strictObject({ event: v.literal("star"), chat: jid, id: v.pipe(v.string(), v.nonEmpty()), starred: v.boolean() }),
@@ -378,6 +397,7 @@ export type WaContact = v.InferOutput<typeof waContact>
 export type WaMessage = v.InferOutput<typeof waMessage>
 export type WaPoll = v.InferOutput<typeof waPoll>
 export type WaVote = v.InferOutput<typeof waVote>
+export type WaReaction = v.InferOutput<typeof waReaction>
 export type WaChatEvent = v.InferOutput<typeof waChatEvent>
 export type WaMediaRef = v.InferOutput<typeof waMediaRef>
 export type WaDownloaded = v.InferOutput<typeof waDownloaded>
