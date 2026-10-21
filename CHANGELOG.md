@@ -7,8 +7,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
-- **cli-core 0.381.0.** The first run opens the local store as version 26, which adds one table and removes
+- **cli-core 0.382.0.** The first run opens the local store as version 28, which adds columns and removes
   nothing.
+- **Your messages show whether they were delivered and read.** In a one-to-one chat, a message you sent carries
+  `delivery`: `delivered` once it reached the other person's phone, `read` once they opened it. It comes from
+  WhatsApp's receipts, which `serve`, `watch` and any other command keep, and from the history push. It only moves
+  forward. A group's messages have none. `watch --events` prints each receipt. Needs cli-core 0.382.0 (store version
+  27). The engine speaks protocol 44.
 
 ### Fixed
 

@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 43
+export const PROTOCOL = 44
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -202,6 +202,19 @@ export const waCall = v.strictObject({
   duration: v.optional(v.number()),
 })
 
+const delivery = v.picklist(["delivered", "read"])
+
+/**
+ * The other person's phone got the owner's message, or they opened it (a played voice note counts). Only for a
+ * one-to-one chat: a group's come one person at a time, and the engine sends none of them.
+ */
+export const waReceipt = v.strictObject({
+  chat: jid,
+  id: v.pipe(v.string(), v.nonEmpty()),
+  delivery,
+  at: time,
+})
+
 export const waMessage = v.strictObject({
   id: v.pipe(v.string(), v.nonEmpty()),
   chat: jid,
@@ -219,6 +232,8 @@ export const waMessage = v.strictObject({
   /** A channel post's number on WhatsApp's servers: a channel's history is read back from it. */
   serverId: v.optional(v.number()),
   call: v.optional(waCall),
+  /** The owner's own message in a one-to-one chat, as far as the phone knew it got. */
+  delivery: v.optional(delivery),
 })
 
 /**
@@ -320,6 +335,7 @@ export const engineEvent = v.variant("event", [
   v.strictObject({ event: v.literal("vote"), vote: waVote }),
   v.strictObject({ event: v.literal("reaction"), reaction: waReaction }),
   v.strictObject({ event: v.literal("chat_event"), change: waChatEvent }),
+  v.strictObject({ event: v.literal("receipt"), receipt: waReceipt }),
   /** The owner starred a message or took the star off on another device. */
   v.strictObject({ event: v.literal("star"), chat: jid, id: v.pipe(v.string(), v.nonEmpty()), starred: v.boolean() }),
   /** A re-key outside a history push, sent before the first message under the new id. */

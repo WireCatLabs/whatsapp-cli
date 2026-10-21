@@ -59,6 +59,10 @@ func (e *engine) handle(raw any) {
 		if history.Kind != "on_demand" || !history.empty() || len(rekeys) > 0 {
 			e.out.event("history", history)
 		}
+	case *events.Receipt:
+		for _, receipt := range e.conv.receipts(evt) {
+			e.out.event("receipt", receipt)
+		}
 	case *events.Star:
 		if chat, ok := e.appStateChat(evt.ChatJID, evt.MessageID); ok && evt.Action != nil {
 			e.out.starred(chat, evt.MessageID, evt.Action.GetStarred())

@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 43
+const protocol = 44
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -120,6 +120,8 @@ type waMessage struct {
 	// A channel post's number on WhatsApp's servers, which reads count back from.
 	ServerID *int64  `json:"serverId,omitempty"`
 	Call     *waCall `json:"call,omitempty"`
+	// The owner's own message in a one-to-one chat, as far as the phone knew it got: delivered or read.
+	Delivery *string `json:"delivery,omitempty"`
 }
 
 type waHistory struct {
@@ -185,7 +187,7 @@ func (w *wire) starred(chat, id string, starred bool) {
 
 func fieldOf(event string) string {
 	switch event {
-	case "history", "vote", "reaction":
+	case "history", "vote", "reaction", "receipt":
 		return event
 	case "chat_event":
 		return "change"

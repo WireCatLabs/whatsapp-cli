@@ -124,6 +124,7 @@ export const toMessage = (message: WaMessage): Message => ({
         },
       }),
   ...(message.starred ? { starred: true } : {}),
+  ...(message.delivery === undefined ? {} : { delivery: message.delivery }),
 })
 
 /** Whether an attachment holds a file's keys, not a place or a contact card. */

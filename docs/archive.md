@@ -65,6 +65,10 @@ walk.
   reaction taken back is dropped, and an older push never brings back a reaction changed since. Your reactions from
   the phone are stored; one you send with `reactions add` goes to WhatsApp but is not stored.
 - **The messages you send** with `wa`.
+- **Whether the other person got and read your message**, in a one-to-one chat: `delivery` is `delivered` once it
+  reached their phone, and `read` once they opened it (a played voice note counts). It only moves forward. It comes
+  from the receipts `serve`, `watch` and any other command hear, and from the history push. A group's messages have
+  none: WhatsApp reports a group one person at a time. `wa` sends no read receipt of its own for this.
 - **Calls to you** that `serve` or `watch` hears, as a message in the caller's chat or in the group: "Incoming voice
   call" while it rings, then "Missed voice call", "Declined voice call" or "Voice call" (answered) when it ends. A
   call is marked `"action": "call"` in `provider_metadata`, with `video`, `outcome` and, for an answered call, its
