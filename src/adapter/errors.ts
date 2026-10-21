@@ -29,7 +29,7 @@ export const fromEngine = (error: EngineError, now = Date.now()): CliError => {
   if (error.reason === "account.banned") {
     const ends = error.until === undefined ? Number.NaN : Date.parse(error.until)
     const dated = ends > now
-    return new CliError(error.code, dated ? `${error.message}; the ban ends ${at(ends)}` : error.message, {
+    return new CliError(error.code, dated ? `${error.message}; the ban ends ${at(ends)} UTC` : error.message, {
       ...reason,
       standing: {
         state: "banned",

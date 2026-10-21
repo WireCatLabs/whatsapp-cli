@@ -231,3 +231,20 @@ func TestOwnChatIsSelf(t *testing.T) {
 		t.Error("the chat with yourself is not self")
 	}
 }
+
+func TestEmittedTimesDoNotDependOnTheComputerZone(t *testing.T) {
+	saved := time.Local
+	t.Cleanup(func() { time.Local = saved })
+	var got []string
+	for _, zone := range []string{"Asia/Vladivostok", "America/Los_Angeles"} {
+		loc, err := time.LoadLocation(zone)
+		if err != nil {
+			t.Fatal(err)
+		}
+		time.Local = loc
+		got = append(got, iso(fromUnix(1792591380)))
+	}
+	if got[0] != "2026-10-21T14:03:00.000Z" || got[1] != got[0] {
+		t.Fatalf("times differ by zone: %v", got)
+	}
+}

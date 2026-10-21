@@ -71,7 +71,7 @@ func (s *stats) update(fn func()) {
 	s.save()
 }
 
-func now() *time.Time { t := time.Now(); return &t }
+func now() *time.Time { t := time.Now().UTC(); return &t }
 
 func main() {
 	if len(os.Args) < 2 {
@@ -146,7 +146,7 @@ func newClient(ctx context.Context, dataDir string) (*whatsmeow.Client, *os.File
 
 func link(ctx context.Context, client *whatsmeow.Client, dataDir, phone string, listenFor time.Duration) {
 	phone = strings.TrimLeft(strings.ReplaceAll(phone, " ", ""), "+")
-	st := &stats{path: filepath.Join(dataDir, "stats.json"), StartedAt: time.Now(), Events: map[string]int{}}
+	st := &stats{path: filepath.Join(dataDir, "stats.json"), StartedAt: time.Now().UTC(), Events: map[string]int{}}
 	st.save()
 
 	stopNow := make(chan string, 1)
@@ -200,7 +200,7 @@ func link(ctx context.Context, client *whatsmeow.Client, dataDir, phone string, 
 	}
 
 	fmt.Printf("Listening until %s for more events. Ctrl+C stops early and saves the totals.\n",
-		time.Now().Add(listenFor).Format("15:04"))
+		time.Now().Add(listenFor).Format("15:04 MST"))
 	select {
 	case <-ctx.Done():
 		fmt.Println("Stopped.")
@@ -253,7 +253,7 @@ func pair(ctx context.Context, client *whatsmeow.Client, qr <-chan whatsmeow.QRC
 
 func summarize(evt *events.HistorySync) syncBatch {
 	b := syncBatch{
-		At:            time.Now(),
+		At:            time.Now().UTC(),
 		Type:          evt.Data.GetSyncType().String(),
 		Chunk:         evt.Data.GetChunkOrder(),
 		Progress:      evt.Data.GetProgress(),
@@ -296,12 +296,12 @@ func sendSelf(ctx context.Context, client *whatsmeow.Client) {
 		fail("could not connect within 30s")
 	}
 	self := client.Store.ID.ToNonAD()
-	text := "whatsapp-cli test " + time.Now().Format(time.RFC3339)
+	text := "whatsapp-cli test " + time.Now().UTC().Format(time.RFC3339)
 	resp, err := client.SendMessage(waitCtx, self, &waE2E.Message{Conversation: proto.String(text)})
 	if err != nil {
 		fail("send: " + err.Error())
 	}
-	fmt.Printf("Sent to your own chat. Message ID %s, server time %s\n", resp.ID, resp.Timestamp.Format(time.RFC3339))
+	fmt.Printf("Sent to your own chat. Message ID %s, server time %s\n", resp.ID, resp.Timestamp.UTC().Format(time.RFC3339))
 }
 
 func osName() string {

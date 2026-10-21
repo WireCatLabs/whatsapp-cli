@@ -775,7 +775,7 @@ describe("wa doctor --online", () => {
       return engine
     })
     const error = errorOf(refused.stderr)
-    expect(error.message).toContain(`the ban ends ${ends}`)
+    expect(error.message).toContain(`the ban ends ${ends} UTC`)
     expect(error.details.standing).toMatchObject({ state: "banned", until: ends })
 
     let held: FakeEngine | undefined
