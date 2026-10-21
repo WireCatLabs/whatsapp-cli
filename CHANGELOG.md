@@ -5,6 +5,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Added
+
+- **cli-core 0.381.0.** The first run opens the local store as version 26, which adds one table and removes
+  nothing.
+
 ### Fixed
 
 - **`chats list` shows the groups you are in.** WhatsApp has no chat list, so the store knew only the groups a
