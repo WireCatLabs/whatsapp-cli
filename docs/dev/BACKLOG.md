@@ -117,17 +117,17 @@ Open work, most important first. The plan in flight is
      whether the phone applies a mute addressed to a one-to-one chat with someone else by its LID when it keys that
      chat by phone number (whatsmeow maps neither way), and how soon after a fresh link the settings keys arrive.
      Channels are refused; whatsmeow's `NewsletterToggleMute` would mute one, without an end time.
-   - **Chat state from the phone (2026-10-22; stored since cli-core 0.382.0, engine protocol 45).** `events.Mute`
-     goes out with its end (`mutedUntil`, none for good), `events.Archive` as `archived`, and `events.MarkChatAsRead`
-     as `markedUnread: true` (mark unread) or `unread: 0`, `markedUnread: false` and the read range's last-message
-     time (read). The history push passes `archived`, the mute's end and `markedAsUnread`. The store counts new
-     messages itself (`unreadCounts: "store"`), from the read's last-message time. Not passed on, for want of a
-     cli-core field: `events.Pin`. `events.DeleteChat` and `events.ClearChat` wait for a store write that drops a
-     chat's messages up to a time (below). Open: a read's last-message time replaces the stored `lastMessageAt`,
-     which moves it back when a message arrived after the phone's read; the history push reads any mute end past the
-     year 9999 as for good, and whether a timed end there is in seconds is not checked live; a notice for a chat the
-     store does not hold makes a chat with no title (`upsertChat` inserts). Live checks open: archive, mute 8h, mark
-     unread and read on the phone while `serve` runs.
+   - **Chat state from the phone (2026-10-22; stored since cli-core 0.382.0, engine protocol 45).** `events.Mute` goes
+     out with its end (`mutedUntil`, none for good), `events.Archive` as `archived`, and `events.MarkChatAsRead` as
+     `markedUnread: true` (mark unread) or `unread: 0`, `markedUnread: false` and the read range's last-message time
+     (read). The history push passes `archived`, the mute's end and `markedAsUnread`. The store counts new messages
+     itself (`unreadCounts: "store"`), from the read's last-message time. Not passed on, for want of a cli-core field:
+     `events.Pin`. `events.DeleteChat` and `events.ClearChat` wait for a store write that drops a chat's messages up to
+     a time (below). Open ([cli-core #1728](https://github.com/WireCatLabs/cli-core/issues/1728)): a read's last-message
+     time replaces the stored `lastMessageAt`, which moves it back when a message arrived after the phone's read; the
+     history push reads any mute end past the year 9999 as for good, and whether a timed end there is in seconds is not
+     checked live; a notice for a chat the store does not hold makes a chat with no title (`upsertChat` inserts). Live
+     checks open: archive, mute 8h, mark unread and read on the phone while `serve` runs.
    - **`EmitAppStateEventsOnFullSync` stays off (2026-10-22).** On, whatsmeow replays the whole collection after a
      full sync (link, lost keys, a hash mismatch) as if it were new (whatsmeow appstate.go:70-72): every old star and
      delete for the owner would print again in `watch --events`, which has one event for a live change and a replay,
