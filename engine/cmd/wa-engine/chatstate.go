@@ -19,7 +19,7 @@ func (e *engine) chatStateChanged(raw any) {
 }
 
 // chatState reads the change as a notice that carries only the flag it names, so the store keeps the chat's name,
-// count and activity. A pin and a mark-unread are not passed on: cli-core's chat has no field for either.
+// count and activity. A pin is not passed on: cli-core's chat has no field for it.
 func (c *converter) chatState(raw any, now time.Time) (types.JID, waChat, bool) {
 	var jid types.JID
 	notice := waChat{notice: true}
@@ -34,14 +34,28 @@ func (c *converter) chatState(raw any, now time.Time) (types.JID, waChat, bool) 
 		if evt.Action == nil {
 			return jid, notice, false
 		}
-		muted := evt.Action.GetMuted() && mutedUntil(evt.Action.GetMuteEndTimestamp(), now)
+		end := evt.Action.GetMuteEndTimestamp()
+		muted := evt.Action.GetMuted() && mutedUntil(end, now)
 		jid, notice.Muted = evt.JID, &muted
+		if muted && end > 0 {
+			notice.MutedUntil = isoPtr(time.UnixMilli(end))
+		}
 	case *events.MarkChatAsRead:
-		if !evt.Action.GetRead() {
+		if evt.Action == nil {
 			return jid, notice, false
 		}
-		none := 0
-		jid, notice.Unread = evt.JID, &none
+		jid = evt.JID
+		read := evt.Action.GetRead()
+		marked := !read
+		notice.MarkedUnread = &marked
+		if read {
+			none := 0
+			notice.Unread = &none
+			// The count is 0 as of the newest message read, so the store counts only what came after it.
+			if last := evt.Action.GetMessageRange().GetLastMessageTimestamp(); last > 0 {
+				notice.LastMessageAt = isoPtr(time.Unix(last, 0))
+			}
+		}
 	default:
 		return jid, notice, false
 	}

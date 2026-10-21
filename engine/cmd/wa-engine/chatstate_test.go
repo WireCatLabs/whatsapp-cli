@@ -31,11 +31,17 @@ func TestChatStateChangedOnThePhoneGoesOutAsANoticeWithOnlyThatFlag(t *testing.T
 		{&events.Mute{JID: group, Action: &waSyncAction.MuteAction{Muted: proto.Bool(true), MuteEndTimestamp: proto.Int64(-1)}},
 			`{"jid":"` + group.String() + `","kind":"group","muted":true}`},
 		{&events.Mute{JID: annLID, Action: &waSyncAction.MuteAction{Muted: proto.Bool(true), MuteEndTimestamp: proto.Int64(later)}},
-			`{"jid":"` + annLID.String() + `","kind":"dm","muted":true}`},
+			`{"jid":"` + annLID.String() + `","kind":"dm","muted":true,"mutedUntil":"` + iso(time.UnixMilli(later)) + `"}`},
 		{&events.Mute{JID: annLID, Action: &waSyncAction.MuteAction{Muted: proto.Bool(false)}},
 			`{"jid":"` + annLID.String() + `","kind":"dm","muted":false}`},
 		{&events.MarkChatAsRead{JID: selfPN, Action: &waSyncAction.MarkChatAsReadAction{Read: proto.Bool(true)}},
-			`{"jid":"` + selfLID.String() + `","kind":"self","unread":0}`},
+			`{"jid":"` + selfLID.String() + `","kind":"self","unread":0,"markedUnread":false}`},
+		{&events.MarkChatAsRead{JID: annLID, Action: &waSyncAction.MarkChatAsReadAction{
+			Read:         proto.Bool(true),
+			MessageRange: &waSyncAction.SyncActionMessageRange{LastMessageTimestamp: proto.Int64(1792670400)},
+		}}, `{"jid":"` + annLID.String() + `","kind":"dm","unread":0,"lastMessageAt":"2026-10-22T12:00:00.000Z","markedUnread":false}`},
+		{&events.MarkChatAsRead{JID: group, Action: &waSyncAction.MarkChatAsReadAction{Read: proto.Bool(false)}},
+			`{"jid":"` + group.String() + `","kind":"group","markedUnread":true}`},
 	}
 	for _, c := range cases {
 		var out bytes.Buffer
@@ -63,11 +69,10 @@ func TestAMuteThatEndedIsNoMute(t *testing.T) {
 	}
 }
 
-func TestAPinAMarkUnreadOrAChangeWithoutAChatSaysNothing(t *testing.T) {
+func TestAPinOrAChangeWithoutAChatSaysNothing(t *testing.T) {
 	archived := &waSyncAction.ArchiveChatAction{Archived: proto.Bool(true)}
 	for _, evt := range []any{
 		&events.Pin{JID: annLID, Action: &waSyncAction.PinAction{Pinned: proto.Bool(true)}},
-		&events.MarkChatAsRead{JID: annLID, Action: &waSyncAction.MarkChatAsReadAction{Read: proto.Bool(false)}},
 		&events.MarkChatAsRead{JID: annLID},
 		&events.Archive{JID: annLID},
 		&events.Mute{JID: annLID},

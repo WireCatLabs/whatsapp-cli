@@ -85,6 +85,58 @@ describe("chat state changed on the phone", () => {
     })
   })
 
+  it("keeps a mute's end, the archive and the unread mark, and a read on the phone takes the mark off", async () => {
+    const lastMessageAt = "2026-10-20T10:00:00.000Z"
+    const mutedUntil = "2099-01-01T08:00:00.000Z"
+    await watching([
+      pushing({ jid: chat, name: "Book club", kind: "group", unread: 0, lastMessageAt, participants: 5 }),
+    ])
+
+    await watching([
+      pushing({ jid: chat, kind: "group", archived: true }),
+      pushing({ jid: chat, kind: "group", muted: true, mutedUntil }),
+      pushing({ jid: chat, kind: "group", markedUnread: true }),
+    ])
+    expect(await shown()).toMatchObject({
+      archived: true,
+      muted: true,
+      muted_until: mutedUntil,
+      marked_unread: true,
+      unread_count: 0,
+    })
+
+    await watching([pushing({ jid: chat, kind: "group", unread: 0, lastMessageAt, markedUnread: false })])
+    expect(await shown()).toMatchObject({ marked_unread: false, unread_count: 0, muted_until: mutedUntil })
+
+    await watching([pushing({ jid: chat, kind: "group", muted: true })])
+    expect((await shown()).muted_until ?? null).toBeNull()
+  })
+
+  it("counts a message from someone else that arrives after the phone's count", async () => {
+    const lastMessageAt = "2026-10-20T10:00:00.000Z"
+    await watching([
+      pushing({ jid: chat, name: "Book club", kind: "group", unread: 0, lastMessageAt, participants: 5 }),
+    ])
+
+    await watching([
+      {
+        event: "message",
+        message: {
+          id: "3EB0COUNTED00001",
+          chat,
+          sender: "100000000000003@lid",
+          senderName: null,
+          fromMe: false,
+          timestamp: "2026-10-20T11:00:00.000Z",
+          editedAt: null,
+          text: "new",
+          replyTo: null,
+        },
+      },
+    ])
+    expect(await shown()).toMatchObject({ unread_count: 1 })
+  })
+
   it("maps a notice to a chat update that carries only its flag", () => {
     expect(toChatUpdate({ jid: chat, kind: "group", archived: true })).toEqual({
       id: chat,
@@ -93,5 +145,16 @@ describe("chat state changed on the phone", () => {
     })
     expect(toChatUpdate({ jid: chat, kind: "group", muted: false })).toEqual({ id: chat, kind: "group", muted: false })
     expect(toChatUpdate({ jid: chat, kind: "dm", unread: 0 })).toEqual({ id: chat, kind: "dialog", unreadCount: 0 })
+    expect(toChatUpdate({ jid: chat, kind: "group", muted: true })).toEqual({
+      id: chat,
+      kind: "group",
+      muted: true,
+      mutedUntil: null,
+    })
+    expect(toChatUpdate({ jid: chat, kind: "group", markedUnread: true })).toEqual({
+      id: chat,
+      kind: "group",
+      markedUnread: true,
+    })
   })
 })

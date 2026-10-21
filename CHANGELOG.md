@@ -14,6 +14,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   WhatsApp's receipts, which `serve`, `watch` and any other command keep, and from the history push. It only moves
   forward. A group's messages have none. `watch --events` prints each receipt. Needs cli-core 0.382.0 (store version
   27). The engine speaks protocol 44.
+- **A chat's mute, archive and unread mark from the phone are kept** (cli-core 0.382.0). While `serve` or `watch`
+  runs, and from the history push, the local store saves whether a chat is archived, muted and until when, and
+  marked unread. So `inbox` and `review` over the store leave out muted and archived chats, and `inbox` lists a chat
+  you marked unread. A chat read on the phone loses its unread mark, and the store now counts each new message from
+  someone else after that read, so `inbox` shows a chat again once a new message arrives. `chats show` shows
+  `muted_until` and `marked_unread`. What to watch for: a read on the phone resets the chat's last-message time to the
+  newest message the phone read. Engine wire change: `mutedUntil` and `markedUnread` on a chat. Engine protocol 45.
 
 ### Fixed
 

@@ -86,14 +86,17 @@ func (c waChat) MarshalJSON() ([]byte, error) {
 		return json.Marshal(full(c))
 	}
 	return json.Marshal(struct {
-		JID        string      `json:"jid"`
-		Kind       string      `json:"kind"`
-		Unread     *int        `json:"unread,omitempty"`
-		Archived   *bool       `json:"archived,omitempty"`
-		Muted      *bool       `json:"muted,omitempty"`
-		Parent     parentField `json:"parent,omitzero"`
-		Membership string      `json:"membershipState,omitempty"`
-	}{c.JID, c.Kind, c.Unread, c.Archived, c.Muted, c.Parent, c.Membership})
+		JID           string      `json:"jid"`
+		Kind          string      `json:"kind"`
+		Unread        *int        `json:"unread,omitempty"`
+		LastMessageAt *string     `json:"lastMessageAt,omitempty"`
+		Archived      *bool       `json:"archived,omitempty"`
+		Muted         *bool       `json:"muted,omitempty"`
+		MutedUntil    *string     `json:"mutedUntil,omitempty"`
+		MarkedUnread  *bool       `json:"markedUnread,omitempty"`
+		Parent        parentField `json:"parent,omitzero"`
+		Membership    string      `json:"membershipState,omitempty"`
+	}{c.JID, c.Kind, c.Unread, c.LastMessageAt, c.Archived, c.Muted, c.MutedUntil, c.MarkedUnread, c.Parent, c.Membership})
 }
 
 func (p parentField) MarshalJSON() ([]byte, error) {
