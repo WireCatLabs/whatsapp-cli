@@ -30,7 +30,7 @@ type engine struct {
 
 	mu       sync.Mutex
 	chats    map[string]waChat // seen in this process, for resolving a name
-	groups   []waChat          // fetched once, on the first directory request
+	groups   []waChat          // the joined groups, fetched once
 	channels []waChat          // the followed channels, likewise
 
 	addressing map[types.JID]types.AddressingMode // per group, asked once
@@ -48,6 +48,7 @@ type engine struct {
 	downloads *historyDownloads
 
 	following follows // e.client; a test answers for WhatsApp here
+	joining   joins   // likewise
 
 	// Why WhatsApp ended the connection, until it connects again. Later requests answer with it instead of
 	// connecting: after "replaced" that would take the login back from the other process, and after a ban it would
@@ -60,6 +61,7 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	e := &engine{ctx: ctx, stop: stop, client: whatsmeow.NewClient(device, logger), out: out, chats: map[string]waChat{},
 		addressing: map[types.JID]types.AddressingMode{}}
 	e.following = e.client
+	e.joining = e.client
 	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf}
 	e.refreshSelf()
 	e.client.ManualHistorySyncDownload = true

@@ -3,6 +3,26 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **cli-core 0.381.0.** The first run opens the local store as version 26, which adds one table and removes
+  nothing.
+
+### Fixed
+
+- **`chats list` shows the groups you are in.** WhatsApp has no chat list, so the store knew only the groups a
+  history push or a message had named, and `chats list kind:group` could come back empty. Every connection now saves
+  the groups you are in, with their names and member counts; run `serve` (or any command that connects) once for
+  them to appear.
+- **A chat is found by a name copied with its emoji, by part of its name and whatever the case.** "Семья❤️" copied
+  from WhatsApp carries an invisible mark after the heart, and was refused as "no chat by that name or id" while
+  "Семья❤" worked. Names now match without that mark, ignoring case, and by part of the name, as `wa` already finds
+  a person (cli-core 0.381.0). A name that matches several chats is refused as before; the refusal now reads "N chats
+  match that name". What to watch for: a part of a name that used to be refused may now name a chat, when exactly
+  one chat matches it.
+
 ## 0.3.0 — 22.10.2026
 
 ### Changed — may break callers

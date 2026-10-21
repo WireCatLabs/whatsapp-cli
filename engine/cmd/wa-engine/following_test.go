@@ -47,7 +47,7 @@ func (l lines) next(t *testing.T) string {
 func followingEngine(f *fakeFollows) (*engine, lines) {
 	out := make(lines, 8)
 	return &engine{ctx: context.Background(), client: &whatsmeow.Client{Store: &store.Device{}}, out: newWire(out),
-		conv: &converter{}, following: f}, out
+		conv: &converter{}, following: f, joining: &fakeJoins{}}, out
 }
 
 func TestConnectingPushesTheFollowedChannelsOnceAsChats(t *testing.T) {

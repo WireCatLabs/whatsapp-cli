@@ -12,6 +12,7 @@ import {
   type MessageEvent,
   type MessageHit,
   parseMarkdownSpans,
+  pickChat,
 } from "@wirecat/cli-core"
 import type {
   LiveUpdates,
@@ -471,17 +472,24 @@ export const whatsAppAdapter = (
           lastMessageAt: null,
           participantsCount: null,
         }
-      const named = (await translated(engine.directory())).filter((chat) => chat.name === query)
-      if (named.length === 1 && named[0]) return toChat(named[0])
-      if (named.length > 1)
+      const directory = (await translated(engine.directory())).map(toChat)
+      try {
+        return pickChat(query, directory)
+      } catch (error) {
+        if (!(error instanceof CliError)) throw error
+        // cli-core's refusal quotes the typed name and the matching titles; an error here names neither (WC-SECR-6).
+        const candidates = error.details.candidates
+        if (error.code === "validation_error" && Array.isArray(candidates))
+          throw new CliError(
+            "validation_error",
+            `${candidates.length} chats match that name — name one by its id; ${words("chats.list")} shows them`,
+          )
+        if (error.code !== "not_found") throw error
         throw new CliError(
-          "validation_error",
-          `${named.length} chats share that name — name one by its id; ${words("chats.list")} shows them`,
+          "not_found",
+          `no chat by that name or id; ${words("chats.list")} shows the chats this profile has`,
         )
-      throw new CliError(
-        "not_found",
-        `no chat by that name or id; ${words("chats.list")} shows the chats this profile has`,
-      )
+      }
     },
 
     chat: async (jid: string) => {

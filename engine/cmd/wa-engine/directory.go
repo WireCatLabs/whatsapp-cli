@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"go.mau.fi/whatsmeow/types"
 )
 
@@ -34,23 +36,9 @@ func (e *engine) remember(chats []waChat) {
 }
 
 // directory is every chat the engine can name without asking the phone: those pushed in this process, the address
-// book, and the joined groups (one request, then kept).
+// book, the joined groups and the followed channels.
 func (e *engine) directory() []waChat {
-	e.mu.Lock()
-	needGroups := e.groups == nil && e.client.IsConnected()
-	e.mu.Unlock()
-	if needGroups {
-		if groups, err := e.client.GetJoinedGroups(e.ctx); err == nil {
-			list := make([]waChat, 0, len(groups))
-			for _, group := range groups {
-				list = append(list, listedLinked(e.groupChat(group)))
-			}
-			e.mu.Lock()
-			e.groups = list
-			e.mu.Unlock()
-		}
-	}
-
+	groups := e.joinedGroups()
 	channels := e.followedChannels()
 
 	e.mu.Lock()
@@ -59,7 +47,7 @@ func (e *engine) directory() []waChat {
 	for _, contact := range e.contacts() {
 		byID[contact.JID] = waChat{JID: contact.JID, Name: contact.Name, Kind: e.conv.kindOf(mustJID(contact.JID))}
 	}
-	for _, group := range e.groups {
+	for _, group := range groups {
 		byID[group.JID] = group
 	}
 	for _, channel := range channels {
@@ -77,6 +65,37 @@ func (e *engine) directory() []waChat {
 	for _, chat := range byID {
 		list = append(list, chat)
 	}
+	return list
+}
+
+type joins interface {
+	IsConnected() bool
+	GetJoinedGroups(ctx context.Context) ([]*types.GroupInfo, error)
+}
+
+// joinedGroups asks WhatsApp once per process, as followedChannels does, and pushes the first answer the same way:
+// WhatsApp has no chat list, and without this push the store knows only the groups a history push or a message named.
+func (e *engine) joinedGroups() []waChat {
+	e.mu.Lock()
+	known, asked := e.groups, e.groups != nil
+	e.mu.Unlock()
+	if asked || !e.joining.IsConnected() {
+		return known
+	}
+	groups, err := e.joining.GetJoinedGroups(e.ctx)
+	if err != nil {
+		return nil
+	}
+	list := make([]waChat, 0, len(groups))
+	for _, group := range groups {
+		if group != nil {
+			list = append(list, listedLinked(e.groupChat(group)))
+		}
+	}
+	e.mu.Lock()
+	e.groups = list
+	e.mu.Unlock()
+	e.pushChats(list)
 	return list
 }
 

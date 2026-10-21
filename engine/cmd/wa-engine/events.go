@@ -90,7 +90,9 @@ func (e *engine) handle(raw any) {
 	case *events.Connected:
 		e.refreshSelf()
 		e.end("connected", nil)
-		// While listening nothing else asks for the directory, so this push is how the store learns the channels.
+		// While listening nothing else asks for the directory, so these pushes are how the store learns the joined
+		// groups and the channels.
+		go e.joinedGroups()
 		go e.followedChannels()
 	case *events.Disconnected, *events.KeepAliveTimeout:
 		e.out.connection("disconnected", "")
