@@ -43,6 +43,8 @@ type engine struct {
 
 	retries retryWaiter // downloads waiting for the phone to upload a file again
 
+	calls calls
+
 	downloads *historyDownloads
 
 	following follows // e.client; a test answers for WhatsApp here

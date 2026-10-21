@@ -76,6 +76,8 @@ func (e *engine) handle(raw any) {
 		if chat, ok := e.appStateChat(evt.ChatJID, evt.MessageID); ok {
 			e.out.deleted(chat, evt.MessageID)
 		}
+	case *events.CallOffer, *events.CallOfferNotice, *events.CallAccept, *events.CallReject, *events.CallTerminate:
+		e.call(raw)
 	case *events.MediaRetry:
 		e.retries.deliver(evt)
 	case *events.AppStateSyncComplete:

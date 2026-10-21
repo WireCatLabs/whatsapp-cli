@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 41
+const protocol = 42
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -118,7 +118,8 @@ type waMessage struct {
 	// Only ever true: a push can be older than a star the phone took off since, and an absent flag keeps the stored one.
 	Starred *bool `json:"starred,omitempty"`
 	// A channel post's number on WhatsApp's servers, which reads count back from.
-	ServerID *int64 `json:"serverId,omitempty"`
+	ServerID *int64  `json:"serverId,omitempty"`
+	Call     *waCall `json:"call,omitempty"`
 }
 
 type waHistory struct {
