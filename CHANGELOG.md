@@ -29,11 +29,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   date alone in retention's `--until-time` covers that whole local day (cli-core 0.380.0). `stats charts`, `contacts
   timeline` and the MCP `stats` tool name the zone in `meta.timezone` and give the UTC window in `meta.window`.
 - **A chat you read on the phone stops counting as unread.** While `serve` or `watch` runs, reading a chat on the
-  phone sets its unread count in the local store to 0, so `inbox` no longer shows it until new messages come. Before,
-  the count stayed until the next history push. Archiving and muting on the phone are passed on too, but the local
-  store does not keep either flag yet, so `inbox` still lists an archived or muted chat. Pinning, marking a chat
-  unread, deleting or clearing a chat on the phone still do not reach the store. `watch --events` prints none of these
-  changes, as in `tg`.
+  phone sets its unread count in the local store to 0, so `inbox` no longer shows it. Before, the count stayed until
+  the next history push. What to watch for: new messages do not raise a stored count, here or in any other chat, so
+  until the next history push `inbox` finds them only with `--new`. Archiving, muting, pinning, marking a chat unread,
+  deleting or clearing a chat on the phone are not saved yet, so `inbox` still lists an archived or muted chat.
+  `watch --events` prints none of these changes, as in `tg`.
 - **The ban error says its end time is in UTC.** "the ban ends 2026-10-21T14:03:00.000Z" now ends in "UTC", so it is
   not read as local time. `standing.until` is unchanged.
 

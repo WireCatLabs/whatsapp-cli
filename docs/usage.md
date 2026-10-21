@@ -116,9 +116,9 @@ settings keys it is refused and sends neither. A channel gets the receipt only. 
 this way is not checked yet.
 
 While `serve` or `watch` runs, a chat you read on the phone gets an unread count of 0 in the local store, so `inbox`
-stops showing it. A chat you archive on the phone is passed on as well, but the local store does not keep the archive
-yet, so `inbox` still lists it. A pin, a mark-unread, a deleted or a cleared chat on the phone does not reach the
-store. `watch --events` prints none of these changes.
+stops showing it. New messages do not raise a stored count, so until the next history push `inbox --new` is the way
+to find them. An archive, a pin, a mark-unread, a deleted or a cleared chat on the phone is not saved yet, so `inbox`
+still lists a chat you archived. `watch --events` prints none of these changes.
 
 A reply (`messages send --reply-to 3EB0A1B2C3D4E5F6A7B8`) to a message the local store holds shows the quoted text
 and its sender on the phone. A reply to one the store lacks is still sent, with the message's id alone; WhatsApp's

@@ -128,7 +128,10 @@ Open work, most important first. The plan in flight is
      `events.Pin` (a chat has no `pinned`) and a mark-unread (no "marked unread"; a made-up count would lie).
      `events.DeleteChat` and `events.ClearChat` wait for a store write that drops a chat's messages up to a time
      (below). A read applies to the whole chat even when the phone's range ends before a message the store got
-     later. Live check open: read, archive and mute the own chat on the phone while `serve` runs.
+     later, and nothing raises a stored count when a message arrives (only the history push sets one), so after a
+     read the chat stays at 0 until the next push; `inbox --new` still finds the new messages. A notice for a chat
+     the store does not hold makes a chat with no title (`upsertChat` inserts), as a group notice does. Live check
+     open: read on the phone a chat stored with a count above 0 while `serve` runs.
    - **`EmitAppStateEventsOnFullSync` stays off (2026-10-22).** On, whatsmeow replays the whole collection after a
      full sync (link, lost keys, a hash mismatch) as if it were new (whatsmeow appstate.go:70-72): every old star and
      delete for the owner would print again in `watch --events`, which has one event for a live change and a replay,
