@@ -1,4 +1,14 @@
-import type { Account, Attachment, Chat, ChatEvent, ChatKind, ChatUpdate, Member, Message } from "@wirecat/cli-core"
+import type {
+  Account,
+  Attachment,
+  Chat,
+  ChatEvent,
+  ChatKind,
+  ChatUpdate,
+  Member,
+  Message,
+  PersonReaction,
+} from "@wirecat/cli-core"
 import * as v from "valibot"
 import {
   type WaAccount,
@@ -8,6 +18,7 @@ import {
   type WaContact,
   type WaMediaRef,
   type WaMessage,
+  type WaReaction,
   waAttachment,
   waMediaRef,
 } from "../engine/contract.js"
@@ -54,6 +65,13 @@ const rest = (chat: WaChat) => ({
 export const toAccount = (account: WaAccount): Account => ({ id: account.jid, name: account.name, username: null })
 
 export const toMember = (contact: WaContact): Member => ({ id: contact.jid, name: contact.name, username: null })
+
+export const toPersonReaction = ({ reactor, reactorName, own, reaction, reactedAt }: WaReaction): PersonReaction => ({
+  person: { id: reactor, name: reactorName, username: null },
+  own,
+  reaction,
+  reactedAt,
+})
 
 export const toChatEvent = ({ id, timestamp, event, by, byName, people, title }: WaChatEvent): ChatEvent => ({
   messageId: id,

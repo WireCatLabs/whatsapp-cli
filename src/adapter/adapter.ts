@@ -56,6 +56,7 @@ import {
   toChatUpdate,
   toMember,
   toMessage,
+  toPersonReaction,
   toWaAttachment,
 } from "./map.js"
 import { pinAdapter } from "./pins.js"
@@ -320,6 +321,14 @@ export const whatsAppAdapter = (
           messageId: event.id,
           starred: event.starred,
         })
+      else if (event.event === "reaction")
+        onEvent({
+          event: "person_reaction",
+          chatId: event.reaction.chat,
+          chatTitle: null,
+          messageId: event.reaction.message,
+          reaction: toPersonReaction(event.reaction),
+        })
       else if (event.event === "vote") {
         const vote = await toVoteEvent(event.vote, stored)
         if (vote) onEvent(vote)
@@ -334,7 +343,7 @@ export const whatsAppAdapter = (
     // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
     const live = listening(
       engine,
-      ["message", "edit", "delete", "vote", "star", "chat_event", "connection"],
+      ["message", "edit", "delete", "vote", "reaction", "star", "chat_event", "connection"],
       signal,
       words,
       warn,
@@ -393,13 +402,18 @@ export const whatsAppAdapter = (
       }
       if (event.event !== "history") return
       flush()
-      const { rekeys, chats, contacts, messages, votes, events } = event.history
+      const { rekeys, chats, contacts, messages, votes, reactions, events } = event.history
       onBatch({
         rekeys: rekeys ?? [],
         chats: chats.map(toChatUpdate),
         people: contacts.map(toMember),
         messages: await Promise.all(messages.map((message) => withoutKeptRefs(toMessage(message)))),
         votes: votes.flatMap((vote) => toHistoryVote(vote) ?? []),
+        reactions: (reactions ?? []).map((reaction) => ({
+          chatId: reaction.chat,
+          messageId: reaction.message,
+          reaction: toPersonReaction(reaction),
+        })),
         events: (events ?? []).map((change) => ({ chatId: change.chat, change: toChatEvent(change) })),
       })
     }

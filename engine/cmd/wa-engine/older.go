@@ -132,7 +132,8 @@ func (w *olderWaiter) match(h waHistory, session string) (*olderAsk, olderMatch)
 
 // deliver hands the waiting request its chat's messages and returns the rest of the batch, for the history event:
 // the phone may put other chats and push names in the same answer, and those are saved like any history push. The
-// votes stay in the history event: cli-core saves a vote whether or not its poll arrives in the same batch.
+// votes and reactions stay in the history event: cli-core saves either whether or not its message arrives in the same
+// batch.
 func (w *olderWaiter) deliver(h waHistory, session string) (waHistory, olderMatch, int) {
 	ask, how := w.match(h, session)
 	if ask == nil {
@@ -141,7 +142,7 @@ func (w *olderWaiter) deliver(h waHistory, session string) (waHistory, olderMatc
 	w.forget(ask)
 	oldest, more := h.oldest[ask.chat]
 	batch := olderBatch{Messages: []waMessage{}, More: more, oldest: oldest, sent: h.sent[ask.chat]}
-	rest := waHistory{Kind: h.Kind, Chats: []waChat{}, Contacts: h.Contacts, Messages: []waMessage{}, Votes: h.Votes, Events: h.Events}
+	rest := waHistory{Kind: h.Kind, Chats: []waChat{}, Contacts: h.Contacts, Messages: []waMessage{}, Votes: h.Votes, Reactions: h.Reactions, Events: h.Events}
 	for _, chat := range h.Chats {
 		if chat.JID != ask.chat {
 			rest.Chats = append(rest.Chats, chat)
@@ -192,7 +193,8 @@ func names(h waHistory, chat string) bool {
 }
 
 func (h waHistory) empty() bool {
-	return len(h.Chats) == 0 && len(h.Contacts) == 0 && len(h.Messages) == 0 && len(h.Votes) == 0 && len(h.Events) == 0
+	return len(h.Chats) == 0 && len(h.Contacts) == 0 && len(h.Messages) == 0 && len(h.Votes) == 0 &&
+		len(h.Reactions) == 0 && len(h.Events) == 0
 }
 
 // olderAnchor reads the message the phone counts back from. whatsmeow keeps no messages, so it comes from the CLI's
