@@ -225,6 +225,27 @@ func TestHistoryReadsAMuteForGoodAsMuted(t *testing.T) {
 	}
 }
 
+func TestHistoryPassesAMutesEndAndTheUnreadMark(t *testing.T) {
+	end := uint64(time.Now().Add(8 * time.Hour).Unix())
+	data := &waHistorySync.HistorySync{Conversations: []*waHistorySync.Conversation{
+		{ID: proto.String(group.String()), MuteEndTime: proto.Uint64(end), MarkedAsUnread: proto.Bool(true)},
+		{ID: proto.String(annLID.String()), MuteEndTime: proto.Uint64(^uint64(0)), MarkedAsUnread: proto.Bool(false)},
+		{ID: proto.String(bobLID.String())},
+	}}
+	chats := testConverter().history(data, func(types.JID, *waWeb.WebMessageInfo) (*events.Message, error) {
+		return nil, nil
+	}).Chats
+	if got := chats[0].MutedUntil; got == nil || *got != iso(time.Unix(int64(end), 0)) || !*chats[0].MarkedUnread {
+		t.Errorf("an 8-hour mute and a mark: got until %v, marked %v", got, chats[0].MarkedUnread)
+	}
+	if chats[1].MutedUntil != nil || *chats[1].MarkedUnread {
+		t.Errorf("a mute for good has no end, got %v; marked %v", chats[1].MutedUntil, chats[1].MarkedUnread)
+	}
+	if chats[2].MutedUntil != nil || chats[2].MarkedUnread != nil {
+		t.Errorf("a conversation that says nothing: got until %v, marked %v", chats[2].MutedUntil, chats[2].MarkedUnread)
+	}
+}
+
 func TestOwnChatIsSelf(t *testing.T) {
 	c := testConverter()
 	if c.kindOf(c.canonical(selfPN, nil)) != "self" {

@@ -152,6 +152,8 @@ export const WHATSAPP: Messenger = {
   name: "WhatsApp",
   resolveSettings,
   history: "store",
+  // WhatsApp sends a chat's unread count only in the history push; between pushes the store counts new messages.
+  unreadCounts: "store",
   historyOnDemand: true,
   // WhatsApp drops the older of two connections, so while serve holds the device every command runs through it.
   connection: "exclusive",

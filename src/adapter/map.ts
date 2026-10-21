@@ -56,6 +56,9 @@ export const toChat = (chat: WaChat): Chat => ({
 const rest = (chat: WaChat) => ({
   ...(chat.archived === undefined ? {} : { archived: chat.archived }),
   ...(chat.muted === undefined ? {} : { muted: chat.muted }),
+  // cli-core keeps a stored end when `mutedUntil` is absent, so a mute for good says null.
+  ...(chat.muted ? { mutedUntil: chat.mutedUntil ?? null } : {}),
+  ...(chat.markedUnread === undefined ? {} : { markedUnread: chat.markedUnread }),
   // cli-core has a parent chat but no kind of chat that holds groups, so a community is a group marked as one.
   ...(chat.parent === undefined ? {} : { parentChatId: chat.parent }),
   ...(chat.community ? { providerMetadata: { community: true } } : {}),
