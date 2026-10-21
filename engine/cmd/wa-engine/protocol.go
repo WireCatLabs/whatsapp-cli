@@ -81,7 +81,7 @@ type waChat struct {
 	Name *string `json:"name"`
 	Kind string  `json:"kind"`
 	// Left out when the source does not say, so the store keeps what it holds. Name and Participants are always sent:
-	// a full push with neither clears a stale one. Only a notice (communities.go) leaves them out.
+	// a full push with neither clears a stale one. Only a notice (communities.go, chatstate.go) leaves them out.
 	Unread        *int    `json:"unread,omitempty"`
 	LastMessageAt *string `json:"lastMessageAt,omitempty"`
 	Participants  *int    `json:"participants"`

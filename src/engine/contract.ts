@@ -95,7 +95,8 @@ export const waChat = v.strictObject({
   jid,
   /**
    * `unread` and `lastMessageAt` are absent when the source does not say. Only a notice, such as a group leaving its
-   * community, leaves out `name` and `participants`: a pushed chat keeps the stored value of whatever is absent.
+   * community or a chat archived, muted or read on the phone, leaves out `name` and `participants`: a pushed chat
+   * keeps the stored value of whatever is absent.
    */
   name: v.optional(v.nullable(v.string())),
   kind: v.picklist(["dm", "self", "group", "newsletter", "broadcast"]),
