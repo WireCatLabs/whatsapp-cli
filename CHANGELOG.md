@@ -15,6 +15,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   expected the UTC day now gets the local one; pass `2026-10-01T00:00:00Z` to keep the old window. Stored and printed times stay
   UTC.
 
+### Added
+
+- **Calls to you are kept as messages, so `inbox` and `review` show who called.** While `serve` or `watch` runs, a
+  call becomes a message in the caller's chat: "Incoming voice call" as it rings, then "Missed voice call", "Declined
+  voice call" or "Voice call" when it ends. It carries `"action": "call"` in `provider_metadata`, as tg marks its calls,
+  so chat stats do not count it as something said. A group call is kept as it rings. `wa` never answers or declines a
+  call. The engine speaks protocol 42.
+
 ### Fixed
 
 - **`stats chats retention` and `chats stats show` read `--since-time`/`--until-time` in their `--timezone`**, and a

@@ -62,6 +62,11 @@ walk.
 - **The history push**, and what `serve` and `watch` hear: messages, edits and deletions. A reaction you send with
   `reactions add` goes to WhatsApp, but reactions that others send are not stored yet.
 - **The messages you send** with `wa`.
+- **Calls to you** that `serve` or `watch` hears, as a message in the caller's chat or in the group: "Incoming voice
+  call" while it rings, then "Missed voice call", "Declined voice call" or "Voice call" (answered) when it ends. A
+  call is marked `"action": "call"` in `provider_metadata`, with `video`, `outcome` and, for an answered call, its
+  length in seconds. A group call is kept only as it rings. Calls you make from the phone, and calls from before you
+  linked `wa`, are not kept.
 - **Chats and people** as WhatsApp names them: a person by a `…@lid` id, a group by a `…@g.us` id.
 
 It keeps the text of every message it has seen. For a photo, voice note or file it keeps its name, size and type, and

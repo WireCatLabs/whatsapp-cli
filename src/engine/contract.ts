@@ -14,7 +14,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 41
+export const PROTOCOL = 42
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -190,6 +190,17 @@ export const waPoll = v.strictObject({
   multiple: v.boolean(),
 })
 
+/**
+ * A call, recorded as a message keyed by the call's id: once as it rings, and again with `outcome` when it ends in a
+ * one-to-one chat. `duration` is in seconds, for an answered call whose end this connection saw.
+ */
+export const waCall = v.strictObject({
+  video: v.boolean(),
+  group: v.optional(v.literal(true)),
+  outcome: v.optional(v.picklist(["missed", "answered", "declined"])),
+  duration: v.optional(v.number()),
+})
+
 export const waMessage = v.strictObject({
   id: v.pipe(v.string(), v.nonEmpty()),
   chat: jid,
@@ -206,6 +217,7 @@ export const waMessage = v.strictObject({
   starred: v.optional(v.literal(true)),
   /** A channel post's number on WhatsApp's servers: a channel's history is read back from it. */
   serverId: v.optional(v.number()),
+  call: v.optional(waCall),
 })
 
 /**

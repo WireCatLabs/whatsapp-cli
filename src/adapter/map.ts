@@ -94,13 +94,15 @@ export const toMessage = (message: WaMessage): Message => ({
   forwardedFrom: null,
   reactions: null,
   // Kept with the message in the store: a vote names answers by text, and only the poll's message has them; a
-  // channel's history is read back from a post's server id.
-  ...(message.poll === undefined && message.serverId === undefined
+  // channel's history is read back from a post's server id. A call is a service message, `action: "call"`, as tg
+  // stores one, which keeps it out of a chat's `stats`.
+  ...(message.poll === undefined && message.serverId === undefined && message.call === undefined
     ? {}
     : {
         providerMetadata: {
           ...(message.poll === undefined ? {} : { poll: message.poll }),
           ...(message.serverId === undefined ? {} : { serverId: message.serverId }),
+          ...(message.call === undefined ? {} : { action: "call", ...message.call }),
         },
       }),
   ...(message.starred ? { starred: true } : {}),
