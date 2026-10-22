@@ -3,7 +3,7 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.3.0 — 22.10.2026
 
 ### Added
 
@@ -25,6 +25,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   someone else after that read, so `inbox` shows a chat again once a new message arrives. `chats show` shows
   `muted_until` and `marked_unread`. What to watch for: a read on the phone resets the chat's last-message time to the
   newest message the phone read. Engine wire change: `mutedUntil` and `markedUnread` on a chat. Engine protocol 45.
+- **Calls to you are kept as messages, so `inbox` and `review` show who called.** While `serve` or `watch` runs, a
+  call becomes a message in the caller's chat: "Incoming voice call" as it rings, then "Missed voice call", "Declined
+  voice call" or "Voice call" when it ends. It carries `"action": "call"` in `provider_metadata`, as tg marks its calls,
+  so chat stats do not count it as something said. A group call is kept as it rings. `wa` never answers or declines a
+  call. The engine speaks protocol 42.
 
 ### Fixed
 
@@ -46,29 +51,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `reactions`. A reaction taken back is dropped, and an older history push no longer undoes a newer change. What to
   watch for: a reaction you send with `reactions add` still goes to WhatsApp only, not to the store. Engine wire
   change: a `reaction` event and a history push's `reactions`. Engine protocol 43.
-
-## 0.3.0 — 22.10.2026
-
-### Changed — may break callers
-
-- **A typed date or time is read in your zone, and a date alone covers your whole local day** (cli-core 0.379.0).
-  `--since-time 2026-10-01` used to start at UTC midnight; it now starts at local midnight, and `--until-time` with a
-  date alone ends at the end of that local day. A time without an offset, such as `chats mute --until
-  2026-10-09T09:00`, is read in the command's `--timezone` where it has one, else in the computer's zone. A value
-  with `Z` or an offset means what it says, as before. What to watch for: a script that passed a date alone and
-  expected the UTC day now gets the local one; pass `2026-10-01T00:00:00Z` to keep the old window. Stored and printed times stay
-  UTC.
-
-### Added
-
-- **Calls to you are kept as messages, so `inbox` and `review` show who called.** While `serve` or `watch` runs, a
-  call becomes a message in the caller's chat: "Incoming voice call" as it rings, then "Missed voice call", "Declined
-  voice call" or "Voice call" when it ends. It carries `"action": "call"` in `provider_metadata`, as tg marks its calls,
-  so chat stats do not count it as something said. A group call is kept as it rings. `wa` never answers or declines a
-  call. The engine speaks protocol 42.
-
-### Fixed
-
 - **`stats chats retention` and `chats stats show` read `--since-time`/`--until-time` in their `--timezone`**, and a
   date alone in retention's `--until-time` covers that whole local day (cli-core 0.380.0). `stats charts`, `contacts
   timeline` and the MCP `stats` tool name the zone in `meta.timezone` and give the UTC window in `meta.window`.
@@ -80,6 +62,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `watch --events` prints none of these changes, as in `tg`.
 - **The ban error says its end time is in UTC.** "the ban ends 2026-10-21T14:03:00.000Z" now ends in "UTC", so it is
   not read as local time. `standing.until` is unchanged.
+
+### Changed — may break callers
+
+- **A typed date or time is read in your zone, and a date alone covers your whole local day** (cli-core 0.379.0).
+  `--since-time 2026-10-01` used to start at UTC midnight; it now starts at local midnight, and `--until-time` with a
+  date alone ends at the end of that local day. A time without an offset, such as `chats mute --until
+  2026-10-09T09:00`, is read in the command's `--timezone` where it has one, else in the computer's zone. A value
+  with `Z` or an offset means what it says, as before. What to watch for: a script that passed a date alone and
+  expected the UTC day now gets the local one; pass `2026-10-01T00:00:00Z` to keep the old window. Stored and printed times stay
+  UTC.
 
 ## 0.2.0 — 21.10.2026
 
