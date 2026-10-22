@@ -29,6 +29,11 @@ jobs:
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm standards:check
       - run: pnpm lint
+      - name: Command-lint baseline only shrinks
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/check-baseline.ts "$BASE_SHA"
       - run: pnpm docs:lint
       - name: Early bug checks
         timeout-minutes: 2

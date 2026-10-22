@@ -3,6 +3,18 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Security
+
+- **Local releases run engine tests, the coverage floor and security checks before publishing.** The npm token
+  is supplied only to publishing, and publishing skips lifecycle scripts because validation already built the package.
+
+### Added
+
+- **Pull requests cannot grow the command-lint baseline.** New violations must be fixed or carry a dated,
+  reasoned override, so adding a feature cannot silently weaken the existing checks.
+
 ## 0.4.0 — 22.10.2026
 
 ### Changed — may break callers

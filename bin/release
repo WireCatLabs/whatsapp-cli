@@ -14,6 +14,10 @@
 # The npm token is never printed and never written to a file — not on success, not in an error.
 set -eu
 
+# Keep the caller's token out of checks and lifecycle scripts.
+publish_token=${NPM_TOKEN:-}
+unset NPM_TOKEN
+
 usage() { echo "usage: bin/release [--local] [--report <path>]" >&2; exit 2; }
 mode=ci
 custom=""
@@ -46,7 +50,7 @@ rerun_if_changed() {
   [ -z "${WIRECAT_RELEASE_RERUN:-}" ] || { echo "bin/release changed again while releasing — run it again" >&2; exit 1; }
   echo "bin/release changed on main — running the new one"
   export WIRECAT_RELEASE_RERUN=1
-  exec ./bin/release "$@"
+  NPM_TOKEN="$publish_token" exec ./bin/release "$@"
 }
 package=@wirecat/whatsapp-cli
 
@@ -57,7 +61,7 @@ git fetch -q --tags origin
 before=$(git rev-parse HEAD)
 git merge -q --ff-only origin/main
 # The shell keeps running the file it read before the merge; max-cli published with a stale copy.
-[ "$(git rev-parse HEAD)" = "$before" ] || exec "$0" "$@"
+[ "$(git rev-parse HEAD)" = "$before" ] || NPM_TOKEN="$publish_token" exec "$0" "$@"
 # The workflow publishes origin/main, so a local commit not pushed yet would silently not ship.
 [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || { echo "main is ahead of origin/main — push first" >&2; exit 1; }
 # One release at a time on this machine, across every package: two sessions published at once on 2026-10-08.
@@ -114,6 +118,7 @@ carry() {
     git -C docs_ai mv "releases/whatsapp-cli/$version.md" "releases/whatsapp-cli/$to.md"
     report="docs_ai/releases/whatsapp-cli/$to.md"
   fi
+  # shellcheck disable=SC2016 # The templates are JavaScript, not shell interpolation.
   node -e 'const fs = require("fs"); const [file, o, n, signed, head, note] = process.argv.slice(1)
     const text = fs.readFileSync(file, "utf8").replace(`# ${o}\n`, `# ${n}\n`)
     const carried = text.replace(`Commit: ${signed}`, `Commit: ${head}`).trimEnd()
@@ -176,6 +181,7 @@ if [ "$next" != "$version" ]; then
   echo "$why — publishing $next instead"
   committed
   # A version npm already has keeps its changelog section; the unreleased one becomes the new version.
+  # shellcheck disable=SC2016 # The templates are JavaScript, not shell interpolation.
   node -e 'const fs = require("fs"); const [o, n, taken] = process.argv.slice(1)
     const swap = (file, from, to) => fs.writeFileSync(file, fs.readFileSync(file, "utf8").replace(from, to))
     swap("package.json", `"version": "${o}"`, `"version": "${n}"`)
@@ -226,34 +232,44 @@ if [ "$mode" = ci ]; then
   exit 0
 fi
 
-if [ -z "${NPM_TOKEN:-}" ]; then
-  NPM_TOKEN=$(secret-tool lookup service npm account leemour 2>/dev/null) || {
+if [ -z "$publish_token" ]; then
+  publish_token=$(secret-tool lookup service npm account leemour 2>/dev/null) || {
     echo "no npm token: export NPM_TOKEN, or store one with: secret-tool store --label=npm service npm account leemour" >&2
     exit 1
   }
 fi
-[ -n "$NPM_TOKEN" ] || { echo "the npm token is empty" >&2; exit 1; }
-export NPM_TOKEN
+[ -n "$publish_token" ] || { echo "the npm token is empty" >&2; exit 1; }
 
 # A config of our own that names the variable, not the value: the token stays in the environment,
 # and the user's ~/.npmrc is neither read nor changed.
 config=$(mktemp)
 trap 'rm -f "$config"' EXIT
+# shellcheck disable=SC2016 # npm resolves the variable only in the publish process.
 printf '//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n' > "$config"
 
-echo "== publishing the engine packages of $version =="
+echo "== local validation for $version =="
+pnpm test:coverage
+pnpm engine:test
+pnpm contracts:check
+pnpm run --if-present contracts:upgrade
+pnpm security:no-leak
+pnpm secrets:scan
+pnpm audit --prod --audit-level critical
+(cd engine && go run golang.org/x/vuln/cmd/govulncheck@latest ./...)
 node scripts/engine-packages.mjs build
+
+echo "== publishing the engine packages of $version =="
 for dir in packages/engine-*; do
   name=$(node -p 'require(process.argv[1]).name' "./$dir/package.json")
   if npm view "$name@$version" version --prefer-online >/dev/null 2>&1; then
     echo "$name@$version is already on npm"
     continue
   fi
-  npm publish "./$dir" --access public --userconfig "$config"
+  NPM_TOKEN="$publish_token" npm publish "./$dir" --access public --ignore-scripts --userconfig "$config"
 done
 
 echo "== publishing $version =="
-npm publish --access public --userconfig "$config"
+NPM_TOKEN="$publish_token" npm publish --access public --ignore-scripts --userconfig "$config"
 
 # Either answer counts, and as long as release.yml waits: each of the two has been seen stale for minutes on its own.
 echo "== waiting for npm to show $version (up to fifteen minutes) =="
