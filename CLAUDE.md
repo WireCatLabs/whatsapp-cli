@@ -27,8 +27,7 @@ change before changing it. The handbook wins over this file and over every docum
 looser.
 
 Cite the ids of the rules your change touches (`WC-<AREA>-<n>`, such as `WC-OUT-1`) in the commit message and the PR
-body. A rule that seems wrong for WhatsApp is raised in the PR or in the backlog, never broken quietly. Where a local
-rule below repeats a handbook rule, the id after it names the handbook's version.
+body. A rule that seems wrong for WhatsApp is raised in the PR or in the backlog, never broken quietly. The ids below link WhatsApp-specific constraints to their handbook rules.
 
 ## Local rules
 
@@ -37,30 +36,15 @@ What holds for `wa` alone, on top of the handbook:
 1. **This is the owner's real WhatsApp account.** Nothing sends, marks read or sends presence unless the command
    typed asked for it (delivery receipts are normal client behaviour and stay on); live checks send only to the owner's own chat. Never message a number the owner has not
    written to, never in bulk — WhatsApp bans accounts for both.
-2. **In machine mode, stdout carries data and nothing else.** Diagnostics go to stderr. (`WC-OUT-1`)
-3. **One-shot means the process exits.** Whatever starts the engine stops it on every exit path. (`WC-LIFE-1`)
-4. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
+2. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
    starts the engine. (`WC-LIFE-11`)
-5. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces the
+3. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces the
    imports; a type that arrives by inference through `src/messenger.ts` is caught only in review. (`WC-ARCH-3`)
-6. **The device keys (`private.db`), messages and phone numbers never reach a log, a fixture or a document.**
+4. **The device keys (`private.db`), messages and phone numbers never reach a log, a fixture or a document.**
    (`WC-SECR-1`)
-7. **On the wire we look like a browser, not like ourselves.** No "whatsapp-cli" in any field WhatsApp sees.
+5. **On the wire we look like a browser, not like ourselves.** No "whatsapp-cli" in any field WhatsApp sees.
 
-Conventional commits, a branch and a PR per change. The pre-commit hook checks staged lint and secrets. Comments
-sparse, only *why*. Go code in `engine/` follows `gofmt` and `go vet`.
-(`WC-STYLE-10`, `WC-CI-12`, `WC-CI-1`, `WC-STYLE-1`)
-
-## Development check budget
-
-Local commits check only staged lint and secrets. There is no pre-push check.
-Config integrity, repository lint, Markdown, and secret detection run in PR CI.
-The bounded `ci:quick` step adds typechecking, a build and the command lint.
-Full validation (`ci.yml`: tests with the coverage floor, the Go engine, docs, parity, prose, a secret scan) runs on
-every pull request (`pr.yml`) and on each merge to `main`, Linux only. That is stricter than `WC-CI-5`, by the owner's
-ruling of 2026-10-18, after a broken coverage floor (`WC-TEST-11`) reached `main` twice.
-Platform suites run for releases, explicit manual validation, and monthly nonpublishing validation. See the
-[shared policy](https://github.com/WireCatLabs/community/blob/main/standards/README.md#ci-and-hooks).
-The handbook's rules for this are on its
-[CI page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/ci.md) (`WC-CI-1` to `WC-CI-7`, `WC-CI-9`;
-`WC-CI-5` is the one `wa` departs from, upward).
+Shared development rules live in the handbook: [style](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/style.md)
+(`WC-STYLE-1`, `WC-STYLE-10`), [CI](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/ci.md)
+(`WC-CI-1`, `WC-CI-5`, `WC-CI-12`) and [lifecycle](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/lifecycle.md)
+(`WC-LIFE-1`). Go checks for `engine/` are `gofmt`, `go vet` and `go test`; see `.github/workflows/ci.yml`.

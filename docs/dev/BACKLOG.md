@@ -3,37 +3,14 @@
 Open work, most important first. The plan in flight is
 [the foundation plan](https://github.com/WireCatLabs/cli-private/blob/main/plans/2026-10-16-whatsapp-foundation.md) (private).
 
-1. **Live checks of the engine on the owner's number** (NEED-1387: reads, sends only to the own chat). Done on
-   2026-10-17: `serve` receiving a message from the phone and saving it; send, `--md` send, edit, reaction add and
-   remove, and delete for everyone in the own LID chat, all through a running `serve`. Still open: a fresh
-   `session start` keeping the history push (the owner runs `bin/live-fresh-link`), `self()` set right after
-   pairing.
-9. **A one-shot connection takes queued messages and drops them.** WhatsApp hands each queued message to a linked
-   device once, and only cli-core's `watch` and `feed` save to the store. **Live (2026-10-18, own chat, main
-   086622f):** the owner ran `bin/live-oneshot-drop`. The message queued while nothing was connected was 0 by search
-   and 0 among the own chat's newest 50, after one `doctor --online` and a restarted `serve`; the control sent while
-   `serve` ran was found (1 and 1). So a one-shot connection takes queued messages and they never reach the store.
-   Cause: the engine emits them, `wa` keeps an event nobody listens for in memory (`src/engine/events.ts:17`), a
-   one-shot command never reads it, and whatsmeow has already sent the receipt that tells WhatsApp it arrived
-   ([`message.go:489-496`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L489-L496), the version
-   in `engine/go.mod`). **Built (2026-10-18):** cli-core 0.343.0 lets every connection that does not watch save what
-   arrives (`PassiveUpdates.listen`), and wa's adapter implements it over `engine.listen`: the same events as `watch`,
-   without connecting. `session end` ends that listen quietly, since the logout it asked for is not a failure. Tested
-   with the fake engine (`src/oneshot-listen.test.ts`). Left: the live re-check, the owner's `bin/live-oneshot-drop`
-   (NEED-1387, own chat only). **History pushes, built (2026-10-19, RISK-1258 = A):** cli-core 0.348.0 adds
-   `PassiveUpdates.listenHistory`; the adapter implements it with `feed`'s handler (re-keys first) and the same
-   logout check as `listen`. The engine now downloads history itself (`ManualHistorySyncDownload`, receipt unchanged,
-   `historysync.go`), and close waits up to 3 s for a push still downloading, inside the CLI's 5 s close budget.
-   Tested with the fake engine and Go tests; the live re-check is left. Not verified: a push announced after that wait
-   ends and before the disconnect is still lost. **Before this (2026-10-18), kept for the research:** a history push
-   received by a one-shot connection was dropped, and
-   nothing asks the phone to send it again — whatsmeow sends the `hist_sync` receipt as soon as the notification arrives
-   ([`message.go:899-906`](https://github.com/tulir/whatsmeow/blob/df33a485cc46/message.go#L899-L906)) and deletes the
-   blob from WhatsApp's servers once it is handed on (`message.go:735-736`); re-keys are covered, as the engine
-   repeats them at each start (ARCHITECTURE §5). Possible levers, untried: `ManualHistorySyncDownload` with
-   `DisableManualHistorySyncReceipt` to hold the receipt back on a one-shot connection, or
-   `SendHistorySyncServerErrorReceipt` to ask the phone to upload a push again; either needs a cli-core port that
-   hands a one-shot connection's history on, as `listen` hands only messages.
+1. **Linking: live checks** (NEED-1387, own chat only). A fresh `session start` must keep the history push
+   (the owner runs `bin/live-fresh-link`), and `self()` must be set immediately after pairing.
+9. **One-shot connections: live re-check.** Passive message and history listeners save what a command's
+   connection receives (`src/oneshot-listen.test.ts`); the engine waits up to 3 seconds for history downloads
+   before closing (`engine/cmd/wa-engine/historysync.go`). The owner must run `bin/live-oneshot-drop` again,
+   in the own chat, and confirm that the queued message survives `doctor --online` and the restarted `serve`.
+   Not verified: a push announced after the close wait ends. Consider holding its history receipt only if
+   the live run still loses a push; this also needs a cli-core port. See [history handling](ARCHITECTURE.md#3-history-comes-from-the-store).
 3. **A user who gains a LID later: live check.** Built: the engine announces the re-key (ARCHITECTURE §5) and the
    adapter's `feed` hands it to cli-core's `HistoryBatch.rekeys` (cli-core 0.336.0), tested end to end with the fake
    engine. Left: a live case — a person in phone form who gains a LID — has not been seen yet; the store should then
@@ -55,10 +32,7 @@ Open work, most important first. The plan in flight is
    sets `fetched:<chat>` on the first page of a run without `before`, read only for its time (`stats` `fetched_at`,
    the search's oldest fetch); for wa that page counts back from the oldest stored message, not the chat's newest —
    reported to the lead for cli-core to decide.
-5. **Feature groups**: edit, delete for everyone and for the owner alone, reactions, mark-read, files and albums,
-   group admin and the group photo, join requests, profiles, blocking, number lookup, Markdown, polls, message pins
-   and stars, chat mute, archive, pin, mark-unread, delete and clear, the own name, about and photo, and privacy are built;
-   what they left open:
+5. **Remaining feature checks and gaps:**
    - **A live vote that races its poll is dropped.** History votes go into the store with the push that carries
      them (cli-core 0.322.0); a live vote whose poll the store does not hold yet is passed over.
    - **Live checks of votes**: the owner's vote from the phone on a poll `wa` created in the own chat decrypts and
@@ -70,8 +44,7 @@ Open work, most important first. The plan in flight is
    - **Live checks** of `polls vote` from `wa` (one-to-one, group, phone-addressed group): `polls create` in the own
      chat and `--md` sends work (2026-10-17); a vote cast by `wa` has not been run against WhatsApp
      (the owner runs `bin/live-poll-vote` for it, in the own chat).
-   - ~~**`chats events`**~~ — built: live `events.GroupInfo` and the history push's group service messages go to
-     cli-core's store (engine protocol 33). Still open: a live check that a push's service messages carry the people
+   - **Chat events: live checks.** Check that a push's service messages carry the people
      as the protobuf says (the owner runs `bin/live-chat-events`), the owner's own join or add, which whatsmeow
      sends live as `events.JoinedGroup` (only a history push records it), and `member_stays`, which cli-core does
      not fill from events yet. A live removal whose notification names no sender is a `leave`, while the push's
@@ -82,7 +55,6 @@ Open work, most important first. The plan in flight is
    - **Names of groups the store lacks, in a one-shot command.** cli-core finds a stored group by name (0.337.0);
      for one the store does not hold, the engine learns the joined groups only once connected, after cli-core asked
      for the name, so such a group is found by its `…@g.us` id only.
-   - ~~**Removing a group's photo**~~ — built: `chats update --remove-photo` (cli-core 0.340.0).
    - **Stickers from a file: live check and the limits.** `messages send --sticker-file` (cli-core 0.340.0) uploads
      the `.webp` as an image and sends a `StickerMessage`, with the canvas read from the file's first chunk. A square
      512×512 still sticker of 7.6 KB shows on the phone as a sticker, at the right size and shape (own chat,
@@ -188,9 +160,8 @@ Open work, most important first. The plan in flight is
      attachment, so `messages forward` sends the caption alone and `messages download` finds nothing. The phone does
      not push history again; a re-link would refill it.
    - **Files WhatsApp no longer keeps.** A download asks the owner's phone to upload the file again and fetches the new
-     copy; ~~each later download asks the phone again~~ the new path is kept in the stored `providerRef`, so a later
-     download and a forward use it. ~~Left: a later push of the same message with the old ref (a history push after a
-     re-link) replaces the kept one~~ the adapter's `feed` leaves the ref off a pushed file the store holds with the same keys
+     copy; the new path is kept in the stored `providerRef`, so a later
+     download and a forward use it. The adapter's `feed` leaves the ref off a pushed file the store holds with the same keys
      (cli-core #1540 leaves that to wa); a chat re-keyed in the same push is looked up under its new id and misses.
      Not yet run against WhatsApp: the retry in the own
      chat and that a second download no longer asks (the owner runs `bin/live-expired-file` for both), and whether the
@@ -247,10 +218,6 @@ Open work, most important first. The plan in flight is
      engine has no pure-Go one (no cgo, no ffmpeg), so a video goes without one. A WEBP photo too: the standard
      library does not decode WEBP. The preview ignores a JPEG's EXIF orientation, so a phone photo taken on its side
      may show a turned preview until the photo downloads.
-   - **Reactions others send are not stored.** The engine drops an incoming `ReactionMessage` (`textOf` in
-     `engine/cmd/wa-engine/convert.go` treats it as not a message), and the adapter maps every message with
-     `reactions: null`, so neither `serve` nor a history push saves one. tg-cli stores live reactions. Planned after
-     0.2.0.
    - **Message pins**: a pin that arrives (live or in a push) is skipped, so the store does not know what is pinned.
      A 24-hour pin and an unpin in the own chat show on the phone (2026-10-18). Open: a group addressed by phone
      numbers, and that a 24-hour pin ends on the phone.
@@ -266,11 +233,6 @@ Open work, most important first. The plan in flight is
      also hides others' receipts from the owner, and that `chats mark-read` with receipts off clears the phone's
      unread count (whatsmeow then sends `read-self`, `receipt.go`). cli-core 0.336 has no "contacts except" for
      `chatInvites`, so such a groups setting is left out of `show`; asked of cli-core (upstream queue, S1).
-6. **Distribution — releases from CI.** 0.1.0 of `@wirecat/whatsapp-cli` and the six `@wirecat/whatsapp-engine-*`
-   packages was published by hand with `bin/release --local` (`npm view` lists 0.1.0 for all seven). The owner set
-   npm's trusted publishing on all seven packages (2026-10-20), so the next release goes through `release.yml`,
-   started by plain `bin/release`; `--local` is a fallback only. Open: `release.yml` has not published yet, so the
-   next release is its first run. The install tests on three systems (`install-windows.yml`) have run once, by hand.
 8. **Replace the test-matrix waivers with tests.** On 2026-10-18, after a third round, 199 commands and options have a
    wa test and 525 are waived in `scripts/test-matrix-untested.ts`. The group wildcards for `messages`, `chats`, `contacts`, `account`
    and `doctor` are gone: every waiver there names its command and the cli-core test that covers it, so a new

@@ -2,7 +2,7 @@
 # The owner's sign-off on a release report, in one step: the report is written before the release pull request is
 # squash-merged, so its Commit line cannot name the merge commit until then. This pulls main, checks the merged tree
 # is the one the report reviewed, writes the commit, adds today's Signed off line and pushes docs_ai. Then run
-# `bin/release --local`.
+# `bin/release` to publish through CI; `--local` is the fallback.
 #
 #   bin/sign-release
 set -eu

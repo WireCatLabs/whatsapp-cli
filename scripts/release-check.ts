@@ -2,7 +2,7 @@
  * Everything about a release that a program can decide, one line each, and exit 1 if any failed.
  * `bin/release` runs the full check; release CI uses --artifact-only after full validation. The judgement half —
  * changelog wording, docs against the diff, live checks — is the release skill,
- * `.claude/skills/release/SKILL.md`.
+ * `docs/dev/skills/release/SKILL.md`.
  *
  *   pnpm release:check
  */
