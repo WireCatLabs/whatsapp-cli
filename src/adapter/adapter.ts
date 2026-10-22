@@ -1,16 +1,10 @@
 import { randomBytes } from "node:crypto"
-import { createReadStream } from "node:fs"
-import { mkdtemp, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import { resolve as absolute, extname, join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import {
   bareCheck,
   type Chat,
   type MarkdownFormatting,
   type Message,
-  type MessageEvent,
-  type MessageHit,
   parseMarkdownSpans,
   pickChat,
 } from "@wirecat/cli-core"
@@ -25,43 +19,21 @@ import type {
   PassiveUpdates,
   PushedHistory,
   ReadState,
-  RemoteFile,
-  SendOptions,
   ServerReads,
   StoredMessages,
 } from "@wirecat/cli-core/cli"
-import type { Upload, UploadSource } from "@wirecat/cli-core/sends"
-import {
-  type ConnectionState,
-  EngineError,
-  type EngineEvent,
-  OLDER_MAX,
-  type WaAttachment,
-  type WaKey,
-  type WaMediaRef,
-  type WaSendMedia,
-  type WhatsAppEngine,
-} from "../engine/contract.js"
-import { channelAdapter, channelHistory, channelWrites, isChannel, refuseChannelPost } from "./channels.js"
+import { EngineError, OLDER_MAX, type WaKey, type WhatsAppEngine } from "../engine/contract.js"
+import { channelAdapter, channelHistory, channelWrites, isChannel } from "./channels.js"
 import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
-import {
-  isFile,
-  sameFile,
-  toAccount,
-  toChat,
-  toChatEvent,
-  toChatUpdate,
-  toMember,
-  toMessage,
-  toPersonReaction,
-  toWaAttachment,
-} from "./map.js"
+import { listenAdapter } from "./listen.js"
+import { toAccount, toChat, toMember, toMessage } from "./map.js"
 import { pinAdapter } from "./pins.js"
-import { type PollAdapter, pollAdapter, toHistoryVote, toVoteEvent } from "./polls.js"
+import { type PollAdapter, pollAdapter } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
+import { onDisk, sendAdapter } from "./sends.js"
 import { AFTER_EVERY_MESSAGE, type SettingsAdapter, settingsAdapter, settingsWrite } from "./settings.js"
 
 export type WhatsAppAdapter = MessengerCore &
@@ -94,9 +66,6 @@ const NOTHING_STORED: StoredMessages = {
 // whatsmeow's EditWindow: WhatsApp clients ignore an edit that comes later.
 const EDIT_WINDOW_MS = 20 * 60 * 1000
 
-/** Options WhatsApp has no way to honour; `noPreview` is always true, since nothing here builds link previews. */
-const REFUSED: (keyof SendOptions)[] = ["threadId", "markup", "sticker", "spoiler", "captionAbove"]
-
 const translated = async <T>(work: Promise<T>): Promise<T> => {
   try {
     return await work
@@ -106,168 +75,7 @@ const translated = async <T>(work: Promise<T>): Promise<T> => {
   }
 }
 
-const hit = (message: Message): MessageHit => ({ ...message, chatTitle: null })
-
 const PHONE_CHAT = /^\d+@s\.whatsapp\.net$/
-
-const ENDED: Partial<Record<ConnectionState, (words: Words, until?: string) => CliError>> = {
-  logged_out: (words) =>
-    fromEngine(
-      new EngineError(
-        "authentication_error",
-        `WhatsApp logged this device out — log in again with ${words("session.start")}`,
-        "device.logged-out",
-      ),
-    ),
-  replaced: () =>
-    fromEngine(
-      new EngineError(
-        "provider_unavailable",
-        "another process took over this WhatsApp login; only one may hold it",
-        "device.replaced",
-      ),
-    ),
-  banned: (_words, until) =>
-    fromEngine(
-      new EngineError(
-        "permission_error",
-        "WhatsApp has banned or restricted this account; see the phone",
-        "account.banned",
-        until,
-      ),
-    ),
-  outdated: () =>
-    fromEngine(
-      new EngineError(
-        "provider_unavailable",
-        "WhatsApp no longer accepts this version of wa; update it",
-        "client.outdated",
-      ),
-    ),
-  stopped: () =>
-    fromEngine(new EngineError("provider_unavailable", "the WhatsApp engine stopped unexpectedly", "engine.stopped")),
-}
-
-const ENDING = new Set([
-  ...Object.values(ENDED).map((end) => end(bareCheck).details.reason),
-  "engine.stopped-mid-write",
-])
-
-/** A failure that means the connection is gone, not that one event was odd: it ends the listening. */
-const ends = (error: unknown) =>
-  (error instanceof EngineError && ENDING.has(error.reason)) ||
-  (error instanceof CliError && ENDING.has(error.details.reason))
-
-/**
- * Hands each event on until `signal` aborts; a connection WhatsApp ended rejects with why, unless `expected` says this
- * process asked for that end. Events are handled one at a time in arrival order. One whose handling fails is skipped
- * and the next still runs: a stalled queue would keep every later push out of the store until a restart. The first skip
- * is said on `warn` at once, kind and code only, never its content; `drained` settles when the handling caught up and
- * then says how many were skipped if there were more.
- */
-const listening = (
-  engine: WhatsAppEngine,
-  kinds: readonly EngineEvent["event"][],
-  signal: AbortSignal,
-  words: Words,
-  warn: (message: string) => void,
-  handle: (event: EngineEvent) => void | Promise<void>,
-  expected: (state: ConnectionState) => boolean = () => false,
-): {
-  done: Promise<void>
-  stop: () => void
-  drained: () => Promise<void>
-  run: (kind: string, work: () => void | Promise<void>) => void
-} => {
-  let stop = () => {}
-  let queue = Promise.resolve()
-  let skipped = 0
-  let fail: (kind: string, error: unknown) => void = () => {}
-  const run = (kind: string, work: () => void | Promise<void>) => {
-    queue = queue.then(work).catch((error: unknown) => fail(kind, error))
-  }
-  const done = new Promise<void>((resolve, reject) => {
-    fail = (kind: string, error: unknown) => {
-      if (ends(error)) return reject(error instanceof EngineError ? fromEngine(error) : error)
-      skipped += 1
-      if (skipped > 1) return
-      const code = error instanceof CliError ? error.code : error instanceof Error ? error.name : "error"
-      warn(
-        `a pushed ${kind} event could not be handled and was skipped (${code}); the ones after it go on, ` +
-          "and any more skips are counted when wa stops listening",
-      )
-    }
-    const unlisten = engine.listen(kinds, (event) => {
-      if (event.event === "connection" && expected(event.state)) return resolve()
-      const ended = event.event === "connection" ? ENDED[event.state]?.(words, event.until) : undefined
-      if (ended) reject(ended)
-      else run(event.event, () => handle(event))
-    })
-    const aborted = () => resolve()
-    signal.addEventListener("abort", aborted, { once: true })
-    stop = () => {
-      unlisten()
-      signal.removeEventListener("abort", aborted)
-    }
-    if (signal.aborted) resolve()
-  })
-  // The caller may still be awaiting the engine's readiness when an ended connection rejects `done`.
-  done.catch(() => {})
-  const drained = () =>
-    queue.then(() => {
-      if (skipped > 1) warn(`${skipped} pushed events could not be handled and were skipped in all`)
-    })
-  return { done, stop, drained, run }
-}
-
-/** Re-keys that arrive this close together go to cli-core as one batch, up to this many. */
-const REKEY_WINDOW_MS = 100
-const REKEY_BATCH = 500
-
-const VIDEO = new Set([".mp4", ".m4v", ".mov"])
-
-/** As tg sends them: a photo as a photo, a voice as a voice, a video as a video unless `--as-file`, the rest as files. */
-const uploadKind = ({ kind, name, asFile }: Upload): WaSendMedia["file"]["kind"] =>
-  kind === "photo" || kind === "voice" ? kind : !asFile && VIDEO.has(extname(name).toLowerCase()) ? "video" : "document"
-
-/** A folder only this user can read, gone when `work` ends: the engine writes a download into it, or reads bytes made in memory. */
-const inPrivateFolder = async <T>(work: (folder: string) => Promise<T>): Promise<T> => {
-  const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
-  try {
-    return await work(folder)
-  } finally {
-    await rm(folder, { recursive: true, force: true })
-  }
-}
-
-const onDisk = async <T>(source: UploadSource, work: (path: string) => Promise<T>): Promise<T> => {
-  if (source.kind === "file") return work(absolute(source.path))
-  return inPrivateFolder(async (folder) => {
-    const path = join(folder, "upload")
-    await writeFile(path, source.bytes, { mode: 0o600, flag: "wx" })
-    return work(path)
-  })
-}
-
-const allOnDisk = async <F extends { upload: Upload }, T>(
-  files: F[],
-  work: (placed: (F & { path: string })[]) => Promise<T>,
-  placed: (F & { path: string })[] = [],
-): Promise<T> => {
-  const [next, ...rest] = files
-  if (!next) return work(placed)
-  return onDisk(next.upload.source, (path) => allOnDisk(rest, work, [...placed, { ...next, path }]))
-}
-
-const quoted = (message: Message) => ({
-  id: message.id,
-  senderId: message.senderId,
-  senderName: message.senderName,
-  timestamp: message.timestamp,
-  text: message.text,
-  attachments: message.attachments,
-  outgoing: message.outgoing ?? null,
-})
 
 const keyOf = (chatId: string, message: Message): WaKey => ({
   chat: chatId,
@@ -293,188 +101,15 @@ export const whatsAppAdapter = (
       )
     return message
   }
-  // Set by `session end`: WhatsApp then ends the connection as logged out, which is the answer, not a failure.
-  let loggingOut = false
-  // Held re-keys of a running `feed`: a live event may name the new id, and must not reach cli-core before them (§5).
-  const holding = new Set<() => void>()
-  const handingOn = (
-    onEvent: (event: MessageEvent) => void,
-    signal: AbortSignal,
-    expected?: (state: ConnectionState) => boolean,
-  ) => {
-    const handed = async (event: EngineEvent) => {
-      for (const handOn of holding) handOn()
-      if (event.event === "message") onEvent({ event: "message", message: hit(toMessage(event.message)) })
-      else if (event.event === "edit") onEvent({ event: "edit", message: hit(toMessage(event.message)) })
-      else if (event.event === "delete")
-        onEvent({
-          event: "delete",
-          chatId: event.chat,
-          chatTitle: null,
-          messageId: event.id,
-        })
-      else if (event.event === "star")
-        onEvent({
-          event: "star",
-          chatId: event.chat,
-          chatTitle: null,
-          messageId: event.id,
-          starred: event.starred,
-        })
-      else if (event.event === "reaction")
-        onEvent({
-          event: "person_reaction",
-          chatId: event.reaction.chat,
-          chatTitle: null,
-          messageId: event.reaction.message,
-          reaction: toPersonReaction(event.reaction),
-        })
-      else if (event.event === "receipt")
-        onEvent({
-          event: "delivery",
-          chatId: event.receipt.chat,
-          chatTitle: null,
-          messageId: event.receipt.id,
-          delivery: event.receipt.delivery,
-          at: event.receipt.at,
-        })
-      else if (event.event === "vote") {
-        const vote = await toVoteEvent(event.vote, stored)
-        if (vote) onEvent(vote)
-      } else if (event.event === "chat_event")
-        onEvent({
-          event: "chat_event",
-          chatId: event.change.chat,
-          chatTitle: null,
-          change: toChatEvent(event.change),
-        })
-    }
-    // In arrival order: a vote reads its poll from the store, and nothing after it may overtake it.
-    const live = listening(
-      engine,
-      ["message", "edit", "delete", "vote", "reaction", "star", "receipt", "chat_event", "connection"],
-      signal,
-      words,
-      warn,
-      handed,
-      expected,
-    )
-    return {
-      done: live.done,
-      stop: async () => {
-        live.stop()
-        await live.drained()
-      },
-    }
-  }
-  // A push after a re-link carries the path the file had then, and the store may hold the one the phone uploaded
-  // again. cli-core keeps a stored ref only when the pushed file has none, so the pushed one is left off when it names
-  // the same file; another file keeps its own. Only a message with a ref costs a store read; one that fails hands the
-  // message on as pushed, never loses it.
-  const withoutKeptRefs = async (message: Message): Promise<Message> => {
-    if (!message.attachments.some((file) => file.providerRef)) return message
-    const kept = await stored.message(message.chatId, message.id).catch(() => undefined)
-    if (!kept?.attachments.some((file) => file.providerRef)) return message
-    return {
-      ...message,
-      attachments: message.attachments.map((file, position) => {
-        if (!sameFile(file.providerRef, kept.attachments[position]?.providerRef)) return file
-        const { providerRef: _pushed, ...rest } = file
-        return rest
-      }),
-    }
-  }
-  const pushing = async (
-    onBatch: Parameters<PushedHistory["feed"]>[0],
-    signal: AbortSignal,
-    expected?: (state: ConnectionState) => boolean,
-  ) => {
-    // cli-core saves each batch's re-keys apart, so thousands at a serve's start must not come one batch each; a push
-    // hands on the held ones before its own, as they arrived.
-    let held: { from: string; to: string }[] = []
-    let due: ReturnType<typeof setTimeout> | undefined
-    const flush = () => {
-      clearTimeout(due)
-      due = undefined
-      if (held.length === 0) return
-      const rekeys = held
-      held = []
-      onBatch({ rekeys })
-    }
-    // In arrival order: a push waits for its store reads, and a re-key after it must not overtake it.
-    const handed = async (event: EngineEvent) => {
-      if (event.event === "rekey") {
-        held.push({ from: event.from, to: event.to })
-        if (held.length >= REKEY_BATCH) flush()
-        else due ??= setTimeout(() => pushes.run("rekey", flush), REKEY_WINDOW_MS)
-        return
-      }
-      if (event.event !== "history") return
-      flush()
-      const { rekeys, chats, contacts, messages, votes, reactions, events } = event.history
-      onBatch({
-        rekeys: rekeys ?? [],
-        chats: chats.map(toChatUpdate),
-        people: contacts.map(toMember),
-        messages: await Promise.all(messages.map((message) => withoutKeptRefs(toMessage(message)))),
-        votes: votes.flatMap((vote) => toHistoryVote(vote) ?? []),
-        reactions: (reactions ?? []).map((reaction) => ({
-          chatId: reaction.chat,
-          messageId: reaction.message,
-          reaction: toPersonReaction(reaction),
-        })),
-        events: (events ?? []).map((change) => ({ chatId: change.chat, change: toChatEvent(change) })),
-      })
-    }
-    const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, warn, handed, expected)
-    const handOn = () => {
-      try {
-        flush()
-      } catch (error) {
-        pushes.run("rekey", () => Promise.reject(error))
-      }
-    }
-    holding.add(handOn)
-    try {
-      await pushes.done
-    } finally {
-      holding.delete(handOn)
-      pushes.stop()
-      pushes.run("rekey", flush)
-      await pushes.drained()
-    }
-  }
-  const ownLogout = (state: ConnectionState) => state === "logged_out" && loggingOut
   // A deletion for the account alone, a star and a chat marked read are changes to its synced settings, not messages.
   const synced = settingsWrite(translated, words)
-
-  // The phone's new upload replaces the whole stored ref on `file`, so cli-core saves it and a later download or a
-  // forward uses the live path; a second read of the same file in this run uses it too.
-  async function* fetched(
-    file: RemoteFile,
-    attachment: WaAttachment & { ref: WaMediaRef },
-    key: WaKey,
-  ): AsyncIterable<Uint8Array> {
-    const folder = await mkdtemp(join(tmpdir(), "wa-media-"))
-    try {
-      const path = join(folder, "file")
-      const renewed = await translated(engine.download(attachment, path, key))
-      if (renewed) {
-        // The old URL names the dead copy; without one, the engine builds it from the new path.
-        const { url: _dead, ...kept } = attachment.ref
-        attachment.ref = { ...kept, ...renewed }
-        file.providerRef = attachment.ref
-      }
-      yield* createReadStream(path)
-    } finally {
-      await rm(folder, { recursive: true, force: true })
-    }
-  }
 
   const core: Omit<
     WhatsAppAdapter,
     keyof (GroupAdapter & PollAdapter & PrivacyAdapter & MessagePins & SettingsAdapter)
   > = {
+    ...sendAdapter({ engine, stored, held, keyOf, translated, resolve: (chat) => core.resolve(chat) }),
+    ...listenAdapter({ engine, stored, words, warn, translated }),
     formatMarkdown: async (text) => parseMarkdownSpans(text),
 
     self: () => engine.self(),
@@ -518,113 +153,6 @@ export const whatsAppAdapter = (
     chat: async (jid: string) => {
       const card = await translated(engine.chat(jid))
       return { ...toChat(card.chat), members: card.members?.map(toMember) ?? null }
-    },
-
-    send: async (chatId: string, text: string, options: SendOptions) => {
-      const refused = REFUSED.filter((option) => options[option] !== undefined && options[option] !== false)
-      if (refused.length > 0) throw new CliError("validation_error", `WhatsApp cannot send with ${refused.join(", ")}`)
-      const uploads = options.attachments ?? []
-      const [upload] = uploads
-      const files = uploads.map((one) => ({ upload: one, kind: uploadKind(one) }))
-      if (files.length > 1 && files.some(({ kind }) => kind !== "photo" && kind !== "video"))
-        throw new CliError(
-          "validation_error",
-          "a WhatsApp album holds photos and videos only; send a document in a message of its own",
-        )
-      if (upload?.kind === "voice" && text.trim() !== "")
-        throw new CliError("validation_error", "WhatsApp sends a voice message alone, without text")
-      const { stickerFile } = options
-      // Untried on a live channel, where a post carries a URL and no key.
-      if (stickerFile && isChannel(chatId))
-        throw new CliError("validation_error", "wa does not post stickers to a WhatsApp channel yet")
-      if (isChannel(chatId))
-        await refuseChannelPost(engine, translated, chatId, {
-          files: files.length,
-          reply: options.replyTo !== undefined,
-        })
-      // A reply to a message the store lacks still goes, with its id alone.
-      const answered = options.replyTo === undefined ? undefined : await stored.message(chatId, options.replyTo)
-      const request = {
-        chat: chatId,
-        text: options.formatting ? toWhatsApp(text, options.formatting) : text,
-        id: options.sendId,
-        ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
-        ...(answered
-          ? { quoted: { fromMe: answered.outgoing === true, sender: answered.senderId, text: answered.text } }
-          : {}),
-      }
-      const message = await translated(
-        files.length > 1
-          ? allOnDisk(files, (placed) =>
-              engine.sendAlbum({
-                ...request,
-                files: placed.map(({ upload, kind, path }) => ({ kind, path, name: upload.name })),
-              }),
-            )
-          : upload
-            ? onDisk(upload.source, (path) =>
-                engine.sendMedia({ ...request, file: { kind: uploadKind(upload), path, name: upload.name } }),
-              )
-            : stickerFile
-              ? onDisk(stickerFile.source, (path) =>
-                  engine.sendMedia({ ...request, file: { kind: "sticker", path, name: stickerFile.name } }),
-                )
-              : engine.send(request),
-      )
-      return { message: toMessage(message), sendId: options.sendId }
-    },
-
-    forward: async (fromChatId, messageId, toChatId, { sendId, threadId }) => {
-      if (threadId !== undefined) throw new CliError("validation_error", "WhatsApp forwards without a topic")
-      const original = await held(fromChatId, messageId)
-      const attachments = original.attachments.map(toWaAttachment)
-      const [attachment] = attachments
-      if (attachments.length > 1 || (attachments.length === 1 && !attachment?.ref))
-        throw new CliError(
-          "validation_error",
-          "the local store does not hold this message's content whole, so it cannot be forwarded; forward it on the phone",
-        )
-      if (!attachment && original.text === "")
-        throw new CliError("validation_error", "that message has nothing to forward")
-      // A channel's files carry no key, and a chat's recipient cannot open a file without one.
-      if (isChannel(fromChatId) && attachment?.ref && "directPath" in attachment.ref)
-        throw new CliError(
-          "validation_error",
-          "a WhatsApp channel's file is not encrypted, so a forward would arrive as a file that does not open; " +
-            "save it on the phone and send it as a new file",
-          { reason: "media.channel-file-forward" },
-        )
-      const copy = await translated(
-        engine.forward({ chat: toChatId, id: sendId, text: original.text, attachment: attachment ?? null }),
-      )
-      return { ...toMessage(copy), forwardedFrom: quoted(original) }
-    },
-
-    // From the keys in the store: WhatsApp has no request for an old message. A file that is not one (a place, a
-    // contact card) or that the store has no keys for is named in `skipped`. The message's key goes along, so the
-    // engine can ask the phone for a file WhatsApp no longer keeps.
-    download: async (chat, messageId) => {
-      const { id: chatId } = await core.resolve(chat)
-      const message = await held(chatId, messageId)
-      const files: RemoteFile[] = []
-      const skipped: string[] = []
-      message.attachments.forEach((stored, position) => {
-        const attachment = toWaAttachment(stored)
-        if (!isFile(attachment)) {
-          skipped.push(stored.kind)
-          return
-        }
-        const file: RemoteFile = {
-          kind: attachment.kind,
-          ...(attachment.name === undefined ? {} : { name: attachment.name }),
-          ...(attachment.mime === undefined ? {} : { mime: attachment.mime }),
-          ...(attachment.size === undefined ? {} : { size: attachment.size }),
-          position,
-          bytes: () => fetched(file, attachment, keyOf(chatId, message)),
-        }
-        files.push(file)
-      })
-      return { files, skipped }
     },
 
     edit: async (chatId, messageId, text, { markup, formatting }) => {
@@ -706,39 +234,7 @@ export const whatsAppAdapter = (
       return { items, hasMore: older.more }
     },
 
-    logout: () => {
-      loggingOut = true
-      return translated(engine.logout())
-    },
-
     close: () => engine.close(),
-
-    watch: async (onEvent: (event: MessageEvent) => void, signal: AbortSignal, onReady?: () => void) => {
-      const live = handingOn(onEvent, signal)
-      try {
-        await translated(engine.ready(signal))
-        if (!signal.aborted) onReady?.()
-        await live.done
-      } finally {
-        await live.stop()
-      }
-    },
-
-    // What a one-shot connection receives: WhatsApp hands a queued message to a linked device once, so it is saved
-    // here or lost. Never connects; the command's own request does that.
-    listen: async (onEvent, signal) => {
-      const live = handingOn(onEvent, signal, ownLogout)
-      try {
-        await live.done
-      } finally {
-        await live.stop()
-      }
-    },
-
-    // The history a one-shot connection is pushed, which WhatsApp likewise sends once. Never connects.
-    listenHistory: (onBatch, signal) => pushing(onBatch, signal, ownLogout),
-
-    feed: (onBatch, signal) => pushing(onBatch, signal),
 
     // Only phone-form one-to-one chats can need a re-key, and in one request: cli-core waits at most 5 s for it.
     storedChats: async (ids, recipients = []) => {
