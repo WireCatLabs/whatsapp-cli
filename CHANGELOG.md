@@ -7,6 +7,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **Date filters say how they read the date** (cli-core 0.384.0). The JSON answer of a command with a date filter,
+  such as `contacts context`, `contacts timeline`, `messages sync`, `chats moderate` and `store export`, gives
+  `meta.window` with the `since` and `until` it used, in UTC, and `meta.timezone` when a date you typed had no zone
+  and was read in the local one.
 - **cli-core 0.382.0.** The first run opens the local store as version 28, which adds columns and removes
   nothing.
 - **Your messages show whether they were delivered and read.** In a one-to-one chat, a message you sent carries
