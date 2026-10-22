@@ -196,8 +196,9 @@ export const waPoll = v.strictObject({
 })
 
 /**
- * A call, recorded as a message keyed by the call's id: once as it rings, and again with `outcome` when it ends in a
- * one-to-one chat. `duration` is in seconds, for an answered call whose end this connection saw.
+ * A call, recorded as a message keyed by the call's id: once as it rings, and again when it ends in a one-to-one chat,
+ * with `outcome` unless the end's reason is unknown. `duration` is in seconds, only when this connection saw both the
+ * answer and the end; a call answered on the phone has none.
  */
 export const waCall = v.strictObject({
   video: v.boolean(),

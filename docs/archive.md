@@ -71,10 +71,13 @@ walk.
   from the receipts `serve`, `watch` and any other command hear, and from the history push. A group's messages have
   none: WhatsApp reports a group one person at a time. `wa` sends no read receipt of its own for this.
 - **Calls to you** that `serve` or `watch` hears, as a message in the caller's chat or in the group: "Incoming voice
-  call" while it rings, then "Missed voice call", "Declined voice call" or "Voice call" (answered) when it ends. A
-  call is marked `"action": "call"` in `provider_metadata`, with `video`, `outcome` and, for an answered call, its
-  length in seconds. A group call is kept only as it rings. Calls you make from the phone, and calls from before you
-  linked `wa`, are not kept.
+  call" while it rings, then, when it ends, "Voice call" (answered, also on the phone), "Declined voice call" (also
+  on the phone) or "Missed voice call" (it rang out, or the caller hung up first, as the phone shows it). A call that
+  rang while `wa` was not connected and whose end WhatsApp does not resend is kept as missed. A call that ended for a
+  reason `wa` does not know reads "Voice call" with no `outcome`. A call is marked `"action": "call"` in
+  `provider_metadata`, with `video`, `outcome` and a length in seconds only when `wa` heard both the answer and the
+  end; a call answered on the phone has none. A group call is kept only as it rings. Calls you make from the phone,
+  and calls from before you linked `wa`, are not kept.
 - **Chats and people** as WhatsApp names them: a person by a `…@lid` id, a group by a `…@g.us` id.
 
 It keeps the text of every message it has seen. For a photo, voice note or file it keeps its name, size and type, and

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	waBinary "go.mau.fi/whatsmeow/binary"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
 )
@@ -22,12 +23,15 @@ type waCall struct {
 type ringing struct {
 	message    waMessage
 	answeredAt time.Time
+	settled    bool
 }
 
-// calls holds the calls this process saw ring, until each ends. A call that never ends here is dropped past the cap.
+// calls holds the calls this process saw ring, until each ends, and the ends that came before their offer. A call
+// that never ends here is dropped past the cap.
 type calls struct {
-	mu   sync.Mutex
-	open map[string]*ringing
+	mu    sync.Mutex
+	open  map[string]*ringing
+	early map[string]string
 }
 
 const maxRinging = 64
@@ -35,15 +39,7 @@ const maxRinging = 64
 func (c *calls) start(id string, r *ringing) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if c.open == nil {
-		c.open = map[string]*ringing{}
-	}
-	if len(c.open) >= maxRinging {
-		for old := range c.open {
-			delete(c.open, old)
-			break
-		}
-	}
+	c.open = bounded(c.open)
 	c.open[id] = r
 }
 
@@ -58,6 +54,49 @@ func (c *calls) end(id string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.open, id)
+}
+
+func (c *calls) endedEarly(id, reason string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.early = bounded(c.early)
+	c.early[id] = reason
+}
+
+func (c *calls) takeEarly(id string) (string, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	reason, ok := c.early[id]
+	delete(c.early, id)
+	return reason, ok
+}
+
+// unsettled hands out, once each, the one-to-one calls still ringing with no answer seen. They stay open, so an end
+// that comes later still says what became of them.
+func (c *calls) unsettled() []*ringing {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	var out []*ringing
+	for _, r := range c.open {
+		if !r.settled && !r.message.Call.Group && r.answeredAt.IsZero() {
+			r.settled = true
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+func bounded[V any](m map[string]V) map[string]V {
+	if m == nil {
+		return map[string]V{}
+	}
+	if len(m) >= maxRinging {
+		for old := range m {
+			delete(m, old)
+			break
+		}
+	}
+	return m
 }
 
 // callID is the stored message's id: every event of one call names the same message, as mautrix-whatsapp keys it.
@@ -96,12 +135,13 @@ func (c *converter) offer(meta types.BasicCallMeta, video, group bool, k known) 
 	if !fromMe {
 		out.SenderName = name(c.nameOf(creator))
 	}
-	out.Text = callText(out)
+	out.Text = callText(out, false)
 	return out, true
 }
 
-// callText is what a call shows in a chat list or an inbox, in the words WhatsApp's apps use.
-func callText(m waMessage) string {
+// callText is what a call shows in a chat list or an inbox, in the words WhatsApp's apps use. A call that ended in a
+// way this device could not tell is no longer incoming, so it reads as a plain call.
+func callText(m waMessage, ended bool) string {
 	kind := "voice call"
 	if m.Call.Video {
 		kind = "video call"
@@ -114,10 +154,26 @@ func callText(m waMessage) string {
 		return "Missed " + kind
 	case m.Call.Outcome == "declined":
 		return "Declined " + kind
-	case m.Call.Outcome == "answered", m.FromMe:
+	case m.Call.Outcome == "answered", m.FromMe, ended:
 		return strings.ToUpper(kind[:1]) + kind[1:]
 	}
 	return "Incoming " + kind
+}
+
+// endOutcome reads a terminate's reason as WhatsApp Web does, per whatsapp-rust's port of it: a phone of the owner's
+// that answers or declines is told to linked devices by the caller as "accepted_elsewhere" or "rejected_elsewhere",
+// and a call that rang out, or that the caller hung up, ends with "timeout" or no reason, which the callee's apps show
+// as missed. Any other reason is unknown.
+func endOutcome(reason string) (string, bool) {
+	switch reason {
+	case "", "timeout", "group_call_ended":
+		return "missed", true
+	case "accepted_elsewhere":
+		return "answered", true
+	case "rejected_elsewhere":
+		return "declined", true
+	}
+	return "", false
 }
 
 // call records a call as a message: when it rings, and again when it ends with what became of it. A group call's
@@ -139,6 +195,12 @@ func (e *engine) call(raw any) {
 			e.callEnded(r, "answered")
 		}
 	case *events.CallReject:
+		// "busy" and "enc" speak for one device that cannot take the call; the owner's other devices go on ringing.
+		reason := attr(evt.Data, "reason")
+		e.warnf("call.reject: reason %q", protocolWord(reason))
+		if reason == "busy" || reason == "enc" {
+			return
+		}
 		if r, ok := e.calls.find(evt.CallID); ok && !r.message.Call.Group {
 			e.calls.end(evt.CallID)
 			e.callEnded(r, "declined")
@@ -146,19 +208,40 @@ func (e *engine) call(raw any) {
 	case *events.CallTerminate:
 		r, ok := e.calls.find(evt.CallID)
 		if !ok {
+			e.calls.endedEarly(evt.CallID, evt.Reason)
 			return
 		}
 		e.calls.end(evt.CallID)
-		if r.message.Call.Group {
-			return
+		if !r.message.Call.Group {
+			e.terminated(r, evt.Reason, evt.Timestamp)
 		}
-		if r.answeredAt.IsZero() {
-			e.callEnded(r, "missed")
-			return
+	}
+}
+
+// terminated settles a one-to-one call. An answer this device saw stands, and its length counts only from an end that
+// is the call's own: "accepted_elsewhere" comes the moment the phone picks up. Each end is logged with its reason, a
+// fixed protocol word, so a live run shows what WhatsApp sent; a reason not seen before keeps the call with no outcome.
+func (e *engine) terminated(r *ringing, reason string, at time.Time) {
+	answered := !r.answeredAt.IsZero()
+	outcome, known := endOutcome(reason)
+	if answered {
+		outcome = "answered"
+		if reason != "accepted_elsewhere" && reason != "rejected_elsewhere" {
+			if seconds := int64(orNow(at).Sub(r.answeredAt).Seconds()); seconds > 0 {
+				r.message.Call.Duration = &seconds
+			}
 		}
-		seconds := int64(orNow(evt.Timestamp).Sub(r.answeredAt).Seconds())
-		r.message.Call.Duration = &seconds
-		e.callEnded(r, "answered")
+	}
+	e.warnf("call.end: reason %q, known %t, answer seen here %t, outcome %q",
+		protocolWord(reason), known, answered, outcome)
+	e.callEnded(r, outcome)
+}
+
+// offlineReplayed settles the calls that rang while this device was away. Their offers come back on reconnect with
+// the server's offline queue, which may hold no end for them; WhatsApp Web shows such a call as missed.
+func (e *engine) offlineReplayed() {
+	for _, r := range e.calls.unsettled() {
+		e.callEnded(r, "missed")
 	}
 }
 
@@ -172,7 +255,12 @@ func (e *engine) ringing(meta types.BasicCallMeta, video, group bool) {
 		return
 	}
 	e.phones.note(e.ctx, message.Chat)
-	e.calls.start(meta.CallID, &ringing{message: message})
+	r := &ringing{message: message}
+	if reason, ended := e.calls.takeEarly(meta.CallID); ended && !message.Call.Group {
+		e.terminated(r, reason, time.Time{})
+		return
+	}
+	e.calls.start(meta.CallID, r)
 	e.out.event("message", message)
 }
 
@@ -181,8 +269,38 @@ func (e *engine) callEnded(r *ringing, outcome string) {
 	call := *message.Call
 	call.Outcome = outcome
 	message.Call = &call
-	message.Text = callText(message)
+	message.Text = callText(message, true)
 	e.out.event("message", message)
+}
+
+func attr(node *waBinary.Node, name string) string {
+	if node == nil {
+		return ""
+	}
+	value, _ := node.Attrs[name].(string)
+	return value
+}
+
+// protocolWord passes a word from WhatsApp's call protocol to the log, and nothing that could carry an id or a number.
+func protocolWord(s string) string {
+	if s == "" {
+		return "(none)"
+	}
+	if len(s) > 40 {
+		return "(not a protocol word)"
+	}
+	for _, r := range s {
+		if (r < 'a' || r > 'z') && r != '_' {
+			return "(not a protocol word)"
+		}
+	}
+	return s
+}
+
+func (e *engine) warnf(format string, args ...any) {
+	if e.client != nil && e.client.Log != nil {
+		e.client.Log.Warnf(format, args...)
+	}
 }
 
 func orNow(t time.Time) time.Time {

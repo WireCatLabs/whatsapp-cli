@@ -3,6 +3,25 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **A call with no `outcome` may have ended.** Before, a call message with no `outcome` in `provider_metadata` was
+  always still ringing. Now a call that ends for a reason `wa` does not know is kept as "Voice call" with no
+  `outcome`, so it does not pass as missed or answered. A script that reads a missing `outcome` as "ringing" should
+  read the text as well: a ringing call's text starts with "Incoming".
+
+### Fixed
+
+- **A call answered or declined on your phone is stored as answered or declined, not missed.** While `serve` or
+  `watch` runs, WhatsApp tells a linked device only that the call was taken or turned down on another device, and
+  `wa` read every such end as missed. Now a call you answer on the phone is "Voice call" with `outcome: answered`,
+  one you decline is "Declined voice call", and one that rang out or that the caller hung up before you answered is
+  "Missed voice call", as the phone shows it. An answered call taken on the phone has no `duration`: this device does
+  not hear when it ends, and `wa` no longer stores `0` for it. A call that rang while `serve` was not running, and
+  whose end the reconnect does not bring, is stored as missed instead of staying "Incoming voice call".
+
 ## 0.3.0 — 22.10.2026
 
 ### Added

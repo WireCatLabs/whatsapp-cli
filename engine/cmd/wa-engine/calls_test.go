@@ -3,13 +3,17 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
+	"go.mau.fi/whatsmeow"
 	waBinary "go.mau.fi/whatsmeow/binary"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
+	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
 func callMeta(creator types.JID) types.BasicCallMeta {
@@ -23,8 +27,23 @@ func at(meta types.BasicCallMeta, later time.Duration) types.BasicCallMeta {
 
 func callLines(t *testing.T, evts ...any) []waMessage {
 	t.Helper()
+	messages, _ := callRun(t, evts...)
+	return messages
+}
+
+type logLines []string
+
+func (l *logLines) Warnf(msg string, args ...any)  { *l = append(*l, fmt.Sprintf(msg, args...)) }
+func (l *logLines) Errorf(msg string, args ...any) { l.Warnf(msg, args...) }
+func (l *logLines) Infof(string, ...any)           {}
+func (l *logLines) Debugf(string, ...any)          {}
+func (l *logLines) Sub(string) waLog.Logger        { return l }
+
+func callRun(t *testing.T, evts ...any) ([]waMessage, logLines) {
+	t.Helper()
 	var out bytes.Buffer
-	e := &engine{out: newWire(&out), conv: testConverter()}
+	var logged logLines
+	e := &engine{out: newWire(&out), conv: testConverter(), client: &whatsmeow.Client{Store: &store.Device{}, Log: &logged}}
 	for _, evt := range evts {
 		e.handle(evt)
 	}
@@ -42,7 +61,7 @@ func callLines(t *testing.T, evts ...any) []waMessage {
 		}
 		messages = append(messages, got.Message)
 	}
-	return messages
+	return messages, logged
 }
 
 func TestACallNobodyAnswersIsStoredAsMissedUnderOneId(t *testing.T) {
@@ -136,6 +155,156 @@ func TestACallWithNoChatToPutItInIsSkipped(t *testing.T) {
 		&events.CallAccept{BasicCallMeta: callMeta(bobPN)},
 	)
 	if len(got) != 0 {
+		t.Errorf("got %+v", got)
+	}
+}
+
+func ended(t *testing.T, got []waMessage, want int) waMessage {
+	t.Helper()
+	if len(got) != want {
+		t.Fatalf("got %d messages, want %d: %+v", len(got), want, got)
+	}
+	last := got[len(got)-1]
+	if last.ID != "call-C0FFEE01" {
+		t.Fatalf("the end must name the ringing message: %+v", last)
+	}
+	return last
+}
+
+func TestACallAnsweredOnThePhoneIsAnsweredWithNoLength(t *testing.T) {
+	meta := callMeta(annLID)
+	got, logged := callRun(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.CallTerminate{BasicCallMeta: at(meta, 4*time.Second), Reason: "accepted_elsewhere"},
+	)
+	call := ended(t, got, 2)
+	if call.Text != "Voice call" || call.Call.Outcome != "answered" || call.Call.Duration != nil {
+		t.Errorf("got %q %+v", call.Text, call.Call)
+	}
+	want := `call.end: reason "accepted_elsewhere", known true, answer seen here false, outcome "answered"`
+	if len(logged) != 1 || logged[0] != want {
+		t.Errorf("log %q", logged)
+	}
+}
+
+func TestACallDeclinedOnThePhoneIsDeclined(t *testing.T) {
+	meta := callMeta(annLID)
+	call := ended(t, callLines(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.CallTerminate{BasicCallMeta: at(meta, 3*time.Second), Reason: "rejected_elsewhere"},
+	), 2)
+	if call.Text != "Declined voice call" || call.Call.Outcome != "declined" {
+		t.Errorf("got %q %+v", call.Text, call.Call)
+	}
+}
+
+func TestACallTheCallerHungUpIsMissedAsThePhoneShowsIt(t *testing.T) {
+	meta := callMeta(annLID)
+	call := ended(t, callLines(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.CallTerminate{BasicCallMeta: at(meta, 3*time.Second)},
+	), 2)
+	if call.Text != "Missed voice call" || call.Call.Outcome != "missed" {
+		t.Errorf("got %q %+v", call.Text, call.Call)
+	}
+}
+
+func TestACallEndedForAnUnknownReasonIsKeptWithNoOutcomeAndItsReasonLogged(t *testing.T) {
+	meta := callMeta(annLID)
+	got, logged := callRun(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.CallTerminate{BasicCallMeta: at(meta, 3*time.Second), Reason: "network_lost"},
+	)
+	call := ended(t, got, 2)
+	if call.Text != "Voice call" || call.Call.Outcome != "" || call.Call.Duration != nil {
+		t.Errorf("got %q %+v", call.Text, call.Call)
+	}
+	if len(logged) != 1 || !strings.Contains(logged[0], `reason "network_lost", known false`) {
+		t.Fatalf("log %q", logged)
+	}
+	if strings.Contains(logged[0], "C0FFEE01") || strings.Contains(logged[0], annLID.User) {
+		t.Errorf("the log must carry no call id or number: %q", logged[0])
+	}
+}
+
+func TestAReasonThatIsNotAProtocolWordNeverReachesTheLog(t *testing.T) {
+	meta := callMeta(annLID)
+	_, logged := callRun(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.CallTerminate{BasicCallMeta: at(meta, time.Second), Reason: "34600000000"},
+	)
+	if len(logged) != 1 || strings.Contains(logged[0], "34600000000") {
+		t.Errorf("log %q", logged)
+	}
+}
+
+func TestADeviceTooBusyToRingDoesNotDeclineTheCall(t *testing.T) {
+	meta := callMeta(annLID)
+	busy := &waBinary.Node{Tag: "reject", Attrs: waBinary.Attrs{"reason": "busy"}}
+	call := ended(t, callLines(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.CallReject{BasicCallMeta: at(meta, time.Second), Data: busy},
+		&events.CallTerminate{BasicCallMeta: at(meta, 5*time.Second), Reason: "accepted_elsewhere"},
+	), 2)
+	if call.Call.Outcome != "answered" {
+		t.Errorf("got %+v", call.Call)
+	}
+}
+
+func TestAnAnswerReplayedOnReconnectHasNoMadeUpLength(t *testing.T) {
+	meta := callMeta(annLID)
+	call := ended(t, callLines(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.CallAccept{BasicCallMeta: at(meta, 5*time.Second)},
+		&events.CallTerminate{BasicCallMeta: at(meta, 5*time.Second), Reason: "accepted_elsewhere"},
+		&events.OfflineSyncCompleted{},
+	), 3)
+	if call.Call.Outcome != "answered" || call.Call.Duration != nil {
+		t.Errorf("got %+v", call.Call)
+	}
+}
+
+func TestACallReplayedOnReconnectWithNoEndIsMissedUntilItsEndSaysOtherwise(t *testing.T) {
+	meta := callMeta(annLID)
+	got := callLines(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.OfflineSyncCompleted{},
+		&events.OfflineSyncCompleted{},
+	)
+	if call := ended(t, got, 2); call.Text != "Missed voice call" || call.Call.Outcome != "missed" {
+		t.Errorf("got %q %+v", call.Text, call.Call)
+	}
+	got = callLines(t,
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.OfflineSyncCompleted{},
+		&events.CallTerminate{BasicCallMeta: at(meta, 3*time.Second), Reason: "rejected_elsewhere"},
+	)
+	if call := ended(t, got, 3); call.Call.Outcome != "declined" {
+		t.Errorf("got %+v", call.Call)
+	}
+}
+
+func TestAnEndThatComesBeforeItsOfferStillSettlesTheCall(t *testing.T) {
+	meta := callMeta(annLID)
+	call := ended(t, callLines(t,
+		&events.CallTerminate{BasicCallMeta: at(meta, 3*time.Second), Reason: "rejected_elsewhere"},
+		&events.CallOffer{BasicCallMeta: meta},
+		&events.OfflineSyncCompleted{},
+	), 1)
+	if call.Text != "Declined voice call" || call.Call.Outcome != "declined" {
+		t.Errorf("got %q %+v", call.Text, call.Call)
+	}
+}
+
+func TestAGroupCallReplayedOnReconnectStaysAsItRang(t *testing.T) {
+	meta := callMeta(annLID)
+	meta.GroupJID = group
+	got := callLines(t,
+		&events.CallTerminate{BasicCallMeta: meta, Reason: "group_call_ended"},
+		&events.CallOfferNotice{BasicCallMeta: meta, Media: "audio", Type: "group"},
+		&events.OfflineSyncCompleted{},
+	)
+	if len(got) != 1 || got[0].Text != "Incoming group voice call" || got[0].Call.Outcome != "" {
 		t.Errorf("got %+v", got)
 	}
 }
