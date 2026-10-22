@@ -28,6 +28,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A store the pre-rename `cli-messaging` wrote is refused again, and left untouched** (cli-core 0.385.0). Since
+  cli-core 0.382.0 such a file was opened and failed with `internal_error`; it now fails with `configuration_error`.
 - **`chats list` shows the groups you are in.** WhatsApp has no chat list, so the store knew only the groups a
   history push or a message had named, and `chats list kind:group` could come back empty. Every connection now saves
   the groups you are in, with their names and member counts; run `serve` (or any command that connects) once for
