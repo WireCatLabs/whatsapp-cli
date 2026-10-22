@@ -192,16 +192,18 @@ func (e *engine) call(raw any) {
 	case *events.CallAccept:
 		if r, ok := e.calls.find(evt.CallID); ok && !r.message.Call.Group {
 			r.answeredAt = orNow(evt.Timestamp)
-			e.callEnded(r, "answered", "")
+			e.callEnded(r, "answered")
 		}
 	case *events.CallReject:
 		// "busy" and "enc" speak for one device that cannot take the call; the owner's other devices go on ringing.
-		if reason := attr(evt.Data, "reason"); reason == "busy" || reason == "enc" {
+		reason := attr(evt.Data, "reason")
+		e.warnf("call.reject: reason %q", protocolWord(reason))
+		if reason == "busy" || reason == "enc" {
 			return
 		}
 		if r, ok := e.calls.find(evt.CallID); ok && !r.message.Call.Group {
 			e.calls.end(evt.CallID)
-			e.callEnded(r, "declined", "")
+			e.callEnded(r, "declined")
 		}
 	case *events.CallTerminate:
 		r, ok := e.calls.find(evt.CallID)
@@ -217,25 +219,29 @@ func (e *engine) call(raw any) {
 }
 
 // terminated settles a one-to-one call. An answer this device saw stands, and its length counts only from an end that
-// is the call's own: "accepted_elsewhere" comes the moment the phone picks up.
+// is the call's own: "accepted_elsewhere" comes the moment the phone picks up. Each end is logged with its reason, a
+// fixed protocol word, so a live run shows what WhatsApp sent; a reason not seen before keeps the call with no outcome.
 func (e *engine) terminated(r *ringing, reason string, at time.Time) {
-	if !r.answeredAt.IsZero() {
+	answered := !r.answeredAt.IsZero()
+	outcome, known := endOutcome(reason)
+	if answered {
+		outcome = "answered"
 		if reason != "accepted_elsewhere" && reason != "rejected_elsewhere" {
 			if seconds := int64(orNow(at).Sub(r.answeredAt).Seconds()); seconds > 0 {
 				r.message.Call.Duration = &seconds
 			}
 		}
-		e.callEnded(r, "answered", reason)
-		return
 	}
-	e.callEnded(r, "", reason)
+	e.warnf("call.end: reason %q, known %t, answer seen here %t, outcome %q",
+		protocolWord(reason), known, answered, outcome)
+	e.callEnded(r, outcome)
 }
 
 // offlineReplayed settles the calls that rang while this device was away. Their offers come back on reconnect with
 // the server's offline queue, which may hold no end for them; WhatsApp Web shows such a call as missed.
 func (e *engine) offlineReplayed() {
 	for _, r := range e.calls.unsettled() {
-		e.callEnded(r, "missed", "")
+		e.callEnded(r, "missed")
 	}
 }
 
@@ -258,15 +264,7 @@ func (e *engine) ringing(meta types.BasicCallMeta, video, group bool) {
 	e.out.event("message", message)
 }
 
-// callEnded records what became of a call. With no outcome given, the reason decides it; a reason WhatsApp has not
-// been seen to send keeps the call with no outcome, and only the reason, a fixed protocol word, reaches the log.
-func (e *engine) callEnded(r *ringing, outcome, reason string) {
-	if outcome == "" {
-		known := false
-		if outcome, known = endOutcome(reason); !known {
-			e.warnf("call.unknown-end: a call ended with reason %q; kept with no outcome", protocolWord(reason))
-		}
-	}
+func (e *engine) callEnded(r *ringing, outcome string) {
 	message := r.message
 	call := *message.Call
 	call.Outcome = outcome
@@ -285,7 +283,10 @@ func attr(node *waBinary.Node, name string) string {
 
 // protocolWord passes a word from WhatsApp's call protocol to the log, and nothing that could carry an id or a number.
 func protocolWord(s string) string {
-	if len(s) == 0 || len(s) > 40 {
+	if s == "" {
+		return "(none)"
+	}
+	if len(s) > 40 {
 		return "(not a protocol word)"
 	}
 	for _, r := range s {

@@ -173,12 +173,17 @@ func ended(t *testing.T, got []waMessage, want int) waMessage {
 
 func TestACallAnsweredOnThePhoneIsAnsweredWithNoLength(t *testing.T) {
 	meta := callMeta(annLID)
-	call := ended(t, callLines(t,
+	got, logged := callRun(t,
 		&events.CallOffer{BasicCallMeta: meta},
 		&events.CallTerminate{BasicCallMeta: at(meta, 4*time.Second), Reason: "accepted_elsewhere"},
-	), 2)
+	)
+	call := ended(t, got, 2)
 	if call.Text != "Voice call" || call.Call.Outcome != "answered" || call.Call.Duration != nil {
 		t.Errorf("got %q %+v", call.Text, call.Call)
+	}
+	want := `call.end: reason "accepted_elsewhere", known true, answer seen here false, outcome "answered"`
+	if len(logged) != 1 || logged[0] != want {
+		t.Errorf("log %q", logged)
 	}
 }
 
@@ -204,7 +209,7 @@ func TestACallTheCallerHungUpIsMissedAsThePhoneShowsIt(t *testing.T) {
 	}
 }
 
-func TestACallEndedForAnUnknownReasonIsKeptWithNoOutcomeAndOnlyTheReasonLogged(t *testing.T) {
+func TestACallEndedForAnUnknownReasonIsKeptWithNoOutcomeAndItsReasonLogged(t *testing.T) {
 	meta := callMeta(annLID)
 	got, logged := callRun(t,
 		&events.CallOffer{BasicCallMeta: meta},
@@ -214,7 +219,7 @@ func TestACallEndedForAnUnknownReasonIsKeptWithNoOutcomeAndOnlyTheReasonLogged(t
 	if call.Text != "Voice call" || call.Call.Outcome != "" || call.Call.Duration != nil {
 		t.Errorf("got %q %+v", call.Text, call.Call)
 	}
-	if len(logged) != 1 || !strings.Contains(logged[0], `"network_lost"`) {
+	if len(logged) != 1 || !strings.Contains(logged[0], `reason "network_lost", known false`) {
 		t.Fatalf("log %q", logged)
 	}
 	if strings.Contains(logged[0], "C0FFEE01") || strings.Contains(logged[0], annLID.User) {
