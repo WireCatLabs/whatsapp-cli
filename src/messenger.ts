@@ -25,7 +25,7 @@ export interface EngineRequest {
 
 export interface Environment extends BaseEnvironment {
   /** Tests hand in an engine in memory. */
-  engine?: (request: EngineRequest) => WhatsAppEngine | Promise<WhatsAppEngine>
+  engine?: (request: EngineRequest) => unknown
   /** Tests run a stand-in for the Go engine binary, through the real client. */
   engineCommand?: { file: string; args: string[] }
   /** Tests shorten how long `session start` waits for the phone's history. */
@@ -65,7 +65,8 @@ export const openEngine = async (
   const { engine: given, engineCommand, trackCloseable } = environmentOf<Environment>(command)
   // The engine ignores Ctrl+C and lives until its stdin closes, so the runner must be able to close it on a signal or
   // a deadline: a login waiting for a scan would otherwise keep the process alive.
-  const engine = given ? await given(request) : await startEngine(request, base, engineCommand)
+  // The test hook stays opaque above this composition boundary; fixtures implement the engine contract.
+  const engine = given ? ((await given(request)) as WhatsAppEngine) : await startEngine(request, base, engineCommand)
   trackCloseable?.(engine)
   return engine
 }

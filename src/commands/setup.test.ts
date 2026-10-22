@@ -11,8 +11,8 @@ import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
 import { run } from "../program.js"
+import { BAN_WARNING } from "../session.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
-import { BAN_WARNING } from "./session.js"
 
 const input = vi.hoisted(() => ({
   answers: [] as string[],

@@ -25,8 +25,8 @@ import { Command, Option } from "commander"
 import { WA } from "../app.js"
 import { type Environment, SKILL, WHATSAPP } from "../messenger.js"
 import { pathsFor, privateStore } from "../paths.js"
+import { startSession } from "../session.js"
 import { installer, PACKAGE } from "../update.js"
-import { startSession } from "./session.js"
 
 type Options = {
   agent?: Agent

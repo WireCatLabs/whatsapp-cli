@@ -11,8 +11,8 @@ import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
 import { run } from "../program.js"
+import { BAN_WARNING } from "../session.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
-import { BAN_WARNING } from "./session.js"
 
 // serve offers no relay on Windows, so there the lock's listeningAt is the sign it is up.
 const listening = (lock: string): unknown => {
