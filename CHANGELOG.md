@@ -12,6 +12,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `outcome`, so it does not pass as missed or answered. A script that reads a missing `outcome` as "ringing" should
   read the text as well: a ringing call's text starts with "Incoming".
 
+### Security
+
+- **The engine uses the patched Go certificate verification library.** Release and monthly checks now
+  audit reachable Go vulnerabilities, and dependency updates cover the engine's Go module.
+
 ### Fixed
 
 - **A call answered or declined on your phone is stored as answered or declined, not missed.** While `serve` or

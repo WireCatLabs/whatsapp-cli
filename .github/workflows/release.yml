@@ -58,9 +58,10 @@ jobs:
       contents: read
       actions: read
       security-events: write
-    uses: WireCatLabs/cli-base/.github/workflows/release-checks.yml@f61dc446e2485a6d1f2c7e2e842562db9e47a39d # Go analysis support
+    uses: WireCatLabs/cli-base/.github/workflows/release-checks.yml@36debb605b6909e77636ba873821c861bc5186a8 # Go dependency audit
     with:
       languages: '["actions","javascript-typescript","go"]'
+      govulncheck: true
       go-version-file: engine/go.mod
 
   build:
