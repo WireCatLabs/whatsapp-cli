@@ -27,8 +27,7 @@ change before changing it. The handbook wins over this file and over every docum
 looser.
 
 Cite the ids of the rules your change touches (`WC-<AREA>-<n>`, such as `WC-OUT-1`) in the commit message and the PR
-body. A rule that seems wrong for WhatsApp is raised in the PR or in the backlog, never broken quietly. Where a local
-rule below repeats a handbook rule, the id after it names the handbook's version.
+body. A rule that seems wrong for WhatsApp is raised in the PR or in the backlog, never broken quietly. The ids below link WhatsApp-specific constraints to their handbook rules.
 
 ## Local rules
 
@@ -37,13 +36,13 @@ What holds for `wa` alone, on top of the handbook:
 1. **This is the owner's real WhatsApp account.** Nothing sends, marks read or sends presence unless the command
    typed asked for it (delivery receipts are normal client behaviour and stay on); live checks send only to the owner's own chat. Never message a number the owner has not
    written to, never in bulk — WhatsApp bans accounts for both.
-4. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
+2. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
    starts the engine. (`WC-LIFE-11`)
-5. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces the
+3. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces the
    imports; a type that arrives by inference through `src/messenger.ts` is caught only in review. (`WC-ARCH-3`)
-6. **The device keys (`private.db`), messages and phone numbers never reach a log, a fixture or a document.**
+4. **The device keys (`private.db`), messages and phone numbers never reach a log, a fixture or a document.**
    (`WC-SECR-1`)
-7. **On the wire we look like a browser, not like ourselves.** No "whatsapp-cli" in any field WhatsApp sees.
+5. **On the wire we look like a browser, not like ourselves.** No "whatsapp-cli" in any field WhatsApp sees.
 
 Shared development rules live in the handbook: [style](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/style.md)
 (`WC-STYLE-1`, `WC-STYLE-10`), [CI](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/ci.md)

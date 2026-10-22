@@ -31,6 +31,9 @@ src/engine/           the engine port and its contract (JSON lines)
 engine/               the Go engine: whatsmeow in a child process   Go
 ```
 
+The adapter composes media operations from `src/adapter/sends.ts:67` and event/history listeners from
+`src/adapter/listen.ts:126`; `src/adapter/adapter.ts:87` keeps the core message operations.
+
 Dependencies point down only. `biome.json` enforces it: nothing in `src/` above the adapter reaches the adapter or
 the engine, except the composition root, `src/messenger.ts`, which starts them. Where the engine binary lives is
 answered by `src/engine-binary.ts`, a leaf with only Node imports, so `doctor` (`src/diagnose.ts`) finds the binary
@@ -44,7 +47,7 @@ not the engine's contract type: the lint cannot see a type that arrives by infer
 
 ## 3. History comes from the store
 
-Source: `src/messenger.ts:154`, `src/adapter/adapter.ts:739`, `src/adapter/map.ts:103`, `engine/cmd/wa-engine/historysync.go:103`, `engine/cmd/wa-engine/older.go:49`, `engine/cmd/wa-engine/mediaretry.go:31`.
+Source: `src/messenger.ts:154`, `src/adapter/listen.ts:320`, `src/adapter/map.ts:103`, `engine/cmd/wa-engine/historysync.go:103`, `engine/cmd/wa-engine/older.go:49`, `engine/cmd/wa-engine/mediaretry.go:31`.
 
 WhatsApp has no "list chats" request and keeps no history on its servers. The phone pushes history when a device
 links, and the socket carries new messages after that. So `WHATSAPP.history` is `"store"`:
@@ -363,7 +366,7 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 
 ## 5. One id per one-to-one chat
 
-Source: `src/adapter/adapter.ts:744`, `src/adapter/map.ts:35`.
+Source: `src/adapter/adapter.ts:240`, `src/adapter/map.ts:35`.
 
 cli-core can link two identities of one person but cannot merge two chats. A one-to-one chat stored once under the
 person's phone JID and once under their LID would split its messages. **The engine emits every one-to-one chat in
