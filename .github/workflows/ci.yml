@@ -29,9 +29,9 @@ jobs:
       bun-run: pnpm build && pnpm smoke:bun
       # The test matrix is rebuilt from this run's argv log, so the diff also catches a stale
       # test-matrix.md; the parity lines read the command tree from the dist/ built above.
-      # contracts:upgrade joins once there is a published version (BACKLOG.md).
       checks: |
         pnpm contracts:check
+        pnpm contracts:upgrade
         pnpm security:no-leak
         pnpm version:check
         pnpm exec cli-dev test-matrix --program dist/program.js --untested scripts/test-matrix-untested.ts --name wa --check

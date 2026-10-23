@@ -1,0 +1,129 @@
+{
+  "command": "node",
+  "args": ["../dist/bin/wa.js"],
+  "previous": {
+    "entry": "./previous/node_modules/@wirecat/previous-cli/dist/bin/wa.js",
+    "version": "0.2.0"
+  },
+  "fixtures": [
+    {
+      "path": "WA/CONFIG/config.json",
+      "text": "{\"defaults\": {\"limit\": 7}, \"profiles\": {\"contract\": {}}}"
+    }
+  ],
+  "canaries": ["wirecat-synthetic-message-canary"],
+  "artifacts": ["WA/STATE/runs"],
+  "cases": [
+    {
+      "id": "seed-previous-store",
+      "args": ["{{previousEntry}}"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "entry": "./seed.mjs",
+      "json": {
+        "seeded": true
+      }
+    },
+    {
+      "id": "previous-store-data",
+      "args": ["contract", "--offline", "--json", "--trace", "--record", "messages", "list", "7"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "previous": true,
+      "allowSensitiveOutput": true,
+      "json": {
+        "items": [
+          {
+            "id": "101",
+            "text": "wirecat-synthetic-message-canary"
+          }
+        ]
+      },
+      "diagnostic": "no `wa contract serve` keeps profile \"contract\" up to date \u2014 the newest stored message is from 2026-10-01T10:00:00.000Z\n"
+    },
+    {
+      "id": "previous-config",
+      "args": ["contract", "config", "show", "--json"],
+      "previous": true,
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "contains": "\"value\":7",
+      "diagnostic": "WA_CONFIG_DIR, WA_STATE_DIR or WA_CACHE_DIR is set \u2014 a profile's keyring entry is not the usual one, so a session made without them reads as none\n"
+    },
+    {
+      "id": "candidate-store-migrate",
+      "args": ["contract", "store", "migrate", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "diagnostic": "4 terms\n"
+    },
+    {
+      "id": "candidate-store-data",
+      "args": ["contract", "--offline", "--json", "--trace", "--record", "messages", "list", "7"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "previous": false,
+      "allowSensitiveOutput": true,
+      "json": {
+        "items": [
+          {
+            "id": "101",
+            "text": "wirecat-synthetic-message-canary"
+          }
+        ]
+      },
+      "diagnostic": "no `wa contract serve` keeps profile \"contract\" up to date \u2014 the newest stored message is from 2026-10-01T10:00:00.000Z\n"
+    },
+    {
+      "id": "migration-store-repeat",
+      "args": ["contract", "store", "migrate", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json"
+    },
+    {
+      "id": "data-after-repeat",
+      "args": ["contract", "--offline", "--json", "--trace", "--record", "messages", "list", "7"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "previous": false,
+      "allowSensitiveOutput": true,
+      "json": {
+        "items": [
+          {
+            "id": "101",
+            "text": "wirecat-synthetic-message-canary"
+          }
+        ]
+      },
+      "diagnostic": "no `wa contract serve` keeps profile \"contract\" up to date \u2014 the newest stored message is from 2026-10-01T10:00:00.000Z\n"
+    },
+    {
+      "id": "candidate-config",
+      "args": ["contract", "config", "show", "--json"],
+      "previous": false,
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "contains": "\"value\":7",
+      "diagnostic": "WA_CONFIG_DIR, WA_STATE_DIR or WA_CACHE_DIR is set \u2014 a profile's keyring entry is not the usual one, so a session made without them reads as none\n"
+    },
+    {
+      "id": "device-layout-preserved",
+      "entry": "./verify-device.mjs",
+      "args": [],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "json": {
+        "preserved": true
+      }
+    }
+  ]
+}
