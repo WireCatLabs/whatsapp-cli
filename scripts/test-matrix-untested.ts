@@ -42,11 +42,6 @@ const cliCore = (tests: string, rows: string[][]): Untested[] =>
   }))
 
 export const UNTESTED: Untested[] = [
-  ...cliCore("src/services/person-preparation.test.ts and src/cli/messenger/messenger.test.ts", [
-    ["contacts prepare"],
-    ["contacts prepare", "--limit"],
-    ["contacts prepare", "--since-time"],
-  ]),
   // wa's own tests replace these one command at a time, as each is found to reach the engine.
   ...Object.entries(SHARED).map(([command, tests]) => ({
     command,
