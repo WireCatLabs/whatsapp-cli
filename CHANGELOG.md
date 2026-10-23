@@ -7,6 +7,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Security
 
+- **The engine uses the patched Go certificate verification library.** Release and monthly checks now
+  audit reachable Go vulnerabilities, and dependency updates cover the engine's Go module.
+
 - **Local releases run engine tests, the coverage floor and security checks before publishing.** The npm token
   is supplied only to publishing, and publishing skips lifecycle scripts because validation already built the package.
 
@@ -23,11 +26,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   always still ringing. Now a call that ends for a reason `wa` does not know is kept as "Voice call" with no
   `outcome`, so it does not pass as missed or answered. A script that reads a missing `outcome` as "ringing" should
   read the text as well: a ringing call's text starts with "Incoming".
-
-### Security
-
-- **The engine uses the patched Go certificate verification library.** Release and monthly checks now
-  audit reachable Go vulnerabilities, and dependency updates cover the engine's Go module.
 
 ### Fixed
 
