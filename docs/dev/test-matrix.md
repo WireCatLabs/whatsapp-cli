@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**239 ✅ · 519 ⛔ · 0 ❌** — 245 commands, 513 options.
+**239 ✅ · 536 ⛔ · 0 ❌** — 253 commands, 522 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -166,7 +166,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages evidence` | `--cursor` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/store-mode.test.ts and src/services/evidence.test.ts |
 | `messages list` |  | ✅ |  |
 | `messages list` | `--limit` | ✅ |  |
-| `messages list` | `--cursor` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
+| `messages list` | `--cursor` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/media.test.ts --transcribe, the options that reach the engine |
 | `messages list` | `--transcribe` | ✅ |  |
 | `messages list` | `--model` | ✅ |  |
 | `messages send` |  | ✅ |  |
@@ -249,19 +249,19 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models text key set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `models text key remove` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `inbox` |  | ✅ |  |
-| `inbox` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
-| `inbox` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
+| `inbox` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/media.test.ts --transcribe, the options that reach the engine |
+| `inbox` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/media.test.ts --transcribe, the options that reach the engine |
 | `inbox` | `--all` | ✅ |  |
-| `inbox` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
+| `inbox` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/media.test.ts --transcribe, the options that reach the engine |
 | `inbox` | `--transcribe` | ✅ |  |
 | `inbox` | `--model` | ✅ |  |
 | `review` |  | ✅ |  |
-| `review` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read, src/groups.test.ts --unanswered and src/media.test.ts --transcribe, the options that reach the engine |
+| `review` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/groups.test.ts --unanswered and src/media.test.ts --transcribe, the options that reach the engine |
 | `review` | `--unanswered` | ✅ |  |
 | `review` | `--all` | ✅ |  |
 | `review` | `--transcribe` | ✅ |  |
 | `review` | `--model` | ✅ |  |
-| `review` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read, src/groups.test.ts --unanswered and src/media.test.ts --transcribe, the options that reach the engine |
+| `review` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/groups.test.ts --unanswered and src/media.test.ts --transcribe, the options that reach the engine |
 | `watch` |  | ✅ |  |
 | `watch` | `--events` | ✅ |  |
 | `serve` |  | ✅ |  |
@@ -398,19 +398,36 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `attachments extract` | `--limit` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
 | `attachments extract` | `--ocr` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
 | `attachments extract` | `--concurrency` | ⛔ | reads files already on disk, in cli-core, tested there (src/cli/messenger/attachments.test.ts); src/media.test.ts drives --download, the option that reaches the engine |
-| `attachments list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments list` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments show` | `--attachment` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments show` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments show` | `--offset-bytes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments show` | `--chunk-bytes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments show` | `--expected-fingerprint` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments text set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments text set` | `--attachment` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
-| `attachments text set` | `--text-file` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts) |
+| `attachments list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments list` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments list` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments list` | `--all` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments show` | `--attachment` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments show` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments show` | `--offset-bytes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments show` | `--chunk-bytes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments show` | `--expected-fingerprint` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments text set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments text set` | `--attachment` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments text set` | `--text-file` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments download` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments download` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments download` | `--pause` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments check` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs install` | `--at` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs install` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs install` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs install` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs start` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs stop` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments jobs uninstall` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments move` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments move` | `--before-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
+| `attachments move` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts) |
 | `tags auto` |  | ✅ |  |
 | `tags auto` | `--chat` | ✅ |  |
 | `tags auto` | `--limit` | ⛔ | how many stored chats to tag, and a preview from the store; cli-core's shared command, tested in cli-core (src/cli/messenger/tags.test.ts); src/groups.test.ts drives --sync-first, the option that reaches the engine |
