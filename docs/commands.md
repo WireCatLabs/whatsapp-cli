@@ -4694,7 +4694,7 @@ wa bot recipients add <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required |  |
+| `chat` | required | a chat id, `user:<id>`, or the title of a chat this bot has seen. |
 
 #### `wa bot recipients remove`
 
@@ -4708,7 +4708,7 @@ wa bot recipients remove <chat>
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required |  |
+| `chat` | required | the chat id, or the title as the list shows it. |
 
 #### `wa bot recipients clear`
 

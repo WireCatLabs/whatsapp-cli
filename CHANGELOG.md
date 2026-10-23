@@ -13,6 +13,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - cli-core 0.399.0 supplies the shared flag migration, additional help examples, offline review and the updated MCP server dependency. The command-lint baseline drops from 52 entries to 38; guides, skill and the generated reference use the released flags.
 
+### Added
+
+- **`wa <profile> bot`: a WhatsApp Business number on Meta's Cloud API.** A bot profile keeps an access token in the
+  system keychain (`bot auth set`) and the number's ids as settings (`config set --bot phone_number_id …`). `bot me`
+  names the number; `bot api <operation>` runs any of 63 Cloud API operations generated from Meta's OpenAPI file, and
+  asks before the ones that cannot be undone, such as `register-phone-number`. It never links a device or starts the
+  engine. What to watch for: never register a number whose WhatsApp you use on a phone — that deletes its account.
+
 ## 0.6.0 — 23.10.2026
 
 ### Added
@@ -74,11 +82,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Added
 
 - **cli-core 0.394.0.** Store and statistics commands gain examples, and `contacts prepare` gives a cited brief before a conversation.
-- **`wa <profile> bot`: a WhatsApp Business number on Meta's Cloud API.** A bot profile keeps an access token in the
-  system keychain (`bot auth set`) and the number's ids as settings (`config set --bot phone_number_id …`). `bot me`
-  names the number; `bot api <operation>` runs any of 63 Cloud API operations generated from Meta's OpenAPI file, and
-  asks before the ones that cannot be undone, such as `register-phone-number`. It never links a device or starts the
-  engine. What to watch for: never register a number whose WhatsApp you use on a phone — that deletes its account.
 
 - **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
   profile to check that configuration, stored messages and the device database location survive an upgrade.

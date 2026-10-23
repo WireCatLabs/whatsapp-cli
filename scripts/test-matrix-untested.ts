@@ -68,11 +68,12 @@ export const UNTESTED: Untested[] = [
     command,
     reason: `shared cli-core bot command mounted unchanged; tested in cli-core (${tests}), wa's adapter in src/commands/bot.test.ts`,
   })),
-  ...["--phone-number-id", "--body-file"].map((option) => ({
-    command: "bot api register-phone-number",
+  ...["--phone-number-id", "--waba-id", "--whats-app-business-account-id", "--body", "--body-file"].map((option) => ({
+    command: "bot api *",
     option,
     reason:
-      "asks before it runs, so the test stops at the question; the flag path is send-message's, tested in src/commands/bot.test.ts",
+      "generated: one execute path fills every id flag and reads every body the same way, tested in " +
+      "src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file)",
   })),
   {
     command: "bot api *",
