@@ -9,6 +9,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - **A ban's end is shown in the local time zone and names that zone.** Stored timestamps remain UTC.
 - **Unexpected engine failures use the provider error code.** Known validation and messenger errors keep their codes.
+- **Agents are no longer offered channel comments, which WhatsApp cannot read** (cli-core 0.393.0). A direct call
+  fails before connecting. Commands also show more concrete examples in their help.
 
 ### Changed — may break callers
 

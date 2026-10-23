@@ -225,6 +225,7 @@ export const WHATSAPP: Messenger = {
     "sessions",
     "endOtherSessions",
     "chatEvents",
+    "comments",
     "inspect",
     "folders",
     "createFolder",
