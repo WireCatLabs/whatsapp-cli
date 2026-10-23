@@ -7,7 +7,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
-- **More useful command discovery.** cli-core 0.396.0 adds shared examples, concise skill summaries and profile-preserving corrections for joined command paths. Command discovery uses `--json` and refuses `--jsonl`.
+- **More useful command discovery.** cli-core 0.396.0 adds shared examples, concise skill summaries and profile-preserving corrections for joined command paths; cli-base 0.50.2 recognizes the approved messenger vocabulary and flag roles. Command discovery uses `--json` and refuses `--jsonl`.
 
 - **Input errors name the selected command's flags.** WhatsApp adapters report domain fields for unsupported invite-link filtering, conflicting name fields and privacy refusals; cli-core formats those fields at the CLI boundary.
 
