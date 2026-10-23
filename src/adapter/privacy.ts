@@ -59,18 +59,30 @@ export const toPrivacy = (privacy: WaPrivacy): PrivacySettings => {
   return Object.fromEntries(Object.entries(settings).filter(([, value]) => value !== undefined))
 }
 
-const refusedUpFront = (change: PrivacySettings): string | undefined => {
+const unsupported = (message: string, field: string): CliError =>
+  new CliError("validation_error", message, { reason: "input.field-unsupported", fields: [field] })
+
+const refusedUpFront = (change: PrivacySettings): CliError | undefined => {
   const missing = Object.keys(change).find((key) => !PRIVACY_SETTINGS.some((known) => known === key))
-  if (missing) return `WhatsApp has no ${missing} privacy setting`
+  if (missing) return unsupported("WhatsApp has no such privacy setting", missing)
   if (change.chatInvites === "nobody")
-    return "WhatsApp lets everyone or only contacts add the account to groups, not nobody"
+    return unsupported("WhatsApp lets everyone or only contacts add the account to groups, not nobody", "chatInvites")
   if (change.calls === "nobody")
-    return "WhatsApp lets everyone call, or silences callers the account does not know (contacts), not nobody"
+    return unsupported(
+      "WhatsApp lets everyone call, or silences callers the account does not know (contacts), not nobody",
+      "calls",
+    )
   if (change.hideOnline !== undefined && change.lastSeen !== undefined)
-    return "--hide-online sets who sees last seen too; give --hide-online or --last-seen, not both"
+    return new CliError("validation_error", "hiding online status also sets who sees last seen; choose one setting", {
+      reason: "input.field-conflict",
+      fields: ["hideOnline", "lastSeen"],
+    })
   for (const [key] of AUDIENCES)
     if (change[key] === "contacts_except")
-      return "contacts_except is kept on the phone with its list of exceptions; wa only shows it"
+      return unsupported(
+        "the exceptions list can be changed on the phone only; this setting can only be read here",
+        key,
+      )
   return undefined
 }
 
@@ -112,7 +124,7 @@ export const privacyAdapter = ({
 
   updatePrivacy: async (change) => {
     const refused = refusedUpFront(change)
-    if (refused) throw new CliError("validation_error", refused)
+    if (refused) throw refused
     const now = await translated(engine.privacy())
     const changes = changesFor(change, now)
     return toPrivacy(changes.length === 0 ? now : await translated(engine.setPrivacy(changes)))

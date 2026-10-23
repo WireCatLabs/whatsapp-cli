@@ -105,10 +105,10 @@ export const settingsAdapter = ({
 /** WhatsApp keeps one name, so a first and a last name are joined into it; a last name alone has nothing to join. */
 const toWaProfile = ({ firstName, lastName, description }: ProfileChange): WaProfileChange => {
   if (firstName === undefined && lastName !== undefined)
-    throw new CliError(
-      "validation_error",
-      "WhatsApp has one name — pass --first-name, and --last-name is added to it after a space",
-    )
+    throw new CliError("validation_error", "WhatsApp has one name; a last name must be accompanied by a first name", {
+      reason: "input.field-conflict",
+      fields: ["lastName", "firstName"],
+    })
   if (description !== undefined && description.trim() === "")
     throw new CliError("validation_error", "a WhatsApp about cannot be empty")
   const pushName =

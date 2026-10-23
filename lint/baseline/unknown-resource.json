@@ -1,21 +1,10 @@
 [
-  "account sessions",
   "attachments text",
-  "chats folders",
   "chats link",
-  "chats requests",
-  "chats rules",
   "contacts alias",
-  "conversations",
-  "conversations batches",
-  "conversations consents",
   "conversations embed",
-  "conversations links",
   "doctor report",
-  "metadata",
   "models audio",
   "models text",
-  "models text key",
-  "stats messages counters",
-  "store gaps"
+  "models text key"
 ]
