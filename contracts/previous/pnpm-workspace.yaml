@@ -1,0 +1,5 @@
+minimumReleaseAgeExclude:
+  - '@wirecat/*'
+ignoredOptionalDependencies:
+  - '@wirecat/whatsapp-engine-*'
+allowBuilds: {}

@@ -30,6 +30,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
+  profile to check that configuration, stored messages and the device database location survive an upgrade.
+
 - **Pull requests cannot grow the command-lint baseline.** New violations must be fixed or carry a dated,
   reasoned override, so adding a feature cannot silently weaken the existing checks.
 
