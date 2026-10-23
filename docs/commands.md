@@ -990,6 +990,23 @@ wa contacts context <person> [options]
 | `--since-time <time>` | nothing older than this ISO 8601 time, or 2h / 1d ago. |
 | `--chat <chat>` | a chat, by id or name; repeat it for more — then their newest messages in each, 20 unless --limit, short unless -v. |
 
+### `wa contacts prepare`
+
+before you talk to someone: what contacts context gives, plus the one-to-one chats where they wrote last, open tasks, accepted facts, your notes and their recent meetings, each with its reference; never connects
+
+```sh
+wa contacts prepare <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `person` | required | their id, @username, or part of their name. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | at most this many messages, and items in each section; 10 if not given. |
+| `--since-time <time>` | no message or meeting older than this ISO 8601 time, or 2h / 1d ago. |
+
 ### `wa contacts timeline`
 
 everything one person took part in, in every messenger linked to them — messages they wrote or were mentioned in, chats, mail, meetings, tasks — newest first, from the store; never connects
