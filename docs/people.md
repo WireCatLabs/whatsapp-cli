@@ -76,7 +76,7 @@ person.
 ```sh
 wa personal contacts alias set 100000000000001@lid Ana    # your own name for a person, on this computer only
 wa personal contacts alias rm 100000000000001@lid
-wa personal contacts notes add 100000000000001@lid --file note.txt  # or the text from stdin
+wa personal contacts notes add 100000000000001@lid --text-file note.txt  # or the text from stdin
 wa personal contacts notes list 100000000000001@lid
 ```
 

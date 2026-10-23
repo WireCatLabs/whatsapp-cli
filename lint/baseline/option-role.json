@@ -1,5 +1,4 @@
 [
-  "chats update --disappear-time",
   "runs search --error-code",
   "runs search --operation",
   "runs search --status",

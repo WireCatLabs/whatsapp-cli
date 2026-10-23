@@ -3,6 +3,16 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **Shared flags use one meaning.** Analysis uses `--analysis-provider`, vectors `--embedding-provider`, consent removal `--consent-provider`, tag ownership `--claim` and stored-answer removal `--answer-model`. Contact notes read `--text-file`; group message lifetime is `--disappear-after`. Catch-up views use query terms such as `inbox kind:group`. Old CLI flags remain hidden aliases for one compatibility release and cannot be combined with their replacements; saved MCP requests must use canonical arguments.
+
+### Fixed
+
+- cli-core 0.399.0 supplies the shared flag migration, additional help examples, offline review and the updated MCP server dependency. The command-lint baseline drops from 52 entries to 38; guides, skill and the generated reference use the released flags.
+
 ## 0.6.0 — 23.10.2026
 
 ### Added

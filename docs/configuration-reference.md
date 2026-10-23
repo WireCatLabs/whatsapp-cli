@@ -42,11 +42,11 @@ removes it.
 | `read_other_bots` | `false` | for bot profiles; `wa` has none yet | none |
 | `update_check` | `true` | the daily "a newer version exists" line; only under `defaults` | none; `WA_NO_UPDATE_CHECK`, `NO_UPDATE_NOTIFIER` or `CI` turn it off |
 | `skill_hint` | `true` | a line, at most once a day, for an agent whose copy of the skill is missing or older; only under `defaults` | none |
-| `embedding_provider` | `local` | local model or `openai` | `--provider` |
+| `embedding_provider` | `local` | local model or `openai` | `--embedding-provider` |
 | `embedding_model` | provider default | embedding model | `--model` |
 | `embedding_base_url` | provider default | embedding API endpoint | `--base-url` |
 | `embedding_dims` | model default | integer 1–65,536 | `--dims` |
-| `analysis_provider` | `agent` | `agent`, `openai` or `anthropic` | `build --provider` |
+| `analysis_provider` | `agent` | `agent`, `openai` or `anthropic` | `build --analysis-provider` |
 | `analysis_model` | none | analysis model | `build --model` |
 | `analysis_base_url` | provider default | analysis API endpoint | `build --base-url` |
 | `models` | none | external models by purpose | `WA_MODELS_*` variables |
