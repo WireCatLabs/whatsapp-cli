@@ -1106,8 +1106,8 @@ wa contacts alias set <person> <alias>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `alias` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `alias` | required | the private name to use for this person. |
 
 #### `wa contacts alias rm`
 
@@ -1121,7 +1121,7 @@ wa contacts alias rm <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
+| `person` | required | the person's id, reference or known name. |
 
 ### `wa contacts notes`
 
@@ -1137,7 +1137,7 @@ wa contacts notes list <person> [query]
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
+| `person` | required | the person's id, reference or known name. |
 | `query` | optional | field:value terms; this list filters by none yet. |
 
 #### `wa contacts notes show`
@@ -1150,8 +1150,8 @@ wa contacts notes show <person> <id>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `id` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `id` | required | the note id from contacts notes list. |
 
 #### `wa contacts notes add`
 
@@ -1165,7 +1165,7 @@ wa contacts notes add <person> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
+| `person` | required | the person's id, reference or known name. |
 
 | Option | What it does |
 |---|---|
@@ -1183,8 +1183,8 @@ wa contacts notes edit <person> <id> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `id` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `id` | required | the note id from contacts notes list. |
 
 | Option | What it does |
 |---|---|
@@ -1203,8 +1203,8 @@ wa contacts notes remove <person> <id>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `id` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `id` | required | the note id from contacts notes list. |
 
 ### `wa contacts add`
 
@@ -1276,7 +1276,7 @@ wa contacts rename <person> <first-name> [last-name]
 |---|---|---|
 | `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
 | `first-name` | required | the name you want to see for them. |
-| `last-name` | optional |  |
+| `last-name` | optional | the last name you want to see for them. |
 
 ### `wa contacts import`
 
@@ -1465,13 +1465,13 @@ delete messages for you only; with --for-everyone, for everyone in the chat
 **Changes something in WhatsApp.**
 
 ```sh
-wa messages delete <chat> <messages> [options]
+wa messages delete <chat> <message> [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `messages` | required | the message ids, by spaces or commas, at most 10. |
+| `message` | required | the message ids, by spaces or commas, at most 10. |
 
 | Option | What it does |
 |---|---|
@@ -2131,12 +2131,12 @@ a chat's stored messages, oldest first: --jsonl one message per line, --json the
 **Changes something on this computer only.**
 
 ```sh
-wa store export [chats] [options]
+wa store export [chat] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `chats` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); several with --output-dir. |
+| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); several with --output-dir. |
 
 | Option | What it does |
 |---|---|
@@ -3534,13 +3534,13 @@ two tasks are not the same job: the pair leaves the list and is never offered ag
 **Changes something on this computer only.**
 
 ```sh
-wa tasks duplicates reject <dup> <task>
+wa tasks duplicates reject <task> <other-task>
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the task listed as the duplicate, by its id or key. |
-| `task` | required | the task it was paired with. |
+| `task` | required | the task listed as the duplicate, by its id or key. |
+| `other-task` | required | the task it was paired with. |
 
 #### `wa tasks duplicates defer`
 
@@ -3549,13 +3549,13 @@ the fields and the text cannot tell: leave the pair to the owner, who lists it w
 **Changes something on this computer only.**
 
 ```sh
-wa tasks duplicates defer <dup> <task>
+wa tasks duplicates defer <task> <other-task>
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the task listed as the duplicate, by its id or key. |
-| `task` | required | the task it was paired with. |
+| `task` | required | the task listed as the duplicate, by its id or key. |
+| `other-task` | required | the task it was paired with. |
 
 ### `wa tasks merge`
 
@@ -3564,12 +3564,12 @@ one job seen twice: link every message of the duplicate to the task and close th
 **Changes something on this computer only.**
 
 ```sh
-wa tasks merge <dup> [options]
+wa tasks merge <task> [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the duplicate, by its id or key; it must be open. |
+| `task` | required | the duplicate, by its id or key; it must be open. |
 
 | Option | What it does |
 |---|---|
@@ -3582,12 +3582,12 @@ undo a merge: reopen the task and remove its duplicate-of relation; messages the
 **Changes something on this computer only.**
 
 ```sh
-wa tasks unmerge <dup>
+wa tasks unmerge <task>
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the merged task, by its id or key. |
+| `task` | required | the merged task, by its id or key. |
 
 ### `wa tasks agenda`
 
@@ -4174,7 +4174,7 @@ wa complete [words]
 
 | Argument | | What it is |
 |---|---|---|
-| `words` | optional |  |
+| `words` | optional | zsh for the shell script, or command words to complete. |
 
 ## `wa upgrade`
 

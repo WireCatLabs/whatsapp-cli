@@ -427,11 +427,11 @@ describe("wa messages delete", () => {
     )
     const everyone = await mcp.call("wa_write", {
       command: "messages delete",
-      arguments: { chat: seed.dialog, messages: [forAgent.id], for_everyone: true },
+      arguments: { chat: seed.dialog, message: [forAgent.id], for_everyone: true },
     })
     const deleted = await mcp.call("wa_write", {
       command: "messages delete",
-      arguments: { chat: seed.dialog, messages: [forAgent.id] },
+      arguments: { chat: seed.dialog, message: [forAgent.id] },
     })
     await mcp.close()
 
@@ -470,7 +470,7 @@ describe("an agent's messages delete over MCP, by permission level", () => {
     )
     const answer = await mcp.call("wa_write", {
       command: "messages delete",
-      arguments: { chat: seed.dialog, messages: [message.id] },
+      arguments: { chat: seed.dialog, message: [message.id] },
     })
     await mcp.close()
     return { body: answer.body as { error?: Record<string, unknown> }, actions: engine?.actions ?? [] }
