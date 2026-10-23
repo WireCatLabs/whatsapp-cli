@@ -7,6 +7,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **CI scans the checked history.** An unrelated fetched branch no longer fails a clean pull request's secret check; findings in the checked commit or any ancestor still block it.
+
 - **A ban's end is shown in the local time zone and names that zone.** Stored timestamps remain UTC.
 - **Unexpected engine failures use the provider error code.** Known validation and messenger errors keep their codes.
 - **Agents are no longer offered channel comments, which WhatsApp cannot read** (cli-core 0.393.0). A direct call
