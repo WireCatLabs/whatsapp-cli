@@ -5,6 +5,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **Setup returns suggested commands in `item.commands` and login details in `item.session`.** Update scripts
+  that read `item.next` or `item.device`; `next` is reserved for structured continuation steps.
+
 ### Security
 
 - **The engine uses the patched Go certificate verification library.** Release and monthly checks now

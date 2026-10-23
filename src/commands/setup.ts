@@ -39,6 +39,7 @@ const chatCount = (count: number) => `${count} ${count === 1 ? "chat" : "chats"}
 export const setupCommand = () =>
   annotate(logsInOrOut(new Command("setup")), {
     effects: REMOTE_WRITE,
+    output: { entity: "setup" },
     lifetime: "interactive",
     mcp: false,
     examples: ["wa personal setup", "wa personal setup --agent codex", "wa personal setup --agent claude --json"],
@@ -156,7 +157,7 @@ export const setupCommand = () =>
         agent === "all" ? ["claude", "agents"] : [agent === "claude" ? "claude" : "agents"]
       signal.throwIfAborted()
       const written = agent === "none" ? [] : installSkill(WA, SKILL, { targets, env: context.env })
-      const next = {
+      const commands = {
         instructions: `${command}skill show`,
         inbox: `${command}inbox --limit 5`,
         chats: `${command}chats list --limit 5`,
@@ -168,23 +169,23 @@ export const setupCommand = () =>
         profile: context.profile,
         runtime: runtime(),
         paths,
-        device: { path: devicePath, reused },
+        session: { path: devicePath, reused },
         account: { id: account.id, name: account.name },
         ...(history ? { history } : {}),
         chats: { checked: chats.items.length, has_more: chats.hasMore },
         agent: { name: agent, written },
-        next,
+        commands,
       }
       if (context.format !== "pretty") printItem(context, answer)
       else {
         const rows = {
-          "Try now": next.inbox,
-          "Keep receiving": `${next.receive}  (a background server saves new messages)`,
+          "Try now": commands.inbox,
+          "Keep receiving": `${commands.receive}  (a background server saves new messages)`,
           "Agent skill":
             agent === "none"
-              ? `skipped — install later: ${next.skill}`
+              ? `skipped — install later: ${commands.skill}`
               : `installed for ${agent}; start a new agent session if it is not found`,
-          "For an agent": next.instructions,
+          "For an agent": commands.instructions,
         }
         context.streams.data(
           `\n✓ WhatsApp is ready — profile ${context.profile}, ${chatCount(chats.items.length)} checked\n\n` +
