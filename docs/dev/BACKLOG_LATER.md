@@ -53,8 +53,6 @@ as [BACKLOG.md](BACKLOG.md); an item moves there when it becomes P2. The researc
 
 ## Account and chat state
 
-- **WA-30** · P3 · engine · `EmitAppStateEventsOnFullSync` stays off; changes made while out of sync are lost.
-  [Notes](BACKLOG-NOTES.md#wa-30--emitappstateeventsonfullsync-stays-off)
 - **WA-31** · P3 · live · `account update --photo` with a square JPEG through `serve`.
   [Notes](BACKLOG-NOTES.md#wa-31--the-own-profile-photo-live-check)
 - **WA-32** · P3 · live · `account update`: name, about with no duration, empty about.
@@ -66,6 +64,10 @@ as [BACKLOG.md](BACKLOG.md); an item moves there when it becomes P2. The researc
 
 ## Commands
 
+- **WA-54** · P3 · engine · `messages send --location`.
+- **WA-55** · P3 · engine · `messages comments` for community announcement groups, reading first (channels have no
+  comments).
+- **WA-56** · P3 · engine · Write Lists: `chats folders create|update|delete`; possible, no other tool does it yet.
 - **WA-49** · P3 · cli · 🚩 Mount cli-core's `schedule` (agent runs on a timer), as tg and max do — `src/program.ts`.
 
 ## Code and tests

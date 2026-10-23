@@ -21,9 +21,12 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Launch blockers (P1)
 
-- **WA-1** · P1 · core · 🚩 Help and `commands --json` offer commands WhatsApp cannot run (`chats folders *`,
-  `account sessions *`, `chats inspect`, `contacts add|remove|rename|import`, `messages comments`): each fails with
-  exit 2 `input.invalid`. Hide or mark them — cli-core `src/cli/messenger/lacks.ts`.
+- **WA-1** · P1 · core · Help and `commands --json` offer commands that fail with exit 2 `input.invalid`
+  (`chats folders *`, `account sessions *`, `chats inspect`, `contacts add|remove|rename|import`, `messages comments`).
+  Owner (2026-10-23): implement what WhatsApp allows (WA-50..53, WA-55), hide only what it cannot do — `account
+  sessions end` (only the phone ends other devices) and `contacts remove` (whatsmeow cannot send it) — in cli-core
+  `src/cli/messenger/lacks.ts`. The usage docs also wrongly say WhatsApp has no folders, comments or contact edits.
+  Evidence per command: cli-private `research/comparisons/wa.md`.
 - **WA-2** · P1 · docs · Docs still describe the removed `--mark-read` and `catch_up_marks_read`, and an old
   `chats mark-read`: `skills/whatsapp-cli/SKILL.md:53,148-149`, `docs/configuration-reference.md:33`,
   `docs/limits.md:65`.
@@ -69,3 +72,13 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   enforces it skips `WA_INSTALL_AGENT` (`docs/installation.md:24`) — check npm 12, document `--allow-scripts`.
 - **WA-21** · P2 · engine · Channels: save a post's file, and what following and reading left open —
   `engine/cmd/wa-engine/`. [Notes](BACKLOG-NOTES.md#wa-21--channels-post-files-and-what-following-left-open)
+- **WA-50** · P2 · engine · `contacts add|rename` through one app-state contact change, as wacli does on the same
+  library. Test on a spare account first: a bad app-state write breaks sync on every device.
+- **WA-51** · P2 · engine · `chats inspect` for group and channel invite links: whatsmeow previews a group link
+  without joining; channel links already work.
+- **WA-52** · P2 · engine · `account sessions list` as linked device ids (WhatsApp sends no device names); `end`
+  refused with a clear reason.
+- **WA-53** · P2 · engine · `chats folders list|show` from WhatsApp Lists, which reach every linked device; needs
+  WA-30 first, and pairs with WA-19 business labels.
+- **WA-30** · P2 · engine · `EmitAppStateEventsOnFullSync` stays off; changes made while out of sync are lost.
+  [Notes](BACKLOG-NOTES.md#wa-30--emitappstateeventsonfullsync-stays-off)
