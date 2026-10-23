@@ -56,6 +56,18 @@ The settings for search stemming, phone countries, tasks and account groups (`se
 
 The file is written `0600` when first created. It holds no secret.
 
+## A bot profile
+
+A WhatsApp Business number on Meta's Cloud API (`wa <profile> bot …`) keeps its settings under `bot` in the file:
+`wa <profile> config set --bot <setting> <value>`. They are ids from the App Dashboard's API setup page, not secrets;
+the access token lives in the system keychain (`wa <profile> bot auth set`).
+
+| Setting | Default | What it does | Overridden for one run by |
+|---|---|---|---|
+| `phone_number_id` | none | the business number every `bot` command speaks for | `--phone-number-id` on `bot api` commands |
+| `waba_id` | none | the WhatsApp Business Account that holds the number's templates | `--waba-id` on `bot api` commands |
+| `graph_version` | `v23.0` | the Graph API version in every request | none |
+
 ## Environment variables
 
 | Variable | What it does |

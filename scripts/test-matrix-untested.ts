@@ -41,6 +41,22 @@ const cliCore = (tests: string, rows: string[][]): Untested[] =>
     reason: `cli-core's shared command over the local store, tested in cli-core ${tests}`,
   }))
 
+/** cli-core's shared bot commands, mounted unchanged over wa's Cloud API adapter. */
+const SHARED_BOT: Record<string, string> = {
+  "bot auth *": "src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)",
+  "bot list": "src/cli/bot/command.test.ts",
+  "bot chats *": "src/cli/bot/admins, moderation and people tests; the Cloud API has no chat list, so wa refuses them",
+  "bot messages *": "src/cli/bot/messages.test.ts",
+  "bot search *": "src/cli/bot/people.test.ts",
+  "bot contacts *": "src/cli/bot/people.test.ts",
+  "bot recipients *": "src/cli/bot/bot.test.ts",
+  "bot sends *": "src/cli/bot/bot.test.ts",
+  "bot watch": "src/cli/bot/watch.test.ts and webhook-receiver.test.ts",
+  "bot callbacks *": "src/cli/bot/command.test.ts; WhatsApp has no button callbacks, so wa refuses it",
+  "bot commands *": "src/cli/bot/watch.test.ts («bot commands»); WhatsApp has no command menu, so wa refuses it",
+  "bot webhooks *": "src/cli/bot/watch.test.ts («bot webhooks»)",
+}
+
 export const UNTESTED: Untested[] = [
   ...["chats update", "inbox", "review"].map((command) => ({
     command,
@@ -48,6 +64,23 @@ export const UNTESTED: Untested[] = [
     reason:
       "hidden cli-core compatibility flag for one release; canonical flags and queries are preferred; tested in src/cli/option-meanings.test.ts in cli-core",
   })),
+  ...Object.entries(SHARED_BOT).map(([command, tests]) => ({
+    command,
+    reason: `shared cli-core bot command mounted unchanged; tested in cli-core (${tests}), wa's adapter in src/commands/bot.test.ts`,
+  })),
+  ...["--phone-number-id", "--waba-id", "--whats-app-business-account-id", "--body", "--body-file"].map((option) => ({
+    command: "bot api *",
+    option,
+    reason:
+      "generated: one execute path fills every id flag and reads every body the same way, tested in " +
+      "src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file)",
+  })),
+  {
+    command: "bot api *",
+    reason:
+      "generated from Meta's OpenAPI file: one execute path for every operation, driven against a Graph stand-in in " +
+      "src/commands/bot.test.ts; the manifest's effects and ids in src/bot/manifest.test.ts",
+  },
   // wa's own tests replace these one command at a time, as each is found to reach the engine.
   ...Object.entries(SHARED).map(([command, tests]) => ({
     command,

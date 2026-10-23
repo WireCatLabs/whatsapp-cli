@@ -16,6 +16,7 @@ import { fromEngine } from "./adapter/errors.js"
 import { ADMIN_RIGHTS, GROUP_SETTINGS } from "./adapter/groups.js"
 import { PRIVACY_SETTINGS } from "./adapter/privacy.js"
 import { resolveSettings, WA } from "./app.js"
+import type { FetchLike } from "./bot/graph.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { startGoEngine } from "./engine/go-engine.js"
@@ -38,6 +39,8 @@ export interface Environment extends BaseEnvironment {
   historyWait?: { firstMs: number; quietMs: number; slowMs?: number }
   /** npm, the package manager and this install's path, for `upgrade` and the update notice; tests hand them in. */
   update?: UpdateEnvironment
+  /** Tests hand in a stand-in for Meta's Graph API; a bot profile never reaches it otherwise. */
+  botFetch?: FetchLike
 }
 
 const holderOf = (command: Command): string => {

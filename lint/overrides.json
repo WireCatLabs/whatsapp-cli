@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "rule": "option-role",
+    "target": "bot search messages --from",
+    "reason": "cli-core's shared bot search filters by person with a flag; WC-CMD-12 wants it in the query (from:), a change cli-core makes for every CLI",
+    "owner": "@leemour",
+    "review_after": "2027-01-23"
+  }
+]
