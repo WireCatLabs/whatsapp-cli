@@ -34,7 +34,7 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "connect":
       say({ event: "connection", state: "connected" })
       say({ id, ok: null })
-      if (mode === "dies") setTimeout(() => process.exit(3), 200)
+      if (mode === "dies") setImmediate(() => process.exit(3))
       break
     case "me":
       say({ id, ok: { jid: self, name: "Owner" } })

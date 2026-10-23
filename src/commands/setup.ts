@@ -36,7 +36,7 @@ type Options = {
 const STEPS = 5
 const chatCount = (count: number) => `${count} ${count === 1 ? "chat" : "chats"}`
 
-export const setupCommand = () =>
+export const setupCommand = (): Command =>
   annotate(logsInOrOut(new Command("setup")), {
     effects: REMOTE_WRITE,
     output: { entity: "setup" },

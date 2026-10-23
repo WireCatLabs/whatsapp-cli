@@ -116,6 +116,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     if (!closing) hub.emit({ event: "connection", state: "stopped" })
   })
   child.stdin?.on("error", () => {})
+  // spawn uses piped stdio here; child_process still types these handles as nullable.
   createInterface({ input: child.stderr as NodeJS.ReadableStream }).on("line", (line) => options.warn?.(line))
 
   const onLine = (line: string) => {
@@ -157,6 +158,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       } else waiting.resolve(value.ok)
     }
   }
+  // spawn uses piped stdio here; child_process still types these handles as nullable.
   createInterface({ input: child.stdout as NodeJS.ReadableStream }).on("line", onLine)
 
   const request = <T>(

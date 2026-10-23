@@ -14,7 +14,11 @@ const at = (ms: number) => new Date(ms).toISOString()
  * An engine refusal in cli-core's terms, its reason kept. A rate limit and a ban carry `standing`, which cli-core turns
  * into a hold on the profile's writes.
  */
-export const fromEngine = (error: EngineError, now = Date.now()): CliError => {
+export const fromEngine = (
+  error: EngineError,
+  now = Date.now(),
+  zone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+): CliError => {
   const reason = error.reason === undefined ? {} : { reason: error.reason }
   if (error.reason === "account.rate-limited")
     return new CliError(error.code, `${error.message}; this profile holds its writes for 15 minutes`, {
@@ -29,14 +33,20 @@ export const fromEngine = (error: EngineError, now = Date.now()): CliError => {
   if (error.reason === "account.banned") {
     const ends = error.until === undefined ? Number.NaN : Date.parse(error.until)
     const dated = ends > now
-    return new CliError(error.code, dated ? `${error.message}; the ban ends ${at(ends)} UTC` : error.message, {
-      ...reason,
-      standing: {
-        state: "banned",
-        hint: "WhatsApp banned or restricted this account",
-        ...(dated ? { until: at(ends) } : {}),
-      } satisfies AccountStanding,
-    })
+    return new CliError(
+      error.code,
+      dated
+        ? `${error.message}; the ban ends ${new Date(ends).toLocaleString("sv-SE", { timeZone: zone, hour12: false })} (${zone})`
+        : error.message,
+      {
+        ...reason,
+        standing: {
+          state: "banned",
+          hint: "WhatsApp banned or restricted this account",
+          ...(dated ? { until: at(ends) } : {}),
+        } satisfies AccountStanding,
+      },
+    )
   }
   return new CliError(error.code, error.message, reason)
 }

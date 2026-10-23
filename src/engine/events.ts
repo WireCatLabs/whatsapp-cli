@@ -8,7 +8,10 @@ interface Listener {
 }
 
 /** Fans events out by kind, and keeps each one nobody listens for until a listener of its kind arrives. */
-export const eventHub = () => {
+export const eventHub = (): {
+  emit: (event: EngineEvent) => void
+  listen: (kinds: readonly Kind[], onEvent: (event: EngineEvent) => void) => () => void
+} => {
   const listeners = new Set<Listener>()
   let kept: EngineEvent[] = []
 

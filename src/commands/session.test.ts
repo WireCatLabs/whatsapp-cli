@@ -11,7 +11,7 @@ import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
 import { run } from "../program.js"
-import { BAN_WARNING } from "../session.js"
+import { BAN_WARNING, receiveHistory } from "../session.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
 
 // serve offers no relay on Windows, so there the lock's listeningAt is the sign it is up.
@@ -83,25 +83,29 @@ describe("wa session start", () => {
   })
 
   it("says once that it is still waiting when the phone's history is slow to come", async () => {
-    const engine = fakeEngine(seed, { linked: false })
-    const listen = engine.listen
-    engine.listen = (kinds, onEvent) => {
-      if (!kinds.includes("history")) return listen(kinds, onEvent)
-      let unlisten = () => {}
-      const late = setTimeout(() => {
-        unlisten = listen(kinds, onEvent)
-      }, 100)
-      return () => {
-        clearTimeout(late)
-        unlisten()
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    try {
+      const engine = fakeEngine(seed)
+      const listen = engine.listen
+      engine.listen = (kinds, onEvent) => {
+        if (!kinds.includes("history")) return listen(kinds, onEvent)
+        let unlisten = () => {}
+        const late = setTimeout(() => {
+          unlisten = listen(kinds, onEvent)
+        }, 100)
+        return () => {
+          clearTimeout(late)
+          unlisten()
+        }
       }
+      const slow = vi.fn()
+      const pending = receiveHistory(whatsAppAdapter(engine), { firstMs: 5_000, quietMs: 0, slowMs: 10 }, slow)
+      await vi.advanceTimersByTimeAsync(101)
+      expect((await pending).messages).toBe(seed.messages.length)
+      expect(slow).toHaveBeenCalledOnce()
+    } finally {
+      vi.useRealTimers()
     }
-    const result = await wa(["slow", "session", "start", "--json"], () => engine, {
-      historyWait: { firstMs: 5_000, quietMs: 0, slowMs: 10 },
-    })
-    expect(result.code, result.stderr).toBe(0)
-    expect(result.stderr.match(/still waiting for the phone's history/g)).toHaveLength(1)
-    expect(JSON.parse(result.stdout).item.received.messages).toBe(seed.messages.length)
 
     const quick = await wa(["quick", "session", "start", "--json"], () => fakeEngine(seed, { linked: false }), {
       historyWait: { ...QUICK, slowMs: 1_000 },

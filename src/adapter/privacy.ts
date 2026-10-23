@@ -36,8 +36,10 @@ const AUDIENCES = [
   ["about", "status"],
 ] as const
 
-const audienceOf = <A extends string>(values: Values<A>, value: string): A | undefined =>
-  (Object.keys(values) as A[]).find((audience) => values[audience] === value)
+const audienceOf = <A extends string>(values: Values<A>, value: string): A | undefined => {
+  for (const audience in values) if (values[audience] === value) return audience
+  return undefined
+}
 
 const hidden = (privacy: WaPrivacy) => privacy.last === "none" && privacy.online === "match_last_seen"
 
@@ -58,7 +60,7 @@ export const toPrivacy = (privacy: WaPrivacy): PrivacySettings => {
 }
 
 const refusedUpFront = (change: PrivacySettings): string | undefined => {
-  const missing = (Object.keys(change) as PrivacyKey[]).find((key) => !PRIVACY_SETTINGS.includes(key))
+  const missing = Object.keys(change).find((key) => !PRIVACY_SETTINGS.some((known) => known === key))
   if (missing) return `WhatsApp has no ${missing} privacy setting`
   if (change.chatInvites === "nobody")
     return "WhatsApp lets everyone or only contacts add the account to groups, not nobody"
@@ -72,6 +74,12 @@ const refusedUpFront = (change: PrivacySettings): string | undefined => {
   return undefined
 }
 
+const valueFor = <A extends string>(values: Values<A>, audience: A): string => {
+  const value = values[audience]
+  if (value === undefined) throw new CliError("validation_error", `WhatsApp does not support the ${audience} audience`)
+  return value
+}
+
 /**
  * The settings to send, only those that differ from now. Showing online again sets last seen to contacts: the
  * audience before it was hidden is not kept anywhere, and contacts shows the least of what "not hidden" can mean.
@@ -80,13 +88,13 @@ const changesFor = (change: PrivacySettings, now: WaPrivacy): WaPrivacyChange[] 
   const wanted: WaPrivacyChange[] = []
   for (const [key, name] of AUDIENCES) {
     const audience = change[key]
-    if (audience !== undefined) wanted.push({ name, value: SHOWN[audience] as string })
+    if (audience !== undefined) wanted.push({ name, value: valueFor(SHOWN, audience) })
   }
   if (change.readReceipts !== undefined)
     wanted.push({ name: "readreceipts", value: change.readReceipts ? "all" : "none" })
   if (change.chatInvites !== undefined)
-    wanted.push({ name: "groupadd", value: GROUP_ADD[change.chatInvites] as string })
-  if (change.calls !== undefined) wanted.push({ name: "calladd", value: CALL_ADD[change.calls] as string })
+    wanted.push({ name: "groupadd", value: valueFor(GROUP_ADD, change.chatInvites) })
+  if (change.calls !== undefined) wanted.push({ name: "calladd", value: valueFor(CALL_ADD, change.calls) })
   if (change.hideOnline === true)
     wanted.push({ name: "last", value: "none" }, { name: "online", value: "match_last_seen" })
   if (change.hideOnline === false && hidden(now)) wanted.push({ name: "last", value: "contacts" })

@@ -1,3 +1,4 @@
+import { CliError } from "@wirecat/cli-base"
 import type { MessageEvent } from "@wirecat/cli-core"
 import type { HistoryBatch } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
@@ -39,6 +40,52 @@ const watching = async (pushes: (engine: ReturnType<typeof fakeEngine>) => void)
 }
 
 describe("whatsAppAdapter", () => {
+  it.each([new Error("synthetic engine failure"), "synthetic engine failure"])(
+    "wraps unexpected failures without printing their cause",
+    async (cause) => {
+      const engine = fakeEngine(seed)
+      engine.me = async () => {
+        throw cause
+      }
+      const failure = await whatsAppAdapter(engine)
+        .me()
+        .catch((error: unknown) => error)
+      expect(failure).toBeInstanceOf(CliError)
+      expect(failure).toMatchObject({ code: "provider_error", cause })
+      expect(JSON.stringify(failure)).not.toContain("synthetic engine failure")
+    },
+  )
+
+  it("uses the supplied clock at the edit-window boundary", async () => {
+    const original = seed.messages.find((message) => message.outgoing)
+    if (!original) throw new Error("fixture needs an outgoing message")
+    const stored = {
+      message: async () => original,
+      newestIncoming: async () => undefined,
+      anchor: async () => undefined,
+      wroteTo: async () => false,
+      pollVotes: async () => [],
+    }
+    const engine = fakeEngine(seed)
+    const end = Date.parse(original.timestamp) + 20 * 60_000
+    await expect(
+      whatsAppAdapter(engine, stored, undefined, undefined, () => end).edit(
+        original.chatId,
+        original.id,
+        "updated",
+        {},
+      ),
+    ).resolves.toMatchObject({ text: "updated" })
+    await expect(
+      whatsAppAdapter(engine, stored, undefined, undefined, () => end + 1).edit(
+        original.chatId,
+        original.id,
+        "too late",
+        {},
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" })
+  })
+
   it("refuses a send option WhatsApp cannot honour, before the engine sees it", async () => {
     const engine = fakeEngine(seed)
     const sending = whatsAppAdapter(engine).send(seed.dialog, "hi", { sendId: "3EB0AA", spoiler: true })

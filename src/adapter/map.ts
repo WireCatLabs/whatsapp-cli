@@ -86,19 +86,29 @@ export const toChatEvent = ({ id, timestamp, event, by, byName, people, title }:
 })
 
 // In the domain type's order, so an answer from the store prints byte for byte the same.
-export const toAttachment = ({ kind, url, width, height, title, name, size, mime, duration, ref }: WaAttachment) => {
-  const attachment: Attachment = { kind }
-  if (url !== undefined) attachment.url = url
-  if (width !== undefined) attachment.width = width
-  if (height !== undefined) attachment.height = height
-  if (title !== undefined) attachment.title = title
-  if (name !== undefined) attachment.name = name
-  if (size !== undefined) attachment.size = size
-  if (mime !== undefined) attachment.mime = mime
-  if (duration !== undefined) attachment.duration = duration
-  if (ref !== undefined) attachment.providerRef = ref
-  return attachment
-}
+export const toAttachment = ({
+  kind,
+  url,
+  width,
+  height,
+  title,
+  name,
+  size,
+  mime,
+  duration,
+  ref,
+}: WaAttachment): Attachment => ({
+  kind,
+  ...(url === undefined ? {} : { url }),
+  ...(width === undefined ? {} : { width }),
+  ...(height === undefined ? {} : { height }),
+  ...(title === undefined ? {} : { title }),
+  ...(name === undefined ? {} : { name }),
+  ...(size === undefined ? {} : { size }),
+  ...(mime === undefined ? {} : { mime }),
+  ...(duration === undefined ? {} : { duration }),
+  ...(ref === undefined ? {} : { providerRef: ref }),
+})
 
 export const toMessage = (message: WaMessage): Message => ({
   id: message.id,

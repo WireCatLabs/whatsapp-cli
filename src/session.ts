@@ -43,12 +43,12 @@ export interface Received {
  * Saves what the phone pushes until it goes quiet or `signal` aborts. Live messages that arrive meanwhile are saved
  * too, through the same connection.
  */
-const receiveHistory = async (
+export const receiveHistory = async (
   adapter: MessengerAdapter,
   wait: HistoryWait,
   onSlow: () => void,
   signal?: AbortSignal,
-) => {
+): Promise<Received> => {
   const received: Received = { chats: 0, messages: 0, people: 0 }
   const stop = new AbortController()
   const end = () => stop.abort()
