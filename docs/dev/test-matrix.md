@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**239 ✅ · 516 ⛔ · 0 ❌** — 244 commands, 511 options.
+**239 ✅ · 519 ⛔ · 0 ❌** — 245 commands, 513 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -130,6 +130,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `contacts context` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts context` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts context` | `--chat` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts prepare` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
+| `contacts prepare` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
+| `contacts prepare` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
 | `contacts timeline` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
 | `contacts timeline` | `--scope` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
 | `contacts timeline` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
