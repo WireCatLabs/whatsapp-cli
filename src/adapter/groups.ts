@@ -269,7 +269,11 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: G
 
     joinRequests: async (chatId, { limit, search, link }) => {
       if (link !== undefined)
-        throw new CliError("validation_error", "a WhatsApp group has one invite link; leave out --link")
+        throw new CliError(
+          "validation_error",
+          "a WhatsApp group has one invite link; filtering requests by link is not supported",
+          { reason: "input.field-unsupported", fields: ["link"] },
+        )
       const wanted = search?.toLowerCase()
       const found = (await translated(engine.joinRequests(await groupId(chatId))))
         .filter((one) => wanted === undefined || (one.name?.toLowerCase().includes(wanted) ?? false))

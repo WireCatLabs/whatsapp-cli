@@ -83,6 +83,17 @@ describe("wa account update", () => {
     expect(result.changes).toEqual([])
   })
 
+  it("names conflicting profile fields at the CLI boundary", async () => {
+    const result = await updating(["--last-name", "Owner"])
+    expect(result.code).toBe(2)
+    expect(result.error).toMatchObject({
+      reason: "input.field-conflict",
+      param: "--last-name",
+      details: { fields: ["--last-name", "--first-name"] },
+    })
+    expect(result.changes).toEqual([])
+  })
+
   it("refuses at permission readonly under account.update, and changes nothing", async () => {
     const profile = "own-profile-readonly"
     const set = ["config", "set", "permissions.account.update", "readonly"]

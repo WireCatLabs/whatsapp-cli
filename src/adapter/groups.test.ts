@@ -113,6 +113,7 @@ describe("group write authority", () => {
     expect(await adapter.joinRequests(seed.busy, { limit: 1, search: "absent" })).toMatchObject({ total: 0 })
     await expect(adapter.joinRequests(seed.busy, { limit: 1, link: "synthetic" })).rejects.toMatchObject({
       code: "validation_error",
+      details: { reason: "input.field-unsupported", fields: ["link"] },
     })
     await expect(adapter.profile(seed.busy)).rejects.toMatchObject({ code: "validation_error" })
     expect(await adapter.profile(seed.person)).toMatchObject({ id: seed.person })

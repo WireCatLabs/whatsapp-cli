@@ -139,6 +139,16 @@ describe("wa account privacy", () => {
       const { code, error, sent } = await wa(["privacy", "account", "privacy", "set", ...option, "--json"])
       expect(code).toBe(2)
       expect(error.code).toBe("validation_error")
+      if (option[1] === "contacts_except") {
+        expect(error.reason).toBe("input.invalid")
+        expect(sent).toEqual([])
+        continue
+      }
+      expect(error.reason).toBe(option[0] === "--hide-online" ? "input.field-conflict" : "input.field-unsupported")
+      expect(error.param).toBe(option[0])
+      expect(error.details.fields).toEqual(
+        option[0] === "--hide-online" ? ["--hide-online", "--last-seen"] : [option[0]],
+      )
       expect(sent).toEqual([])
     }
     for (const option of ["--find-by-phone", "--phone-number"]) {
