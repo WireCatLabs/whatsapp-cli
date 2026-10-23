@@ -2236,8 +2236,8 @@ shall terminate as of the date such litigation is filed.
 
 ================================================================================
 
-golang.org/x/sys v0.48.0
-Source: https://go.googlesource.com/sys at commit 613e2570718ecde85c04e69ebd5585c3881c442c, and https://proxy.golang.org/golang.org/x/sys/@v/v0.48.0.zip
+golang.org/x/sys v0.49.0
+Source: https://go.googlesource.com/sys at commit b6b8557e8e2974925aec7a136ba0e323eedc5f43, and https://proxy.golang.org/golang.org/x/sys/@v/v0.49.0.zip
 
 --- LICENSE
 
