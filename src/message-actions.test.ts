@@ -695,47 +695,21 @@ describe("marking read", () => {
     expect(result.actions).toEqual([])
   })
 
-  it("marks read from messages list only with --mark-read", async () => {
-    const plain = await acting(["messages", "list", seed.busy])
+  it.each([
+    ["messages", "list", seed.busy],
+    ["review", "--all"],
+    ["inbox", "--all"],
+  ])("a read %j sends no read patch or receipt and refuses the retired flags", async (...words) => {
+    const plain = await acting(words)
+    expect(plain.code).toBe(0)
     expect(plain.actions).toEqual([])
-    const marked = await acting(["messages", "list", seed.busy, "--mark-read"])
-    expect(marked.code).toBe(0)
-    expect(marked.markedRead).toHaveLength(1)
-    expect(marked.actions).toEqual([newestTheirs])
-  })
-
-  it("marks read from review only with --mark-read", async () => {
-    expect((await acting(["review", "--all"])).actions).toEqual([])
-    expect((await acting(["review", "--all", "--no-mark-read"])).actions).toEqual([])
-    const marked = await acting(["review", "--all", "--mark-read"])
-    expect(marked.code).toBe(0)
-    expect(marked.markedRead.map((last) => last.chat)).toEqual([seed.busy])
-    expect(marked.actions).toEqual([newestTheirs])
-  })
-
-  // On an account of its own: the shared store holds this file's own answers, which leave no chat waiting.
-  it("marks read from inbox only with --mark-read, at the message the inbox shows", async () => {
-    const other = { ...base, account: { id: "100000000000099@lid", name: "Other owner", username: null } }
-    await filled("unread", other)
-    const inbox = async (...options: string[]) => {
-      let engine: FakeEngine | undefined
-      const result = await wa(["unread", "inbox", "--all", ...options, "--json"], () => {
-        engine = fakeEngine(other)
-        return engine
-      })
-      return { ...result, actions: engine?.actions ?? [], markedRead: engine?.markedRead ?? [] }
+    expect(plain.markedRead).toEqual([])
+    for (const flag of ["--mark-read", "--no-mark-read"]) {
+      const refused = await acting([...words, flag])
+      expect(refused.code).toBe(2)
+      expect(refused.actions).toEqual([])
+      expect(refused.markedRead).toEqual([])
     }
-
-    expect((await inbox()).actions).toEqual([])
-    expect((await inbox("--no-mark-read")).actions).toEqual([])
-    const marked = await inbox("--mark-read")
-    expect(marked.code).toBe(0)
-    const [shown] = JSON.parse(marked.stdout).items
-    expect(marked.actions).toEqual([
-      { op: "read", key: { chat: shown.chat_id, id: expect.any(String), fromMe: false, sender: expect.any(String) } },
-    ])
-    expect(marked.actions[0]?.key.id).toBe(shown.ref.split("/").at(-1))
-    expect(marked.markedRead).toMatchObject([{ chat: shown.chat_id, id: shown.ref.split("/").at(-1) }])
   })
 })
 

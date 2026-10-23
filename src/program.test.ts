@@ -100,7 +100,7 @@ describe("wa", () => {
   it("refuses a send without a linked device, naming the login command", async () => {
     const result = await wa(["unlinked", "messages", "send", seed.dialog, "hi", "--json"])
     expect(result.code).toBe(4)
-    expect(JSON.parse(result.stderr).error.message).toContain("wa unlinked session start")
+    expect(JSON.parse(result.stderr).error.message).toContain("wa unlinked setup")
   })
 })
 

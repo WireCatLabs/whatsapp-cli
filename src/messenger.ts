@@ -1,7 +1,13 @@
 import { existsSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
 import { checkWords } from "@wirecat/cli-core"
-import { type BaseContext, type BaseEnvironment, environmentOf, type Messenger } from "@wirecat/cli-core/cli"
+import {
+  asFirstWord,
+  type BaseContext,
+  type BaseEnvironment,
+  environmentOf,
+  type Messenger,
+} from "@wirecat/cli-core/cli"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { whatsAppAdapter } from "./adapter/adapter.js"
@@ -43,7 +49,7 @@ const holderOf = (command: Command): string => {
 /** The commands the adapter's messages send a person to, with this profile named first. */
 const wordsFor = (profile: string) => checkWords<Check>("wa", profile)
 
-const loginHint = (profile: string) => wordsFor(profile)("session.start")
+const loginHint = (profile: string) => `\`wa ${asFirstWord(profile)}setup\``
 
 /** A code to show while linking: the engine's, in the terms a command may see. */
 export interface LinkCode {
