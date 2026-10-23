@@ -42,6 +42,7 @@ export const sessionCommand = () => {
 
   annotate(logsInOrOut(session.command("start")), {
     effects: REMOTE_WRITE,
+    output: { entity: "session" },
     lifetime: "interactive",
     examples: ["wa personal session start", "wa personal session start phone"],
   })
@@ -76,7 +77,11 @@ export const sessionCommand = () => {
         })
     })
 
-  annotate(logsInOrOut(session.command("end")), { effects: REMOTE_WRITE, examples: ["wa personal session end"] })
+  annotate(logsInOrOut(session.command("end")), {
+    effects: REMOTE_WRITE,
+    output: { entity: "session" },
+    examples: ["wa personal session end"],
+  })
     .description("unlink this device on WhatsApp's side and delete its keys here")
     .action(async function (this: Command) {
       const context = messengerContext(this, WHATSAPP)

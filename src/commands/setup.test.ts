@@ -111,13 +111,13 @@ describe("wa setup", () => {
     const answer = JSON.parse(result.stdout).item
     expect(answer).toMatchObject({
       profile: "default",
-      device: { path: privateStore("default", env), reused: false },
+      session: { path: privateStore("default", env), reused: false },
       account: { id: seed.account?.id },
       history: { messages: seed.messages.length },
       chats: { checked: Math.min(5, seed.chats.length) },
       agent: { name: "codex" },
     })
-    expect(answer.next).toMatchObject({ inbox: "wa default inbox --limit 5", receive: "wa default server install" })
+    expect(answer.commands).toMatchObject({ inbox: "wa default inbox --limit 5", receive: "wa default server install" })
     expect(result.stderr).toContain(plainQr("FAKECODE"))
     expect(result.stderr.indexOf(BAN_WARNING)).toBeGreaterThan(-1)
     expect(result.stderr.indexOf(BAN_WARNING)).toBeLessThan(result.stderr.indexOf(plainQr("FAKECODE")))
@@ -168,7 +168,7 @@ describe("wa setup", () => {
     const result = await execute(["setup", "--agent", "claude", "--json"], {}, engine)
     expect(result.code).toBe(0)
     const answer = JSON.parse(result.stdout).item
-    expect(answer).toMatchObject({ device: { reused: true } })
+    expect(answer).toMatchObject({ session: { reused: true } })
     expect(result.stderr).toContain("2/5 — Link this device")
     expect(answer).not.toHaveProperty("history")
     expect(result.stderr).not.toContain(BAN_WARNING)
@@ -213,7 +213,7 @@ describe("wa setup", () => {
     const result = await execute(["setup", "--json"], { stdin: terminal() })
     expect(result.code).toBe(0)
     expect(installSkill).not.toHaveBeenCalled()
-    expect(JSON.parse(result.stdout).item.next.mcp).toBe("wa default mcp config")
+    expect(JSON.parse(result.stdout).item.commands.mcp).toBe("wa default mcp config")
   })
 
   it("rejects an unknown agent choice without installing a skill", async () => {
@@ -400,7 +400,7 @@ describe("wa setup", () => {
       update: { scriptPath: "/home/test/.npm/_npx/key/node_modules/@wirecat/whatsapp-cli/dist/bin/wa.js" },
     })
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.stdout).item.next.inbox).toMatch(/^npm\.cmd exec --yes /)
+    expect(JSON.parse(result.stdout).item.commands.inbox).toMatch(/^npm\.cmd exec --yes /)
     expect(result.stderr).toContain("Windows: use wa.cmd or npm.cmd")
   })
 
@@ -439,7 +439,7 @@ describe("wa setup", () => {
       update: { scriptPath: "/home/test/.npm/_npx/key/node_modules/@wirecat/whatsapp-cli/dist/bin/wa.js" },
     })
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.stdout).item.next.inbox).toMatch(
+    expect(JSON.parse(result.stdout).item.commands.inbox).toMatch(
       /npm(?:\.cmd)? exec --yes --package=@wirecat\/whatsapp-cli -- wa work inbox --limit 5/,
     )
   })
