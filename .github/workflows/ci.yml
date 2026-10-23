@@ -34,6 +34,7 @@ jobs:
         pnpm contracts:upgrade
         pnpm security:no-leak
         pnpm version:check
+        pnpm bot:generate:check
         pnpm exec cli-dev test-matrix --program dist/program.js --untested scripts/test-matrix-untested.ts --name wa --check
         node --experimental-strip-types scripts/commands.ts
         git diff --exit-code

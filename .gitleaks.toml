@@ -43,4 +43,5 @@ regexes = [
   '''^7000000000\d(?::\d+)?@s\.whatsapp\.net$''',
   '''^10000000000\d{4}(?::\d+)?@lid$''',
 ]
-paths = ['''pnpm-lock\.yaml''']
+# Meta's own OpenAPI file, as published: its examples are Meta's sample numbers, not anyone's.
+paths = ['''pnpm-lock\.yaml''', '''spec/bot/business-messaging-api_v[0-9.]+\.yaml''']

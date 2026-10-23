@@ -1,0 +1,10 @@
+{
+  "source": "https://github.com/facebook/openapi",
+  "file": "business-messaging-api_v23.0.yaml",
+  "license": "MIT, spec/bot/LICENSE",
+  "sourceRevision": "e96a1c9dbf240c2937b6a95920685230458e346b",
+  "sourceDate": "2026-08-11",
+  "apiVersion": "v23.0",
+  "syncedAt": "2026-10-22T21:08:00.000Z",
+  "sha256": "5c1973265369944b7cdfa3fa690985713575249042e2b7edd46be3ef9bd9b09d"
+}
