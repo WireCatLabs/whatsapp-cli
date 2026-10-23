@@ -2,6 +2,7 @@ import { exitCodeFor, processStreams } from "@wirecat/cli-base"
 import {
   accountCommand,
   attachmentsCommand,
+  botCommand,
   chatsCommand,
   commandsCommand,
   completeCommand,
@@ -39,6 +40,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { CONFIG, WA } from "./app.js"
+import { WHATSAPP_BOT, whatsappBotApiCommand } from "./commands/bot.js"
 import { sessionCommand } from "./commands/session.js"
 import { setupCommand } from "./commands/setup.js"
 import { upgradeCommand } from "./commands/update.js"
@@ -112,6 +114,7 @@ const definition: ProgramDefinition = {
     completeCommand(WHATSAPP, CONFIG),
     upgradeCommand(),
     mcpCommand(WHATSAPP),
+    botCommand(WHATSAPP_BOT).addCommand(whatsappBotApiCommand()),
     skillCommand(WA, SKILL),
   ],
 }

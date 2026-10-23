@@ -1,4 +1,9 @@
 [
+  "bot callbacks answer",
+  "bot chats action",
+  "bot me",
+  "bot messages between",
+  "bot watch",
   "chats members audit",
   "chats requests accept",
   "chats requests decline",

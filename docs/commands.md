@@ -4086,7 +4086,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 | `value` | required | a number, true or false, or for allow a list like send,reaction; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -4107,7 +4107,7 @@ wa config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 
 | Option | What it does |
 |---|---|
@@ -4248,6 +4248,1606 @@ wa mcp doctor [options]
 | Option | What it does |
 |---|---|
 | `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
+
+## `wa bot`
+
+a WhatsApp bot, through the official Bot API and a bot token — not your personal account
+
+### `wa bot auth`
+
+the bot token this profile uses
+
+#### `wa bot auth set`
+
+check a bot token with WhatsApp, then keep it — typed at a hidden prompt or piped on stdin
+
+**Changes something on this computer only.**
+
+```sh
+wa bot auth set
+```
+
+#### `wa bot auth show`
+
+where this profile's bot token comes from, and which bot it is
+
+```sh
+wa bot auth show
+```
+
+#### `wa bot auth remove`
+
+forget this profile's bot token
+
+**Changes something on this computer only.**
+
+```sh
+wa bot auth remove
+```
+
+### `wa bot list`
+
+every name on this machine that has a bot token; --check asks WhatsApp which bot each is
+
+```sh
+wa bot list [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--check` | ask the messenger who each bot is, with its token. |
+
+### `wa bot chats`
+
+the chats this bot is in — WhatsApp gives a bot no list of them, so `list` shows the ones it has seen
+
+#### `wa bot chats list`
+
+chats this bot has seen on this machine — not a complete list from WhatsApp
+
+```sh
+wa bot chats list
+```
+
+#### `wa bot chats show`
+
+one chat from WhatsApp, and remember it
+
+```sh
+wa bot chats show <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+
+#### `wa bot chats leave`
+
+take the bot out of a chat; only an admin of the chat can bring it back
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot chats leave <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, or the title of a chat this bot has seen. |
+
+#### `wa bot chats action`
+
+show what the bot is doing in a chat — typing, sending a photo — for a few seconds
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot chats action <chat> <action>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `action` | required | what the chat sees. One of: `typing`, `photo`, `video`, `voice`, `file`. |
+
+#### `wa bot chats admins`
+
+the admins of a chat the bot is an admin in
+
+#### `wa bot chats admins list`
+
+the chat's admins and what each may do
+
+```sh
+wa bot chats admins list <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, or the title of a chat this bot has seen. |
+
+#### `wa bot chats admins add`
+
+make a member an admin with these rights
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot chats admins add <chat> <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, or the title of a chat this bot has seen. |
+| `person` | required | the person's user id. |
+
+| Option | What it does |
+|---|---|
+| `--can <rights>` | what they may do, comma-separated: read, members, admins, info, pin, link, post, edit, delete. |
+| `--title <title>` | the title shown beside their name. |
+
+#### `wa bot chats admins remove`
+
+take an admin's rights back; they stay a member
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot chats admins remove <chat> <person>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, or the title of a chat this bot has seen. |
+| `person` | required | the person's user id. |
+
+#### `wa bot chats members`
+
+the people in a chat the bot is an admin in
+
+#### `wa bot chats members remove`
+
+take a person out of a chat; their messages stay
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot chats members remove <chat> <person> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, or the title of a chat this bot has seen. |
+| `person` | required | the person's user id. |
+
+| Option | What it does |
+|---|---|
+| `--block` | also keep them from coming back by the chat's link. |
+
+#### `wa bot chats rules`
+
+a chat's moderation rules for this bot, kept on this machine
+
+#### `wa bot chats rules show`
+
+the chat's rules; the defaults, marked not saved, if it has none yet
+
+```sh
+wa bot chats rules show <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a group's id, or the title of a group this bot has seen. |
+
+#### `wa bot chats rules set`
+
+change one rule — trusted, blocked, blockedNames, links, invites, forwards, blockedPeople, flood.messages, flood.minutes, flood.action, newAccount.days, newAccount.action, consent.delete, consent.remove
+
+**Changes something on this computer only.**
+
+```sh
+wa bot chats rules set <chat> <key> <value>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a group's id, or the title of a group this bot has seen. |
+| `key` | required | the rule. |
+| `value` | required | its new value. |
+
+#### `wa bot chats rules unset`
+
+put one rule back to its default
+
+**Changes something on this computer only.**
+
+```sh
+wa bot chats rules unset <chat> <key>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a group's id, or the title of a group this bot has seen. |
+| `key` | required | the rule. |
+
+#### `wa bot chats moderate`
+
+judge a group's new messages and joins by its rules, and act as they allow — as the bot
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot chats moderate <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a group's id, or the title of a group this bot has seen. |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | judge what came after this ISO 8601 time, or 2h / 1d ago; the saved point stays. |
+| `--dry-run` | judge and plan; do nothing. |
+| `--allow-dangerous` | yes to every action whose level in the group's rules is ask. |
+| `--no-block` | remove without banning; by default a removed person cannot come back by the link. |
+| `--max-actions <n>` | at most this many actions in one run; 10 if not given. |
+
+### `wa bot messages`
+
+the messages in the chats this bot is in
+
+#### `wa bot messages send`
+
+send a message as the bot; without [text], the text is read from stdin
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot messages send <chat> [text] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `text` | optional | the message. |
+
+| Option | What it does |
+|---|---|
+| `--reply-to <message>` | answer this message, by its id in the same chat. |
+| `--silent` | deliver without a notification. |
+| `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
+| `--html` | the text is HTML: <b>, <i>, <a href>, <code>. |
+| `--file <file>` | attach a file; the text becomes its caption. |
+| `--photo <file>` | attach a .jpg, .png or .webp as a photo; the text becomes its caption. |
+| `--as-file` | send the --file as a file to download, a video included. |
+| `--voice <file>` | send an Ogg Opus file as a voice message, alone, with no text. |
+| `--allow-any-file` | send a file even from credential folders or this CLI's own folders. |
+
+#### `wa bot messages list`
+
+the latest messages in a chat; where WhatsApp gives a bot no history, and with --offline, the ones this bot has seen on this machine
+
+```sh
+wa bot messages list <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many, the newest. |
+
+#### `wa bot messages show`
+
+one message by its id in a chat
+
+```sh
+wa bot messages show <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `message` | required | message id. |
+
+#### `wa bot messages edit`
+
+replace the text of a message the bot sent
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot messages edit <chat> <message> <text> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `message` | required | message id. |
+| `text` | required | the new text. |
+
+| Option | What it does |
+|---|---|
+| `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
+| `--html` | the text is HTML: <b>, <i>, <a href>, <code>. |
+
+#### `wa bot messages delete`
+
+delete messages in a chat the bot can delete in; it cannot be undone
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot messages delete <chat> <messages> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `messages` | required | message ids. |
+
+| Option | What it does |
+|---|---|
+| `--allow-dangerous` | delete without asking. |
+
+#### `wa bot messages pin`
+
+pin a message in a chat; quietly unless --notify
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot messages pin <chat> <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `message` | required | message id. |
+
+| Option | What it does |
+|---|---|
+| `--notify` | tell the chat's members. |
+
+#### `wa bot messages unpin`
+
+unpin a message in a chat
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot messages unpin <chat> <message>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `message` | required | message id. |
+
+#### `wa bot messages between`
+
+what two or more people wrote in the chats they have all written in — from the local copy, grouped by chat, oldest first; --limit counts per chat. Common chats are the ones this copy saw each of them write in, not a member list from WhatsApp
+
+```sh
+wa bot messages between <people> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `people` | required | two or more people — an id, @username or part of a name each. |
+
+| Option | What it does |
+|---|---|
+| `--all-bots` | also read every other bot's copy on this machine that read_other_bots allows. |
+| `--bots <profiles>` | also read these bots' copies, comma separated — each allowed by read_other_bots. |
+| `--limit <n>` | how many of the latest messages from each chat. |
+
+### `wa bot search`
+
+find what this bot's local copy holds, by text
+
+#### `wa bot search messages`
+
+search the messages this bot has read, sent or received on this machine — the local copy only, best match first; a Lucene query: every word must appear; "a phrase", -word, a OR b, from: chat: date: has:; by text, by --from, or both
+
+```sh
+wa bot search messages [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | the words to find. |
+
+| Option | What it does |
+|---|---|
+| `--all-bots` | also read every other bot's copy on this machine that read_other_bots allows. |
+| `--bots <profiles>` | also read these bots' copies, comma separated — each allowed by read_other_bots. |
+| `--limit <n>` | how many. |
+| `--page <n>` | which page, starting at 1. |
+| `--newest` | newest first instead of best first. |
+| `--from <who>` | only what this person wrote — an id, @username or part of a name; repeat it for any of several. |
+
+### `wa bot recipients`
+
+the chats this bot may write to; with no list, every chat — `clear` removes the list
+
+#### `wa bot recipients list`
+
+the chats on the list, or nothing when there is no list
+
+```sh
+wa bot recipients list
+```
+
+#### `wa bot recipients add`
+
+allow a chat: its id, `user:<id>`, or the title of a chat this bot has seen
+
+**Changes something on this computer only.**
+
+```sh
+wa bot recipients add <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required |  |
+
+#### `wa bot recipients remove`
+
+take a chat off the list
+
+**Changes something on this computer only.**
+
+```sh
+wa bot recipients remove <chat>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required |  |
+
+#### `wa bot recipients clear`
+
+remove the list: the bot may write to any chat again
+
+**Changes something on this computer only.**
+
+```sh
+wa bot recipients clear
+```
+
+### `wa bot sends`
+
+what this bot sent, edited and deleted from this machine — ids and outcomes, never text
+
+#### `wa bot sends list`
+
+every send, edit and delete this bot made from this machine, with its outcome
+
+```sh
+wa bot sends list
+```
+
+### `wa bot watch`
+
+print new messages as they arrive and keep them, until Ctrl-C or --timeout (either ends it normally)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot watch [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--events` | also edits, deletions, buttons pressed and people coming and going; every line names its event. |
+| `--types <types>` | only these update types, comma-separated, in the messenger's words. |
+| `--public-url <url>` | receive by webhook at your tunnel's https address instead of polling, e.g. https://<name>.ts.net. |
+| `--port <port>` | the local port behind the tunnel for --public-url (default 8766). |
+
+### `wa bot callbacks`
+
+answers to the buttons people press under the bot's messages
+
+#### `wa bot callbacks answer`
+
+answer a pressed button by its callback id: --notification shows the person a one-time note, --text replaces the message the button was on
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot callbacks answer <callback> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `callback` | required | the callback id `bot watch` printed. |
+
+| Option | What it does |
+|---|---|
+| `--text <text>` | the message's new text. |
+| `--notification <text>` | a note only the person who pressed sees. |
+
+### `wa bot commands`
+
+the bot's command menu — what people see after /
+
+#### `wa bot commands list`
+
+the commands in the menu now
+
+```sh
+wa bot commands list
+```
+
+#### `wa bot commands set`
+
+replace the whole menu: each command as name=description, e.g. start=Begin
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot commands set <commands>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `commands` | required | name=description, one per command. |
+
+#### `wa bot commands clear`
+
+empty the menu
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot commands clear
+```
+
+### `wa bot webhooks`
+
+where the messenger pushes this bot's updates — while one is set, `bot watch` gets nothing
+
+#### `wa bot webhooks list`
+
+the webhooks this bot has
+
+```sh
+wa bot webhooks list
+```
+
+#### `wa bot webhooks set`
+
+send this bot's updates to an HTTPS address; refused while another is set
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot webhooks set <url> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `url` | required | the HTTPS address. |
+
+| Option | What it does |
+|---|---|
+| `--types <types>` | only these update types, comma-separated, in the messenger's words. |
+| `--secret-stdin` | a secret the messenger sends back with each update — asked for, or read from a pipe. |
+
+#### `wa bot webhooks delete`
+
+stop sending updates to this address; with none left, `bot watch` works again
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot webhooks delete <url>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `url` | required | the address. |
+
+### `wa bot contacts`
+
+people this bot has seen write — from the local copy on this machine, never asking WhatsApp unless told to
+
+#### `wa bot contacts show`
+
+one person: the chats they wrote in (with their last message there) and the latest messages of their private chat with the bot
+
+```sh
+wa bot contacts show <who> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `who` | required | an id, @username or part of a name. |
+
+| Option | What it does |
+|---|---|
+| `--all-bots` | also read every other bot's copy on this machine that read_other_bots allows. |
+| `--bots <profiles>` | also read these bots' copies, comma separated — each allowed by read_other_bots. |
+| `--limit <n>` | how many messages from the private chat. |
+| `--sync-first` | read the private chat with them again from the messenger first — one request. |
+
+### `wa bot me`
+
+the bot this profile's token belongs to: id, name and username
+
+```sh
+wa bot me
+```
+
+### `wa bot api`
+
+every Cloud API operation wa keeps, generated from Meta's OpenAPI file
+
+```sh
+wa bot api [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--store-token <profile>` | keep a returned authentication token only in this bot profile's OS keyring; never print it. |
+| `--allow-any-file` | read @path files even from credential folders or this CLI's own folders. |
+
+#### `wa bot api add-phone-numbers`
+
+Add Phone Number to Business Account — write (POST /{Version}/{Business-ID}/add_phone_numbers)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api add-phone-numbers [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--business-id <value>` | Your WhatsApp Business Account ID. This ID can be found in your Business Manager. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-business-portfolio`
+
+Get Business Portfolio (Specific Fields) — read (GET /{Version}/{Business-ID})
+
+```sh
+wa bot api get-business-portfolio [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--business-id <value>` | Business-ID. |
+| `--fields <value>` | fields. |
+
+#### `wa bot api get-owned-whats-app-business-accounts`
+
+Get Owned WhatsApp Business Accounts — read (GET /{Version}/{Business-ID}/owned_whatsapp_business_accounts)
+
+```sh
+wa bot api get-owned-whats-app-business-accounts [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--business-id <value>` | Your Business ID. This ID represents the business portfolio that owns the. |
+| `--business-type <value>` | Filter accounts by business type. Can specify multiple types as comma-separated values. |
+| `--after <value>` | Cursor for forward pagination. Use the cursor from the previous response. |
+| `--first <value>` | Number of results to return in forward pagination. Maximum value is 100. |
+| `--before <value>` | Cursor for backward pagination. Use the cursor from the previous response. |
+| `--last <value>` | Number of results to return in backward pagination. Maximum value is 100. |
+| `--find <value>` | Find a specific WhatsApp Business Account by ID within the owned accounts. |
+
+#### `wa bot api get-blocked-users`
+
+Get blocked users — read (GET /{Version}/{Phone-Number-ID}/block_users)
+
+```sh
+wa bot api get-blocked-users [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+
+#### `wa bot api block-users`
+
+Block user(s) — write (POST /{Version}/{Phone-Number-ID}/block_users)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api block-users [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api unblock-users`
+
+Unblock user(s) — write (DELETE /{Version}/{Phone-Number-ID}/block_users)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api unblock-users [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api check-call-permissions`
+
+Check Call Permissions — read (GET /{Version}/{Phone-Number-ID}/call_permissions)
+
+```sh
+wa bot api check-call-permissions [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The ID of the phone number registered with your WhatsApp Business Account. |
+| `--user-wa-id <value>` | The WhatsApp ID of the user you want to check call permissions for. |
+
+#### `wa bot api manage-calls`
+
+Manage Calls — write (POST /{Version}/{Phone-Number-ID}/calls)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api manage-calls [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The ID of the phone number registered with your WhatsApp Business Account. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api send-marketing-message`
+
+Send Marketing Template Message — write (POST /{Version}/{Phone-Number-ID}/marketing_messages)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api send-marketing-message [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | WhatsApp Business Phone Number ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api upload-media`
+
+Upload Image — write (POST /{Version}/{Phone-Number-ID}/media)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api upload-media [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api send-message`
+
+Send Message. — write (POST /{Version}/{Phone-Number-ID}/messages)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api send-message [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api list-qr-codes`
+
+List All Message QR Codes — read (GET /{Version}/{Phone-Number-ID}/message_qrdls)
+
+```sh
+wa bot api list-qr-codes [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The WhatsApp Business Account phone number ID for which to list QR codes. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. Available fields:. |
+| `--code <value>` | Filter results to a specific QR code by its unique identifier. |
+| `--limit <value>` | Maximum number of QR codes to return in a single response. |
+| `--after <value>` | Cursor for pagination. Use this to get the next page of results. |
+| `--before <value>` | Cursor for pagination. Use this to get the previous page of results. |
+
+#### `wa bot api create-or-update-qr-code`
+
+Create or Update Message QR Code — write (POST /{Version}/{Phone-Number-ID}/message_qrdls)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api create-or-update-qr-code [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The WhatsApp Business Account phone number ID for which to create or update the QR code. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-qr-code`
+
+Get Individual Message QR Code — read (GET /{Version}/{Phone-Number-ID}/message_qrdls/{QR-Code-ID})
+
+```sh
+wa bot api get-qr-code [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The WhatsApp Business Account phone number ID that owns the QR code. |
+| `--qr-code-id <value>` | The unique 14-character identifier of the QR code to retrieve. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. Available fields:. |
+
+#### `wa bot api delete-qr-code`
+
+Delete Individual Message QR Code — destructive (DELETE /{Version}/{Phone-Number-ID}/message_qrdls/{QR-Code-ID})
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api delete-qr-code [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The WhatsApp Business Account phone number ID that owns the QR code to be deleted. |
+| `--qr-code-id <value>` | The unique 14-character identifier of the QR code to delete. |
+
+#### `wa bot api send-encrypted-message`
+
+Send Encrypted Message — write (POST /{Version}/{Phone-Number-ID}/messages_encrypted)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api send-encrypted-message [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The ID of the phone number used to send the message. Retrieved from the WhatsApp Business Account. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-official-business-account-status`
+
+Get Official Business Account Status — read (GET /{Version}/{Phone-Number-ID}/official_business_account)
+
+```sh
+wa bot api get-official-business-account-status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api request-official-business-account`
+
+Update Official Business Account Status — write (POST /{Version}/{Phone-Number-ID}/official_business_account)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api request-official-business-account [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-phone-number`
+
+Retrieve WhatsApp Business Phone Number Information — read (GET /{Version}/{Phone-Number-ID})
+
+```sh
+wa bot api get-phone-number [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business Account phone number ID (CSID). This unique identifier is assigned when you. |
+| `--fields <value>` | Comma-separated list of additional fields to include in the response. If not specified,. |
+
+#### `wa bot api update-phone-number`
+
+Update WhatsApp Business Account Phone Number Status and Configuration — write (POST /{Version}/{Phone-Number-ID})
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api update-phone-number [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business Account phone number ID (CSID). This ID is provided when you. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api deregister-phone-number`
+
+Deregister WhatsApp Business Phone Number — destructive (POST /{Version}/{Phone-Number-ID}/deregister)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api deregister-phone-number [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The ID of the phone number to deregister. This ID is provided when you register. |
+
+#### `wa bot api get-message-history`
+
+Get WhatsApp Business Account Message History — read (GET /{Version}/{Phone-Number-ID}/message_history)
+
+```sh
+wa bot api get-message-history [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business Account phone number ID. This ID is provided when you register. |
+| `--message-id <value>` | Filter results by specific WhatsApp message ID (WAMID). When provided,. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+| `--limit <value>` | Maximum number of message history entries to return per page. |
+| `--after <value>` | Cursor for pagination. Use this to get the next page of results. |
+| `--before <value>` | Cursor for pagination. Use this to get the previous page of results. |
+
+#### `wa bot api register-phone-number`
+
+Register WhatsApp Business Phone Number — destructive (POST /{Version}/{Phone-Number-ID}/register)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api register-phone-number [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The ID of the phone number to register. This ID is provided when the phone number. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api request-verification-code`
+
+Request Phone Number Verification Code — write (POST /{Version}/{Phone-Number-ID}/request_code)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api request-verification-code [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-phone-number-settings`
+
+Get phone number settings — read (GET /{Version}/{Phone-Number-ID}/settings)
+
+```sh
+wa bot api get-phone-number-settings [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+| `--include-sip-credentials <value>` | Include SIP credentials in the response (requires additional permissions). |
+
+#### `wa bot api update-phone-number-settings`
+
+Update phone number settings — write (POST /{Version}/{Phone-Number-ID}/settings)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api update-phone-number-settings [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api verify-phone-number-code`
+
+Verify Phone Number Verification Code — write (POST /{Version}/{Phone-Number-ID}/verify_code)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api verify-phone-number-code [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | The WhatsApp Business Account phone number ID that needs verification. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-encryption-public-key`
+
+Get Business Encryption Public Key — read (GET /{Version}/{Phone-Number-ID}/whatsapp_business_encryption)
+
+```sh
+wa bot api get-encryption-public-key [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api set-encryption-public-key`
+
+Set Business Encryption Public Key — write (POST /{Version}/{Phone-Number-ID}/whatsapp_business_encryption)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api set-encryption-public-key [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-business-profile`
+
+Get WhatsApp Business Profile — read (GET /{Version}/{Phone-Number-ID}/whatsapp_business_profile)
+
+```sh
+wa bot api get-business-profile [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api update-business-profile`
+
+Update WhatsApp Business Profile — write (POST /{Version}/{Phone-Number-ID}/whatsapp_business_profile)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api update-business-profile [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-commerce-settings`
+
+Get commerce settings — read (GET /{Version}/{Phone-Number-ID}/whatsapp_commerce_settings)
+
+```sh
+wa bot api get-commerce-settings [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+
+#### `wa bot api set-commerce-settings`
+
+Set or update commerce settings — write (POST /{Version}/{Phone-Number-ID}/whatsapp_commerce_settings)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api set-commerce-settings [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Phone-Number-ID. |
+| `--is-cart-enabled <value>` | is_cart_enabled. |
+| `--is-catalog-visible <value>` | is_catalog_visible. |
+
+#### `wa bot api get-business-compliance-info`
+
+Get Business Compliance Information — read (GET /{Version}/{Phone-Number-ID}/business_compliance_info)
+
+```sh
+wa bot api get-business-compliance-info [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business Account phone number ID. This ID can be found in your. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api update-business-compliance-info`
+
+Update Business Compliance Information — write (POST /{Version}/{Phone-Number-ID}/business_compliance_info)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api update-business-compliance-info [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business Account phone number ID. This ID can be found in your. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-media`
+
+Retrieve Media URL — read (GET /{Version}/{Media-ID})
+
+```sh
+wa bot api get-media [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--media-id <value>` | Media-ID. |
+| `--phone-number-id <value>` | Specifies that this action only be performed if the media belongs to the provided phone number. |
+
+#### `wa bot api delete-media`
+
+Delete Media — destructive (DELETE /{Version}/{Media-ID})
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api delete-media [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--media-id <value>` | Media-ID. |
+| `--phone-number-id <value>` | Specifies that deletion of the media  only be performed if the media belongs to the provided phone number. |
+
+#### `wa bot api get-message-history-events`
+
+Get WhatsApp Message History Events — read (GET /{Version}/{Message-History-ID}/events)
+
+```sh
+wa bot api get-message-history-events [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--message-history-id <value>` | Your WhatsApp Business Message History ID. This ID is provided when you retrieve. |
+| `--status-filter <value>` | Filter results by specific delivery status. When provided,. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+| `--limit <value>` | Maximum number of message history events to return per page. |
+| `--after <value>` | Cursor for pagination. Use this to get the next page of results. |
+| `--before <value>` | Cursor for pagination. Use this to get the previous page of results. |
+
+#### `wa bot api get-assigned-whats-app-business-accounts`
+
+Get Assigned WhatsApp Business Accounts — read (GET /{Version}/{User-ID}/assigned_whatsapp_business_accounts)
+
+```sh
+wa bot api get-assigned-whats-app-business-accounts [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--user-id <value>` | The user ID for whom to retrieve assigned WhatsApp Business Accounts. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+| `--limit <value>` | Maximum number of accounts to return per page. Default is 25, maximum is 100. |
+| `--after <value>` | Cursor for pagination. Use this to get the next page of results. |
+| `--before <value>` | Cursor for pagination. Use this to get the previous page of results. |
+
+#### `wa bot api get-whats-app-account-number-details`
+
+Get WhatsApp Account Number Details — read (GET /{Version}/{WhatsApp-Account-Number-ID})
+
+```sh
+wa bot api get-whats-app-account-number-details [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--whats-app-account-number-id <value>` | Your WhatsApp Account Number ID. This ID represents the account number entity. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api get-assigned-users`
+
+List Assigned Users — read (GET /{Version}/{WhatsApp-Business-Account-ID}/assigned_users)
+
+```sh
+wa bot api get-assigned-users [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--whats-app-business-account-id <value>` | Your WhatsApp Business Account ID. This ID is provided when you create the account. |
+| `--business <value>` | Business ID that owns or has access to the WhatsApp Business Account. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+| `--limit <value>` | Maximum number of assigned users to return per page. Default is 25, maximum is 100. |
+| `--after <value>` | Cursor for pagination. Use this to get the next page of results. |
+| `--before <value>` | Cursor for pagination. Use this to get the previous page of results. |
+
+#### `wa bot api add-assigned-user`
+
+Add User to WhatsApp Business Account — write (POST /{Version}/{WhatsApp-Business-Account-ID}/assigned_users)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api add-assigned-user [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--whats-app-business-account-id <value>` | Your WhatsApp Business Account ID. This ID is provided when you create the account. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api remove-assigned-user`
+
+Remove User from WhatsApp Business Account — write (DELETE /{Version}/{WhatsApp-Business-Account-ID}/assigned_users)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api remove-assigned-user [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--whats-app-business-account-id <value>` | Your WhatsApp Business Account ID. This ID is provided when you create the account. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api configure-conversational-automation`
+
+Configure Conversational Automation — write (POST /{Version}/{Phone-Number-ID}/conversational_automation)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api configure-conversational-automation [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--phone-number-id <value>` | Your WhatsApp Business phone number ID. This ID represents the phone number. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-credit-lines`
+
+Get credit lines — read (GET /{Version}/{Business-ID}/extendedcredits)
+
+```sh
+wa bot api get-credit-lines [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--business-id <value>` | Business-ID. |
+
+#### `wa bot api list-phone-numbers`
+
+Get WhatsApp Business Account Phone Numbers — read (GET /{Version}/{WABA-ID}/phone_numbers)
+
+```sh
+wa bot api list-phone-numbers [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WhatsApp Business Account ID. This ID can be found in your WhatsApp Manager. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+| `--filtering <value>` | JSON-encoded array of filter conditions. Each filter should specify field, operator, and value. |
+| `--sort <value>` | Sort field and direction. Format: field_name.asc or field_name.desc. |
+| `--limit <value>` | Maximum number of phone numbers to return per page. |
+| `--after <value>` | Cursor for pagination - retrieve records after this cursor. |
+| `--before <value>` | Cursor for pagination - retrieve records before this cursor. |
+
+#### `wa bot api create-phone-number`
+
+Create WhatsApp Business Account Phone Number — write (POST /{Version}/{WABA-ID}/phone_numbers)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api create-phone-number [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WhatsApp Business Account ID where the phone number will be added. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api list-schedules`
+
+Get WhatsApp Business Account Schedules — read (GET /{Version}/{WABA-ID}/schedules)
+
+```sh
+wa bot api list-schedules [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WhatsApp Business Account ID. This ID can be found in your WhatsApp Manager. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+| `--filtering <value>` | JSON-encoded array of filter conditions. Each filter should specify field, operator, and value. |
+| `--sort <value>` | Sort field and direction. Format: field_name.asc or field_name.desc. |
+| `--limit <value>` | Maximum number of schedules to return per page. |
+| `--after <value>` | Cursor for pagination - retrieve records after this cursor. |
+| `--before <value>` | Cursor for pagination - retrieve records before this cursor. |
+
+#### `wa bot api create-schedule`
+
+Create WhatsApp Business Account Schedule — write (POST /{Version}/{WABA-ID}/schedules)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api create-schedule [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WhatsApp Business Account ID where the schedule will be created. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api list-subscribed-apps`
+
+Get All Subscriptions for a WABA — read (GET /{Version}/{WABA-ID}/subscribed_apps)
+
+```sh
+wa bot api list-subscribed-apps [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WhatsApp Business Account ID. This ID can be found in your WhatsApp Manager. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api subscribe-app`
+
+Subscribe to WABA Webhooks — write (POST /{Version}/{WABA-ID}/subscribed_apps)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api subscribe-app [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WhatsApp Business Account ID. This ID can be found in your WhatsApp Manager. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api unsubscribe-app`
+
+Unsubscribe from WABA Webhooks — write (DELETE /{Version}/{WABA-ID}/subscribed_apps)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api unsubscribe-app [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WhatsApp Business Account ID. This ID can be found in your WhatsApp Manager. |
+
+#### `wa bot api get-template`
+
+Get template by ID (default fields) — read (GET /{Version}/{TEMPLATE_ID})
+
+```sh
+wa bot api get-template [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--template-id <value>` | TEMPLATE_ID. |
+
+#### `wa bot api edit-template`
+
+Edit template — write (POST /{Version}/{TEMPLATE_ID})
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api edit-template [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--template-id <value>` | TEMPLATE_ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api list-templates`
+
+Get template by name (default fields) — read (GET /{Version}/{WABA-ID}/message_templates)
+
+```sh
+wa bot api list-templates [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WABA-ID. |
+| `--name <value>` | name. |
+
+#### `wa bot api create-template`
+
+Create authentication template w/ OTP copy code button — write (POST /{Version}/{WABA-ID}/message_templates)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api create-template [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WABA-ID. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api delete-template`
+
+Delete template by name — destructive (DELETE /{Version}/{WABA-ID}/message_templates)
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api delete-template [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | WABA-ID. |
+| `--name <value>` | name. |
+| `--hsm-id <value>` | Template ID. |
+
+#### `wa bot api list-activities`
+
+Get WhatsApp Business Account Activities — read (GET /{Version}/{WABA-ID}/activities)
+
+```sh
+wa bot api list-activities [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | Your WhatsApp Business Account ID. This ID can be found in your WhatsApp Manager. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+| `--limit <value>` | Maximum number of activity records to return per page. Default is 25, maximum is 100. |
+| `--after <value>` | Cursor for pagination. Use this to get the next page of results. |
+| `--before <value>` | Cursor for pagination. Use this to get the previous page of results. |
+| `--since <value>` | Unix timestamp or ISO 8601 date string. Only return activities that occurred after this time. |
+| `--until <value>` | Unix timestamp or ISO 8601 date string. Only return activities that occurred before this time. |
+| `--activity-type <value>` | Filter activities by type. Can be a single type or comma-separated list of types. |
+
+#### `wa bot api get-business-account`
+
+Get WhatsApp Business Account Details — read (GET /{Version}/{WABA-ID})
+
+```sh
+wa bot api get-business-account [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | Your WhatsApp Business Account ID. This ID is provided when you create the account. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api update-business-account`
+
+Update WhatsApp Business Account — write (POST /{Version}/{WABA-ID})
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api update-business-account [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-id <value>` | Your WhatsApp Business Account ID. This ID is provided when you create the account. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
+
+#### `wa bot api get-business-bot`
+
+Get WhatsApp Business Bot Details — read (GET /{Version}/{WABA-Bot-ID})
+
+```sh
+wa bot api get-business-bot [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--waba-bot-id <value>` | Your WhatsApp Business Bot ID. This ID is provided when you create the bot. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api get-business-profile-by-id`
+
+Get WhatsApp Business Profile Details — read (GET /{Version}/{WhatsApp-Business-Profile-ID})
+
+```sh
+wa bot api get-business-profile-by-id [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--whats-app-business-profile-id <value>` | Your WhatsApp Business Profile ID. This ID is provided when the profile is created. |
+| `--fields <value>` | Comma-separated list of fields to include in the response. If not specified,. |
+
+#### `wa bot api update-business-profile-by-id`
+
+Update WhatsApp Business Profile — write (POST /{Version}/{WhatsApp-Business-Profile-ID})
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot api update-business-profile-by-id [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--whats-app-business-profile-id <value>` | Your WhatsApp Business Profile ID. This ID is provided when the profile is created. |
+| `--body <json>` | the request body as JSON; - reads it from stdin. |
+| `--body-file <path>` | the request body from a JSON file; - is stdin. |
 
 ## `wa skill`
 

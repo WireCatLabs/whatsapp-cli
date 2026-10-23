@@ -549,3 +549,9 @@ set by hand (a `POST` registers a number, which deletes its account on the phone
 names where Meta's ids read wrong, and the operations left out with the reason (partner-only, Groups, Flows, the media
 download whose path is a whole URL). The `Version` path parameter is not a flag: the Graph version is a setting. The
 phone number id and WhatsApp Business Account id are flags that fall back to the profile's settings.
+
+`src/commands/bot.ts` hands cli-core's shared `bot` tree a `BotMessenger` (`WHATSAPP_BOT`, provider `whatsapp-bot`) and
+mounts the generated `bot api` beside it. [`src/bot/graph.ts`](../../src/bot/graph.ts) is the Graph transport: the
+token only in the `Authorization` header, never in an address; Graph's error object becomes a `CliError` by Meta's
+code, with any phone number in Meta's words masked. A body the spec refuses is warned about and sent anyway, because
+the spec lags the live API. The bot settings `phone_number_id`, `waba_id` and `graph_version` are ids, not secrets.

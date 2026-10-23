@@ -34,6 +34,18 @@ description = "A WhatsApp hidden id (LID) — names a real person as surely as a
 regex = '''\b[1-9]\d{7,19}(?::\d+)?@lid\b'''
 tags = ["pii", "whatsapp"]
 
+[[rules]]
+id = "meta-access-token"
+description = "A Meta Graph API access token — sends as the business number and reads its messages"
+regex = '''\bEAA[A-Za-z0-9]{30,}'''
+tags = ["meta", "credential"]
+
+[[rules]]
+id = "meta-app-secret"
+description = "A Meta app secret — signs every webhook delivery, so whoever has it can forge one"
+regex = '''(?i)app[_ -]?secret["'\s:=]{1,10}[a-f0-9]{32}\b'''
+tags = ["meta", "credential"]
+
 [allowlist]
 description = "Synthetic values used by tests and documentation"
 regexTarget = "match"
