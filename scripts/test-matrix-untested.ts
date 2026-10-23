@@ -14,7 +14,7 @@ const SHARED: Record<string, string> = {
   "store *": "src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts",
   "conversations *": "src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts",
   "attachments *":
-    "src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts and src/background/daily-archive-timer.test.ts",
+    "src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts, media-archive-move.test.ts and src/background/daily-archive-timer.test.ts",
   "tags *": "src/cli/messenger/tags.test.ts",
   "mentions *": "src/cli/messenger/mentions.test.ts",
   "images *": "src/cli/messenger/images-command.test.ts",
@@ -42,6 +42,11 @@ const cliCore = (tests: string, rows: string[][]): Untested[] =>
   }))
 
 export const UNTESTED: Untested[] = [
+  ...cliCore("src/services/person-preparation.test.ts and src/cli/messenger/messenger.test.ts", [
+    ["contacts prepare"],
+    ["contacts prepare", "--limit"],
+    ["contacts prepare", "--since-time"],
+  ]),
   // wa's own tests replace these one command at a time, as each is found to reach the engine.
   ...Object.entries(SHARED).map(([command, tests]) => ({
     command,

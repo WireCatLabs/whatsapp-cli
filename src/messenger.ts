@@ -222,6 +222,7 @@ export const WHATSAPP: Messenger = {
   chatPin: true,
   chatMarkUnread: true,
   lacks: [
+    "comments",
     "sessions",
     "endOtherSessions",
     "chatEvents",
