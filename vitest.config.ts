@@ -18,6 +18,8 @@ export default defineConfig({
         "src/testing/**",
         // The entry point: one line handing argv to run(), which the suite drives directly.
         "src/bin/**",
+        // Written by pnpm bot:generate from Meta's file; its schemas are measured by what uses them, not line by line.
+        "src/bot/generated/**",
       ],
       reporter: ["text-summary", "json-summary", "html"],
       // Half a point under the lowest of three local runs and main's CI (2026-10-18: 96.4/95.59/93.21/88.05), so

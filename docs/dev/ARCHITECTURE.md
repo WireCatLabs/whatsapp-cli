@@ -532,3 +532,20 @@ The probe (`engine/cmd/wa-probe`) pairs as `Chrome (Linux)` with the desktop pla
 history, and names the device after the host system. The Go engine does the same: nothing WhatsApp sees names
 this tool. It sends delivery receipts, as every WhatsApp client does, and never presence. A read receipt goes only
 when the command typed asked for one: `chats mark-read`.
+
+## 9. The bot side: Meta's Cloud API
+
+A bot profile (`wa <profile> bot …`) is a WhatsApp Business number on Meta's Cloud API, not a linked device. It never
+starts the engine and never opens `private.db`; it speaks HTTPS to `graph.facebook.com` with a bearer token.
+
+`wa <profile> bot api …` is generated. Meta's OpenAPI file is committed in `spec/bot/` with its MIT `LICENSE` and a
+`provenance.json` naming the upstream revision and both sha256s, upstream and committed: `pnpm bot:spec:sync`
+replaces the sample phone numbers in Meta's examples with fictional `1555-01NN` ones
+([`scrub.ts`](../../scripts/bot/scrub.ts)) before it writes, so no real number reaches the repository. It refreshes the
+snapshot on purpose only, and nothing reads the network at build or run time. `pnpm bot:generate` reads it with cli-base's `adaptOpenApi` and
+writes `src/bot/generated/` and [`bot-api-coverage.md`](bot-api-coverage.md); CI runs `pnpm bot:generate:check`.
+[`scripts/bot/overrides.ts`](../../scripts/bot/overrides.ts) decides what is kept: an effect for every kept operation,
+set by hand (a `POST` registers a number, which deletes its account on the phone, so it is destructive), command
+names where Meta's ids read wrong, and the operations left out with the reason (partner-only, Groups, Flows, the media
+download whose path is a whole URL). The `Version` path parameter is not a flag: the Graph version is a setting. The
+phone number id and WhatsApp Business Account id are flags that fall back to the profile's settings.

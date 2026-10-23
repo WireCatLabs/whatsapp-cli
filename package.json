@@ -34,6 +34,9 @@
     "test:matrix": "vitest run >/dev/null && pnpm build >/dev/null && cli-dev test-matrix --program dist/program.js --untested scripts/test-matrix-untested.ts --name wa --check",
     "test:slow": "vitest run --reporter=json --outputFile=coverage/tests.json >/dev/null; cli-dev slow-tests",
     "engine:test": "cd engine && unformatted=$(\"$(go env GOROOT)/bin/gofmt\" -l .) && { test -z \"$unformatted\" || { echo \"not gofmt-formatted: $unformatted\" >&2; exit 1; }; } && go vet ./... && go test ./...",
+    "bot:spec:sync": "node --experimental-strip-types scripts/bot/sync-spec.ts",
+    "bot:generate": "node --experimental-strip-types scripts/bot/generate.ts",
+    "bot:generate:check": "node --experimental-strip-types scripts/bot/generate.ts --check",
     "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts",
     "smoke:bun": "bun run scripts/smoke.ts",
     "release:check": "pnpm build && node --experimental-strip-types scripts/release-check.ts",
@@ -84,7 +87,8 @@
     "markdownlint-cli2": "0.23.3",
     "rumdl": "^0.2.79",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "yaml": "^2.9.1"
   },
   "publishConfig": {
     "access": "public"
