@@ -302,7 +302,7 @@ describe("wa chats create, join, leave, update, link", () => {
       "on",
       "--only-admins-edit-info",
       "on",
-      "--disappear-time",
+      "--disappear-after",
       "7d",
     )
     expect(result.code).toBe(0)
@@ -317,13 +317,13 @@ describe("wa chats create, join, leave, update, link", () => {
   })
 
   it("turns disappearing messages off", async () => {
-    const result = await acting("chats", "update", seed.busy, "--disappear-time", "off")
+    const result = await acting("chats", "update", seed.busy, "--disappear-after", "off")
     expect(result.code).toBe(0)
     expect(result.done).toEqual([{ op: "updateGroup", jid: seed.busy, change: { ephemeral: 0 } }])
   })
 
   it("refuses a disappearing time WhatsApp does not offer, and changes nothing", async () => {
-    const result = await acting("chats", "update", seed.busy, "--disappear-time", "1h")
+    const result = await acting("chats", "update", seed.busy, "--disappear-after", "1h")
     expect(result.code).toBe(2)
     expect(JSON.parse(result.stderr).error.message).toContain("24h, 7d or 90d")
     expect(result.done).toEqual([])

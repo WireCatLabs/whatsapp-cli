@@ -1,11 +1,5 @@
 [
   "commands schema",
-  "complete",
   "doctor report create",
-  "flood clear",
-  "inbox",
-  "review",
-  "sends list",
-  "serve",
-  "watch"
+  "sends list"
 ]

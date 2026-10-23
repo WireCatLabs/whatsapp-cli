@@ -42,6 +42,12 @@ const cliCore = (tests: string, rows: string[][]): Untested[] =>
   }))
 
 export const UNTESTED: Untested[] = [
+  ...["chats update", "inbox", "review"].map((command) => ({
+    command,
+    option: command === "chats update" ? "--disappear-time" : "--kind",
+    reason:
+      "hidden cli-core compatibility flag for one release; canonical flags and queries are preferred; tested in src/cli/option-meanings.test.ts in cli-core",
+  })),
   // wa's own tests replace these one command at a time, as each is found to reach the engine.
   ...Object.entries(SHARED).map(([command, tests]) => ({
     command,
@@ -125,9 +131,9 @@ export const UNTESTED: Untested[] = [
     ["contacts notes list"],
     ["contacts notes show"],
     ["contacts notes add"],
-    ["contacts notes add", "--file"],
+    ["contacts notes add", "--text-file"],
     ["contacts notes edit"],
-    ["contacts notes edit", "--file"],
+    ["contacts notes edit", "--text-file"],
     ["contacts notes edit", "--revision"],
     ["contacts notes remove"],
   ]),
@@ -193,7 +199,7 @@ export const UNTESTED: Untested[] = [
       "local search preparation after the repair, over the store; tested in cli-core " +
       "(src/services/search-catchup.test.ts); src/older-history.test.ts drives the repair itself",
   })),
-  ...["--new", "--limit", "--kind"].map((option) => ({
+  ...["--new", "--limit"].map((option) => ({
     command: "inbox",
     option,
     reason:
@@ -201,7 +207,7 @@ export const UNTESTED: Untested[] = [
       "src/cli/list-query.test.ts); src/media.test.ts " +
       "--transcribe, the options that reach the engine",
   })),
-  ...["--kind", "--new"].map((option) => ({
+  ...["--new"].map((option) => ({
     command: "review",
     option,
     reason:

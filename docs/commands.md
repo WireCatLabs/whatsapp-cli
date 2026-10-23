@@ -513,7 +513,7 @@ wa chats update <chat> [options]
 | `--join-approval <on\|off>` | people ask to join, and an admin lets them in. |
 | `--only-admins-send <on\|off>` | only admins may send messages. |
 | `--only-admins-edit-info <on\|off>` | only admins may change the name, photo and description. |
-| `--disappear-time <duration\|off>` | new messages disappear this long after sending: 24h, 7d, 90d; off keeps them. |
+| `--disappear-after <duration\|off>` | new messages disappear this long after sending: 24h, 7d, 90d; off keeps them. |
 
 ### `wa chats link`
 
@@ -1155,7 +1155,7 @@ wa contacts notes show <person> <id>
 
 #### `wa contacts notes add`
 
-add a private note on a person from stdin or --file; never sent
+add a private note on a person from stdin or --text-file; never sent
 
 **Changes something on this computer only.**
 
@@ -1169,7 +1169,7 @@ wa contacts notes add <person> [options]
 
 | Option | What it does |
 |---|---|
-| `--file <path>` | read note text from a file; omitted or - reads stdin. |
+| `--text-file <path>` | read note text from a file; omitted or - reads stdin. |
 
 #### `wa contacts notes edit`
 
@@ -1188,7 +1188,7 @@ wa contacts notes edit <person> <id> [options]
 
 | Option | What it does |
 |---|---|
-| `--file <path>` | read note text from a file; omitted or - reads stdin. |
+| `--text-file <path>` | read note text from a file; omitted or - reads stdin. |
 | `--revision <n>` | the revision you read before editing. |
 
 #### `wa contacts notes remove`
@@ -1331,7 +1331,7 @@ wa messages list <chat> [query] [options]
 | `--limit <n>` | how many. |
 | `--cursor <cursor>` | go on from where the last page stopped; page.next gives it. |
 | `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
-| `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
 
 ### `wa messages send`
 
@@ -1436,7 +1436,7 @@ wa messages transcribe <chat> <message> [options]
 | Option | What it does |
 |---|---|
 | `--local` | use the model on this machine, never the messenger. |
-| `--model <id>` | which downloaded model; implies --local (`models audio list`). |
+| `--model <model>` | which downloaded model; implies --local (`models audio list`). |
 
 ### `wa messages edit`
 
@@ -1866,9 +1866,8 @@ wa inbox [query] [options]
 | `--new` | what arrived since the last check, each message once — for scheduled runs. |
 | `--limit <n>` | at most this many per chat, the newest. |
 | `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
-| `--kind <kinds>` | only chats of these kinds, comma-separated: dialog, group, channel, saved. |
 | `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
-| `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
 
 ## `wa review`
 
@@ -1884,11 +1883,10 @@ wa review [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--kind <kinds>` | only chats of these kinds, comma-separated: dialog, group, channel, saved. |
 | `--unanswered [duration]` | only questions to you or a group's admins that nobody answered, asked at least this long ago — 4h, 1d; 24h if not given. |
 | `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
 | `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
-| `--model <id>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
 | `--new` | what changed since the last `review --new`, a point per chat — for scheduled runs. |
 
 ## `wa watch`
@@ -2314,7 +2312,7 @@ wa conversations build [options]
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--analyze` | link batches using the configured analysis provider; requires --chat and remembers consent for this chat/provider. |
-| `--provider <provider>` | analysis: agent, openai or anthropic. |
+| `--analysis-provider <provider>` | analysis: agent, openai or anthropic. |
 | `--model <model>` | analysis model; overrides analysis_model. |
 | `--base-url <url>` | analysis API endpoint; overrides analysis_base_url. |
 | `--size <n>` | analysis answer messages per batch, 10–200; default 50. |
@@ -2368,7 +2366,7 @@ wa conversations related <chat> <message> [options]
 |---|---|
 | `--limit <n>` | how many. |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 
@@ -2384,7 +2382,7 @@ wa conversations status [options]
 |---|---|
 | `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 
@@ -2449,7 +2447,7 @@ wa conversations links clear [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | only the answers this model gave. |
+| `--answer-model <model>` | only the stored answers this model gave. |
 
 ### `wa conversations rebuild`
 
@@ -2492,11 +2490,11 @@ wa conversations consents revoke [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | revoke only this chat's consents; defaults to every chat. |
-| `--provider <identity>` | exact provider identity from consents list; defaults to every provider. |
+| `--consent-provider <identity>` | exact provider identity from consents list; defaults to every provider. |
 
 ### `wa conversations embed`
 
-compute a vector for each chunk of a chat's conversations for search by meaning — on this machine, or with --provider through a service and your key; resumes where it stopped; without --chat, every built chat with chunks left, on this machine only
+compute a vector for each chunk of a chat's conversations for search by meaning — on this machine, or with --embedding-provider through a service and your key; resumes where it stopped; without --chat, every built chat with chunks left, on this machine only
 
 **Sends text to an outside service.**
 
@@ -2508,7 +2506,7 @@ wa conversations embed [options]
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 | `--threads <n>` | local: threads in all (default: min(8, cores)). |
@@ -2529,7 +2527,7 @@ wa conversations embed status [options]
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 
@@ -2547,7 +2545,7 @@ wa conversations embed clear [options]
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 
@@ -2787,7 +2785,7 @@ wa tags auto [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a stored group/channel; repeat to select several. Default: ``. |
-| `--limit <number>` | process at most 1–500 chats. Default: `50`. |
+| `--limit <n>` | process at most 1–500 chats. Default: `50`. |
 | `--sync-first` | read current descriptions from the messenger before classifying. |
 | `--dry-run` | preview cached classification without changing the store. |
 
@@ -2832,7 +2830,7 @@ wa tags remove <tag> [options]
 | `--contact <person>` | the person to untag: their id, @username or name, as the local store knows them. |
 | `--message <message>` | the message to untag: its id in --chat, or a msg: locator alone. |
 | `--task <id>` | the task to untag: its id or key, as tasks list shows it. |
-| `--source <manual\|auto>` | remove only this ownership claim. |
+| `--claim <claim>` | remove only this ownership claim: manual or auto. |
 
 ### `wa tags list`
 
@@ -3042,7 +3040,7 @@ wa metadata refresh [options]
 |---|---|
 | `--chat <chat>` | stored group/channel; repeat for several. Default: ``. |
 | `--only-missing` | only chats with no metadata yet; without --chat, every stored group/channel. |
-| `--limit <number>` | process at most 1–500 chats. Default: `50`. |
+| `--limit <n>` | process at most 1–500 chats. Default: `50`. |
 
 ## `wa stats`
 
@@ -3066,7 +3064,7 @@ wa stats messages show [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--by <chat\|sender\|day\|hour>` | what to count by (default: chat). |
+| `--by <group>` | count by chat, sender, day or hour (default: chat). |
 | `--chat <chat>` | only this chat — the same as chat: in the query; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every account of this messenger held in the store; personal, bots or all — the same as in: in the query. |
 | `--limit <n>` | how many rows. |
@@ -3308,7 +3306,7 @@ wa stats chats show <chat> [options]
 | Option | What it does |
 |---|---|
 | `--since-time <time>` | ISO 8601, or 2h / 1d ago; 7 days ago if not given. |
-| `--by <day\|week>` | also one row per calendar day or week (weeks start on Monday). |
+| `--by <group>` | also one row per calendar day or week (weeks start on Monday). |
 | `--timezone <zone>` | the IANA timezone for calendar days. |
 
 #### `wa stats chats newcomers`
@@ -3351,7 +3349,7 @@ wa stats chats retention <chat> [options]
 | `--until-time <time>` | joining period ends at this time; now by default. |
 | `--checkpoints <durations>` | up to 10 increasing joining ages, comma separated; 1d,7d,30d by default. |
 | `--within <duration>` | activity and early departure window after joining; 7d by default. |
-| `--by <day\|week>` | group joining dates by calendar day or Monday week. One of: `day`, `week`. |
+| `--by <group>` | group joining dates by calendar day or Monday week. One of: `day`, `week`. |
 | `--timezone <zone>` | IANA timezone for joining cohorts. |
 | `--limit <n>` | cohorts and member evidence, 1–100. |
 
@@ -3389,7 +3387,7 @@ wa stats charts <chat> [options]
 | Option | What it does |
 |---|---|
 | `--chart-kind <messages\|active\|membership>` | what to draw: messages, active authors, or joins and leaves. Default: `messages`. |
-| `--by <day\|week>` | one point per calendar day or week (weeks start on Monday). Default: `day`. |
+| `--by <group>` | one point per calendar day or week (weeks start on Monday). Default: `day`. |
 | `--since-time <time>` | ISO 8601, or 2h / 1d ago; 7 days ago if not given. |
 | `--timezone <zone>` | the IANA timezone for calendar days. |
 | `--output <file>` | write a dark image to a new .svg or .png file. |
@@ -3804,7 +3802,7 @@ wa search conversations <query> [options]
 | Option | What it does |
 |---|---|
 | `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 | `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
@@ -3845,7 +3843,7 @@ wa searches create <name> [query] [options]
 | `--exact` | bare words and quotes match their exact form only, as exact:word does; text: still matches every form. |
 | `--context <n>` | messages before and after each hit. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
-| `--by <chat\|sender\|day\|hour>` | what stats messages show --saved counts by. |
+| `--by <group>` | count by chat, sender, day or hour for stats messages show --saved. |
 | `--selection <json>` | save the resolved parent ranking query and options from a drilldown. |
 | `--replace` | overwrite a saved search of the same name. |
 

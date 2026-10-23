@@ -61,7 +61,7 @@ edit or deletion in a channel.
 **Group changes are writes the members see**, and go through the profile's permissions like a send. `chats create`
 and `members add` refuse anyone the owner never wrote to and has not saved — WhatsApp bans accounts that add
 strangers; never work round it. `admins add` takes no `--can`: a WhatsApp admin has every right.
-`chats update --disappear-time` takes 24h, 7d, 90d or off, nothing else. A chat or person named by name is looked up
+`chats update --disappear-after` takes 24h, 7d, 90d or off, nothing else. A chat or person named by name is looked up
 in the store first (part of the name is enough; several matches are refused), then in WhatsApp's chat list; a group
 the store does not hold yet needs its `…@g.us` id.
 `contacts lookup` takes one number on stdin, at most one every 10 seconds per profile; never loop it.

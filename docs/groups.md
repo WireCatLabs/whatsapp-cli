@@ -204,7 +204,7 @@ wa personal chats members add 120363000000000001@g.us 100000000000002@lid
 wa personal chats members remove 120363000000000001@g.us 100000000000003@lid
 wa personal chats admins add 120363000000000001@g.us 100000000000002@lid
 wa personal chats update 120363000000000001@g.us --title "Hiking club" --only-admins-add on --join-approval on
-wa personal chats update 120363000000000001@g.us --only-admins-send on --disappear-time 7d
+wa personal chats update 120363000000000001@g.us --only-admins-send on --disappear-after 7d
 wa personal chats update 120363000000000001@g.us --photo club.jpg
 wa personal chats update 120363000000000001@g.us --remove-photo
 wa personal chats link show 120363000000000001@g.us
@@ -223,7 +223,7 @@ wa personal chats leave 120363000000000001@g.us
 - **One invite link.** A group has one link; `link reset` replaces it, and the old one stops working. Only admins see
   it.
 - **Settings.** `update` changes the name, the description, `--only-admins-add`, `--join-approval`,
-  `--only-admins-send`, `--only-admins-edit-info` and `--disappear-time`. Messages disappear after 24h, 7d or 90d,
+  `--only-admins-send`, `--only-admins-edit-info` and `--disappear-after`. Messages disappear after 24h, 7d or 90d,
   the times WhatsApp offers; any other is refused, and `off` keeps them.
 - **The photo.** `update --photo` takes a square JPEG of 190 to 720 pixels a side, the only kind WhatsApp takes as a
   group photo. `wa` does not convert or crop one: export it as a JPEG first. A file not named `.jpg` or `.jpeg`, or a
