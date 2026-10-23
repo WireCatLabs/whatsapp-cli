@@ -62,8 +62,7 @@ WA_REQUESTS_PER_MINUTE=30 wa personal messages send 100000000000001@lid "on my w
   `wa personal doctor --online` connecting again or by `wa personal flood clear`; see the phone. Reads from the local
   store still work.
 - **When WhatsApp asks the account to slow down**, every write is held for 15 minutes (exit code `8`, then `5` while
-  the hold lasts). Reads go on. `inbox` and `review` with `--mark-read` still show what they read and say that
-  nothing was marked read. `wa personal flood clear` lifts a hold once you know it is over.
+  the hold lasts). Reads go on without sending read receipts. `wa personal flood clear` lifts a hold once you know it is over.
 - **A poll** has 2 to 12 answers, each with its own text; it counts as a send.
 - **A pin** counts as a send: WhatsApp tells the chat's members about every one. An unpin does not count, but a hold
   stops it too.

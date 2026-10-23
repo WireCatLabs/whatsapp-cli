@@ -30,7 +30,6 @@ removes it.
 | `timeout_ms` | none | how long **one** request may wait, in milliseconds; for the whole command use `--timeout` | none |
 | `color` | from the terminal | colour in the table view | none; with no setting, `NO_COLOR` turns it off |
 | `sender_colors` | `false` | a colour per sender in the table view of messages | none |
-| `catch_up_marks_read` | `false` | `inbox` and `review` mark each chat they show read. The other side sees it | `--mark-read`, `--no-mark-read` |
 | `search_catch_up` | `false` | prepare newly stored chats for local search: their graph and, where installed, their vectors | `--catch-up`, `--no-catch-up` |
 | `picture_search` | `false` | search stored pictures by what they show, once the model is downloaded | none |
 | `record` | `false` | keep every run | `--record`, `--no-record` |

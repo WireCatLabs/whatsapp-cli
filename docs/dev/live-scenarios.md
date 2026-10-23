@@ -24,7 +24,7 @@ never part of this one.
 - **One connection per device.** The owner's `wa <profile> serve` holds it, and a command that connects goes
   through it (C1). W and C2 need `serve` stopped by the owner first and started again after; an agent never stops
   the owner's `serve`.
-- **Read receipts only with the owner's yes.** `chats mark-read` and `--mark-read` tell the other side; in the own
+- **Read receipts only with the owner's yes.** `chats mark-read` tells the other side; in the own
   chat they tell no one, so that is where they run.
 - **Record the shape, never the content**: exit codes, one JSON value on stdout, stderr empty or one diagnostic, the
   keys and the item counts.

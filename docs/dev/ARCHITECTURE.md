@@ -531,4 +531,4 @@ Source: `engine/cmd/wa-engine/engine.go:59`, `engine/cmd/wa-engine/link.go:13`, 
 The probe (`engine/cmd/wa-probe`) pairs as `Chrome (Linux)` with the desktop platform, so the phone sends full
 history, and names the device after the host system. The Go engine does the same: nothing WhatsApp sees names
 this tool. It sends delivery receipts, as every WhatsApp client does, and never presence. A read receipt goes only
-when the command typed asked for one: `chats mark-read`, or `--mark-read` on a read.
+when the command typed asked for one: `chats mark-read`.
