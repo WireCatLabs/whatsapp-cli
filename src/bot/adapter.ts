@@ -1,6 +1,7 @@
 import { CliError } from "@wirecat/cli-base"
 import type { BotAdapter } from "@wirecat/cli-core/cli"
 import type { GraphTransport } from "./graph.js"
+import { sendMessage } from "./messaging.js"
 
 export interface BotIds {
   phoneNumberId: string | undefined
@@ -39,6 +40,7 @@ export const whatsappBotAdapter = (graph: GraphTransport, ids: BotIds, profile: 
         phone: number.display_phone_number ?? null,
       }
     },
+    send: (chat, text, options) => sendMessage({ graph, phoneNumberId: phoneNumberId() }, chat, text, options),
     close: async () => {},
   }
 }

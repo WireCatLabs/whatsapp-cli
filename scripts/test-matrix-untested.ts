@@ -68,6 +68,13 @@ export const UNTESTED: Untested[] = [
     command,
     reason: `shared cli-core bot command mounted unchanged; tested in cli-core (${tests}), wa's adapter in src/commands/bot.test.ts`,
   })),
+  ...["--md", "--html", "--photo", "--as-file", "--voice", "--allow-any-file"].map((option) => ({
+    command: "bot messages send",
+    option,
+    reason:
+      "cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as " +
+      "it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts",
+  })),
   ...["--phone-number-id", "--waba-id", "--whats-app-business-account-id", "--body", "--body-file"].map((option) => ({
     command: "bot api *",
     option,

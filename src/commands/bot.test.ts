@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs"
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
@@ -166,5 +166,139 @@ describe("wa <profile> bot", () => {
       "/v23.0/100000000000009/block_users",
       "/v23.0/100000000000009/messages",
     ])
+  })
+
+  it("**sends text with the shared bot messages send** to a number in digits, as a reply", async () => {
+    answer = () => ({ status: 200, body: { messages: [{ id: "wamid.sent" }] } })
+    const sent = await wa([
+      "cloudtest",
+      "bot",
+      "messages",
+      "send",
+      "70000000001",
+      "hello",
+      "--reply-to",
+      "wamid.A",
+      "--json",
+    ])
+
+    expect(sent.code).toBe(0)
+    expect(JSON.parse(String(seen[0]?.body))).toEqual({
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: "70000000001",
+      context: { message_id: "wamid.A" },
+      type: "text",
+      text: { body: "hello", preview_url: false },
+    })
+  })
+
+  it("**sends a template** by name and language, to user:<id> as recipient", async () => {
+    answer = () => ({ status: 200, body: { messages: [{ id: "wamid.tpl" }] } })
+    const sent = await wa(["cloudtest", "bot", "templates", "send", "user:900000000000009", "hello_world", "--json"])
+
+    expect(sent.code).toBe(0)
+    expect(JSON.parse(String(seen[0]?.body))).toMatchObject({
+      recipient: "900000000000009",
+      type: "template",
+      template: { name: "hello_world", language: { code: "en_US" } },
+    })
+    expect(JSON.parse(sent.stdout).item).toMatchObject({ id: "wamid.tpl" })
+  })
+
+  it("**lists templates** of the profile's business account", async () => {
+    answer = () => ({
+      status: 200,
+      body: { data: [{ name: "hello_world", status: "APPROVED", language: "en_US", category: "UTILITY" }] },
+    })
+    const listed = await wa(["cloudtest", "bot", "templates", "list", "--json"])
+
+    expect(listed.code).toBe(0)
+    expect(seen[0]?.url.pathname).toBe("/v23.0/200000000000002/message_templates")
+    expect(JSON.parse(listed.stdout).items).toEqual([
+      { name: "hello_world", status: "APPROVED", language: "en_US", category: "UTILITY" },
+    ])
+  })
+
+  it("**fills a template's placeholders** in the language given", async () => {
+    answer = () => ({ status: 200, body: { messages: [{ id: "wamid.tpl2" }] } })
+    const payload = JSON.stringify([{ type: "body", parameters: [{ type: "text", text: "42" }] }])
+    const sent = await wa([
+      "cloudtest",
+      "bot",
+      "templates",
+      "send",
+      "70000000001",
+      "order_ready",
+      "es",
+      "--payload",
+      payload,
+    ])
+
+    expect(sent.code).toBe(0)
+    expect(JSON.parse(String(seen[0]?.body)).template).toEqual({
+      name: "order_ready",
+      language: { code: "es" },
+      components: [{ type: "body", parameters: [{ type: "text", text: "42" }] }],
+    })
+  })
+
+  it("**saves a received file** from the short-lived address, with the token in the header", async () => {
+    answer = (url) =>
+      url.hostname === "graph.facebook.com"
+        ? { status: 200, body: { url: "https://lookaside.example/media/abc", mime_type: "image/jpeg" } }
+        : { status: 200, body: "bytes" }
+    const output = join(tmpdir(), "photo.jpg")
+    const saved = await wa(["cloudtest", "bot", "media", "download", "300000000000003", "--output", output, "--json"])
+
+    expect(saved.code).toBe(0)
+    expect(seen.map((one) => `${one.url.hostname}${one.url.pathname}`)).toEqual([
+      "graph.facebook.com/v23.0/300000000000003",
+      "lookaside.example/media/abc",
+    ])
+    expect(seen.every((one) => one.authorization === `Bearer ${TOKEN}`)).toBe(true)
+    expect(readFileSync(output, "utf8")).toBe('"bytes"')
+  })
+
+  it("**uploads a file once, then sends it by media id** with the text as its caption", async () => {
+    answer = (url) =>
+      url.pathname.endsWith("/media")
+        ? { status: 200, body: { id: "300000000000004" } }
+        : { status: 200, body: { messages: [{ id: "wamid.file" }] } }
+    const photo = join(tmpdir(), "receipt.jpg")
+    writeFileSync(photo, "jpeg bytes")
+    const sent = await wa([
+      "cloudtest",
+      "bot",
+      "messages",
+      "send",
+      "70000000001",
+      "your receipt",
+      "--file",
+      photo,
+      "--json",
+    ])
+
+    expect(sent.code).toBe(0)
+    expect(seen.map((one) => one.url.pathname)).toEqual([`/v23.0/${PHONE_ID}/media`, `/v23.0/${PHONE_ID}/messages`])
+    expect(seen[0]?.body).toBeInstanceOf(FormData)
+    expect(JSON.parse(String(seen[1]?.body))).toMatchObject({
+      type: "image",
+      image: { id: "300000000000004", caption: "your receipt" },
+    })
+  })
+
+  it("**refuses what WhatsApp has no way to send**: a silent message", async () => {
+    const refused = await wa(["cloudtest", "bot", "messages", "send", "70000000001", "psst", "--silent"])
+
+    expect(refused.code).not.toBe(0)
+    expect(seen).toEqual([])
+  })
+
+  it("**lists templates by name**", async () => {
+    answer = () => ({ status: 200, body: { data: [] } })
+    await wa(["cloudtest", "bot", "templates", "list", "--name", "hello_world"])
+
+    expect(seen[0]?.url.searchParams.get("name")).toBe("hello_world")
   })
 })

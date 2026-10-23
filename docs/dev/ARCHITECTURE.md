@@ -555,3 +555,8 @@ mounts the generated `bot api` beside it. [`src/bot/graph.ts`](../../src/bot/gra
 token only in the `Authorization` header, never in an address; Graph's error object becomes a `CliError` by Meta's
 code, with any phone number in Meta's words masked. A body the spec refuses is warned about and sent anyway, because
 the spec lags the live API. The bot settings `phone_number_id`, `waba_id` and `graph_version` are ids, not secrets.
+
+Sending is [`src/bot/messaging.ts`](../../src/bot/messaging.ts): a chat is a phone number in digits (sent as `to`) or
+`user:<id>` for a person Meta names only by business-scoped user id (sent as `recipient`); a file is uploaded with
+`POST /media` and sent by its id, one per message. Templates (`bot templates`) and media download (`bot media`) are
+wa's own: neither MAX nor Telegram has them. A media address lives five minutes and needs the token too.

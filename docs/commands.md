@@ -5849,6 +5849,64 @@ wa bot api update-business-profile-by-id [options]
 | `--body <json>` | the request body as JSON; - reads it from stdin. |
 | `--body-file <path>` | the request body from a JSON file; - is stdin. |
 
+### `wa bot templates`
+
+approved messages: the only kind WhatsApp delivers 24 hours after a person wrote
+
+#### `wa bot templates list`
+
+the business account's templates, with status, language and category
+
+```sh
+wa bot templates list [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--name <name>` | only templates with this name. |
+
+#### `wa bot templates send`
+
+send an approved template; hello_world is pre-approved on the test number
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot templates send <chat> <name> [language] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a phone number in digits, or user:<id> as `bot watch` shows it. |
+| `name` | required | the template's name, as `bot templates list` shows it. |
+| `language` | optional | the template's language code. Default: `en_US`. |
+
+| Option | What it does |
+|---|---|
+| `--payload <json>` | the values for the template's placeholders, as Meta's components array. |
+
+### `wa bot media`
+
+files people sent to the number
+
+#### `wa bot media download`
+
+save a file someone sent, by its media id; Meta's link for it lasts 5 minutes
+
+**Changes something on this computer only.**
+
+```sh
+wa bot media download <media-id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `media-id` | required | the media id, from the attachment `bot watch --jsonl` printed. |
+
+| Option | What it does |
+|---|---|
+| `--output <file>` | where to write the file. |
+
 ## `wa skill`
 
 the instructions an agent is given for this tool
