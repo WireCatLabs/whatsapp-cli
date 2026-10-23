@@ -10,7 +10,6 @@ export interface GraphOptions {
   token: string
   /** `v23.0`; the profile's `graph_version`. */
   version: string
-  baseUrl?: string
   fetch?: FetchLike
   timeoutMs?: number
   signal?: AbortSignal
@@ -58,14 +57,10 @@ export class GraphTransport {
     this.#fetch = options.fetch ?? fetch
   }
 
-  get version(): string {
-    return this.#options.version
-  }
-
   async call(call: GraphCall): Promise<unknown> {
     const { events } = this.#options
     const timeoutMs = this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS
-    const url = new URL(`${this.#options.baseUrl ?? GRAPH}/${this.#options.version}${call.path}`)
+    const url = new URL(`${GRAPH}/${this.#options.version}${call.path}`)
     for (const [name, value] of Object.entries(call.query ?? {})) url.searchParams.set(name, value)
     events?.({ event: "request", operation: call.operation })
     const started = performance.now()
