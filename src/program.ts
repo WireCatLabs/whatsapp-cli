@@ -40,7 +40,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { CONFIG, WA } from "./app.js"
-import { WHATSAPP_BOT, whatsappBotApiCommand } from "./commands/bot.js"
+import { botMcp, WHATSAPP_BOT, whatsappBotApiCommand } from "./commands/bot.js"
 import { botMediaCommand, botTemplatesCommand } from "./commands/bot-templates.js"
 import { sessionCommand } from "./commands/session.js"
 import { setupCommand } from "./commands/setup.js"
@@ -115,7 +115,7 @@ const definition: ProgramDefinition = {
     completeCommand(WHATSAPP, CONFIG),
     upgradeCommand(),
     mcpCommand(WHATSAPP),
-    botCommand(WHATSAPP_BOT)
+    botCommand({ ...WHATSAPP_BOT, mcp: botMcp(run) })
       .addCommand(whatsappBotApiCommand())
       .addCommand(botTemplatesCommand())
       .addCommand(botMediaCommand()),

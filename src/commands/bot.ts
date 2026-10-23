@@ -2,6 +2,7 @@ import { CliError, isCliError } from "@wirecat/cli-base"
 import type { ManifestOperation } from "@wirecat/cli-base/codegen"
 import {
   type ApiCommandInput,
+  type BotMcp,
   type BotMessenger,
   BotTokenStore,
   botContext,
@@ -11,6 +12,7 @@ import {
   environmentOf,
   generatedApiCommand,
   parseApiJson,
+  type RunBotCommand,
 } from "@wirecat/cli-core/cli"
 import {
   DEFAULT_PERMISSIONS,
@@ -27,7 +29,7 @@ import { operations } from "../bot/generated/manifest.js"
 import { schemas } from "../bot/generated/schemas.js"
 import { type GraphCall, GraphTransport } from "../bot/graph.js"
 import { mimeOf } from "../bot/mime.js"
-import type { Environment } from "../messenger.js"
+import { type Environment, SKILL } from "../messenger.js"
 
 export const settingsOf = (command: Command) => {
   const { env } = environmentOf<Environment>(command)
@@ -98,6 +100,14 @@ export const WHATSAPP_BOT: BotMessenger = {
   },
   tokenStore: (command, profile) => storeOf(command, profile),
 }
+
+type Run = (argv: string[], environment?: Environment) => Promise<number>
+
+/** `bot mcp`. The program hands in its own `run`: importing it here would close a loop through the program. */
+export const botMcp = (run: Run): BotMcp => ({
+  program: async (): Promise<RunBotCommand> => (argv, environment) => run(argv, environment as Environment),
+  skill: SKILL,
+})
 
 /** Path parameters a bot profile's settings fill when the flag is not given. */
 const FROM_SETTINGS: Readonly<Record<string, keyof Pick<BotSettings, "phoneNumberId" | "wabaId">>> = {

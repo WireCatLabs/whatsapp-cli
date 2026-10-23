@@ -130,6 +130,8 @@ More: [the MCP server](https://github.com/WireCatLabs/whatsapp-cli/blob/main/doc
 
 - **Your own account, as a linked device.** `wa` links the way WhatsApp Web does. It sees your chats, groups and
   contacts, and speaks as you, not as a business account or a bot.
+- **A business number too, when you have one.** `wa <profile> bot` speaks for a WhatsApp Business number on Meta's
+  Cloud API: send, templates, and messages received by webhook through your tunnel ([bot](docs/bot.md)).
 - **Local-first search.** Everything received is kept on your computer. Every read and search answers from there and
   never connects.
 - **Made for agents.** One operation per call, the same JSON shape every time with `--json`, a fixed exit code for
@@ -357,6 +359,7 @@ Every page is in [`docs/`](https://github.com/WireCatLabs/whatsapp-cli/blob/main
 | [people](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/people.md) | One person: what the store holds about them, your own names and notes |
 | [mcp](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md) | How do I connect Claude Desktop, Cursor or another client without a terminal? |
 | [remote](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/remote.md) | ChatGPT or Claude in the browser, through a login and a tunnel |
+| [bot](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/bot.md) | A WhatsApp Business number on Meta's Cloud API: setup, sending, templates, receiving by webhook |
 | [recipes](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/recipes.md) | What can an agent do for me every day, and how do I run it on a schedule? |
 | [commands](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/commands.md) | Every command, option and exit code — **generated** from the program |
 | [configuration](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/configuration.md) | How do I configure common behaviour? |
