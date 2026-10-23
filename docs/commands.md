@@ -2750,6 +2750,26 @@ wa attachments jobs uninstall <dir>
 |---|---|---|
 | `dir` | required | archive directory, used with the same profile as install. |
 
+### `wa attachments move`
+
+move older images into another verified archive; remember their new locations
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments move <dir> <archive-dir> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | source media archive directory. |
+| `archive-dir` | required | destination archive directory; created if needed. |
+
+| Option | What it does |
+|---|---|
+| `--before-time <time>` | move images whose message date is before this ISO timestamp with zone. |
+| `--dry-run` | show counts and bytes without moving files or creating the destination. |
+
 ## `wa tags`
 
 your own labels on chats, people, messages and tasks, kept in the local store and never sent; tag: in a search finds them

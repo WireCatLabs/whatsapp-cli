@@ -403,3 +403,25 @@ To change the schedule or executable, stop, uninstall and install again; edited 
 
 After a backup, `attachments check` should report every file valid. For searchable text from ordinary
 downloads, continue with [file attachments](attachments.md).
+
+### Move older images to another archive
+
+To keep the active folder small, move images older than a chosen message date into another verified archive.
+Use another disk to free space on the original disk. Preview first:
+
+```sh
+wa personal attachments move ~/media-archive /mnt/archive/older-images --before-time 2026-10-01T00:00:00Z --dry-run
+wa personal attachments move ~/media-archive /mnt/archive/older-images --before-time 2026-10-01T00:00:00Z --timeout 6h
+wa personal attachments check ~/media-archive --offline
+```
+
+The cutoff uses the message's date, not the download date, and excludes images exactly at the cutoff.
+Photos and files with an image MIME type move; other files stay. The destination is copied and verified
+before local image bytes are removed. Small relocation records stay in the original folder so checks
+follow the copies and later downloads do not fetch them again. No messenger is contacted.
+
+Keep the other archive available at its recorded path. If it is offline or a copy changes, checks fail
+and downloads stop instead of silently duplicating files. Repeat an interrupted move to finish it.
+Images from earlier draft archives without a message date remain in place and are counted as `undated`;
+`complete: false` means those images could not be selected by age. File modification times are never used
+as a substitute. The preview reports counts and bytes without creating the destination folder.
