@@ -560,3 +560,12 @@ Sending is [`src/bot/messaging.ts`](../../src/bot/messaging.ts): a chat is a pho
 `user:<id>` for a person Meta names only by business-scoped user id (sent as `recipient`); a file is uploaded with
 `POST /media` and sent by its id, one per message. Templates (`bot templates`) and media download (`bot media`) are
 wa's own: neither MAX nor Telegram has them. A media address lives five minutes and needs the token too.
+
+Receiving is cli-core's `bot watch --public-url`, a receiver on `127.0.0.1:8766` behind the owner's tunnel; wa
+supplies [`src/bot/webhook.ts`](../../src/bot/webhook.ts): the handshake (`hub.verify_token` against the kept verify
+token), the `X-Hub-Signature-256` check (HMAC-SHA256 of the raw bytes with the app secret, compared in constant time)
+and the decoding of `entry[].changes[].value.messages|statuses`. Both secrets live beside the access token in the
+keyring (`bot:<profile>:app-secret`, `:verify-token`). Delivery statuses become receipts (`delivered`, `read`) or
+notices (`sent`, `failed`). `bot webhooks set` overrides the number's callback (`webhook_configuration`); the app's
+own callback, set in the App Dashboard, stays the address template and account events go to. The last message a
+person sent, from the store, is what the 24-hour rule is judged by.

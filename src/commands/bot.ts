@@ -5,6 +5,7 @@ import {
   type BotMessenger,
   BotTokenStore,
   botContext,
+  botCopy,
   checkApiBody,
   checkApiParameter,
   environmentOf,
@@ -41,6 +42,20 @@ const storeOf = (command: Command, profile: string) => {
   return new BotTokenStore({ app: WA, profile, ...(env ? { env } : {}), ...(keyring ? { keyring } : {}) })
 }
 
+/** When the person last wrote to the number, from the local copy `bot watch` keeps. */
+const lastInbound = (botId: string) => async (chat: string) => {
+  const copy = botCopy("whatsapp-bot")
+  try {
+    const page = await copy.read((store) =>
+      store.messages.messages(copy.accountOf(botId), chat, { limit: 1, outgoing: false }),
+    )
+    const last = page.items.at(-1)
+    return last ? new Date(last.timestamp) : undefined
+  } catch {
+    return undefined
+  }
+}
+
 /** What the shared `bot` commands need from wa: a Graph API client for the profile's business number. */
 export const WHATSAPP_BOT: BotMessenger = {
   app: WA,
@@ -48,6 +63,16 @@ export const WHATSAPP_BOT: BotMessenger = {
   name: "WhatsApp",
   identity: true,
   manyWebhooks: false,
+  secrets: [
+    {
+      name: "app-secret",
+      description: "the Meta app's secret, from App settings → Basic; checks each webhook delivery",
+    },
+    {
+      name: "verify-token",
+      description: "a string you choose and type in the App Dashboard's webhook setup too; answers Meta's handshake",
+    },
+  ],
   resolveSettings,
   connect: async (command, token, { stop, events } = {}) => {
     const environment = environmentOf<Environment>(command)
@@ -59,7 +84,17 @@ export const WHATSAPP_BOT: BotMessenger = {
       ...(stop ? { signal: stop } : {}),
       ...(events ? { events } : {}),
     })
-    return whatsappBotAdapter(graph, settings, settings.profile)
+    const tokens = storeOf(command, settings.profile)
+    return whatsappBotAdapter(graph, settings, settings.profile, {
+      secrets: () => ({
+        appSecret: tokens.readSecret("app-secret")?.secret,
+        verifyToken: tokens.readSecret("verify-token")?.secret,
+      }),
+      keepVerifyToken: (secret) => {
+        tokens.writeSecret("verify-token", secret)
+      },
+      ...(settings.phoneNumberId ? { lastInbound: lastInbound(settings.phoneNumberId) } : {}),
+    })
   },
   tokenStore: (command, profile) => storeOf(command, profile),
 }
