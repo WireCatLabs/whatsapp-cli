@@ -41,6 +41,7 @@ import {
 import type { Command } from "commander"
 import { CONFIG, WA } from "./app.js"
 import { WHATSAPP_BOT, whatsappBotApiCommand } from "./commands/bot.js"
+import { botMediaCommand, botTemplatesCommand } from "./commands/bot-templates.js"
 import { sessionCommand } from "./commands/session.js"
 import { setupCommand } from "./commands/setup.js"
 import { upgradeCommand } from "./commands/update.js"
@@ -114,7 +115,10 @@ const definition: ProgramDefinition = {
     completeCommand(WHATSAPP, CONFIG),
     upgradeCommand(),
     mcpCommand(WHATSAPP),
-    botCommand(WHATSAPP_BOT).addCommand(whatsappBotApiCommand()),
+    botCommand(WHATSAPP_BOT)
+      .addCommand(whatsappBotApiCommand())
+      .addCommand(botTemplatesCommand())
+      .addCommand(botMediaCommand()),
     skillCommand(WA, SKILL),
   ],
 }
