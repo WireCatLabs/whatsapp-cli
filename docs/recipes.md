@@ -83,7 +83,7 @@ to send, refused ones included, is in `wa personal sends list`. See [permissions
 never wrote to them. No recipe here sends on its own.
 
 **Reading gives nothing away.** No command in the recipes below marks anything read: nobody sees that the agent
-opened a chat. A read receipt goes only with `--mark-read` or `chats mark-read`.
+opened a chat. Only `chats mark-read` sends a read receipt.
 
 ## Running on a schedule
 

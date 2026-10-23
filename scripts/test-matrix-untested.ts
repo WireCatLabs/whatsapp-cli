@@ -13,7 +13,8 @@ export interface Untested {
 const SHARED: Record<string, string> = {
   "store *": "src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts",
   "conversations *": "src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts",
-  "attachments *": "src/cli/messenger/attachments.test.ts",
+  "attachments *":
+    "src/cli/messenger/attachments.test.ts, media-archive.test.ts, media-archive-command.test.ts and src/background/daily-archive-timer.test.ts",
   "tags *": "src/cli/messenger/tags.test.ts",
   "mentions *": "src/cli/messenger/mentions.test.ts",
   "images *": "src/cli/messenger/images-command.test.ts",
@@ -175,7 +176,7 @@ export const UNTESTED: Untested[] = [
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); " +
-      "src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach " +
+      "src/media.test.ts --transcribe, the options that reach " +
       "the engine",
   })),
   ...["--catch-up", "--catch-up-chunks", "--catch-up-messages", "--catch-up-time"].map((option) => ({
@@ -197,7 +198,7 @@ export const UNTESTED: Untested[] = [
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in " +
-      "src/cli/list-query.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts " +
+      "src/cli/list-query.test.ts); src/media.test.ts " +
       "--transcribe, the options that reach the engine",
   })),
   ...["--kind", "--new"].map((option) => ({
@@ -205,7 +206,7 @@ export const UNTESTED: Untested[] = [
     option,
     reason:
       "a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); " +
-      "src/message-actions.test.ts drives --mark-read, src/groups.test.ts --unanswered and src/media.test.ts " +
+      "src/groups.test.ts --unanswered and src/media.test.ts " +
       "--transcribe, the options that reach the engine",
   })),
 

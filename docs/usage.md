@@ -63,7 +63,7 @@ asks WhatsApp to take it from your phone and your other devices, to leave it wit
 keep the photos and files the phone saved from it. That is not yet checked on a phone. `--for-everyone` removes it
 for everyone. Every pin tells the chat's members: WhatsApp has no quiet pin, so no flag is needed. A pin lasts 24
 hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`); without `--expire-time`, `wa` pins for 7 days. Nothing
-is marked read unless you ask: `chats mark-read`, or `--mark-read` on `messages list`, `inbox` and `review`.
+is marked read by reading commands. Use `chats mark-read` to send a read receipt explicitly.
 
 ## Star a message
 

@@ -42,6 +42,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **Verified media backups.** `attachments download <dir>` archives available files across chats with size and
+  SHA-256 manifests; `attachments check <dir>` verifies them offline. `attachments jobs` manages opt-in Linux
+  daily timers. Completed copies survive interrupted runs and message-store deletion; interrupted files restart.
+  `attachments move <dir> <archive-dir> --before-time <time>` moves older images into another verified archive,
+  retaining relocation records so checks follow the copies and later downloads do not duplicate them.
+
 - **cli-core 0.394.0.** Store and statistics commands gain examples, and `contacts prepare` gives a cited brief before a conversation.
 
 - **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
