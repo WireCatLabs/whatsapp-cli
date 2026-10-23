@@ -3,15 +3,25 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.6.0 — 23.10.2026
 
 ### Changed — may break callers
 
 - **Shared flags use one meaning.** Analysis uses `--analysis-provider`, vectors `--embedding-provider`, consent removal `--consent-provider`, tag ownership `--claim` and stored-answer removal `--answer-model`. Contact notes read `--text-file`; group message lifetime is `--disappear-after`. Catch-up views use query terms such as `inbox kind:group`. Old CLI flags remain hidden aliases for one compatibility release and cannot be combined with their replacements; saved MCP requests must use canonical arguments.
+- MCP message deletion takes `message`, chat export takes `chat`, and duplicate-task operations take `task`
+  and, for a pair, `other_task`. Update saved MCP requests using `messages`, `chats` or `dup`.
+  CLI positional arguments keep their order.
+- Command discovery (`commands` and `commands schema`) rejects `--jsonl`; use `--json` for its single document.
 
 ### Fixed
 
 - cli-core 0.399.0 supplies the shared flag migration, additional help examples, offline review and the updated MCP server dependency. The command-lint baseline drops from 52 entries to 38; guides, skill and the generated reference use the released flags.
+- Message-search commands no longer list or delete saved meeting searches.
+- Command corrections preserve the chosen profile; help shows concise descriptions and concrete examples.
+
+- **More useful command discovery.** cli-core 0.396.0 adds shared examples, concise skill summaries and profile-preserving corrections for joined command paths; cli-base 0.50.2 recognizes the approved messenger vocabulary and flag roles. Command discovery uses `--json` and refuses `--jsonl`.
+
+- **Input errors name the selected command's flags.** WhatsApp adapters report domain fields for unsupported invite-link filtering, conflicting name fields and privacy refusals; cli-core formats those fields at the CLI boundary.
 
 ### Added
 
@@ -33,11 +43,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   message, a free-form send more than 24 hours later is refused before it leaves.
 - **`bot mcp` serves the bot's commands to an agent**, as tg and max do, and [docs/bot.md](docs/bot.md) walks through
   Meta's test-number setup, the tunnel and each command.
-
-## 0.6.0 — 23.10.2026
-
-### Added
-
 - **Verified media backups.** `attachments download <dir>` archives available files across chats with size and
   SHA-256 manifests; `attachments check <dir>` verifies them offline. `attachments jobs` manages opt-in Linux
   daily timers. Completed copies survive interrupted runs and message-store deletion; interrupted files restart.
@@ -46,22 +51,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - Saved voice-note transcripts match word forms and spellings that speech recognition may have garbled.
   `text:` searches written text only; `exact:` disables expansion for that word.
-
-### Changed — may break callers
-
-- MCP message deletion takes `message`, chat export takes `chat`, and duplicate-task operations take `task`
-  and, for a pair, `other_task`. Update saved MCP requests using `messages`, `chats` or `dup`.
-  CLI positional arguments keep their order.
-- Command discovery (`commands` and `commands schema`) rejects `--jsonl`; use `--json` for its single document.
-
-### Fixed
-
-- Message-search commands no longer list or delete saved meeting searches.
-- Command corrections preserve the chosen profile; help shows concise descriptions and concrete examples.
-
-- **More useful command discovery.** cli-core 0.396.0 adds shared examples, concise skill summaries and profile-preserving corrections for joined command paths; cli-base 0.50.2 recognizes the approved messenger vocabulary and flag roles. Command discovery uses `--json` and refuses `--jsonl`.
-
-- **Input errors name the selected command's flags.** WhatsApp adapters report domain fields for unsupported invite-link filtering, conflicting name fields and privacy refusals; cli-core formats those fields at the CLI boundary.
 
 ## 0.5.0 — 23.10.2026
 
