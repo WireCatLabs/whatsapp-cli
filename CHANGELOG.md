@@ -31,6 +31,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   store. Keep both with `bot auth set --secret app-secret` and `--secret verify-token`. `bot webhooks set <url>`
   points this number's webhook at the address. Delivery receipts arrive too. With the store holding a person's last
   message, a free-form send more than 24 hours later is refused before it leaves.
+- **`bot mcp` serves the bot's commands to an agent**, as tg and max do, and [docs/bot.md](docs/bot.md) walks through
+  Meta's test-number setup, the tunnel and each command.
 
 ## 0.6.0 — 23.10.2026
 
@@ -103,6 +105,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   <name> [language]` cover the approved messages, the only kind WhatsApp delivers more than 24 hours after a person
   wrote. `bot media download <id> --output <file>` saves a received file. WhatsApp has no silent message, edit or
   delete for a bot, so those are refused.
+- **A bot receives messages by webhook: `bot watch --public-url <tunnel address>`.** Meta never lets a client poll,
+  so `wa` listens on `127.0.0.1:8766` behind your tunnel, answers Meta's subscription check with the verify token,
+  refuses any delivery not signed with your app secret, and acknowledges a delivery only once it is in the local
+  store. Keep both with `bot auth set --secret app-secret` and `--secret verify-token`. `bot webhooks set <url>`
+  points this number's webhook at the address. Delivery receipts arrive too. With the store holding a person's last
+  message, a free-form send more than 24 hours later is refused before it leaves.
 
 - **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
   profile to check that configuration, stored messages and the device database location survive an upgrade.

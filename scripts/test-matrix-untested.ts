@@ -101,6 +101,12 @@ export const UNTESTED: Untested[] = [
       "src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file)",
   })),
   {
+    command: "bot mcp",
+    reason:
+      "serves MCP on stdin until the client closes; cli-core's src/mcp/bot/server.test.ts drives the server, " +
+      "src/commands/bot.test.ts the config entry and the commands the tools run",
+  },
+  {
     command: "bot api *",
     reason:
       "generated from Meta's OpenAPI file: one execute path for every operation, driven against a Graph stand-in in " +

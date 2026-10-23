@@ -60,7 +60,7 @@ The file is written `0600` when first created. It holds no secret.
 
 A WhatsApp Business number on Meta's Cloud API (`wa <profile> bot …`) keeps its settings under `bot` in the file:
 `wa <profile> config set --bot <setting> <value>`. They are ids from the App Dashboard's API setup page, not secrets;
-the access token lives in the system keychain (`wa <profile> bot auth set`).
+the access token lives in the system keychain ([a WhatsApp Business number as a bot](bot.md)).
 
 | Setting | Default | What it does | Overridden for one run by |
 |---|---|---|---|

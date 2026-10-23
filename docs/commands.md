@@ -4888,6 +4888,18 @@ the bot this profile's token belongs to: id, name and username
 wa bot me
 ```
 
+### `wa bot mcp`
+
+serve this bot to an agent over MCP, on stdin and stdout — `claude mcp add sales-bot -- wa sales bot mcp`
+
+#### `wa bot mcp config`
+
+print the mcpServers entry for Claude Desktop, Cursor and others, with full paths; writes nothing
+
+```sh
+wa bot mcp config
+```
+
 ### `wa bot api`
 
 every Cloud API operation wa keeps, generated from Meta's OpenAPI file

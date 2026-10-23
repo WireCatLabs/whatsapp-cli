@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**271 ✅ · 862 ⛔ · 0 ❌** — 359 commands, 774 options.
+**272 ✅ · 863 ⛔ · 0 ❌** — 361 commands, 774 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -861,6 +861,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot contacts show` | `--limit` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/people.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot contacts show` | `--sync-first` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/people.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot me` |  | ✅ |  |
+| `bot mcp` |  | ⛔ | serves MCP on stdin until the client closes; cli-core's src/mcp/bot/server.test.ts drives the server, src/commands/bot.test.ts the config entry and the commands the tools run |
+| `bot mcp config` |  | ✅ |  |
 | `bot api add-phone-numbers` |  | ⛔ | generated from Meta's OpenAPI file: one execute path for every operation, driven against a Graph stand-in in src/commands/bot.test.ts; the manifest's effects and ids in src/bot/manifest.test.ts |
 | `bot api add-phone-numbers` | `--business-id` | ⛔ | generated from Meta's OpenAPI file: one execute path for every operation, driven against a Graph stand-in in src/commands/bot.test.ts; the manifest's effects and ids in src/bot/manifest.test.ts |
 | `bot api add-phone-numbers` | `--body` | ⛔ | generated: one execute path fills every id flag and reads every body the same way, tested in src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file) |

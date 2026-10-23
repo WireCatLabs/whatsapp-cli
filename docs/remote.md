@@ -142,6 +142,21 @@ Funnel origin, with `:8443`, for `wa`'s `--public-url` and for its connector add
 system's Tailscale command from above for the second Funnel command. Funnel supports public ports `443`, `8443` and
 `10000` ([Funnel command reference](https://tailscale.com/docs/reference/tailscale-cli/funnel)).
 
+## Webhook receiver for a bot
+
+A WhatsApp Business number on the Cloud API gets its messages only by webhook, so its receiver is published the same
+way ([a WhatsApp Business number as a bot](bot.md)). `wa <profile> bot watch --public-url` listens on local `8766`.
+With Funnel, publish it on a public port the MCP server does not use, such as `10000`:
+
+```sh
+tailscale funnel --bg --https=10000 8766
+wa cloudtest bot watch --public-url https://<name>.ts.net:10000
+```
+
+Run `tailscale funnel status` first to see which public ports are taken. With a named Cloudflare Tunnel, add a second
+public hostname whose local service is `http://127.0.0.1:8766`. Enter the same origin as the Callback URL in Meta's
+App Dashboard. The receiver keeps only deliveries signed with your app secret.
+
 ## Alternative: Cloudflare Tunnel
 
 If you already use Cloudflare, point its tunnel at the same local MCP server. A fixed hostname needs a Cloudflare

@@ -346,4 +346,16 @@ describe("wa <profile> bot", () => {
       webhook_configuration: { override_callback_uri: "" },
     })
   })
+
+  it("**prints the bot's MCP server entry**, which runs `wa <profile> bot mcp`", async () => {
+    const printed = await wa(["cloudtest", "bot", "mcp", "config", "--json"])
+
+    expect(printed.code).toBe(0)
+    expect(JSON.parse(printed.stdout).item.config.mcpServers["wa-bot-cloudtest"].args.slice(-3)).toEqual([
+      "cloudtest",
+      "bot",
+      "mcp",
+    ])
+    expect(seen).toEqual([])
+  })
 })
