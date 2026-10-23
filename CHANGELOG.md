@@ -12,6 +12,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **Read commands no longer send read receipts.** `messages list`, `inbox` and `review` drop `--mark-read` and
+  `--no-mark-read`; remove `catch_up_marks_read` from configuration and use `chats mark-read` explicitly.
+- **Misspelled permission keys now stop the command.** Correct or unset keys such as `messages.sedn` before running.
+- **A mistyped profile lists the real profiles.** An unlinked profile's login hint now points to `setup`.
+
 - **Setup returns suggested commands in `item.commands` and login details in `item.session`.** Update scripts
   that read `item.next` or `item.device`; `next` is reserved for structured continuation steps.
 

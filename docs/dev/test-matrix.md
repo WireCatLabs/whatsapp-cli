@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**244 ✅ · 516 ⛔ · 0 ❌** — 244 commands, 516 options.
+**239 ✅ · 516 ⛔ · 0 ❌** — 244 commands, 511 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -166,7 +166,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages list` | `--cursor` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/messenger.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
 | `messages list` | `--transcribe` | ✅ |  |
 | `messages list` | `--model` | ✅ |  |
-| `messages list` | `--mark-read` | ✅ |  |
 | `messages send` |  | ✅ |  |
 | `messages send` | `--reply-to` | ✅ |  |
 | `messages send` | `--operation-id` | ✅ |  |
@@ -253,8 +252,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `inbox` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/message-actions.test.ts drives --mark-read and src/media.test.ts --transcribe, the options that reach the engine |
 | `inbox` | `--transcribe` | ✅ |  |
 | `inbox` | `--model` | ✅ |  |
-| `inbox` | `--mark-read` | ✅ |  |
-| `inbox` | `--no-mark-read` | ✅ |  |
 | `review` |  | ✅ |  |
 | `review` | `--kind` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read, src/groups.test.ts --unanswered and src/media.test.ts --transcribe, the options that reach the engine |
 | `review` | `--unanswered` | ✅ |  |
@@ -262,8 +259,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `review` | `--transcribe` | ✅ |  |
 | `review` | `--model` | ✅ |  |
 | `review` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/review.test.ts); src/message-actions.test.ts drives --mark-read, src/groups.test.ts --unanswered and src/media.test.ts --transcribe, the options that reach the engine |
-| `review` | `--mark-read` | ✅ |  |
-| `review` | `--no-mark-read` | ✅ |  |
 | `watch` |  | ✅ |  |
 | `watch` | `--events` | ✅ |  |
 | `serve` |  | ✅ |  |

@@ -78,14 +78,14 @@ describe("connecting to WhatsApp", () => {
       stub("unlinked-store"),
     )
     expect(result.code).toBe(4)
-    expect(JSON.parse(result.stderr).error.message).toContain("wa emptied session start")
+    expect(JSON.parse(result.stderr).error.message).toContain("wa emptied setup")
   })
 
   it("refuses a write when the engine has no account, and stops the engine", async () => {
     const engine = fakeEngine(seed, { linked: false })
     const result = await wa(["noaccount", "messages", "send", seed.dialog, "hi", "--json"], { engine: () => engine })
     expect(result.code).toBe(4)
-    expect(JSON.parse(result.stderr).error.message).toContain("session start")
+    expect(JSON.parse(result.stderr).error.message).toContain("wa noaccount setup")
     expect(engine.closed).toBe(true)
   })
 
