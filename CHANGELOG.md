@@ -3,6 +3,27 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **A voice note's transcript is found in any form of a word, and in the spellings speech recognition garbles**
+  (cli-core 0.396.0). `wa <profile> search messages invoice` finds a transcript saying "invoices"; a Russian word
+  also finds the spellings recognition garbles («риелтор» finds «реелтора»). A hit found only through a garbled spelling has `match: "corrected"` and `corrections`,
+  and the answer's `corrections` lists them. Number words, phrases, `exact:` and typed messages never widen. Text an
+  agent wrote on a voice note counts as its transcript too. The store moves to version 29 on the first run and
+  indexes its transcripts on the next search.
+- **Concrete examples in help and `wa commands`** for account, attachment, config, model, MCP, poll, run, search,
+  skill, task, conversation and server commands (cli-core 0.395.0, 0.396.0).
+
+### Changed — may break callers
+
+- **`wa commands` and `wa commands schema` refuse `--jsonl`** with `output.one-object` (cli-core 0.396.0). They
+  printed a line with no stream end record. What to do: use `--json`.
+- **`wa <profile> searches list`, `history` and `clear` cover only message searches** (cli-core 0.395.0). The store's
+  saved searches are shared by every CLI on it; a saved meeting search shown, run or deleted from wa is refused with
+  `details.reason: "search.kind"`.
+
 ## 0.5.0 — 23.10.2026
 
 ### Fixed
