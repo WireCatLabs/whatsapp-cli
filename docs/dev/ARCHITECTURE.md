@@ -10,7 +10,7 @@ history arriving after a one-shot connection's close wait. The owner-run checks 
 
 ## 1. Most of `wa` is not in this repository
 
-Source: `src/program.ts:53`, `src/messenger.ts:149`.
+Source: `src/program.ts:53`, `src/messenger.ts:150`.
 
 `wa` is the third messenger on [`@wirecat/cli-core`](https://github.com/WireCatLabs/cli-core), beside tg-cli and
 max-cli. cli-core owns the commands, the message store and its search, MCP, the send guard, `serve`, `watch`,
@@ -32,7 +32,7 @@ engine/               the Go engine: whatsmeow in a child process   Go
 ```
 
 The adapter composes media operations from `src/adapter/sends.ts:67` and event/history listeners from
-`src/adapter/listen.ts:126`; `src/adapter/adapter.ts:87` keeps the core message operations.
+`src/adapter/listen.ts:126`; `src/adapter/adapter.ts:90` keeps the core message operations.
 
 Dependencies point down only. `biome.json` enforces it: nothing in `src/` above the adapter reaches the adapter or
 the engine, except the composition root, `src/messenger.ts`, which starts them. Where the engine binary lives is
@@ -47,7 +47,7 @@ not the engine's contract type: the lint cannot see a type that arrives by infer
 
 ## 3. History comes from the store
 
-Source: `src/messenger.ts:154`, `src/adapter/listen.ts:320`, `src/adapter/map.ts:103`, `engine/cmd/wa-engine/historysync.go:103`, `engine/cmd/wa-engine/older.go:49`, `engine/cmd/wa-engine/mediaretry.go:31`.
+Source: `src/messenger.ts:155`, `src/adapter/listen.ts:320`, `src/adapter/map.ts:103`, `engine/cmd/wa-engine/historysync.go:103`, `engine/cmd/wa-engine/older.go:49`, `engine/cmd/wa-engine/mediaretry.go:31`.
 
 WhatsApp has no "list chats" request and keeps no history on its servers. The phone pushes history when a device
 links, and the socket carries new messages after that. So `WHATSAPP.history` is `"store"`:
@@ -366,7 +366,7 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 
 ## 5. One id per one-to-one chat
 
-Source: `src/adapter/adapter.ts:240`, `src/adapter/map.ts:35`.
+Source: `src/adapter/adapter.ts:244`, `src/adapter/map.ts:35`.
 
 cli-core can link two identities of one person but cannot merge two chats. A one-to-one chat stored once under the
 person's phone JID and once under their LID would split its messages. **The engine emits every one-to-one chat in
@@ -450,7 +450,7 @@ under the LID. A number whose chat was never stored, or whose move is older, sti
 or the chat's name, reads the whole chat. A recipients-list entry added by the phone number before this no longer matches once the
 number maps to a LID; the send is refused until a `serve` or `watch` start moves the entry (`storedChats`, above) or
 the chat is added again. A chat cli-core stored in phone form, whose LID whatsmeow already knows, is re-keyed to it on
-the spot by the first command that names it by the number: wa declares `history: "store"` (`src/messenger.ts:154`),
+the spot by the first command that names it by the number: wa declares `history: "store"` (`src/messenger.ts:155`),
 and cli-core 0.356.0's `resolve` asks the adapter for a stored chat too
 ([cli-core #1635](https://github.com/WireCatLabs/cli-core/pull/1635)); an answer under another id re-keys the stored
 chat, its messages and its recipient-list entry to it before the command acts (`src/phone-to-lid.test.ts`). A send is
@@ -461,7 +461,7 @@ every send, file, album, forward and poll with the LID chat (`e.conv.canonical`)
 
 ## 6. One connection per linked device
 
-Source: `src/messenger.ts:159`.
+Source: `src/messenger.ts:160`.
 
 WhatsApp drops the older of two connections for the same device. `serve`, `watch`, the MCP server and a one-shot
 write can each open one. So the engine takes an exclusive lock on `private.db.lock` **before it can connect**, and
@@ -471,7 +471,7 @@ other commands go through it instead ([6b](#6b-commands-through-a-running-serve)
 
 ## 6a. Linking
 
-Source: `src/commands/session.ts:122`, `src/messenger.ts:58`.
+Source: `src/session.ts:101`, `src/messenger.ts:58`.
 
 `wa <profile> session start [qr|phone]` starts the engine with `--link`, the only run allowed on a profile with no
 device. The phone pushes its history once, seconds after linking, and never again. So the command keeps the same
@@ -488,7 +488,7 @@ account through one more connection and five chats from cli-core's store, since 
 
 ## 6b. Commands through a running `serve`
 
-Source: `src/messenger.ts:149`, `src/program.ts:53`.
+Source: `src/messenger.ts:150`, `src/program.ts:53`.
 
 cli-core does this; `wa` only opts in. `WHATSAPP` in [`src/messenger.ts`](../../src/messenger.ts) sets
 `connection: "exclusive"` (cli-core 0.313.0 and later). `serve` then listens on a socket beside cli-core's serve
