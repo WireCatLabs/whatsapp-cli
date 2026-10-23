@@ -347,3 +347,81 @@ Update `wa`, `tg` and `max` together so they use the same store.
 - [Search](search.md): find what the store holds.
 - [Recipes](recipes.md): search and export in your agent's daily work.
 - [Security](security.md): what the store means for the privacy of your messages.
+
+## Keep independent media copies
+
+Use an independent media archive when files must survive deleted messages or expired download links. It keeps
+the bytes in a folder you choose, with a manifest recording each file's identity, size and SHA-256 checksum.
+Ask your agent: “Back up the files from Example group into my media archive, then verify the copies.”
+
+WhatsApp only archives messages already received into local history. Keep `wa personal serve` running to receive new messages. An expired server copy may need a phone re-upload, which can fail; there is no measured retention guarantee.
+
+Save all available chats, or repeat `--chat` to select several. `--since-time` includes messages at or after
+an ISO timestamp with a time zone:
+
+```sh
+wa personal attachments download ~/media-archive --chat "Example group" --since-time 2026-10-01T00:00:00Z --timeout 6h
+wa personal attachments check ~/media-archive --offline --json
+```
+
+The result reports saved files, verified existing copies and chats visited. A rerun verifies every existing copy
+and downloads missing identities. Files have identity-based `.bin` names; their manifests identify the chat,
+message and attachment position. No download URL, media key or original filename is saved in a manifest.
+These independent copies are not registered as retained paths in the message store; use ordinary
+`messages download` for files you want `attachments show` or text extraction to find.
+
+A cut run keeps completed files. Run the same command again: an interrupted file restarts from byte zero,
+because messenger streams do not provide the validators needed to append safely. A failed download stops
+with an error; an unavailable file is not counted as saved. A missing or changed archived file makes
+verification fail with a nonzero exit code and stops further archiving. Choose a new destination; existing
+files are never overwritten. `complete: true` covers the history available to the selected reader, not proof
+that every old source file still exists.
+
+### Back up daily on Linux
+
+Daily backups are off until you install and start a systemd user timer. Installation starts nothing:
+
+```sh
+wa personal attachments jobs install ~/media-archive --chat "Example group" --at 03:00 --timezone UTC
+wa personal attachments jobs start ~/media-archive
+wa personal attachments jobs status ~/media-archive
+```
+
+The timer runs with the captured executable, profile and file locations, a six-hour timeout and owner-only
+file permissions. The default is 03:00 UTC; `--timezone Europe/Madrid` chooses that local time zone.
+Your system's user-service configuration determines whether it runs while you are logged out; missed runs
+are caught up when the timer next starts. macOS and Windows can run the download command manually.
+
+```sh
+wa personal attachments jobs stop ~/media-archive
+wa personal attachments jobs uninstall ~/media-archive
+```
+
+Stop prevents future runs; a download already running finishes. Uninstall requires a disabled, inactive
+timer and an inactive service and keeps the archive. Use the same profile and destination for these commands.
+To change the schedule or executable, stop, uninstall and install again; edited unit files are preserved.
+
+After a backup, `attachments check` should report every file valid. For searchable text from ordinary
+downloads, continue with [file attachments](attachments.md).
+
+### Move older images to another archive
+
+To keep the active folder small, move images older than a chosen message date into another verified archive.
+Use another disk to free space on the original disk. Preview first:
+
+```sh
+wa personal attachments move ~/media-archive /mnt/archive/older-images --before-time 2026-10-01T00:00:00Z --dry-run
+wa personal attachments move ~/media-archive /mnt/archive/older-images --before-time 2026-10-01T00:00:00Z --timeout 6h
+wa personal attachments check ~/media-archive --offline
+```
+
+The cutoff uses the message's date, not the download date, and excludes images exactly at the cutoff.
+Photos and files with an image MIME type move; other files stay. The destination is copied and verified
+before local image bytes are removed. Small relocation records stay in the original folder so checks
+follow the copies and later downloads do not fetch them again. No messenger is contacted.
+
+Keep the other archive available at its recorded path. If it is offline or a copy changes, checks fail
+and downloads stop instead of silently duplicating files. Repeat an interrupted move to finish it.
+Images from earlier draft archives without a message date remain in place and are counted as `undated`;
+`complete: false` means those images could not be selected by age. File modification times are never used
+as a substitute. The preview reports counts and bytes without creating the destination folder.

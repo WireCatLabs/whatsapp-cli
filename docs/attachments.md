@@ -157,3 +157,7 @@ the optional `@napi-rs/canvas` package installed where `wa` can load it. See
 
 Find a message by its file with `has:file`, `filename:` or `content:` ([search](search.md#files)), and see every
 option on the [commands page](commands.md).
+
+## Keep copies after source deletion
+
+For verified file copies and opt-in daily backups, use the [independent media archive](archive.md#keep-independent-media-copies).

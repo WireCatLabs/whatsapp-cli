@@ -3,9 +3,30 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.6.0 — 23.10.2026
+
+### Added
+
+- **Verified media backups.** `attachments download <dir>` archives available files across chats with size and
+  SHA-256 manifests; `attachments check <dir>` verifies them offline. `attachments jobs` manages opt-in Linux
+  daily timers. Completed copies survive interrupted runs and message-store deletion; interrupted files restart.
+  `attachments move <dir> <archive-dir> --before-time <time>` moves older images into another verified archive,
+  retaining relocation records so checks follow the copies and later downloads do not duplicate them.
+
+- Saved voice-note transcripts match word forms and spellings that speech recognition may have garbled.
+  `text:` searches written text only; `exact:` disables expansion for that word.
+
+### Changed — may break callers
+
+- MCP message deletion takes `message`, chat export takes `chat`, and duplicate-task operations take `task`
+  and, for a pair, `other_task`. Update saved MCP requests using `messages`, `chats` or `dup`.
+  CLI positional arguments keep their order.
+- Command discovery (`commands` and `commands schema`) rejects `--jsonl`; use `--json` for its single document.
 
 ### Fixed
+
+- Message-search commands no longer list or delete saved meeting searches.
+- Command corrections preserve the chosen profile; help shows concise descriptions and concrete examples.
 
 - **More useful command discovery.** cli-core 0.396.0 adds shared examples, concise skill summaries and profile-preserving corrections for joined command paths; cli-base 0.50.2 recognizes the approved messenger vocabulary and flag roles. Command discovery uses `--json` and refuses `--jsonl`.
 

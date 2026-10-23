@@ -1106,8 +1106,8 @@ wa contacts alias set <person> <alias>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `alias` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `alias` | required | the private name to use for this person. |
 
 #### `wa contacts alias rm`
 
@@ -1121,7 +1121,7 @@ wa contacts alias rm <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
+| `person` | required | the person's id, reference or known name. |
 
 ### `wa contacts notes`
 
@@ -1137,7 +1137,7 @@ wa contacts notes list <person> [query]
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
+| `person` | required | the person's id, reference or known name. |
 | `query` | optional | field:value terms; this list filters by none yet. |
 
 #### `wa contacts notes show`
@@ -1150,8 +1150,8 @@ wa contacts notes show <person> <id>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `id` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `id` | required | the note id from contacts notes list. |
 
 #### `wa contacts notes add`
 
@@ -1165,7 +1165,7 @@ wa contacts notes add <person> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
+| `person` | required | the person's id, reference or known name. |
 
 | Option | What it does |
 |---|---|
@@ -1183,8 +1183,8 @@ wa contacts notes edit <person> <id> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `id` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `id` | required | the note id from contacts notes list. |
 
 | Option | What it does |
 |---|---|
@@ -1203,8 +1203,8 @@ wa contacts notes remove <person> <id>
 
 | Argument | | What it is |
 |---|---|---|
-| `person` | required |  |
-| `id` | required |  |
+| `person` | required | the person's id, reference or known name. |
+| `id` | required | the note id from contacts notes list. |
 
 ### `wa contacts add`
 
@@ -1276,7 +1276,7 @@ wa contacts rename <person> <first-name> [last-name]
 |---|---|---|
 | `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
 | `first-name` | required | the name you want to see for them. |
-| `last-name` | optional |  |
+| `last-name` | optional | the last name you want to see for them. |
 
 ### `wa contacts import`
 
@@ -1465,13 +1465,13 @@ delete messages for you only; with --for-everyone, for everyone in the chat
 **Changes something in WhatsApp.**
 
 ```sh
-wa messages delete <chat> <messages> [options]
+wa messages delete <chat> <message> [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `messages` | required | the message ids, by spaces or commas, at most 10. |
+| `message` | required | the message ids, by spaces or commas, at most 10. |
 
 | Option | What it does |
 |---|---|
@@ -2131,12 +2131,12 @@ a chat's stored messages, oldest first: --jsonl one message per line, --json the
 **Changes something on this computer only.**
 
 ```sh
-wa store export [chats] [options]
+wa store export [chat] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `chats` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); several with --output-dir. |
+| `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); several with --output-dir. |
 
 | Option | What it does |
 |---|---|
@@ -2638,6 +2638,137 @@ wa attachments text set <chat> [message] [options]
 |---|---|
 | `--attachment <n>` | which file of the message, from 1; needed when it has more than one. |
 | `--text-file <path>` | read the text from this file; - or none reads stdin. |
+
+### `wa attachments download`
+
+archive media from selected chats; verify and keep existing copies
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments download <dir> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | archive directory; created if missing. |
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | only this chat; repeat for more; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). Default: ``. |
+| `--since-time <time>` | include messages from this ISO timestamp with a time zone. |
+| `--pause <duration>` | pause between history pages. Default: `2s`. |
+
+### `wa attachments check`
+
+rehash all archived files without connecting to the messenger
+
+```sh
+wa attachments check <dir>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | archive directory. |
+
+### `wa attachments jobs`
+
+daily media archive timers for this profile
+
+#### `wa attachments jobs install`
+
+install a Linux daily archive timer for this directory; starts nothing
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments jobs install <dir> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | archive directory, used with the same profile as install. |
+
+| Option | What it does |
+|---|---|
+| `--at <HH:mm>` | daily start time. Default: `03:00`. |
+| `--timezone <zone>` | IANA time zone of the daily start time. Default: `UTC`. |
+| `--chat <chat>` | only this chat; repeat for more; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). Default: ``. |
+| `--since-time <time>` | include messages from this ISO timestamp with a time zone. |
+
+#### `wa attachments jobs start`
+
+enable the installed archive timer at login and start its daily schedule
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments jobs start <dir>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | archive directory, used with the same profile as install. |
+
+#### `wa attachments jobs stop`
+
+disable the archive timer; a download already running finishes
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments jobs stop <dir>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | archive directory, used with the same profile as install. |
+
+#### `wa attachments jobs status`
+
+show whether this directory's archive timer is installed and active
+
+```sh
+wa attachments jobs status <dir>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | archive directory, used with the same profile as install. |
+
+#### `wa attachments jobs uninstall`
+
+remove this directory's stopped archive timer; keep archived files
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments jobs uninstall <dir>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | archive directory, used with the same profile as install. |
+
+### `wa attachments move`
+
+move older images into another verified archive; remember their new locations
+
+**Changes something on this computer only.**
+
+```sh
+wa attachments move <dir> <archive-dir> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `dir` | required | source media archive directory. |
+| `archive-dir` | required | destination archive directory; created if needed. |
+
+| Option | What it does |
+|---|---|
+| `--before-time <time>` | move images whose message date is before this ISO timestamp with zone. |
+| `--dry-run` | show counts and bytes without moving files or creating the destination. |
 
 ## `wa tags`
 
@@ -3403,13 +3534,13 @@ two tasks are not the same job: the pair leaves the list and is never offered ag
 **Changes something on this computer only.**
 
 ```sh
-wa tasks duplicates reject <dup> <task>
+wa tasks duplicates reject <task> <other-task>
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the task listed as the duplicate, by its id or key. |
-| `task` | required | the task it was paired with. |
+| `task` | required | the task listed as the duplicate, by its id or key. |
+| `other-task` | required | the task it was paired with. |
 
 #### `wa tasks duplicates defer`
 
@@ -3418,13 +3549,13 @@ the fields and the text cannot tell: leave the pair to the owner, who lists it w
 **Changes something on this computer only.**
 
 ```sh
-wa tasks duplicates defer <dup> <task>
+wa tasks duplicates defer <task> <other-task>
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the task listed as the duplicate, by its id or key. |
-| `task` | required | the task it was paired with. |
+| `task` | required | the task listed as the duplicate, by its id or key. |
+| `other-task` | required | the task it was paired with. |
 
 ### `wa tasks merge`
 
@@ -3433,12 +3564,12 @@ one job seen twice: link every message of the duplicate to the task and close th
 **Changes something on this computer only.**
 
 ```sh
-wa tasks merge <dup> [options]
+wa tasks merge <task> [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the duplicate, by its id or key; it must be open. |
+| `task` | required | the duplicate, by its id or key; it must be open. |
 
 | Option | What it does |
 |---|---|
@@ -3451,12 +3582,12 @@ undo a merge: reopen the task and remove its duplicate-of relation; messages the
 **Changes something on this computer only.**
 
 ```sh
-wa tasks unmerge <dup>
+wa tasks unmerge <task>
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `dup` | required | the merged task, by its id or key. |
+| `task` | required | the merged task, by its id or key. |
 
 ### `wa tasks agenda`
 
@@ -4043,7 +4174,7 @@ wa complete [words]
 
 | Argument | | What it is |
 |---|---|---|
-| `words` | optional |  |
+| `words` | optional | zsh for the shell script, or command words to complete. |
 
 ## `wa upgrade`
 
