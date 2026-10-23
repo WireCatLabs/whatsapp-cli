@@ -3,25 +3,7 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## 0.6.0 — 23.10.2026
-
-### Changed — may break callers
-
-- **Shared flags use one meaning.** Analysis uses `--analysis-provider`, vectors `--embedding-provider`, consent removal `--consent-provider`, tag ownership `--claim` and stored-answer removal `--answer-model`. Contact notes read `--text-file`; group message lifetime is `--disappear-after`. Catch-up views use query terms such as `inbox kind:group`. Old CLI flags remain hidden aliases for one compatibility release and cannot be combined with their replacements; saved MCP requests must use canonical arguments.
-- MCP message deletion takes `message`, chat export takes `chat`, and duplicate-task operations take `task`
-  and, for a pair, `other_task`. Update saved MCP requests using `messages`, `chats` or `dup`.
-  CLI positional arguments keep their order.
-- Command discovery (`commands` and `commands schema`) rejects `--jsonl`; use `--json` for its single document.
-
-### Fixed
-
-- cli-core 0.399.0 supplies the shared flag migration, additional help examples, offline review and the updated MCP server dependency. The command-lint baseline drops from 52 entries to 38; guides, skill and the generated reference use the released flags.
-- Message-search commands no longer list or delete saved meeting searches.
-- Command corrections preserve the chosen profile; help shows concise descriptions and concrete examples.
-
-- **More useful command discovery.** cli-core 0.396.0 adds shared examples, concise skill summaries and profile-preserving corrections for joined command paths; cli-base 0.50.2 recognizes the approved messenger vocabulary and flag roles. Command discovery uses `--json` and refuses `--jsonl`.
-
-- **Input errors name the selected command's flags.** WhatsApp adapters report domain fields for unsupported invite-link filtering, conflicting name fields and privacy refusals; cli-core formats those fields at the CLI boundary.
+## 0.6.0 — 24.10.2026
 
 ### Added
 
@@ -48,64 +30,47 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   daily timers. Completed copies survive interrupted runs and message-store deletion; interrupted files restart.
   `attachments move <dir> <archive-dir> --before-time <time>` moves older images into another verified archive,
   retaining relocation records so checks follow the copies and later downloads do not duplicate them.
-
 - Saved voice-note transcripts match word forms and spellings that speech recognition may have garbled.
   `text:` searches written text only; `exact:` disables expansion for that word.
+- **cli-core 0.394.0.** Store and statistics commands gain examples, and `contacts prepare` gives a cited brief before a conversation.
+- **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
+  profile to check that configuration, stored messages and the device database location survive an upgrade.
+- **Pull requests cannot grow the command-lint baseline.** New violations must be fixed or carry a dated,
+  reasoned override, so adding a feature cannot silently weaken the existing checks.
 
-## 0.5.0 — 23.10.2026
+### Changed — may break callers
+
+- **Shared flags use one meaning.** Analysis uses `--analysis-provider`, vectors `--embedding-provider`, consent removal `--consent-provider`, tag ownership `--claim` and stored-answer removal `--answer-model`. Contact notes read `--text-file`; group message lifetime is `--disappear-after`. Catch-up views use query terms such as `inbox kind:group`. Old CLI flags remain hidden aliases for one compatibility release and cannot be combined with their replacements; saved MCP requests must use canonical arguments.
+- MCP message deletion takes `message`, chat export takes `chat`, and duplicate-task operations take `task`
+  and, for a pair, `other_task`. Update saved MCP requests using `messages`, `chats` or `dup`.
+  CLI positional arguments keep their order.
+- Command discovery (`commands` and `commands schema`) rejects `--jsonl`; use `--json` for its single document.
+- **Read commands no longer send read receipts.** `messages list`, `inbox` and `review` drop `--mark-read` and
+  `--no-mark-read`; remove `catch_up_marks_read` from configuration and use `chats mark-read` explicitly.
+- **Misspelled permission keys now stop the command.** Correct or unset keys such as `messages.sedn` before running.
+- **A mistyped profile lists the real profiles.** An unlinked profile's login hint now points to `setup`.
+- **Setup returns suggested commands in `item.commands` and login details in `item.session`.** Update scripts
+  that read `item.next` or `item.device`; `next` is reserved for structured continuation steps.
 
 ### Fixed
 
+- cli-core 0.399.0 supplies the shared flag migration, additional help examples, offline review and the updated MCP server dependency. The command-lint baseline drops from 52 entries to 38; guides, skill and the generated reference use the released flags.
+- Message-search commands no longer list or delete saved meeting searches.
+- Command corrections preserve the chosen profile; help shows concise descriptions and concrete examples.
+- **More useful command discovery.** cli-core 0.396.0 adds shared examples, concise skill summaries and profile-preserving corrections for joined command paths; cli-base 0.50.2 recognizes the approved messenger vocabulary and flag roles. Command discovery uses `--json` and refuses `--jsonl`.
+- **Input errors name the selected command's flags.** WhatsApp adapters report domain fields for unsupported invite-link filtering, conflicting name fields and privacy refusals; cli-core formats those fields at the CLI boundary.
 - **CI scans the checked history.** An unrelated fetched branch no longer fails a clean pull request's secret check; findings in the checked commit or any ancestor still block it.
-
 - **A ban's end is shown in the local time zone and names that zone.** Stored timestamps remain UTC.
 - **Unexpected engine failures use the provider error code.** Known validation and messenger errors keep their codes.
 - **Agents are no longer offered channel comments, which WhatsApp cannot read** (cli-core 0.393.0). A direct call
   fails before connecting. Commands also show more concrete examples in their help.
 
-### Changed — may break callers
-
-- **Read commands no longer send read receipts.** `messages list`, `inbox` and `review` drop `--mark-read` and
-  `--no-mark-read`; remove `catch_up_marks_read` from configuration and use `chats mark-read` explicitly.
-- **Misspelled permission keys now stop the command.** Correct or unset keys such as `messages.sedn` before running.
-- **A mistyped profile lists the real profiles.** An unlinked profile's login hint now points to `setup`.
-
-- **Setup returns suggested commands in `item.commands` and login details in `item.session`.** Update scripts
-  that read `item.next` or `item.device`; `next` is reserved for structured continuation steps.
-
 ### Security
 
 - **The engine uses the patched Go certificate verification library.** Release and monthly checks now
   audit reachable Go vulnerabilities, and dependency updates cover the engine's Go module.
-
 - **Local releases run engine tests, the coverage floor and security checks before publishing.** The npm token
   is supplied only to publishing, and publishing skips lifecycle scripts because validation already built the package.
-
-### Added
-
-- **cli-core 0.394.0.** Store and statistics commands gain examples, and `contacts prepare` gives a cited brief before a conversation.
-- **`wa <profile> bot`: a WhatsApp Business number on Meta's Cloud API.** A bot profile keeps an access token in the
-  system keychain (`bot auth set`) and the number's ids as settings (`config set --bot phone_number_id …`). `bot me`
-  names the number; `bot api <operation>` runs any of 63 Cloud API operations generated from Meta's OpenAPI file, and
-  asks before the ones that cannot be undone, such as `register-phone-number`. It never links a device or starts the
-  engine. What to watch for: never register a number whose WhatsApp you use on a phone — that deletes its account.
-- **A bot sends text, replies, files and templates.** `bot messages send` writes to a phone number in digits or to
-  `user:<id>`; a file goes up once and is sent by its media id. `bot templates list` and `bot templates send <chat>
-  <name> [language]` cover the approved messages, the only kind WhatsApp delivers more than 24 hours after a person
-  wrote. `bot media download <id> --output <file>` saves a received file. WhatsApp has no silent message, edit or
-  delete for a bot, so those are refused.
-- **A bot receives messages by webhook: `bot watch --public-url <tunnel address>`.** Meta never lets a client poll,
-  so `wa` listens on `127.0.0.1:8766` behind your tunnel, answers Meta's subscription check with the verify token,
-  refuses any delivery not signed with your app secret, and acknowledges a delivery only once it is in the local
-  store. Keep both with `bot auth set --secret app-secret` and `--secret verify-token`. `bot webhooks set <url>`
-  points this number's webhook at the address. Delivery receipts arrive too. With the store holding a person's last
-  message, a free-form send more than 24 hours later is refused before it leaves.
-
-- **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
-  profile to check that configuration, stored messages and the device database location survive an upgrade.
-
-- **Pull requests cannot grow the command-lint baseline.** New violations must be fixed or carry a dated,
-  reasoned override, so adding a feature cannot silently weaken the existing checks.
 
 ## 0.4.0 — 22.10.2026
 
