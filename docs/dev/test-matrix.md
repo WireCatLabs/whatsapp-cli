@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**254 ✅ · 872 ⛔ · 0 ❌** — 356 commands, 770 options.
+**264 ✅ · 868 ⛔ · 0 ❌** — 359 commands, 773 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -801,16 +801,16 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot chats moderate` | `--allow-dangerous` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/admins, moderation and people tests; the Cloud API has no chat list, so wa refuses them), wa's adapter in src/commands/bot.test.ts |
 | `bot chats moderate` | `--no-block` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/admins, moderation and people tests; the Cloud API has no chat list, so wa refuses them), wa's adapter in src/commands/bot.test.ts |
 | `bot chats moderate` | `--max-actions` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/admins, moderation and people tests; the Cloud API has no chat list, so wa refuses them), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--reply-to` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--silent` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--md` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--html` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--file` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--photo` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--as-file` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--voice` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot messages send` | `--allow-any-file` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
+| `bot messages send` |  | ✅ |  |
+| `bot messages send` | `--reply-to` | ✅ |  |
+| `bot messages send` | `--silent` | ✅ |  |
+| `bot messages send` | `--md` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
+| `bot messages send` | `--html` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
+| `bot messages send` | `--file` | ✅ |  |
+| `bot messages send` | `--photo` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
+| `bot messages send` | `--as-file` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
+| `bot messages send` | `--voice` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
+| `bot messages send` | `--allow-any-file` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
 | `bot messages list` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot messages list` | `--limit` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot messages show` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
@@ -1114,6 +1114,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot api update-business-profile-by-id` | `--whats-app-business-profile-id` | ⛔ | generated from Meta's OpenAPI file: one execute path for every operation, driven against a Graph stand-in in src/commands/bot.test.ts; the manifest's effects and ids in src/bot/manifest.test.ts |
 | `bot api update-business-profile-by-id` | `--body` | ⛔ | generated: one execute path fills every id flag and reads every body the same way, tested in src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file) |
 | `bot api update-business-profile-by-id` | `--body-file` | ⛔ | generated: one execute path fills every id flag and reads every body the same way, tested in src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file) |
+| `bot templates list` |  | ✅ |  |
+| `bot templates list` | `--name` | ✅ |  |
+| `bot templates send` |  | ✅ |  |
+| `bot templates send` | `--payload` | ✅ |  |
+| `bot media download` |  | ✅ |  |
+| `bot media download` | `--output` | ✅ |  |
 | `skill show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | `skill install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | `skill install` | `--for` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |

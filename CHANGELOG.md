@@ -20,6 +20,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   names the number; `bot api <operation>` runs any of 63 Cloud API operations generated from Meta's OpenAPI file, and
   asks before the ones that cannot be undone, such as `register-phone-number`. It never links a device or starts the
   engine. What to watch for: never register a number whose WhatsApp you use on a phone — that deletes its account.
+- **A bot sends text, replies, files and templates.** `bot messages send` writes to a phone number in digits or to
+  `user:<id>`; a file goes up once and is sent by its media id. `bot templates list` and `bot templates send <chat>
+  <name> [language]` cover the approved messages, the only kind WhatsApp delivers more than 24 hours after a person
+  wrote. `bot media download <id> --output <file>` saves a received file. WhatsApp has no silent message, edit or
+  delete for a bot, so those are refused.
 
 ## 0.6.0 — 23.10.2026
 
@@ -87,11 +92,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   names the number; `bot api <operation>` runs any of 63 Cloud API operations generated from Meta's OpenAPI file, and
   asks before the ones that cannot be undone, such as `register-phone-number`. It never links a device or starts the
   engine. What to watch for: never register a number whose WhatsApp you use on a phone — that deletes its account.
-- **A bot sends text, replies, files and templates.** `bot messages send` writes to a phone number in digits or to
-  `user:<id>`; a file goes up once and is sent by its media id. `bot templates list` and `bot templates send <chat>
-  <name> [language]` cover the approved messages, the only kind WhatsApp delivers more than 24 hours after a person
-  wrote. `bot media download <id> --output <file>` saves a received file. WhatsApp has no silent message, edit or
-  delete for a bot, so those are refused.
 
 - **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
   profile to check that configuration, stored messages and the device database location survive an upgrade.

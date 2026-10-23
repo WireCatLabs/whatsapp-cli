@@ -22,13 +22,12 @@ export const addressOf = (chat: BotChatRef): Record<string, string> => {
   )
 }
 
-type Kind = "image" | "video" | "audio" | "document" | "sticker"
+type Kind = "image" | "video" | "audio" | "document"
 
 /** What Meta shows the file as: by its type, unless `--as-file` asked for a file to download. */
 const kindOf = (upload: { kind: string; asFile?: true }, mime: string): Kind => {
   if (upload.asFile) return "document"
   if (upload.kind === "voice" || mime.startsWith("audio/")) return "audio"
-  if (upload.kind === "sticker" && mime === "image/webp") return "sticker"
   if (mime.startsWith("image/")) return "image"
   if (mime.startsWith("video/")) return "video"
   return "document"
@@ -146,7 +145,7 @@ export const sendMessage = async (
   }
   let first: string | undefined
   const [lead] = files
-  const captioned = lead !== undefined && !["audio", "sticker"].includes(kindOf(lead, mimeOf(lead.name)))
+  const captioned = lead !== undefined && kindOf(lead, mimeOf(lead.name)) !== "audio"
   if (text.trim() && !captioned) first = await send({ type: "text", text: { body: text, preview_url: false } })
   for (const [index, upload] of files.entries()) {
     const type = mimeOf(upload.name)
