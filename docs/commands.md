@@ -4264,8 +4264,12 @@ check a bot token with WhatsApp, then keep it — typed at a hidden prompt or pi
 **Changes something on this computer only.**
 
 ```sh
-wa bot auth set
+wa bot auth set [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--secret <name>` | keep this secret instead of the token, the same way: app-secret (the Meta app's secret, from App settings → Basic; checks each webhook delivery); verify-token (a string you choose and type in the App Dashboard's webhook setup too; answers Meta's handshake). |
 
 #### `wa bot auth show`
 

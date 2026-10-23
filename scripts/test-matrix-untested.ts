@@ -75,6 +75,24 @@ export const UNTESTED: Untested[] = [
       "cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as " +
       "it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts",
   })),
+  ...["--events", "--types"].map((option) => ({
+    command: "bot watch",
+    option,
+    reason:
+      "cli-core's shared option, tested in cli-core (src/cli/bot/watch.test.ts); wa's webhook mode in src/commands/bot-watch.test.ts",
+  })),
+  {
+    command: "bot webhooks set",
+    option: "--types",
+    reason:
+      "WhatsApp sends every field the app subscribed to in the App Dashboard, so wa refuses it before it changes anything",
+  },
+  {
+    command: "bot webhooks set",
+    option: "--secret-stdin",
+    reason:
+      "cli-core's hidden prompt, tested in cli-core (src/cli/bot/watch.test.ts); the kept verify token path in src/commands/bot.test.ts",
+  },
   ...["--phone-number-id", "--waba-id", "--whats-app-business-account-id", "--body", "--body-file"].map((option) => ({
     command: "bot api *",
     option,

@@ -1,7 +1,8 @@
 import { CliError } from "@wirecat/cli-base"
-import type { BotAdapter } from "@wirecat/cli-core/cli"
+import type { BotAdapter, BotChatRef, BotWebhook } from "@wirecat/cli-core/cli"
 import type { GraphTransport } from "./graph.js"
 import { sendMessage } from "./messaging.js"
+import { type WebhookSecrets, webhookIntake } from "./webhook.js"
 
 export interface BotIds {
   phoneNumberId: string | undefined
@@ -21,10 +22,39 @@ export const required = (
   )
 }
 
+export interface AdapterSeams {
+  secrets: () => WebhookSecrets
+  /** Keeps the verify token `bot webhooks set --secret-stdin` was given, so the receiver can answer Meta with it. */
+  keepVerifyToken: (token: string) => void
+  lastInbound?: (chat: BotChatRef) => Promise<Date | undefined>
+}
+
 /** A Cloud API business number as cli-core's bot port sees it. */
-export const whatsappBotAdapter = (graph: GraphTransport, ids: BotIds, profile: string): BotAdapter => {
+export const whatsappBotAdapter = (
+  graph: GraphTransport,
+  ids: BotIds,
+  profile: string,
+  seams: AdapterSeams,
+): BotAdapter => {
   const phoneNumberId = () => required(ids.phoneNumberId, "phone_number_id", profile)
+  const configure = (configuration: Record<string, string>) =>
+    graph.call({
+      path: `/${phoneNumberId()}`,
+      method: "POST",
+      json: JSON.stringify({ webhook_configuration: configuration }),
+      reads: false,
+      operation: "updatePhoneNumber",
+    })
+  const intake = webhookIntake({
+    get appSecret() {
+      return seams.secrets().appSecret
+    },
+    get verifyToken() {
+      return seams.secrets().verifyToken
+    },
+  })
   return {
+    ...intake,
     me: async () => {
       const number = (await graph.call({
         path: `/${phoneNumberId()}`,
@@ -40,7 +70,43 @@ export const whatsappBotAdapter = (graph: GraphTransport, ids: BotIds, profile: 
         phone: number.display_phone_number ?? null,
       }
     },
-    send: (chat, text, options) => sendMessage({ graph, phoneNumberId: phoneNumberId() }, chat, text, options),
+    send: (chat, text, options) =>
+      sendMessage(
+        { graph, phoneNumberId: phoneNumberId(), ...(seams.lastInbound ? { lastInbound: seams.lastInbound } : {}) },
+        chat,
+        text,
+        options,
+      ),
+    // The number's own override only: the app's callback is set in the App Dashboard and holds template and account events.
+    webhooks: async (): Promise<BotWebhook[]> => {
+      const answer = (await graph.call({
+        path: `/${phoneNumberId()}`,
+        method: "GET",
+        query: { fields: "webhook_configuration" },
+        reads: true,
+        operation: "getPhoneNumber",
+      })) as { webhook_configuration?: { phone_number?: string } }
+      const url = answer.webhook_configuration?.phone_number
+      return url ? [{ url, types: null }] : []
+    },
+    setWebhook: async (url, { types, secret }) => {
+      if (types?.length)
+        throw new CliError(
+          "validation_error",
+          "WhatsApp sends every subscribed field; pick fields in the App Dashboard, not with --types",
+        )
+      const token = secret ?? seams.secrets().verifyToken
+      if (!token)
+        throw new CliError(
+          "configuration_error",
+          `no verify token — give one with --secret-stdin, or keep it with \`wa ${profile} bot auth set --secret verify-token\``,
+        )
+      await configure({ override_callback_uri: url, verify_token: token })
+      if (secret) seams.keepVerifyToken(secret)
+    },
+    deleteWebhook: async () => {
+      await configure({ override_callback_uri: "" })
+    },
     close: async () => {},
   }
 }

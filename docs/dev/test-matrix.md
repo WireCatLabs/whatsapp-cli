@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**264 ✅ · 868 ⛔ · 0 ❌** — 359 commands, 773 options.
+**271 ✅ · 862 ⛔ · 0 ❌** — 359 commands, 774 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -777,6 +777,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `mcp doctor` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
 | `mcp doctor` | `--permission` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
 | `bot auth set` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)), wa's adapter in src/commands/bot.test.ts |
+| `bot auth set` | `--secret` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)), wa's adapter in src/commands/bot.test.ts |
 | `bot auth show` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)), wa's adapter in src/commands/bot.test.ts |
 | `bot auth remove` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)), wa's adapter in src/commands/bot.test.ts |
 | `bot list` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts), wa's adapter in src/commands/bot.test.ts |
@@ -838,22 +839,22 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot recipients remove` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/bot.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot recipients clear` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/bot.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot sends list` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/bot.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot watch` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts and webhook-receiver.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot watch` | `--events` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts and webhook-receiver.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot watch` | `--types` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts and webhook-receiver.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot watch` | `--public-url` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts and webhook-receiver.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot watch` | `--port` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts and webhook-receiver.test.ts), wa's adapter in src/commands/bot.test.ts |
+| `bot watch` |  | ✅ |  |
+| `bot watch` | `--events` | ⛔ | cli-core's shared option, tested in cli-core (src/cli/bot/watch.test.ts); wa's webhook mode in src/commands/bot-watch.test.ts |
+| `bot watch` | `--types` | ⛔ | cli-core's shared option, tested in cli-core (src/cli/bot/watch.test.ts); wa's webhook mode in src/commands/bot-watch.test.ts |
+| `bot watch` | `--public-url` | ✅ |  |
+| `bot watch` | `--port` | ✅ |  |
 | `bot callbacks answer` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts; WhatsApp has no button callbacks, so wa refuses it), wa's adapter in src/commands/bot.test.ts |
 | `bot callbacks answer` | `--text` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts; WhatsApp has no button callbacks, so wa refuses it), wa's adapter in src/commands/bot.test.ts |
 | `bot callbacks answer` | `--notification` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts; WhatsApp has no button callbacks, so wa refuses it), wa's adapter in src/commands/bot.test.ts |
 | `bot commands list` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot commands»); WhatsApp has no command menu, so wa refuses it), wa's adapter in src/commands/bot.test.ts |
 | `bot commands set` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot commands»); WhatsApp has no command menu, so wa refuses it), wa's adapter in src/commands/bot.test.ts |
 | `bot commands clear` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot commands»); WhatsApp has no command menu, so wa refuses it), wa's adapter in src/commands/bot.test.ts |
-| `bot webhooks list` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot webhooks»)), wa's adapter in src/commands/bot.test.ts |
-| `bot webhooks set` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot webhooks»)), wa's adapter in src/commands/bot.test.ts |
-| `bot webhooks set` | `--types` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot webhooks»)), wa's adapter in src/commands/bot.test.ts |
-| `bot webhooks set` | `--secret-stdin` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot webhooks»)), wa's adapter in src/commands/bot.test.ts |
-| `bot webhooks delete` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/watch.test.ts («bot webhooks»)), wa's adapter in src/commands/bot.test.ts |
+| `bot webhooks list` |  | ✅ |  |
+| `bot webhooks set` |  | ✅ |  |
+| `bot webhooks set` | `--types` | ✅ |  |
+| `bot webhooks set` | `--secret-stdin` | ⛔ | cli-core's hidden prompt, tested in cli-core (src/cli/bot/watch.test.ts); the kept verify token path in src/commands/bot.test.ts |
+| `bot webhooks delete` |  | ✅ |  |
 | `bot contacts show` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/people.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot contacts show` | `--all-bots` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/people.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot contacts show` | `--bots` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/people.test.ts), wa's adapter in src/commands/bot.test.ts |

@@ -301,4 +301,49 @@ describe("wa <profile> bot", () => {
 
     expect(seen[0]?.url.searchParams.get("name")).toBe("hello_world")
   })
+
+  it("**overrides the number's callback** with the kept verify token, and never prints it", async () => {
+    new BotTokenStore({ app: WA, profile: "cloudtest", keyring }).writeSecret("verify-token", "s3cret-verify-made-up")
+    answer = (url) =>
+      url.searchParams.get("fields") === "webhook_configuration"
+        ? { status: 200, body: { webhook_configuration: {} } }
+        : { status: 200, body: { success: true } }
+    const set = await wa(["cloudtest", "bot", "webhooks", "set", "https://shop.example.ts.net/", "--json"])
+
+    expect(set.code).toBe(0)
+    const posted = seen.find((one) => one.method === "POST")
+    expect(JSON.parse(String(posted?.body))).toEqual({
+      webhook_configuration: {
+        override_callback_uri: "https://shop.example.ts.net/",
+        verify_token: "s3cret-verify-made-up",
+      },
+    })
+    expect(set.stdout + set.stderr).not.toContain("s3cret-verify-made-up")
+  })
+
+  it("**lists, refuses and removes the number's webhook**", async () => {
+    answer = (url) =>
+      url.searchParams.get("fields") === "webhook_configuration"
+        ? { status: 200, body: { webhook_configuration: { phone_number: "https://shop.example.ts.net/" } } }
+        : { status: 200, body: { success: true } }
+    const listed = await wa(["cloudtest", "bot", "webhooks", "list", "--json"])
+    const typed = await wa([
+      "cloudtest",
+      "bot",
+      "webhooks",
+      "set",
+      "https://shop.example.ts.net/",
+      "--types",
+      "messages",
+    ])
+    const tokenless = await wa(["cloudtest", "bot", "webhooks", "set", "https://shop.example.ts.net/"])
+    const removed = await wa(["cloudtest", "bot", "webhooks", "delete", "https://shop.example.ts.net/", "--json"])
+
+    expect(JSON.parse(listed.stdout).items).toEqual([{ url: "https://shop.example.ts.net/", types: null }])
+    expect([typed.code, tokenless.code, removed.code]).toEqual([2, 3, 0])
+    expect(tokenless.stderr).toContain("--secret verify-token")
+    expect(JSON.parse(String(seen.filter((one) => one.method === "POST").at(-1)?.body))).toEqual({
+      webhook_configuration: { override_callback_uri: "" },
+    })
+  })
 })
