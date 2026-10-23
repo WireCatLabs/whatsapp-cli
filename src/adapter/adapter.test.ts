@@ -86,6 +86,15 @@ describe("whatsAppAdapter", () => {
     ).rejects.toMatchObject({ code: "validation_error" })
   })
 
+  it("sends no read patch or receipt without a stored anchor", async () => {
+    const engine = fakeEngine(seed)
+    const receipt = vi.spyOn(engine, "markRead")
+    const patch = vi.spyOn(engine, "markChatRead")
+    await whatsAppAdapter(engine).markRead(seed.busy)
+    expect(receipt).not.toHaveBeenCalled()
+    expect(patch).not.toHaveBeenCalled()
+  })
+
   it("refuses a send option WhatsApp cannot honour, before the engine sees it", async () => {
     const engine = fakeEngine(seed)
     const sending = whatsAppAdapter(engine).send(seed.dialog, "hi", { sendId: "3EB0AA", spoiler: true })
