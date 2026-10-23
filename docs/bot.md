@@ -42,7 +42,15 @@ You do these steps once, in Meta's App Dashboard. `wa` cannot do them for you.
 3. In Business Settings, create a system user with the `business_management`, `whatsapp_business_messaging` and
    `whatsapp_business_management` permissions, and generate a token for it that does not expire. Note the app
    secret under App settings → Basic.
-4. Keep the token and the two secrets. Each command asks at a hidden prompt; nothing appears on screen or in the
+4. Copy the phone number ID and the WhatsApp Business Account ID from WhatsApp → API Setup into the profile:
+
+   ```sh
+   wa cloudtest config set --bot phone_number_id 100000000000001
+   wa cloudtest config set --bot waba_id 200000000000002
+   ```
+
+   `graph_version` is `v23.0` unless you set another.
+5. Keep the token and the two secrets. Each command asks at a hidden prompt; nothing appears on screen or in the
    shell history:
 
    ```sh
@@ -52,14 +60,6 @@ You do these steps once, in Meta's App Dashboard. `wa` cannot do them for you.
    ```
 
    The verify token is any string you choose. You type the same string in the App Dashboard in step 6.
-5. Copy the phone number ID and the WhatsApp Business Account ID from WhatsApp → API Setup into the profile:
-
-   ```sh
-   wa cloudtest config set --bot phone_number_id 100000000000001
-   wa cloudtest config set --bot waba_id 200000000000002
-   ```
-
-   `graph_version` is `v23.0` unless you set another.
 6. Open a tunnel and start the receiver ([receive messages](#receive-messages)). Then, in WhatsApp → Configuration,
    enter the tunnel's address as the Callback URL with the same verify token, and subscribe to the `messages` field.
 

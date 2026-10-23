@@ -39,7 +39,7 @@ removes it.
 | `requests_per_minute` | the CLI's pace | requests a minute, shared by every process of the profile; `0` turns it off | `WA_REQUESTS_PER_MINUTE` |
 | `transcribe_with` | `auto` | who turns voice into text: `auto`, `messenger` or `local` | `--local`, or `--model` |
 | `speech_model` | none | which downloaded speech model `--local` uses | `--model` |
-| `read_other_bots` | `false` | for bot profiles; `wa` has none yet | none |
+| `read_other_bots` | `false` | accept messages identified as coming from other bots; bot profiles only | none |
 | `update_check` | `true` | the daily "a newer version exists" line; only under `defaults` | none; `WA_NO_UPDATE_CHECK`, `NO_UPDATE_NOTIFIER` or `CI` turn it off |
 | `skill_hint` | `true` | a line, at most once a day, for an agent whose copy of the skill is missing or older; only under `defaults` | none |
 | `embedding_provider` | `local` | local model or `openai` | `--embedding-provider` |
