@@ -105,6 +105,11 @@ export const UNTESTED: Untested[] = [
     ["contacts link"],
     ["contacts unlink"],
   ]),
+  ...cliCore("src/cli/messenger/messenger.test.ts and src/services/person-preparation.test.ts", [
+    ["contacts prepare"],
+    ["contacts prepare", "--limit"],
+    ["contacts prepare", "--since-time"],
+  ]),
   ...cliCore("src/services/person-timeline.test.ts", [
     ["contacts timeline"],
     ["contacts timeline", "--scope"],
