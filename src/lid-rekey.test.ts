@@ -90,7 +90,7 @@ describe("a person who gains a LID", () => {
             })
             engine.push({ event: "rekey", from: PHONE, to: LID })
             engine.push({ event: "message", message: message(LID, 3) })
-            setTimeout(() => controller.abort(), 50)
+            controller.abort()
           })
         }
         return stop
@@ -137,7 +137,7 @@ describe("a person who gains a LID", () => {
         })
         setImmediate(() => {
           engine.push({ event: "rekey", from: PHONE, to: LID })
-          setTimeout(() => controller.abort(), 200)
+          controller.abort()
         })
       })
       return engine
@@ -341,6 +341,6 @@ describe("a phone-form chat stored before the engine kept its table", () => {
     }
     const watched = await wa([profile, "watch", "--jsonl"], refusing, controller.signal)
     expect(watched.code, watched.stderr).toBe(0)
-    expect(watched.stderr.match(/not told the stored chats: synthetic refusal/g)).toHaveLength(1)
+    expect(watched.stderr.match(/not told the stored chats: WhatsApp engine request failed/g)).toHaveLength(1)
   })
 })

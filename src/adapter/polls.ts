@@ -70,8 +70,10 @@ export const pollAdapter = ({
   held,
   keyOf,
   translated,
+  now = Date.now,
 }: {
   engine: WhatsAppEngine
+  now?: () => number
   stored: StoredMessages
   held: (chatId: string, messageId: string) => Promise<Message>
   keyOf: (chatId: string, message: Message) => WaKey
@@ -102,7 +104,11 @@ export const pollAdapter = ({
     await translated(
       engine.vote(
         keyOf(chatId, message),
-        answerIds.map((answer) => known.get(answer) as string),
+        answerIds.map((answer) => {
+          const text = known.get(answer)
+          if (text === undefined) throw new CliError("validation_error", "that answer is not in this poll")
+          return text
+        }),
       ),
     )
     const self = engine.self()
@@ -110,7 +116,13 @@ export const pollAdapter = ({
     const mine =
       self === null
         ? []
-        : [{ person: { id: self, name: null, username: null }, answers: answerIds, votedAt: new Date().toISOString() }]
+        : [
+            {
+              person: { id: self, name: null, username: null },
+              answers: answerIds,
+              votedAt: new Date(now()).toISOString(),
+            },
+          ]
     return countedPoll(toPoll(chatId, message, poll), [...mine, ...others], self)
   },
 

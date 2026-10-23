@@ -5,6 +5,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Fixed
+
+- **A ban's end is shown in the local time zone and names that zone.** Stored timestamps remain UTC.
+- **Unexpected engine failures use the provider error code.** Known validation and messenger errors keep their codes.
+
 ### Changed — may break callers
 
 - **Setup returns suggested commands in `item.commands` and login details in `item.session`.** Update scripts

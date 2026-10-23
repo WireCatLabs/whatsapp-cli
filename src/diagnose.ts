@@ -7,7 +7,14 @@ import { installer, type UpdateEnvironment } from "./update.js"
 const octal = (mode: number) => `0${mode.toString(8)}`
 
 /** Whether the engine binary is there to start — never started here. */
-export const engineState = (env: NodeJS.ProcessEnv, update: UpdateEnvironment = {}) => {
+export const engineState = (
+  env: NodeJS.ProcessEnv,
+  update: UpdateEnvironment = {},
+): {
+  path: string
+  found: boolean
+  hint?: string
+} => {
   const path = engineBinary(env)
   try {
     accessSync(path, constants.X_OK)
@@ -22,7 +29,12 @@ export const engineState = (env: NodeJS.ProcessEnv, update: UpdateEnvironment = 
 }
 
 /** The device keys' file modes, from `stat` alone: the keys are a credential and are never opened here. */
-export const deviceModes = (storePath: string, platform: NodeJS.Platform = process.platform) => {
+export const deviceModes = (
+  storePath: string,
+  platform: NodeJS.Platform = process.platform,
+):
+  | { checked: false; reason: string }
+  | { checked: true; ok: boolean; problems: { path: string; mode: string; want: string; fix: string }[] } => {
   if (platform === "win32") return { checked: false, reason: "Windows has no Unix file modes" }
   const wanted: [string, number][] = [
     ...[storePath, `${storePath}-wal`, `${storePath}-shm`].map((path): [string, number] => [path, 0o600]),
@@ -57,7 +69,9 @@ const alive = (pid: number): boolean => {
  * Who last held the device's lock, from the name the engine writes into it. The engine never clears that name, so
  * the holder counts as running only while a process with its pid is.
  */
-export const lockState = (lockPath: string) => {
+export const lockState = (
+  lockPath: string,
+): { path: string; holder: string | null; pid: number | null; running: boolean } => {
   if (!existsSync(lockPath)) return { path: lockPath, holder: null, pid: null, running: false }
   const buffer = Buffer.alloc(200)
   const fd = openSync(lockPath, "r")
@@ -73,7 +87,15 @@ export const lockState = (lockPath: string) => {
 }
 
 /** `doctor`'s WhatsApp block: the engine, the device keys and the lock, read from disk without starting anything. */
-export const diagnoseWhatsApp = (profile: string, env: NodeJS.ProcessEnv, update?: UpdateEnvironment) => {
+export const diagnoseWhatsApp = (
+  profile: string,
+  env: NodeJS.ProcessEnv,
+  update?: UpdateEnvironment,
+): {
+  engine: ReturnType<typeof engineState>
+  device: { path: string; exists: boolean; files: ReturnType<typeof deviceModes> }
+  lock: ReturnType<typeof lockState>
+} => {
   const store = privateStore(profile, env)
   return {
     engine: engineState(env, update),

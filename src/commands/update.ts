@@ -1,10 +1,11 @@
 import { annotate } from "@wirecat/cli-base/commands"
 import { environmentOf, outputFor, restartServers, upgradeCommand as sharedUpgradeCommand } from "@wirecat/cli-core/cli"
+import type { Command } from "commander"
 import { WA } from "../app.js"
 import type { Environment } from "../messenger.js"
 import { installer, latest, PACKAGE, runUpdate, waScript } from "../update.js"
 
-export const upgradeCommand = () =>
+export const upgradeCommand = (): Command =>
   annotate(
     sharedUpgradeCommand(WA, PACKAGE, (command) => {
       const context = environmentOf<Environment>(command)

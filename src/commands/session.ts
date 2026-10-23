@@ -34,7 +34,7 @@ export const AGENTS_LINK_BY_QR =
   'at once and say the old one expired. With --json each code is also a stderr line {"event":"qr","qr":{...}}.\n' +
   "Linking is not offered over MCP; an agent with only MCP asks the person to run the command.\n"
 
-export const sessionCommand = () => {
+export const sessionCommand = (): Command => {
   // Linking waits for a person, and unlinking removes the owner's device: neither is an agent's call.
   const session = annotate(new Command("session"), { mcp: false }).description(
     "link this profile to WhatsApp as a device, or unlink it",

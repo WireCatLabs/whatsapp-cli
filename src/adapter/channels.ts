@@ -8,7 +8,7 @@ import { toChat, toMessage } from "./map.js"
 import type { PollAdapter } from "./polls.js"
 
 /** WhatsApp channels are whatsmeow's newsletters, and their ids end so. */
-export const isChannel = (id: string) => id.endsWith("@newsletter")
+export const isChannel = (id: string): boolean => id.endsWith("@newsletter")
 
 export const CHANNEL_LINK = /^\s*(?:https?:\/\/)?(?:www\.)?whatsapp\.com\/channel\/[A-Za-z0-9]+/i
 

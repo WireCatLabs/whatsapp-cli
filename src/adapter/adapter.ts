@@ -71,7 +71,10 @@ const translated = async <T>(work: Promise<T>): Promise<T> => {
     return await work
   } catch (error) {
     if (error instanceof EngineError) throw fromEngine(error)
-    throw error
+    if (error instanceof CliError) throw error
+    const failure = new CliError("provider_error", "WhatsApp engine request failed")
+    Object.defineProperty(failure, "cause", { value: error })
+    throw failure
   }
 }
 
@@ -90,6 +93,7 @@ export const whatsAppAdapter = (
   words: Words = bareCheck,
   /** Where a skipped pushed event is said — a warning, so `--quiet` drops it. The diagnostic stream if not given. */
   warn: (message: string) => void = (line) => process.stderr.write(`${line}\n`),
+  now: () => number = Date.now,
 ): WhatsAppAdapter => {
   // A guessed key would make WhatsApp drop the change without a word, so a message the store lacks is refused.
   const held = async (chatId: string, messageId: string): Promise<Message> => {
@@ -159,7 +163,7 @@ export const whatsAppAdapter = (
       if (markup !== undefined) throw new CliError("validation_error", "WhatsApp cannot edit with markup")
       const original = await held(chatId, messageId)
       if (!original.outgoing) throw new CliError("validation_error", "only your own messages can be edited")
-      if (Date.now() - Date.parse(original.timestamp) > EDIT_WINDOW_MS)
+      if (now() - Date.parse(original.timestamp) > EDIT_WINDOW_MS)
         throw new CliError("validation_error", "WhatsApp takes an edit only within 20 minutes of sending")
       const edited = await translated(
         engine.edit(keyOf(chatId, original), formatting ? toWhatsApp(text, formatting) : text),
@@ -245,7 +249,7 @@ export const whatsAppAdapter = (
     },
   }
 
-  const polls = pollAdapter({ engine, stored, held, keyOf, translated })
+  const polls = pollAdapter({ engine, stored, held, keyOf, translated, now })
   const groups = groupAdapter({
     engine,
     resolve: core.resolve,
