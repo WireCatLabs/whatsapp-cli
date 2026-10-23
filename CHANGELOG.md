@@ -32,6 +32,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa <profile> contacts prepare <person>`: what to know before talking to someone** (cli-core 0.394.0). What
+  `contacts context` gives, plus the one-to-one chats where their message is the newest the store holds, open tasks
+  assigned to them, accepted facts about them and their projects, your notes about them, and their recent meetings —
+  each with its reference, under one size budget, with `prepare.coverage` saying what each section left out and why.
+  Tasks of another WhatsApp account, and facts on a project bound to one, stay out. `contacts.notes.list: deny`
+  leaves the notes out and says so; `messages: deny` refuses the command, as it does `contacts context`.
 - **Upgrades are checked against saved state from version 0.2.0.** Offline validation uses a synthetic
   profile to check that configuration, stored messages and the device database location survive an upgrade.
 
