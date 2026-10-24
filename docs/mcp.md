@@ -47,8 +47,8 @@ The tools use the same catalogue as `tg` and `max`. Commands a linked WhatsApp d
 ending other sessions and removing contacts, are hidden. A command that WhatsApp cannot do yet is refused when it
 runs, with exit code `2` and a message that says so.
 
-Commands that change future permissions or automation require `permissions.mcp.authority` set to `allow`; raw
-Cloud API calls require `permissions.bot.api` set to `allow`. Both keys default to `deny` over MCP. Other writes
+Commands that change future permissions or automation require `permissions.mcp.authority` set to `allow` or `ask`; raw
+Cloud API calls require `permissions.bot.api` set to `allow` or `ask`. Both keys default to `deny` over MCP. Other writes
 remain subject to their command permissions, recipient lists and send limits.
 
 ## Connecting

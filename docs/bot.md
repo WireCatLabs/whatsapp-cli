@@ -94,3 +94,5 @@ Meta keeps one callback address per app, set in the App Dashboard, and sends tem
 A bot profile has its own permissions under `bot` in the configuration. `bot api` operations that cannot be undone,
 such as `register-phone-number` and `delete-template`, ask before they run. The recipient list and the hourly limit
 apply to bot sends as to personal ones ([permissions](permissions.md)).
+
+To find a template by its native name before paging, use `wa business bot templates list name:hello_world`.

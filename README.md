@@ -251,8 +251,9 @@ wa skill install --for all        # both folders, without linking
 wa skill show                     # the complete instructions, without installing them
 ```
 
-**The MCP server.** The profile's `permissions` decide which tools it offers. `readonly` stops the agent from
-changing anything; at `ask` the server shows no form, so set up approval in your agent app.
+**The MCP server.** Commands remain discoverable with current availability. The profile's
+`permissions` decide which may run. `readonly` stops writes; at `ask` the server shows no form,
+so set up approval in your agent app.
 
 ```sh
 claude mcp add wa -- wa personal mcp  # Claude Code, by hand
