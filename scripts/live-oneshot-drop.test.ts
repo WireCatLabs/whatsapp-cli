@@ -82,7 +82,7 @@ confirm() {
   return { ...result, saved }
 }
 
-describe("owner-run automatic one-shot regression", () => {
+describe.skipIf(process.platform === "win32")("owner-run automatic one-shot regression", () => {
   it("sends twice from the explicit sender and proves receiver persistence before restarting serve", () => {
     const result = run()
     expect(result.status, result.stderr).toBe(0)
