@@ -10,6 +10,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - The owner-run `bin/live-oneshot-drop` can send its two test messages automatically with
   `--sender-profile`, using two explicitly confirmed accounts owned by the same person.
 
+- **Session and setup receipts declare their actual provider schemas.** The complete contract audit checks them alongside shared entities.
+
+- Preview a group or channel invite with `chats inspect` without joining it.
+- `account sessions list` shows linked device ids and marks this device. Names and last-active times are unavailable.
+- `chats folders list` and `show` read custom WhatsApp Lists and their chats from synced label state.
+- Incoming community announcement comments are decrypted into their post's stored thread; `messages comments`
+  reads the comments this device has received. Channels have no comments, and comment sending stays unavailable.
+
 ### Changed — may break callers
 
 - The one-shot regression checks the receiver's store before restarting `serve`; delivery only after restart
@@ -19,11 +27,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `bot templates list name:hello_world`. Meta applies the name predicate before paging; unsupported query fields
   are refused before a request. The retired flag has no compatibility alias.
 
+- **Shared CLI contracts require explicit provider overrides.** Discovery includes the inherited definitions, schemas, reasons and exact deliberate differences. Contact activity filters with `scope:` and `at:`, and diagnostic run searches with `started_at:`. Unknown roster and webhook type lists are omitted instead of `null`.
+
 ### Fixed
 
 - Permission-denied commands stay discoverable in CLI and MCP with current availability and reasons. Calls still enforce permissions; a listed command grants no execution access.
 - The owner-run one-shot regression can pause and restore a persistent systemd user service, including one
   that selects its profile through its environment instead of a command argument.
+
+- Full settings sync recovers stars and deletions as history updates, instead of presenting them as new live events.
+- The installation guide explains how to allow the optional agent-skill hook with npm's scoped `--allow-scripts` flag.
 
 ## 0.7.0 — 24.10.2026
 

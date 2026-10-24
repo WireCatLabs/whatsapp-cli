@@ -1007,18 +1007,16 @@ wa contacts prepare <person> [options]
 everything one person took part in, in every messenger linked to them — messages they wrote or were mentioned in, chats, mail, meetings, tasks — newest first, from the store; never connects
 
 ```sh
-wa contacts events <person> [options]
+wa contacts events <person> [query] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `person` | required | their id, @username, or part of their name. |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
-| `--scope <scope>` | only what belongs to personal or to work accounts: personal or work. |
-| `--since-time <time>` | nothing older than this ISO 8601 time, or 2h / 1d ago. |
-| `--until-time <time>` | through this ISO 8601 time, or 2h / 1d ago. |
 | `--limit <n>` | at most this many; 50 if not given. |
 | `--cursor <cursor>` | go on from where the last page stopped; page.next gives it, with the same filters. |
 
@@ -3375,7 +3373,7 @@ wa tasks add <message> [options]
 
 ### `wa tasks update`
 
-set a task's title, description, due date, next check, category and assignee; nothing reaches the messenger
+update a task's text, schedule, category, assignees, priority or parent; nothing reaches the messenger
 
 **Changes something on this computer only.**
 
@@ -3390,6 +3388,8 @@ wa tasks update <task> [options]
 | Option | What it does |
 |---|---|
 | `--category <name>` | what it is about, from the list tasks categories prints: money, documents, meeting, …; a change is kept in the task's history. |
+| `--priority <n>` | priority from 0 (urgent) through 4 (low). |
+| `--parent <id>` | parent task in the same project; none clears it. |
 | `--title <title>` | one line: the action and its object — send Alex the API token. |
 | `--description <text>` | the detail, in Markdown: who owes whom, done when, next step, keywords. |
 | `--due <time>` | when it must be done: an ISO 8601 time or 2h, 3d from now; none clears it. |
@@ -3768,7 +3768,6 @@ wa search runs [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--since-time <time>` | runs starting on or after an ISO time or 2h / 1d ago. |
 | `--limit <n>` | matches per page, at most 100. Default: `20`. |
 | `--page <n>` | result page. Default: `1`. |
 
@@ -4103,19 +4102,19 @@ wa doctor reports create [options]
 
 ## `wa commands`
 
-every command by section, one line each; --json: the contract, one path per call
+every command by section; --json prints its contract, one path per call
 
 ### `wa commands info`
 
-one command's argv and result schemas, effects, permissions and retry guidance
+one command contract, or all schemas, error reasons and explicit overrides
 
 ```sh
-wa commands info <path>
+wa commands info [path]
 ```
 
 | Argument | | What it is |
 |---|---|---|
-| `path` | required | one command path, for example: stats messages show. |
+| `path` | optional | one command path; without one, export schemas, error reasons and explicit overrides. |
 
 ## `wa complete`
 

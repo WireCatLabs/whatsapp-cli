@@ -1,11 +1,12 @@
 import { accessSync, constants, existsSync, mkdirSync } from "node:fs"
 import { CliError, indent, renderPretty, singleLine } from "@wirecat/cli-base"
-import { annotate } from "@wirecat/cli-base/commands"
+import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { installSkill, type SkillTarget } from "@wirecat/cli-base/skill"
 import {
   AGENTS,
   type Agent,
   agentFor,
+  answerEntity,
   asFirstWord,
   commandWords,
   environmentOf,
@@ -19,14 +20,17 @@ import {
   runtime,
   screenFor,
   secretInputOf,
+  sharedCommandTemplate,
 } from "@wirecat/cli-core/cli"
 import { levelFor } from "@wirecat/cli-core/sends"
 import { Command, Option } from "commander"
 import { WA } from "../app.js"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { type Environment, SKILL, WHATSAPP } from "../messenger.js"
 import { pathsFor, privateStore } from "../paths.js"
 import { startSession } from "../session.js"
 import { installer, PACKAGE } from "../update.js"
+import { setupSchema } from "./session-contracts.js"
 
 type Options = {
   agent?: Agent
@@ -36,14 +40,18 @@ type Options = {
 const STEPS = 5
 const chatCount = (count: number) => `${count} ${count === 1 ? "chat" : "chats"}`
 
-export const setupCommand = (): Command =>
-  annotate(logsInOrOut(new Command("setup")), {
-    effects: REMOTE_WRITE,
-    output: { entity: "setup" },
-    lifetime: "interactive",
-    mcp: false,
-    examples: ["wa personal setup", "wa personal setup --agent codex", "wa personal setup --agent claude --json"],
-  })
+const setupCommandDefinition = (): Command =>
+  answerEntity(
+    annotate(logsInOrOut(new Command("setup")), {
+      effects: REMOTE_WRITE,
+      output: { entity: "setup" },
+      lifetime: "interactive",
+      mcp: false,
+      examples: ["wa personal setup", "wa personal setup --agent codex", "wa personal setup --agent claude --json"],
+    }),
+    "setup",
+    setupSchema,
+  )
     .description("set up WhatsApp and connect your agent")
     .configureHelp({ showGlobalOptions: true })
     .addHelpText(
@@ -193,3 +201,11 @@ export const setupCommand = (): Command =>
         )
       }
     })
+
+export const setupCommand = (...args: Parameters<typeof setupCommandDefinition>) =>
+  customizeSharedCommand(
+    sharedCommandTemplate(WA, "setup"),
+    "This provider binds its own account linking protocol, credential flow and typed receipt to the shared setup lifecycle.",
+    () => setupCommandDefinition(...args),
+    SHELL_OVERRIDES.setup,
+  )

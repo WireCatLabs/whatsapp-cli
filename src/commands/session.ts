@@ -1,6 +1,7 @@
 import { singleLine } from "@wirecat/cli-base"
-import { annotate } from "@wirecat/cli-base/commands"
+import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import {
+  answerEntity,
   asFirstWord,
   commandWords,
   logsInOrOut,
@@ -9,10 +10,14 @@ import {
   REMOTE_WRITE,
   refuseCommandName,
   rootOf,
+  sharedCommandTemplate,
 } from "@wirecat/cli-core/cli"
 import { Argument, Command } from "commander"
+import { WA } from "../app.js"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { WHATSAPP } from "../messenger.js"
 import { endSession, type Received, startSession } from "../session.js"
+import { sessionSchema } from "./session-contracts.js"
 
 const linkedText = (profile: string, account: { name: string | null }, got: Received | undefined) => {
   const word = asFirstWord(profile)
@@ -34,18 +39,22 @@ export const AGENTS_LINK_BY_QR =
   'at once and say the old one expired. With --json each code is also a stderr line {"event":"qr","qr":{...}}.\n' +
   "Linking is not offered over MCP; an agent with only MCP asks the person to run the command.\n"
 
-export const sessionCommand = (): Command => {
+const sessionCommandDefinition = (): Command => {
   // Linking waits for a person, and unlinking removes the owner's device: neither is an agent's call.
   const session = annotate(new Command("session"), { mcp: false }).description(
     "link this profile to WhatsApp as a device, or unlink it",
   )
 
-  annotate(logsInOrOut(session.command("start")), {
-    effects: REMOTE_WRITE,
-    output: { entity: "session" },
-    lifetime: "interactive",
-    examples: ["wa personal session start", "wa personal session start phone"],
-  })
+  answerEntity(
+    annotate(logsInOrOut(session.command("start")), {
+      effects: REMOTE_WRITE,
+      output: { entity: "session" },
+      lifetime: "interactive",
+      examples: ["wa personal session start", "wa personal session start phone"],
+    }),
+    "session",
+    sessionSchema,
+  )
     .description("link by QR code (default) or a pairing code, then keep the pushed history")
     .addArgument(new Argument("[method]", "how to link").choices(["qr", "phone"]).default("qr"))
     .addHelpText(
@@ -77,11 +86,15 @@ export const sessionCommand = (): Command => {
         })
     })
 
-  annotate(logsInOrOut(session.command("end")), {
-    effects: REMOTE_WRITE,
-    output: { entity: "session" },
-    examples: ["wa personal session end"],
-  })
+  answerEntity(
+    annotate(logsInOrOut(session.command("end")), {
+      effects: REMOTE_WRITE,
+      output: { entity: "session" },
+      examples: ["wa personal session end"],
+    }),
+    "session",
+    sessionSchema,
+  )
     .description("unlink this device on WhatsApp's side and delete its keys here")
     .action(async function (this: Command) {
       const context = messengerContext(this, WHATSAPP)
@@ -92,3 +105,11 @@ export const sessionCommand = (): Command => {
 
   return session
 }
+
+export const sessionCommand = (...args: Parameters<typeof sessionCommandDefinition>) =>
+  customizeSharedCommand(
+    sharedCommandTemplate(WA, "session"),
+    "This provider binds its own account linking protocol, credential flow and typed receipt to the shared session lifecycle.",
+    () => sessionCommandDefinition(...args),
+    SHELL_OVERRIDES.session,
+  )

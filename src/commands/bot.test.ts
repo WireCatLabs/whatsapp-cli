@@ -339,7 +339,7 @@ describe("wa <profile> bot", () => {
     const tokenless = await wa(["cloudtest", "bot", "webhooks", "set", "https://shop.example.ts.net/"])
     const removed = await wa(["cloudtest", "bot", "webhooks", "delete", "https://shop.example.ts.net/", "--json"])
 
-    expect(JSON.parse(listed.stdout).items).toEqual([{ url: "https://shop.example.ts.net/", types: null }])
+    expect(JSON.parse(listed.stdout).items).toEqual([{ url: "https://shop.example.ts.net/" }])
     expect([typed.code, tokenless.code, removed.code]).toEqual([2, 3, 0])
     expect(tokenless.stderr).toContain("--secret verify-token")
     expect(JSON.parse(String(seen.filter((one) => one.method === "POST").at(-1)?.body))).toEqual({
