@@ -21,7 +21,7 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Launch blockers (P1)
 
-- **WA-1** · P1 · core · Help and `commands --json` offer commands that fail with exit 2 `input.invalid`
+- **WA-1** · P1 · core · 🚧 `fix/wa-launch` · Help and `commands --json` offer commands that fail with exit 2 `input.invalid`
   (`chats folders *`, `account sessions *`, `chats inspect`, `contacts add|remove|rename|import`, `messages comments`).
   Owner (2026-10-23): implement what WhatsApp allows (WA-50..53, WA-55), hide only what it cannot do — `account
   sessions end` (only the phone ends other devices) and `contacts remove` (whatsmeow cannot send it) — in cli-core
