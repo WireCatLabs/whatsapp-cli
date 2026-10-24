@@ -3,27 +3,17 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
-
-### Added
-
-- Preview a group or channel invite with `chats inspect` without joining it.
-- `account sessions list` shows linked device ids and marks this device. Names and last-active times are unavailable.
-- `chats folders list` and `show` read custom WhatsApp Lists and their chats from synced label state.
-- Incoming community announcement comments are decrypted into their post's stored thread; `messages comments`
-  reads the comments this device has received. Channels have no comments, and comment sending stays unavailable.
-
-### Fixed
-
-- Full settings sync recovers stars and deletions as history updates, instead of presenting them as new live events.
-- The installation guide explains how to allow the optional agent-skill hook with npm's scoped `--allow-scripts` flag.
-
 ## 0.7.0 — 24.10.2026
 
 ### Added
 
 - The first command at a terminal asks once for your languages, other WireCat tools to install, and whether
   commands and agents may only read. Pipes, agents and noninteractive runs skip the questions.
+- Preview a group or channel invite with `chats inspect` without joining it.
+- `account sessions list` shows linked device ids and marks this device. Names and last-active times are unavailable.
+- `chats folders list` and `show` read custom WhatsApp Lists and their chats from synced label state.
+- Incoming community announcement comments are decrypted into their post's stored thread; `messages comments`
+  reads the comments this device has received. Channels have no comments, and comment sending stays unavailable.
 
 ### Changed — may break callers
 
@@ -47,6 +37,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **The agent skill describes explicit read receipts correctly.** Reading changes no read state;
   `chats mark-read` clears the unread mark and sends the receipt. The top help points to linking examples
   without promising Windows instructions that setup help does not contain.
+- Full settings sync recovers stars and deletions as history updates, instead of presenting them as new live events.
+- The installation guide explains how to allow the optional agent-skill hook with npm's scoped `--allow-scripts` flag.
 
 ## 0.6.0 — 24.10.2026
 
