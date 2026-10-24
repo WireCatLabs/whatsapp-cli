@@ -5,6 +5,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Added
+
+- The first command at a terminal asks once for your languages, other WireCat tools to install, and whether
+  commands and agents may only read. Pipes, agents and noninteractive runs skip the questions.
+
 ### Changed — may break callers
 
 - **Live JSON output uses item and end records.** `watch --jsonl` wraps each message or event in
