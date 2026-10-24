@@ -297,7 +297,7 @@ describe("wa <profile> bot", () => {
 
   it("**lists templates by name**", async () => {
     answer = () => ({ status: 200, body: { data: [] } })
-    await wa(["cloudtest", "bot", "templates", "list", "--name", "hello_world"])
+    await wa(["cloudtest", "bot", "templates", "list", "name:hello_world"])
 
     expect(seen[0]?.url.searchParams.get("name")).toBe("hello_world")
   })

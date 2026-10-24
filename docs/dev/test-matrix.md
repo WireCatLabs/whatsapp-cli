@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**273 ✅ · 825 ⛔ · 0 ❌** — 359 commands, 739 options.
+**272 ✅ · 825 ⛔ · 0 ❌** — 359 commands, 738 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1081,7 +1081,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot api update-business-profile-by-id` | `--body` | ⛔ | generated: one execute path fills every id flag and reads every body the same way, tested in src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file) |
 | `bot api update-business-profile-by-id` | `--body-file` | ⛔ | generated: one execute path fills every id flag and reads every body the same way, tested in src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file) |
 | `bot templates list` |  | ✅ |  |
-| `bot templates list` | `--name` | ✅ |  |
 | `bot templates send` |  | ✅ |  |
 | `bot templates send` | `--payload` | ✅ |  |
 | `bot media download` |  | ✅ |  |
