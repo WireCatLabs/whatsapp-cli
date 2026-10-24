@@ -24,7 +24,7 @@ Some words on this page:
 | Hear a voice note as text | `wa personal messages transcribe` |
 | See the files the store knows, and which still need text | `wa personal attachments list` |
 | Read text from saved files into the search index | `wa personal attachments extract` |
-| Keep text that your agent read from a scan or a photo | `wa personal attachments text set` |
+| Keep text that your agent read from a scan or a photo | `wa personal attachments update` |
 | Find a message by its file | `wa personal search messages 'has:file'`, `'content:…'` |
 
 ## What you can send
@@ -112,8 +112,8 @@ it as a new file.
 ## Voice notes as text
 
 ```sh
-wa personal models audio list                    # the speech models, and which are downloaded
-wa personal models audio download parakeet-v3    # once, about 670 MB
+wa personal models list kind:audio                    # the speech models, and which are downloaded
+wa personal models download parakeet-v3    # once, about 670 MB
 wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local
 ```
 
@@ -140,7 +140,7 @@ whether its text is held, never the text itself.
 A scan or a photo is read by your agent, with its own vision tools. The agent then keeps the text so search finds it:
 
 ```sh
-wa personal attachments text set "Book club" 3EB0A1B2C3D4E5F6A7B8 --text-file scan.txt
+wa personal attachments update "Book club" 3EB0A1B2C3D4E5F6A7B8 --text-file scan.txt
 ```
 
 To read scans in bulk with a model API instead, set `models.ocr.provider` and `models.ocr.model`, then run

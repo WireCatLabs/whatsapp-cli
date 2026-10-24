@@ -10,6 +10,7 @@ import { EngineError, type EngineEvent, type WaChat, type WaChatEvent, type What
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { REQUESTER } from "./testing/fake-groups.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 const stranger = "100000000000077@lid"
@@ -133,7 +134,7 @@ describe("wa chats members", () => {
   })
 
   it("audits a group's members, asking for a sync while the store lacks the chat's start", async () => {
-    const result = await acting("chats", "members", "audit", seed.busy, "--deep", "1", "--max-pages", "1")
+    const result = await acting("chats", "members", "check", seed.busy, "--deep", "1", "--max-pages", "1")
     expect(result.code).toBe(0)
     expect(result.closed).toBe(true)
     expect(JSON.parse(result.stdout).next).toMatchObject([{ step: "messages.sync", args: { chat: seed.busy } }])
@@ -330,10 +331,10 @@ describe("wa chats create, join, leave, update, link", () => {
   })
 
   it("shows the invite link and replaces it", async () => {
-    const shown = await acting("chats", "link", "show", seed.busy)
+    const shown = await acting("chats", "links", "show", seed.busy)
     expect(shown.code).toBe(0)
     expect(shown.body.link).toMatch(/^https:\/\/chat\.whatsapp\.com\//)
-    const reset = await acting("chats", "link", "reset", seed.busy)
+    const reset = await acting("chats", "links", "reset", seed.busy)
     expect(reset.code).toBe(0)
     expect(reset.done).toEqual([{ op: "resetLink", jid: seed.busy }])
   })
@@ -596,13 +597,13 @@ describe("wa chats requests", () => {
     const listed = await acting("chats", "requests", "list", seed.busy, "--limit", "1", "--page", "1")
     expect(listed.code).toBe(0)
     expect(listed.body.items).toEqual([expect.objectContaining({ person_id: REQUESTER })])
-    const accepted = await acting("chats", "requests", "accept", seed.busy, REQUESTER)
+    const accepted = await acting("chats", "requests", "confirm", seed.busy, REQUESTER)
     expect(accepted.code).toBe(0)
     expect(accepted.done).toEqual([{ op: "answerRequest", jid: seed.busy, people: [REQUESTER], accept: true }])
   })
 
   it("turns a request down", async () => {
-    const declined = await acting("chats", "requests", "decline", seed.busy, REQUESTER)
+    const declined = await acting("chats", "requests", "reject", seed.busy, REQUESTER)
     expect(declined.code).toBe(0)
     expect(declined.done).toEqual([{ op: "answerRequest", jid: seed.busy, people: [REQUESTER], accept: false }])
   })
@@ -621,13 +622,13 @@ describe("wa account show", () => {
 
 describe("wa contacts", () => {
   it("reads a person's profile from WhatsApp", async () => {
-    const result = await acting("contacts", "profile", seed.person)
+    const result = await acting("contacts", "info", seed.person)
     expect(result.code).toBe(0)
     expect(result.body).toMatchObject({ id: seed.person, has_photo: true })
   })
 
   it("has no phone number in a profile, even with --show-phone", async () => {
-    const result = await acting("contacts", "profile", seed.person, "--show-phone")
+    const result = await acting("contacts", "info", seed.person, "--show-phone")
     expect(result.code).toBe(0)
     expect(result.body).toMatchObject({ id: seed.person })
     expect(result.body.phone ?? null).toBeNull()
@@ -852,10 +853,7 @@ describe("wa watch", () => {
       controller.signal,
     )
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.stdout.split("\n")[0] ?? "")).toMatchObject({
-      type: "item",
-      data: { chat_id: seed.busy, chat_title: "Book club" },
-    })
+    expect(watchItems(result.stdout)[0]).toMatchObject({ chat_id: seed.busy, chat_title: "Book club" })
   })
 })
 
@@ -872,10 +870,7 @@ describe("wa chats events", () => {
 
   it("keeps an add seen under watch, lists it once offline though a history push repeats it, and counts it", async () => {
     const printed = await watching([{ event: "chat_event", change: joined }])
-    expect(JSON.parse(printed.split("\n")[0] ?? "")).toMatchObject({
-      type: "item",
-      data: { event: "chat_event", chat_id: seed.busy, chat_title: "Book club" },
-    })
+    expect(watchItems(printed)[0]).toMatchObject({ event: "chat_event", chat_id: seed.busy, chat_title: "Book club" })
     await watching([
       {
         event: "history",
@@ -1016,10 +1011,10 @@ describe("wa chats rules", () => {
   })
 })
 
-describe("wa tags auto", () => {
+describe("wa tags rebuild", () => {
   it("with --sync-first, reads the group's description from WhatsApp and tags the group by it", async () => {
     const asked: string[] = []
-    const result = await wa([PROFILE, "tags", "auto", "--chat", seed.busy, "--sync-first", "--json"], () => {
+    const result = await wa([PROFILE, "tags", "rebuild", "--chat", seed.busy, "--sync-first", "--json"], () => {
       const engine = fakeEngine(seed)
       const group = engine.group
       engine.group = async (jid, options) => {
@@ -1036,8 +1031,8 @@ describe("wa tags auto", () => {
   })
 
   it("without it, tags from the store alone and never starts the engine", async () => {
-    const result = await wa([PROFILE, "tags", "auto", "--chat", seed.chats[2]?.id ?? "", "--json"], () => {
-      throw new Error("tags auto without --sync-first must not start the engine")
+    const result = await wa([PROFILE, "tags", "rebuild", "--chat", seed.chats[2]?.id ?? "", "--json"], () => {
+      throw new Error("tags rebuild without --sync-first must not start the engine")
     })
     expect(result.code, result.stderr).toBe(0)
     expect(JSON.parse(result.stdout).item.items).toMatchObject([{ source: "stored-chat", tags: [] }])
@@ -1046,23 +1041,23 @@ describe("wa tags auto", () => {
 
 describe("wa metadata", () => {
   it("keeps a group's title and description from WhatsApp's group read, and answers them from the store", async () => {
-    const refreshed = await acting("metadata", "refresh", "--chat", seed.busy)
+    const refreshed = await acting("metadata", "sync", "--chat", seed.busy)
     expect(refreshed.code, refreshed.stderr).toBe(0)
     expect(refreshed.body.chats).toEqual([expect.objectContaining({ chat_id: seed.busy, description: null })])
 
-    const kept = await wa([PROFILE, "metadata", "get", "--chat", seed.busy, "--json"], () => {
+    const kept = await wa([PROFILE, "metadata", "show", "--chat", seed.busy, "--json"], () => {
       throw new Error("a stored read must not start the engine")
     })
     expect(kept.code, kept.stderr).toBe(0)
     expect(JSON.parse(kept.stdout).item).toMatchObject({ chat_id: seed.busy, metadata: { title: expect.any(String) } })
 
-    const missing = await acting("metadata", "refresh", "--only-missing", "--limit", "50")
+    const missing = await acting("metadata", "sync", "--only-missing", "--limit", "50")
     expect(missing.code, missing.stderr).toBe(0)
     expect(missing.body.chats.map((chat: { chat_id: string }) => chat.chat_id)).not.toContain(seed.busy)
   })
 
   it("refuses a one-to-one chat without asking WhatsApp", async () => {
-    const result = await acting("metadata", "refresh", "--chat", seed.dialog)
+    const result = await acting("metadata", "sync", "--chat", seed.dialog)
     expect(result.code).toBe(0)
     expect(result.body.chats).toEqual([
       expect.objectContaining({ chat_id: seed.dialog, error: expect.objectContaining({ code: "validation_error" }) }),

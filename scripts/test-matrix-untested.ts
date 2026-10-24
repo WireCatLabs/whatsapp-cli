@@ -58,12 +58,6 @@ const SHARED_BOT: Record<string, string> = {
 }
 
 export const UNTESTED: Untested[] = [
-  ...["chats update", "inbox", "review"].map((command) => ({
-    command,
-    option: command === "chats update" ? "--disappear-time" : "--kind",
-    reason:
-      "hidden cli-core compatibility flag for one release; canonical flags and queries are preferred; tested in src/cli/option-meanings.test.ts in cli-core",
-  })),
   ...Object.entries(SHARED_BOT).map(([command, tests]) => ({
     command,
     reason: `shared cli-core bot command mounted unchanged; tested in cli-core (${tests}), wa's adapter in src/commands/bot.test.ts`,
@@ -182,16 +176,16 @@ export const UNTESTED: Untested[] = [
     ["contacts prepare", "--since-time"],
   ]),
   ...cliCore("src/services/person-timeline.test.ts", [
-    ["contacts timeline"],
-    ["contacts timeline", "--scope"],
-    ["contacts timeline", "--since-time"],
-    ["contacts timeline", "--until-time"],
-    ["contacts timeline", "--limit"],
-    ["contacts timeline", "--cursor"],
+    ["contacts events"],
+    ["contacts events", "--scope"],
+    ["contacts events", "--since-time"],
+    ["contacts events", "--until-time"],
+    ["contacts events", "--limit"],
+    ["contacts events", "--cursor"],
   ]),
   ...cliCore("src/services/private-people.test.ts and person-aliases.test.ts", [
-    ["contacts alias set"],
-    ["contacts alias rm"],
+    ["contacts aliases set"],
+    ["contacts aliases remove"],
     ["contacts notes list"],
     ["contacts notes show"],
     ["contacts notes add"],
@@ -220,7 +214,7 @@ export const UNTESTED: Untested[] = [
   ]),
   ...cliCore("src/services/messages-link.test.ts", [["messages link"]]),
   ...["--source", "--exact", "--timezone", "--selection", "--sync-time"].map((option) => ({
-    command: "stats messages counters refresh",
+    command: "stats messages counters sync",
     option,
     reason:
       "which stored messages to refresh, and the time for it; cli-core's shared command, tested in cli-core " +
@@ -228,7 +222,7 @@ export const UNTESTED: Untested[] = [
       "drives the refresh, which on WhatsApp has no counter to read and never starts the engine",
   })),
   ...["--limit", "--dry-run"].map((option) => ({
-    command: "tags auto",
+    command: "tags rebuild",
     option,
     reason:
       "how many stored chats to tag, and a preview from the store; cli-core's shared command, tested in cli-core " +

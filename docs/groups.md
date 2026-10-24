@@ -27,8 +27,8 @@ Some words on this page:
 | Make a group, join one by its link, or leave | `wa personal chats create`, `chats join`, `chats leave` |
 | Add or remove people, make someone an admin | `wa personal chats members add`, `chats admins add` |
 | Rename a group, set or remove its photo, or change who may add people | `wa personal chats update` |
-| Show or replace the invite link | `wa personal chats link show`, `chats link reset` |
-| Let in or turn away people who asked to join | `wa personal chats requests list`, `chats requests accept` |
+| Show or replace the invite link | `wa personal chats links show`, `chats links reset` |
+| Let in or turn away people who asked to join | `wa personal chats requests list`, `chats requests confirm` |
 | Follow a channel, read its posts, or unfollow it | `wa personal chats join`, `messages sync`, `chats leave` ([channels](usage.md#channels)) |
 | Post to a channel you run | `wa personal messages send` ([channels](usage.md#channels)) |
 
@@ -131,7 +131,7 @@ wa personal tasks list "assignee:any state:open"
 ```
 
 `--assignee sender` is whoever sent the message; `--assignee person:<id>` names someone else, and
-`tasks plan <task> --assignee none` clears it. A task with no assignee is fine: better than a missed one.
+`tasks update <task> --assignee none` clears it. A task with no assignee is fine: better than a missed one.
 
 See what waits on you, oldest first, then only questions and mentions in one group:
 
@@ -207,10 +207,10 @@ wa personal chats update 120363000000000001@g.us --title "Hiking club" --only-ad
 wa personal chats update 120363000000000001@g.us --only-admins-send on --disappear-after 7d
 wa personal chats update 120363000000000001@g.us --photo club.jpg
 wa personal chats update 120363000000000001@g.us --remove-photo
-wa personal chats link show 120363000000000001@g.us
-wa personal chats link reset 120363000000000001@g.us
+wa personal chats links show 120363000000000001@g.us
+wa personal chats links reset 120363000000000001@g.us
 wa personal chats requests list 120363000000000001@g.us
-wa personal chats requests accept 120363000000000001@g.us 100000000000004@lid
+wa personal chats requests confirm 120363000000000001@g.us 100000000000004@lid
 wa personal chats join https://chat.whatsapp.com/AAAAAAAAAAAAAAAAAAAAAA
 wa personal chats leave 120363000000000001@g.us
 ```

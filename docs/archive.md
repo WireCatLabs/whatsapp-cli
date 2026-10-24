@@ -318,12 +318,12 @@ wa personal store migrate              # bring the store up to this version's sc
 
 ## Repair and index maintenance
 
-`wa personal store migrate` builds unfinished indexes; `wa personal store reindex` rebuilds them. `store info` and
+`wa personal store migrate` builds unfinished indexes; `wa personal store rebuild` rebuilds them. `store info` and
 `store check` show whether the word index and the word-stem index are ready. Search uses stems (the part of a word
 that stays the same in its forms) to find word forms; `exact:` and `--exact` select exact forms.
 
 The store's stemmers are a shared setting: `wa config set searchStemmers.latin english,spanish` (the default), and
-`searchStemmers.cyrillic russian`; `none` disables one. Run `store reindex` after your own choice. The setting
+`searchStemmers.cyrillic russian`; `none` disables one. Run `store rebuild` after your own choice. The setting
 affects every WireCat CLI and every profile; a profile-locked process cannot change it.
 
 `wa personal store repair --dry-run --json` previews a structural repair and rolls it back. `store repair` applies it

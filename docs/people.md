@@ -22,7 +22,7 @@ they never connect and work while `serve` runs.
 | See a person and the chats you share | `wa personal contacts show` |
 | Read what they said, in every chat or in the chats you name | `wa personal contacts context` |
 | Record that a WhatsApp account and a Telegram or MAX account are one person | `wa personal contacts link` |
-| Keep your own name and notes for a person | `wa personal contacts alias`, `wa personal contacts notes` |
+| Keep your own name and notes for a person | `wa personal contacts aliases`, `wa personal contacts notes` |
 
 Every option of these commands is in the [command reference](commands.md).
 
@@ -71,11 +71,11 @@ After that, `contacts context` without `--chat` gathers both accounts. `contacts
 account you named. The link is only ever what you record: the same name in two messengers is never taken as the same
 person.
 
-## Your own names and notes: `contacts alias`, `contacts notes`
+## Your own names and notes: `contacts aliases`, `contacts notes`
 
 ```sh
-wa personal contacts alias set 100000000000001@lid Ana    # your own name for a person, on this computer only
-wa personal contacts alias rm 100000000000001@lid
+wa personal contacts aliases set 100000000000001@lid Ana    # your own name for a person, on this computer only
+wa personal contacts aliases remove 100000000000001@lid
 wa personal contacts notes add 100000000000001@lid --text-file note.txt  # or the text from stdin
 wa personal contacts notes list 100000000000001@lid
 ```
@@ -92,7 +92,7 @@ of a note that changed since you read it.
 These connect; while `serve` runs, they go through `serve`'s connection.
 
 ```sh
-wa personal contacts profile 100000000000001@lid        # their name, about line and whether they show a photo
+wa personal contacts info 100000000000001@lid        # their name, about line and whether they show a photo
 wa personal contacts block 100000000000001@lid
 wa personal contacts unblock 100000000000001@lid
 wa personal contacts lookup < number.txt                # whether this number has WhatsApp, and its id
@@ -101,7 +101,7 @@ wa personal contacts sync                                # the phone's address b
 
 For `contacts lookup`, first write the number to `number.txt`, on one line, in international format.
 
-- `contacts profile` tells the person nothing. It shows no phone number.
+- `contacts info` tells the person nothing. It shows no phone number.
 - `contacts lookup` reads the number from stdin, never from the command line, and sends nothing to it. It takes one
   number, at most one every 10 seconds for the profile: many lookups in a row are what WhatsApp bans scrapers for.
 - WhatsApp keeps your address book on the phone, so `contacts add`, `remove`, `rename` and `import` are refused.

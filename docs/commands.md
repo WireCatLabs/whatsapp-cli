@@ -283,12 +283,12 @@ wa chats members list <chat> [query] [options]
 | `--page <n>` | which page, starting at 1. |
 | `--all` | every row, no paging. |
 
-#### `wa chats members audit`
+#### `wa chats members check`
 
 members that look like bots, each with its reasons — read from the member list and the local store; never one request per person, and it removes nobody
 
 ```sh
-wa chats members audit <chat> [query] [options]
+wa chats members check <chat> [query] [options]
 ```
 
 | Argument | | What it is |
@@ -510,30 +510,30 @@ wa chats update <chat> [options]
 | `--only-admins-edit-info <on\|off>` | only admins may change the name, photo and description. |
 | `--disappear-after <duration\|off>` | new messages disappear this long after sending: 24h, 7d, 90d; off keeps them. |
 
-### `wa chats link`
+### `wa chats links`
 
 a group's invite link
 
-#### `wa chats link show`
+#### `wa chats links show`
 
 the invite link, if you may see it
 
 ```sh
-wa chats link show <chat>
+wa chats links show <chat>
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
-#### `wa chats link reset`
+#### `wa chats links reset`
 
 replace the invite link; the old one stops working
 
 **Changes something in WhatsApp.**
 
 ```sh
-wa chats link reset <chat>
+wa chats links reset <chat>
 ```
 
 | Argument | | What it is |
@@ -562,14 +562,14 @@ wa chats requests list <chat> [query] [options]
 | `--limit <n>` | how many to show. |
 | `--page <n>` | which page, starting at 1. |
 
-#### `wa chats requests accept`
+#### `wa chats requests confirm`
 
 let them in; the group sees them join
 
 **Changes something in WhatsApp.**
 
 ```sh
-wa chats requests accept <chat> <person>
+wa chats requests confirm <chat> <person>
 ```
 
 | Argument | | What it is |
@@ -577,14 +577,14 @@ wa chats requests accept <chat> <person>
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `person` | required | who asked: an id from `chats requests list`. |
 
-#### `wa chats requests decline`
+#### `wa chats requests reject`
 
 turn the request away
 
 **Changes something in WhatsApp.**
 
 ```sh
-wa chats requests decline <chat> <person>
+wa chats requests reject <chat> <person>
 ```
 
 | Argument | | What it is |
@@ -951,12 +951,12 @@ wa contacts show <person> [options]
 |---|---|
 | `--with-notes` | include your private notes, subject to contacts.notes.list permission. |
 
-### `wa contacts profile`
+### `wa contacts info`
 
 everything the messenger says about one person — handles, flags, last seen, when they registered — and how many of their messages the store holds in each chat you share, the first and the last, and the earlier names and usernames the store saw them with
 
 ```sh
-wa contacts profile <person> [options]
+wa contacts info <person> [options]
 ```
 
 | Argument | | What it is |
@@ -1002,12 +1002,12 @@ wa contacts prepare <person> [options]
 | `--limit <n>` | at most this many messages, and items in each section; 10 if not given. |
 | `--since-time <time>` | no message or meeting older than this ISO 8601 time, or 2h / 1d ago. |
 
-### `wa contacts timeline`
+### `wa contacts events`
 
 everything one person took part in, in every messenger linked to them — messages they wrote or were mentioned in, chats, mail, meetings, tasks — newest first, from the store; never connects
 
 ```sh
-wa contacts timeline <person> [options]
+wa contacts events <person> [options]
 ```
 
 | Argument | | What it is |
@@ -1085,18 +1085,18 @@ take the whole contact list from the messenger into the local store
 wa contacts sync
 ```
 
-### `wa contacts alias`
+### `wa contacts aliases`
 
 a private local display name in the selected account
 
-#### `wa contacts alias set`
+#### `wa contacts aliases set`
 
 your own name for a person in this account; kept on this machine, never sent
 
 **Changes something on this computer only.**
 
 ```sh
-wa contacts alias set <person> <alias>
+wa contacts aliases set <person> <alias>
 ```
 
 | Argument | | What it is |
@@ -1104,14 +1104,14 @@ wa contacts alias set <person> <alias>
 | `person` | required | the person's id, reference or known name. |
 | `alias` | required | the private name to use for this person. |
 
-#### `wa contacts alias rm`
+#### `wa contacts aliases remove`
 
 drop your local name for a person; their own name shows again
 
 **Changes something on this computer only.**
 
 ```sh
-wa contacts alias rm <person>
+wa contacts aliases remove <person>
 ```
 
 | Argument | | What it is |
@@ -1312,7 +1312,7 @@ wa messages list <chat> [query] [options]
 | `--limit <n>` | how many. |
 | `--cursor <cursor>` | go on from where the last page stopped; page.next gives it. |
 | `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
-| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models list` shows them. |
 
 ### `wa messages send`
 
@@ -1417,7 +1417,7 @@ wa messages transcribe <chat> <message> [options]
 | Option | What it does |
 |---|---|
 | `--local` | use the model on this machine, never the messenger. |
-| `--model <model>` | which downloaded model; implies --local (`models audio list`). |
+| `--model <model>` | which downloaded model; implies --local (`models list`). |
 
 ### `wa messages edit`
 
@@ -1734,101 +1734,67 @@ wa polls create <chat> <question> <answers> [options]
 
 models that run on this machine
 
-### `wa models audio`
-
-speech models for transcribing voice messages
-
-#### `wa models audio list`
-
-the speech models, most suitable first, which are downloaded, and which one is the default
-
-```sh
-wa models audio list [query]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `query` | optional | field:value terms; this list filters by none yet. |
-
-#### `wa models audio download`
-
-download a speech model once, checked against the sha256 this version expects
-
-**Reads from an outside service.**
-
-```sh
-wa models audio download <model>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `model` | required | a model id from `models audio list`. |
-
-### `wa models text`
-
-embedding models for searching conversations by meaning
-
-#### `wa models text list`
-
-the embedding models, most suitable first, which are downloaded, and which one is the default
-
-```sh
-wa models text list [query]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `query` | optional | field:value terms; this list filters by none yet. |
-
-#### `wa models text download`
-
-download an embedding model once, checked against the sha256 this version expects
-
-**Reads from an outside service.**
-
-```sh
-wa models text download <model> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `model` | required | a model id from `models text list`. |
-
-| Option | What it does |
-|---|---|
-| `--accept-terms` | accept the model's licence terms, for a model that has its own. |
-
-#### `wa models text key`
+### `wa models keys`
 
 API keys for embedding and analysis providers
 
-#### `wa models text key set`
+#### `wa models keys set`
 
 store a key, typed at a hidden prompt or piped on stdin — never as an argument
 
 **Changes something on this computer only.**
 
 ```sh
-wa models text key set <provider>
+wa models keys set <provider>
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `provider` | required | openai, anthropic, or the host of a --base-url server that wants a key. |
 
-#### `wa models text key remove`
+#### `wa models keys remove`
 
 forget a stored key
 
 **Changes something on this computer only.**
 
 ```sh
-wa models text key remove <provider>
+wa models keys remove <provider>
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `provider` | required | openai, anthropic, or a server's host. |
+
+### `wa models list`
+
+speech and embedding models, their download status and the default of each kind
+
+```sh
+wa models list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+### `wa models download`
+
+download and verify one speech or embedding model
+
+**Reads from an outside service.**
+
+```sh
+wa models download <model> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `model` | required | a model id from models list. |
+
+| Option | What it does |
+|---|---|
+| `--accept-terms` | accept the model's licence terms, for a model that has its own. |
 
 ## `wa inbox`
 
@@ -1848,7 +1814,7 @@ wa inbox [query] [options]
 | `--limit <n>` | at most this many per chat, the newest. |
 | `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
 | `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
-| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models list` shows them. |
 
 ## `wa review`
 
@@ -1867,7 +1833,7 @@ wa review [query] [options]
 | `--unanswered [duration]` | only questions to you or a group's admins that nobody answered, asked at least this long ago — 4h, 1d; 24h if not given. |
 | `--all` | muted and archived chats too — left out unless they mention you or reply to you. |
 | `--transcribe` | turn voice messages not heard yet into text — by the messenger where it can, else by a model on this machine; can take minutes. |
-| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models audio list` shows them. |
+| `--model <model>` | which downloaded speech model hears them, with --transcribe; `models list` shows them. |
 | `--new` | what changed since the last `review --new`, a point per chat — for scheduled runs. |
 
 ## `wa watch`
@@ -1986,12 +1952,12 @@ wa store status [chat]
 
 inspect recorded interior coverage gaps and explicitly fetch them
 
-#### `wa store gaps plan`
+#### `wa store gaps show`
 
 local coverage plan; missing message ids alone do not imply missing history
 
 ```sh
-wa store gaps plan <chat>
+wa store gaps show <chat>
 ```
 
 | Argument | | What it is |
@@ -2169,14 +2135,14 @@ bring the store up to this build's schema, then normalize, index and stem the me
 wa store migrate
 ```
 
-### `wa store reindex`
+### `wa store rebuild`
 
 rebuild the word index, its typo vocabulary, the stems, the files' word index, the notes' indexes and who took part in what, from what is stored; loses nothing
 
 **Changes something on this computer only.**
 
 ```sh
-wa store reindex
+wa store rebuild
 ```
 
 ### `wa store backup`
@@ -2279,27 +2245,6 @@ wa store copies delete <name>
 
 the conversations inside a chat, found in the stored messages by replies, mentions and who wrote next
 
-### `wa conversations build`
-
-find a chat's conversations in what the store holds, replacing the last build; without --chat, every chat that changed since its build and every group never built; never asks the messenger
-
-**Sends text to an outside service.**
-
-```sh
-wa conversations build [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--analyze` | link batches using the configured analysis provider; requires --chat and remembers consent for this chat/provider. |
-| `--analysis-provider <provider>` | analysis: agent, openai or anthropic. |
-| `--model <model>` | analysis model; overrides analysis_model. |
-| `--base-url <url>` | analysis API endpoint; overrides analysis_base_url. |
-| `--size <n>` | analysis answer messages per batch, 10–200; default 50. |
-| `--max-tokens <n>` | analysis input/output reservation cap per run; default 100000. |
-| `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
-
 ### `wa conversations list`
 
 a chat's conversations, the newest first: when, how many messages, how many people
@@ -2346,7 +2291,7 @@ wa conversations related <chat> <message> [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many. |
-| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -2362,7 +2307,7 @@ wa conversations status [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -2384,12 +2329,12 @@ wa conversations batches status [options]
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--size <n>` | messages to answer per batch, 10–200; 50 by default. |
 
-#### `wa conversations batches next`
+#### `wa conversations batches show`
 
 the next window to answer, with the messages before it; message text goes to stdout only
 
 ```sh
-wa conversations batches next [options]
+wa conversations batches show [options]
 ```
 
 | Option | What it does |
@@ -2399,7 +2344,28 @@ wa conversations batches next [options]
 
 ### `wa conversations links`
 
-your agent's answers: which earlier message each message of a batch answers
+message links and the conversations derived from them
+
+#### `wa conversations links rebuild`
+
+find a chat's conversations in what the store holds, replacing the last build; without --chat, every chat that changed since its build and every group never built; never asks the messenger
+
+**Sends text to an outside service.**
+
+```sh
+wa conversations links rebuild [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `--analyze` | link batches using the configured analysis provider; requires --chat and remembers consent for this chat/provider. |
+| `--analysis-provider <provider>` | analysis: agent, openai or anthropic. |
+| `--model <model>` | analysis model; overrides analysis_model. |
+| `--base-url <url>` | analysis API endpoint; overrides analysis_base_url. |
+| `--size <n>` | analysis answer messages per batch, 10–200; default 50. |
+| `--max-tokens <n>` | analysis input/output reservation cap per run; default 100000. |
+| `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
 
 #### `wa conversations links add`
 
@@ -2413,7 +2379,7 @@ wa conversations links add [options]
 
 | Option | What it does |
 |---|---|
-| `--batch <id>` | the batch id `conversations batches next` printed. |
+| `--batch <id>` | the batch id `conversations batches show` printed. |
 
 #### `wa conversations links clear`
 
@@ -2429,6 +2395,44 @@ wa conversations links clear [options]
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--answer-model <model>` | only the stored answers this model gave. |
+
+### `wa conversations embeddings`
+
+stored conversation vectors
+
+#### `wa conversations embeddings status`
+
+how many chunks of a chat have a vector of the model, how many are left, and what is left costs
+
+```sh
+wa conversations embeddings status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
+
+#### `wa conversations embeddings clear`
+
+drop a chat's vectors, or only one model's; messages and conversations are never touched
+
+**Changes something on this computer only.**
+
+```sh
+wa conversations embeddings clear [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
+| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
+| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 
 ### `wa conversations rebuild`
 
@@ -2462,14 +2466,14 @@ wa conversations consents list [query]
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-#### `wa conversations consents revoke`
+#### `wa conversations consents remove`
 
 forget analysis permissions so the next analysis asks again
 
 **Changes something on this computer only.**
 
 ```sh
-wa conversations consents revoke [options]
+wa conversations consents remove [options]
 ```
 
 | Option | What it does |
@@ -2490,7 +2494,7 @@ wa conversations embed [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -2499,40 +2503,6 @@ wa conversations embed [options]
 | `--max-tokens <n>` | remote: stop before a run that could send more tokens than this. |
 | `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
 | `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given, and no limit with --chat. |
-
-#### `wa conversations embed status`
-
-how many chunks of a chat have a vector of the model, how many are left, and what is left costs
-
-```sh
-wa conversations embed status [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
-| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
-| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
-
-#### `wa conversations embed clear`
-
-drop a chat's vectors, or only one model's; messages and conversations are never touched
-
-**Changes something on this computer only.**
-
-```sh
-wa conversations embed clear [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
-| `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
-| `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
-| `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 
 ## `wa attachments`
 
@@ -2598,18 +2568,14 @@ wa attachments show <chat> [message] [options]
 | `--chunk-bytes <n>` | bytes to return, 1–1048576 (default524288). |
 | `--expected-fingerprint <hash>` | require the whole file SHA-256 from the preceding chunk. |
 
-### `wa attachments text`
-
-the text of one file, as an agent read it
-
-#### `wa attachments text set`
+### `wa attachments update`
 
 keep the text an agent read from a file — a scan, a photo — so search finds it; nothing is sent
 
 **Changes something on this computer only.**
 
 ```sh
-wa attachments text set <chat> [message] [options]
+wa attachments update <chat> [message] [options]
 ```
 
 | Argument | | What it is |
@@ -2757,14 +2723,14 @@ wa attachments move <dir> <archive-dir> [options]
 
 your own labels on chats, people, messages and tasks, kept in the local store and never sent; tag: in a search finds them
 
-### `wa tags auto`
+### `wa tags rebuild`
 
 derive local group/channel tags from cached metadata using keyword rules
 
 **Changes something on this computer only.**
 
 ```sh
-wa tags auto [options]
+wa tags rebuild [options]
 ```
 
 | Option | What it does |
@@ -2999,26 +2965,26 @@ wa images models download <model>
 
 cached group/channel descriptions for local automatic tags
 
-### `wa metadata get`
+### `wa metadata show`
 
 a stored chat's cached description, as automatic tags read it
 
 ```sh
-wa metadata get [options]
+wa metadata show [options]
 ```
 
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a stored chat. |
 
-### `wa metadata refresh`
+### `wa metadata sync`
 
 fetch group and channel descriptions again and cache them
 
 **Changes something on this computer only.**
 
 ```sh
-wa metadata refresh [options]
+wa metadata sync [options]
 ```
 
 | Option | What it does |
@@ -3084,14 +3050,14 @@ wa stats messages counters show [query] [options]
 | `--limit <n>` | messages, 1–100; 20 by default. |
 | `--max-age <duration>` | maximum fresh observation age; 24h by default. |
 
-#### `wa stats messages counters refresh`
+#### `wa stats messages counters sync`
 
 read authoritative counters for bounded messages and update their local observations
 
 **Changes something on this computer only.**
 
 ```sh
-wa stats messages counters refresh [query] [options]
+wa stats messages counters sync [query] [options]
 ```
 
 | Argument | | What it is |
@@ -3407,14 +3373,14 @@ wa tasks add <message> [options]
 | `--remind-time <time>` | when to look at it again: an ISO 8601 time or 2h, 3d from now; none clears it. |
 | `--assignee <person...>` | who does it: sender (whoever sent the task's message) or person:<id>; none clears it. Leave it out when unsure: a task with no assignee is better than none. |
 
-### `wa tasks plan`
+### `wa tasks update`
 
 set a task's title, description, due date, next check, category and assignee; nothing reaches the messenger
 
 **Changes something on this computer only.**
 
 ```sh
-wa tasks plan <task> [options]
+wa tasks update <task> [options]
 ```
 
 | Argument | | What it is |
@@ -3774,7 +3740,7 @@ wa search conversations <query> [options]
 
 | Option | What it does |
 |---|---|
-| `--model <model>` | local: a model id from `models text list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -4108,18 +4074,26 @@ wa doctor [options]
 |---|---|
 | `--online` | also connect once and read the account; sends nothing. |
 
-### `wa doctor report`
+### `wa doctor reports`
+
+problem reports
+
+#### `wa doctor reports show`
 
 what a problem report holds; writes nothing
 
-#### `wa doctor report create`
+```sh
+wa doctor reports show
+```
+
+#### `wa doctor reports create`
 
 write a problem report to a file, and say where to send it
 
 **Changes something on this computer only.**
 
 ```sh
-wa doctor report create [options]
+wa doctor reports create [options]
 ```
 
 | Option | What it does |
@@ -4131,12 +4105,12 @@ wa doctor report create [options]
 
 every command by section, one line each; --json: the contract, one path per call
 
-### `wa commands schema`
+### `wa commands info`
 
 one command's argv and result schemas, effects, permissions and retry guidance
 
 ```sh
-wa commands schema <path>
+wa commands info <path>
 ```
 
 | Argument | | What it is |
@@ -4199,14 +4173,14 @@ wa mcp config [options]
 |---|---|
 | `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
 
-### `wa mcp setup`
+### `wa mcp add`
 
 add this profile's local MCP server to Codex or Claude Code
 
 **Changes something on this computer only.**
 
 ```sh
-wa mcp setup <client> [options]
+wa mcp add <client> [options]
 ```
 
 | Argument | | What it is |
@@ -4218,12 +4192,12 @@ wa mcp setup <client> [options]
 | `--allow-writes` | acknowledge that this profile offers writing tools. |
 | `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
 
-### `wa mcp doctor`
+### `wa mcp check`
 
 check this profile's local MCP handshake and tool list
 
 ```sh
-wa mcp doctor [options]
+wa mcp check [options]
 ```
 
 | Option | What it does |
