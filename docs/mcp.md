@@ -38,8 +38,13 @@ For ChatGPT or Claude **in the browser**, use `wa personal mcp --http` — see
 | The skill, `wa://skill` | The same text as `wa skill show` |
 | [Permissions](#what-an-agent-may-do) | The profile decides which commands the agent sees |
 
-The tools use the same catalogue as `tg` and `max`. A command that WhatsApp cannot do yet is refused when it runs,
-with exit code `2` and a message that says so.
+The tools use the same catalogue as `tg` and `max`. Commands a linked WhatsApp device cannot perform, such as
+ending other sessions and removing contacts, are hidden. A command that WhatsApp cannot do yet is refused when it
+runs, with exit code `2` and a message that says so.
+
+Commands that change future permissions or automation require `permissions.mcp.authority` set to `allow`; raw
+Cloud API calls require `permissions.bot.api` set to `allow`. Both keys default to `deny` over MCP. Other writes
+remain subject to their command permissions, recipient lists and send limits.
 
 ## Connecting
 

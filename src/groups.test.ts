@@ -28,7 +28,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(signal ? { signal } : {}),
     ...(stdin === undefined ? {} : { stdin: Readable.from([stdin]) }),
   })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), stderr: streams.stderr.join("") }
 }
 
 const PROFILE = "groups"
@@ -852,7 +852,10 @@ describe("wa watch", () => {
       controller.signal,
     )
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.stdout)).toMatchObject({ chatId: seed.busy, chatTitle: "Book club" })
+    expect(JSON.parse(result.stdout.split("\n")[0] ?? "")).toMatchObject({
+      type: "item",
+      data: { chat_id: seed.busy, chat_title: "Book club" },
+    })
   })
 })
 
@@ -869,7 +872,10 @@ describe("wa chats events", () => {
 
   it("keeps an add seen under watch, lists it once offline though a history push repeats it, and counts it", async () => {
     const printed = await watching([{ event: "chat_event", change: joined }])
-    expect(JSON.parse(printed)).toMatchObject({ event: "chat_event", chatId: seed.busy, chatTitle: "Book club" })
+    expect(JSON.parse(printed.split("\n")[0] ?? "")).toMatchObject({
+      type: "item",
+      data: { event: "chat_event", chat_id: seed.busy, chat_title: "Book club" },
+    })
     await watching([
       {
         event: "history",

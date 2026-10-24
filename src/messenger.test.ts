@@ -221,8 +221,9 @@ describe("what WhatsApp lacks", () => {
 
   it("names exactly the methods of COMMAND_NEEDS the adapter does not have", () => {
     const adapter = whatsAppAdapter(fakeEngine(seed))
-    for (const method of WHATSAPP.lacks ?? []) expect(adapter).not.toHaveProperty(method)
-    expect([...(WHATSAPP.lacks ?? [])].sort()).toEqual(needed.filter((method) => !(method in adapter)).sort())
+    const missing = [...(WHATSAPP.lacks ?? []), ...(WHATSAPP.never ?? [])]
+    for (const method of missing) expect(adapter).not.toHaveProperty(method)
+    expect(missing.sort()).toEqual(needed.filter((method) => !(method in adapter)).sort())
   })
 })
 

@@ -224,9 +224,9 @@ export const WHATSAPP: Messenger = {
   chatArchive: true,
   chatPin: true,
   chatMarkUnread: true,
+  never: ["endOtherSessions", "removeContact"],
   lacks: [
     "sessions",
-    "endOtherSessions",
     "chatEvents",
     "comments",
     "inspect",
@@ -235,7 +235,6 @@ export const WHATSAPP: Messenger = {
     "updateFolder",
     "deleteFolder",
     "addContact",
-    "removeContact",
     "renameContact",
     "importContacts",
   ],

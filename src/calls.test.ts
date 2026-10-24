@@ -66,7 +66,7 @@ describe("a call someone made to the owner", () => {
     const rang = watched.indexOf('"text":"Incoming voice call"')
     expect(rang).toBeGreaterThan(-1)
     expect(watched.indexOf('"text":"Missed voice call"')).toBeGreaterThan(rang)
-    expect(watched).toContain('"providerMetadata":{"action":"call","video":false,"outcome":"missed"}')
+    expect(watched).toContain('"provider_metadata":{"action":"call","video":false,"outcome":"missed"}')
   })
 
   it("is one stored message that says the call was missed, marked as a call", async () => {
