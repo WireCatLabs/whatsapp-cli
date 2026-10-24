@@ -104,7 +104,7 @@ echo "STATE:$running:$stopped:$started"
   }
 }
 
-describe("owner-run managed serve lifecycle", () => {
+describe.skipIf(process.platform === "win32")("owner-run managed serve lifecycle", () => {
   it.each(["managed", "explicit-service"])("pauses and restores a verified persistent user service: %s", (mode) => {
     const result = run(mode)
     expect(result.status, result.stderr).toBe(0)
