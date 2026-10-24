@@ -63,17 +63,20 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   `bin/standards-audit.sh` (slice B1 of the standards handoff).
 - **WA-19** · P2 · engine · Business-app features whatsmeow reaches: labels and another business's profile
   (NEED-1608 = A) — plan: cli-private `plans/2026-10-22-wa-business-app/handoff.md`.
-- **WA-20** · P2 · risk · npm 11.17 warns that the `postinstall` is not covered by `allowScripts`; an npm that
+- **WA-20** · P2 · 🚧 `feat/wa-launch-reads` · risk · npm 11.17 warns that the `postinstall` is not covered by `allowScripts`; an npm that
   enforces it skips `WA_INSTALL_AGENT` (`docs/installation.md:24`) — check npm 12, document `--allow-scripts`.
 - **WA-21** · P2 · engine · Channels: save a post's file, and what following and reading left open —
   `engine/cmd/wa-engine/`. [Notes](BACKLOG-NOTES.md#wa-21--channels-post-files-and-what-following-left-open)
-- **WA-50** · P2 · engine · `contacts add|rename` through one app-state contact change, as wacli does on the same
+- **WA-50** · P2 · 🚧 `feat/wa-launch-reads` · engine · `contacts add|rename` through one app-state contact change, as wacli does on the same
   library. Test on a spare account first: a bad app-state write breaks sync on every device.
-- **WA-51** · P2 · engine · `chats inspect` for group and channel invite links: whatsmeow previews a group link
+- **WA-51** · P2 · 🚧 `feat/wa-launch-reads` · engine · `chats inspect` for group and channel invite links: whatsmeow previews a group link
   without joining; channel links already work.
-- **WA-52** · P2 · engine · `account sessions list` as linked device ids (WhatsApp sends no device names); `end`
+- **WA-52** · P2 · 🚧 `feat/wa-launch-reads` · engine · `account sessions list` as linked device ids (WhatsApp sends no device names); `end`
   refused with a clear reason.
-- **WA-53** · P2 · engine · `chats folders list|show` from WhatsApp Lists, which reach every linked device; needs
+- **WA-53** · P2 · 🚧 `feat/wa-launch-reads` · engine · `chats folders list|show` from WhatsApp Lists, which reach every linked device; needs
   WA-30 first, and pairs with WA-19 business labels.
-- **WA-30** · P2 · engine · `EmitAppStateEventsOnFullSync` stays off; changes made while out of sync are lost.
+- **WA-30** · P2 · 🚧 `feat/wa-launch-reads` · engine · `EmitAppStateEventsOnFullSync` stays off; changes made while out of sync are lost.
   [Notes](BACKLOG-NOTES.md#wa-30--emitappstateeventsonfullsync-stays-off)
+
+- **WA-55** · P2 · engine · 🚧 `feat/wa-launch-reads` · `messages comments` for community announcement groups, reading first (channels have no
+  comments).
