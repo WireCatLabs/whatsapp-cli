@@ -3,7 +3,7 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.7.0 — 24.10.2026
 
 ### Added
 
@@ -21,7 +21,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **MCP exposes more writes through permission keys.** Commands that change future permissions or automation
   require `mcp.authority: allow`; raw Cloud API calls require `bot.api: allow`. Both default to `deny` over MCP.
   Store maintenance and other writes follow their command permissions.
-
 - **Shared commands use canonical names without compatibility aliases.** Use `contacts info|events|aliases`,
   `chats links`, `metadata show|sync`, `tasks update`, `commands info`, `mcp add|check` and
   `doctor reports show|create`. Models use `models list`, `models download` and `models keys`.
