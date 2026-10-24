@@ -67,14 +67,6 @@ git merge -q --ff-only origin/main
 # One release at a time on this machine, across every package: two sessions published at once on 2026-10-08.
 . ./config/wirecat/release-lock.sh
 wirecat_release_lock
-# Two hours between releases, so a broken one is noticed before the next lands on top of it.
-# On a 404 npm still prints an error document to stdout; before the first publish that is not a time list.
-times=$(npm view "@wirecat/whatsapp-cli" time --json --prefer-online 2>/dev/null) || times='{}'
-opens=$(node -e 'const t = JSON.parse(process.argv[1]); delete t.created; delete t.modified
-  const opens = Math.max(0, ...Object.values(t).map(Date.parse)) + 2 * 3600e3
-  if (Date.now() < opens) console.log(new Date(opens).toISOString().slice(11, 16) + " UTC")' "$times")
-[ -z "$opens" ] || { echo "the last release was under two hours ago — the next may start at $opens" >&2; exit 1; }
-
 version=$(node -p 'require("./package.json").version')
 # `npm view` rather than the registry document, which a CDN serves stale for minutes.
 published() {

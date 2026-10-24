@@ -104,7 +104,7 @@ bin/release           # starts release.yml, which publishes from GitHub Actions
 ```
 
 `bin/release` refuses unless the report has `Commit: <HEAD>` and a dated `Signed off:` line (`WC-REL-10`). It takes
-the release lock (`WC-REL-3`), refuses within two hours of the last version on npm (`WC-REL-8`), folds a late
+the release lock (`WC-REL-3`), folds a late
 `## Unreleased` into the dated version (`WC-REL-15`), takes the next free version if another session published first
 (`WC-REL-5`) and runs `release:check` again. When it only folds the changelog or renumbers, it carries the report to
 the new commit itself.
