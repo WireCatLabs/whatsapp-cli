@@ -1,17 +1,21 @@
 import { writeFileSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
+import { type QueryRegistry, queryFieldsOf } from "@wirecat/cli-base/query"
 import {
   type BotContext,
   botContext,
+  botTemplate,
   environmentOf,
   FETCH,
   itemOf,
   listOf,
   parseApiJson,
+  queryTerms,
   REMOTE_READ,
   REMOTE_WRITE,
   renderAnswer,
+  withQuery,
 } from "@wirecat/cli-core/cli"
 import { guardedWrite, newOperationId } from "@wirecat/cli-core/sends"
 import { Command } from "commander"
@@ -57,6 +61,16 @@ interface Template {
   category?: string
 }
 
+const TEMPLATES_QUERY: QueryRegistry = {
+  entity: "bot_template",
+  backend: "native",
+  fields: queryFieldsOf(botTemplate, { native: ["name"], examples: { name: "name:hello_world" } }).map((field) =>
+    field.native
+      ? { ...field, operators: field.operators.filter((operator) => operator === "term" || operator === "phrase") }
+      : field,
+  ),
+}
+
 /**
  * `bot templates`: the approved messages a business may send outside the 24 hours after a person last wrote. Only
  * WhatsApp has them; MAX and Telegram bots write freely.
@@ -66,16 +80,18 @@ export const botTemplatesCommand = (): Command => {
     "approved messages: the only kind WhatsApp delivers 24 hours after a person wrote",
   )
 
-  annotate(command.command("list"), {
-    effects: REMOTE_READ,
-    examples: ["wa cloudtest bot templates list", "wa cloudtest bot templates list --name hello_world"],
-  })
+  withQuery(
+    annotate(command.command("list"), {
+      effects: REMOTE_READ,
+      examples: ["wa cloudtest bot templates list", "wa cloudtest bot templates list name:hello_world"],
+    }),
+    TEMPLATES_QUERY,
+  )
     .description("the business account's templates, with status, language and category")
-    .option("--name <name>", "only templates with this name")
-    .action(async function (this: Command) {
+    .action(async function (this: Command, words: string[]) {
+      const name = queryTerms(words, TEMPLATES_QUERY, "bot templates list").get("name")
       const context = online(this)
       const { settings, graph } = graphOf(this, context)
-      const { name } = this.opts<{ name?: string }>()
       await context.run(async (events) => {
         const answer = (await graph(events).call({
           path: `/${required(settings.wabaId, "waba_id", context.profile)}/message_templates`,

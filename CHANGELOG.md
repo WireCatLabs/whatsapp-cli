@@ -15,6 +15,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - The one-shot regression checks the receiver's store before restarting `serve`; delivery only after restart
   is inconclusive. Lost messages and inconclusive checks now return nonzero.
 
+- **Template lists use a query instead of a name flag.** Replace `bot templates list --name hello_world` with
+  `bot templates list name:hello_world`. Meta applies the name predicate before paging; unsupported query fields
+  are refused before a request. The retired flag has no compatibility alias.
+
 ## 0.7.0 — 24.10.2026
 
 ### Added
