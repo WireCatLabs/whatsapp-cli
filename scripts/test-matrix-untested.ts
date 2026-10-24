@@ -177,9 +177,6 @@ export const UNTESTED: Untested[] = [
   ]),
   ...cliCore("src/services/person-timeline.test.ts", [
     ["contacts events"],
-    ["contacts events", "--scope"],
-    ["contacts events", "--since-time"],
-    ["contacts events", "--until-time"],
     ["contacts events", "--limit"],
     ["contacts events", "--cursor"],
   ]),
