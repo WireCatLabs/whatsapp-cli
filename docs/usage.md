@@ -269,6 +269,37 @@ wa personal chats leave 120363000000000001@newsletter                     # unfo
   channel's admins see that you followed. A follower count stands in for the member list, which WhatsApp does not
   show.
 
+## Preview links, devices and Lists
+
+Inspect a group or channel invite before joining, list your linked devices, or read a custom List made on the phone:
+
+```sh
+wa personal chats inspect https://chat.whatsapp.com/INVITECODE
+wa personal account sessions list
+wa personal chats folders list
+wa personal chats folders show "Work"
+```
+
+Inspecting a link joins nothing. Sessions show numeric device ids: `0` is the phone; the current device is marked.
+WhatsApp does not provide device names or last-active times to a linked device. End other devices from the phone's
+**Settings → Linked devices**; `wa personal session end` unlinks this device.
+
+Folders are WhatsApp's custom Lists, with their titles and explicitly included chats. The first read downloads the
+synced Lists if this device has no snapshot; later reads use the last synced state. Built-in filters and WhatsApp
+Business labels are separate. Create or change a List on the phone.
+
+## Read community comments
+
+Use `messages comments` to read replies below a post in a community's announcement group:
+
+```sh
+wa personal messages comments "Announcements" POST_ID --limit 20
+```
+
+The result lists comments this linked device has received and decrypted, saved under their parent post. Keep
+`serve` receiving messages to fill that history. Comments whose parent secret this device never received cannot
+be decrypted. WhatsApp channels have reactions, not comments. Sending community comments is not supported.
+
 ## Not in wa yet
 
 `wa` shares its command tree with tg and max, so some commands are there that WhatsApp cannot run. Each one stops
@@ -278,15 +309,11 @@ Not built yet:
 
 - more files in one message than a photo and a video, which go as one album;
 - listing a community's groups, and adding a group to one or taking it out ([communities](groups.md#communities));
-- where an invite link leads, without joining (`chats inspect`);
-- the list of linked devices, and ending the others (`account sessions`);
-- making a channel (`chats create --channel`);
-- downloading a file WhatsApp no longer keeps: the phone uploads it again under a key it does not share, so the
-  download ends with `media.retry-failed` and saves nothing ([file attachments](attachments.md)).
+- making a channel (`chats create --channel`).
 
 WhatsApp has no such thing, or keeps it on the phone:
 
-- forum topics, chat folders (`chats folders`) and comments under channel posts (`messages comments`);
+- forum topics and comments under channel posts (channels have reactions only);
 - more than one invite link per group: `chats links reset` replaces the one there is;
 - admins with only some rights: every admin has all of them;
 - polls that close, quizzes and anonymous polls;

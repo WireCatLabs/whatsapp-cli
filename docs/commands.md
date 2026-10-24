@@ -1558,7 +1558,7 @@ wa messages link <chat> [message]
 
 ### `wa messages comments`
 
-the comments under a channel post, oldest to newest; they live in its discussion group
+the comments received under a post, oldest to newest
 
 ```sh
 wa messages comments <chat> <post> [query] [options]
@@ -1566,8 +1566,8 @@ wa messages comments <chat> <post> [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | the channel: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `post` | required | the post's message id in the channel. |
+| `chat` | required | the chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `post` | required | the post's message id in the chat. |
 | `query` | optional | where to start: id<42. |
 
 | Option | What it does |

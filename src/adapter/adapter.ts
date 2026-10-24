@@ -25,6 +25,8 @@ import type {
 import { EngineError, OLDER_MAX, type WaKey, type WhatsAppEngine } from "../engine/contract.js"
 import { channelAdapter, channelHistory, channelWrites, isChannel } from "./channels.js"
 import type { Words } from "./checks.js"
+import { type CommentAdapter, commentAdapter } from "./comments.js"
+import { type DiscoveryAdapter, discoveryAdapter } from "./discovery.js"
 import { fromEngine } from "./errors.js"
 import { toWhatsApp } from "./format-markdown.js"
 import { type GroupAdapter, groupAdapter } from "./groups.js"
@@ -51,7 +53,9 @@ export type WhatsAppAdapter = MessengerCore &
   GroupAdapter &
   PrivacyAdapter &
   MessagePins &
-  SettingsAdapter
+  SettingsAdapter &
+  DiscoveryAdapter &
+  CommentAdapter
 
 // WhatsApp addresses a message by its sender and by whether it is the account's own, and the engine keeps no
 // messages, so an edit, a deletion, a reaction or a read receipt looks the message up in cli-core's store first.
@@ -112,6 +116,8 @@ export const whatsAppAdapter = (
     WhatsAppAdapter,
     keyof (GroupAdapter & PollAdapter & PrivacyAdapter & MessagePins & SettingsAdapter)
   > = {
+    ...discoveryAdapter(engine, translated),
+    ...commentAdapter(engine, stored, translated),
     ...sendAdapter({ engine, stored, held, keyOf, translated, resolve: (chat) => core.resolve(chat) }),
     ...listenAdapter({ engine, stored, words, warn, translated }),
     formatMarkdown: async (text) => parseMarkdownSpans(text),

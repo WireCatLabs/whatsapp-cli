@@ -122,6 +122,7 @@ export const toMessage = (message: WaMessage): Message => ({
   attachments: message.attachments?.map(toAttachment) ?? [],
   replyTo: null,
   ...(message.replyTo === null ? {} : { replyToId: message.replyTo }),
+  ...(message.thread === undefined ? {} : { threadId: message.thread }),
   forwardedFrom: null,
   reactions: null,
   // Kept with the message in the store: a vote names answers by text, and only the poll's message has them; a

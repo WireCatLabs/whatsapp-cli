@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import type { ChannelEngine } from "./channels.js"
+import type { DiscoveryEngine } from "./discovery.js"
 import type { GroupEngine } from "./groups.js"
 import type { PrivacyEngine } from "./privacy.js"
 import type { SettingsEngine } from "./settings.js"
@@ -14,7 +15,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 45
+export const PROTOCOL = 46
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -24,6 +25,7 @@ export const PROTOCOL = 45
  */
 export const ENGINE_OPS = {
   send: "write",
+  saveContact: "write",
   sendMedia: "write",
   sendAlbum: "write",
   forward: "write",
@@ -65,6 +67,10 @@ export const ENGINE_OPS = {
   // A cut pairing is abandoned: a retry asks WhatsApp for a new code, and nobody else sees either.
   link: "read",
   me: "read",
+  inspect: "read",
+  devices: "read",
+  folders: "read",
+  commentGroup: "read",
   directory: "read",
   chat: "read",
   download: "read",
@@ -230,6 +236,7 @@ export const waMessage = v.strictObject({
   editedAt: v.nullable(time),
   text: v.string(),
   replyTo: v.nullable(v.string()),
+  thread: v.optional(v.string()),
   attachments: v.optional(v.array(waAttachment)),
   poll: v.optional(waPoll),
   /** Only ever `true`, on a pushed message the owner starred: a push may be older than a star taken off since. */
@@ -310,6 +317,8 @@ export const waHistory = v.strictObject({
   messages: v.array(waMessage),
   votes: v.array(waVote),
   reactions: v.optional(v.array(waReaction)),
+  stars: v.optional(v.array(v.strictObject({ chat: jid, message: v.string(), starred: v.boolean() }))),
+  deletions: v.optional(v.array(v.strictObject({ chat: jid, message: v.string() }))),
   rekeys: v.optional(v.array(waRekey)),
   events: v.optional(v.array(waChatEvent)),
 })
@@ -541,7 +550,7 @@ export class EngineError extends Error {
  * An event nobody listens for yet is kept and handed to the first listener of its kind, so a history push that
  * comes right after connecting is not lost to a `feed` that started a moment after `watch`.
  */
-export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngine, ChannelEngine {
+export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngine, ChannelEngine, DiscoveryEngine {
   /**
    * The linked account, from the engine's own store: no request. `null` before a login. Always the user JID in LID
    * form with no device part (`…@lid`, not `…:12@s.whatsapp.net`): the store keys the account by it, so a change of

@@ -24,6 +24,7 @@ import {
   waMessage,
   waOlder,
 } from "./contract.js"
+import { goDiscovery } from "./discovery.js"
 import { eventHub } from "./events.js"
 import { goGroups } from "./groups.js"
 import { goPrivacy } from "./privacy.js"
@@ -265,6 +266,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     listen: (kinds, onEvent) => hub.listen(kinds, onEvent),
     close,
     ...goGroups(request),
+    ...goDiscovery(request),
     ...goPrivacy(request),
     ...goSettings(request),
     ...goChannels(request),

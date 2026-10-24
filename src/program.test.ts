@@ -255,11 +255,7 @@ describe("commands WhatsApp has no counterpart for", () => {
   const card = join(mkdtempSync(join(tmpdir(), "wa-vcard-")), "people.vcf")
   writeFileSync(card, "BEGIN:VCARD\nVERSION:3.0\nFN:Synthetic Person\nTEL:+10000000000\nEND:VCARD\n")
   it.each([
-    ["account", "sessions", "list"],
     ["account", "sessions", "end", "--others"],
-    ["chats", "inspect", "https://chat.whatsapp.com/FAKE0000000000000000AA"],
-    ["chats", "folders", "list"],
-    ["chats", "folders", "show", "Work"],
     ["chats", "folders", "create", "Work"],
     ["chats", "folders", "update", "Work", "--title", "Play"],
     ["chats", "folders", "delete", "Work"],
@@ -275,6 +271,22 @@ describe("commands WhatsApp has no counterpart for", () => {
     expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.code).toBe("validation_error")
   })
 
+  it.each([
+    ["account", "sessions", "list"],
+    ["chats", "inspect", "https://chat.whatsapp.com/FAKE0000000000000000AA"],
+    ["chats", "folders", "list"],
+    ["chats", "folders", "show", "5"],
+  ])("reads `%s %s` without changing the account", async (...argv) => {
+    const engine = fakeEngine(seed)
+    engine.folders = async () => [{ id: "5", name: "Work", type: 5, chats: [seed.busy] }]
+    const result = await wa(["supported", ...argv, "--json"], () => engine)
+    expect(result.code, result.stderr).toBe(0)
+    expect(engine.groupActions).toEqual([])
+    expect(engine.channelActions).toEqual([])
+    expect(engine.contactWrites).toEqual([])
+    expect(engine.closed).toBe(true)
+  })
+
   it("does not offer chats send-as, messages scheduled or replies", async () => {
     const result = await wa(["commands", "--json"])
     interface Listed {
@@ -285,7 +297,14 @@ describe("commands WhatsApp has no counterpart for", () => {
       commands.flatMap((command) => [command.path.join(" "), ...pathsOf(command.commands)])
     const paths = pathsOf(JSON.parse(result.stdout).commands)
     expect(paths).toContain("messages send")
-    for (const missing of ["chats send-as", "messages scheduled", "replies", "replies add"])
+    for (const missing of [
+      "chats send-as",
+      "messages scheduled",
+      "replies",
+      "replies add",
+      "account sessions end",
+      "contacts remove",
+    ])
       expect(paths).not.toContain(missing)
   })
 
@@ -316,5 +335,56 @@ describe("commands WhatsApp has no counterpart for", () => {
     expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.code).toBe("validation_error")
     expect([...(engine?.sends ?? []), ...(engine?.actions ?? []), ...(engine?.groupActions ?? [])]).toEqual([])
     expect(engine?.closed ?? true).toBe(true)
+  })
+})
+
+describe("community comment reads", () => {
+  it("reads received comments from the shared store, paged under their post, without sending", async () => {
+    const original = seed.messages[0]
+    if (!original) throw new Error("missing synthetic message")
+    const commentSeed = {
+      ...seed,
+      messages: [
+        { ...original, id: "COMMENT1", chatId: seed.busy, threadId: "POST", replyToId: "POST" },
+        {
+          ...original,
+          id: "COMMENT2",
+          chatId: seed.busy,
+          threadId: "POST",
+          replyToId: "POST",
+          timestamp: "2026-09-28T10:01:00.000Z",
+        },
+        { ...original, id: "OTHERCOMMENT", chatId: seed.busy, threadId: "OTHERPOST", replyToId: "OTHERPOST" },
+      ],
+    }
+    const controller = new AbortController()
+    const filling = fakeEngine(commentSeed)
+    const listen = filling.listen
+    filling.listen = (kinds, onEvent) => {
+      const stop = listen(kinds, onEvent)
+      if (kinds.includes("history")) setImmediate(() => controller.abort())
+      return stop
+    }
+    expect((await wa(["comments", "watch", "--jsonl"], () => filling, controller.signal)).code).toBe(0)
+    const reading = fakeEngine(commentSeed)
+    reading.commentGroup = async () => true
+    const first = await wa(
+      ["comments", "messages", "comments", seed.busy, "POST", "--limit", "1", "--json"],
+      () => reading,
+    )
+    expect(first.code, first.stderr).toBe(0)
+    const page = JSON.parse(first.stdout)
+    expect(page.items.map((one: { id: string }) => one.id)).toEqual(["COMMENT2"])
+    expect(page.page.has_more).toBe(true)
+    const second = await wa(
+      ["comments", "messages", "comments", seed.busy, "POST", "id<COMMENT2", "--limit", "1", "--json"],
+      () => reading,
+    )
+    expect(second.code, second.stderr).toBe(0)
+    expect(JSON.parse(second.stdout).items.map((one: { id: string }) => one.id)).toEqual(["COMMENT1"])
+    expect(reading.sent).toEqual([])
+    const discovery = await wa(["commands", "messages", "send", "--json"])
+    expect(discovery.code, discovery.stderr).toBe(0)
+    expect(discovery.stdout).not.toContain("--comment-to")
   })
 })

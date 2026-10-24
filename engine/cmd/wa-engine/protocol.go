@@ -7,7 +7,7 @@ import (
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 45
+const protocol = 46
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -47,6 +47,7 @@ type request struct {
 	Attachment *waAttachment `json:"attachment,omitempty"`
 	Path       string        `json:"path,omitempty"`
 
+	contactFields
 	groupFields
 	pollFields
 	privacyFields
@@ -106,6 +107,7 @@ type waContact struct {
 }
 
 type waMessage struct {
+	Thread     string  `json:"thread,omitempty"`
 	ID         string  `json:"id"`
 	Chat       string  `json:"chat"`
 	Sender     *string `json:"sender"`
@@ -128,6 +130,8 @@ type waMessage struct {
 }
 
 type waHistory struct {
+	Stars     []waStar     `json:"stars,omitempty"`
+	Deletions []waDeletion `json:"deletions,omitempty"`
 	Kind      string       `json:"kind"`
 	Chats     []waChat     `json:"chats"`
 	Contacts  []waContact  `json:"contacts"`

@@ -552,6 +552,26 @@ describe("stars and deletions made on the phone", () => {
     expect(await listedIds(seed.dialog, "starred:true")).not.toContain(phoneStarred.id)
   })
 
+  it("applies full-sync stars and deletions through history without printing live changes", async () => {
+    const printed = await fromThePhone([
+      {
+        event: "history",
+        history: {
+          kind: "other",
+          chats: [],
+          contacts: [],
+          messages: [],
+          votes: [],
+          stars: [{ chat: seed.dialog, message: phoneStarred.id, starred: true }],
+          deletions: [{ chat: seed.dialog, message: phoneDeleted.id }],
+        },
+      },
+    ])
+    expect(printed).toEqual([])
+    expect(await listedIds(seed.dialog, "starred:true")).toContain(phoneStarred.id)
+    expect(await listedIds(seed.dialog)).not.toContain(phoneDeleted.id)
+  })
+
   it("keeps the star a history push carries on its message", async () => {
     const pushed: WaMessage = {
       id: phonePushed.id,

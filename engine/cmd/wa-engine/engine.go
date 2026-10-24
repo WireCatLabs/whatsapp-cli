@@ -22,11 +22,13 @@ import (
 const connectWait = 30 * time.Second
 
 type engine struct {
-	ctx    context.Context
-	stop   context.CancelFunc
-	client *whatsmeow.Client
-	out    *wire
-	conv   *converter
+	labels   *labelStore
+	snapshot waHistory
+	ctx      context.Context
+	stop     context.CancelFunc
+	client   *whatsmeow.Client
+	out      *wire
+	conv     *converter
 
 	mu       sync.Mutex
 	chats    map[string]waChat // seen in this process, for resolving a name
@@ -62,9 +64,10 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 		addressing: map[types.JID]types.AddressingMode{}}
 	e.following = e.client
 	e.joining = e.client
-	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf}
+	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf, decryptComment: e.decryptComment}
 	e.refreshSelf()
 	e.client.ManualHistorySyncDownload = true
+	e.client.EmitAppStateEventsOnFullSync = true
 	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on each message, and an
 	// album's files may need them for the phone to group them; on the wire wa should look like those clients.
 	e.client.SendReportingTokens = true
@@ -166,6 +169,16 @@ func (e *engine) dispatch(req request) (any, error) {
 		return e.link(req.Method, req.Phone)
 	case "me":
 		return e.me()
+	case "inspect":
+		return e.inspect(req.Link)
+	case "saveContact":
+		return nil, e.saveContact(req)
+	case "folders":
+		return e.folders()
+	case "commentGroup":
+		return e.commentGroup(req.JID)
+	case "devices":
+		return e.devices()
 	case "directory":
 		return e.directory(), nil
 	case "chat":

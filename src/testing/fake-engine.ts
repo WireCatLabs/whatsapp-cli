@@ -62,6 +62,7 @@ const waMessageOf = (message: Message): WaMessage => ({
   editedAt: message.editedAt,
   text: message.text,
   replyTo: message.replyToId ?? null,
+  ...(message.threadId === undefined ? {} : { thread: message.threadId }),
   ...(message.attachments.length === 0
     ? {}
     : { attachments: message.attachments.flatMap((one) => toWaAttachment(one) ?? []) }),
@@ -139,6 +140,7 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, Fak
   recipientsAsked: string[][]
   /** Each id `canonicalChat` was asked for. */
   canonicalAsked: string[]
+  contactWrites: { jid: string; contactName: string; firstName?: string; phonebook?: boolean }[]
   closed: boolean
   loggedOut: boolean
 }
@@ -244,6 +246,36 @@ export const fakeEngine = (
 
   const engine: FakeEngine = {
     ...fakeGroups(seed, chats),
+    commentGroup: async (jid) => {
+      if (!seed.chats.some((chat) => chat.id === jid && chat.providerMetadata?.announcement === true))
+        throw new EngineError("validation_error", "comments exist only in community announcement groups")
+      return true
+    },
+    contactWrites: [],
+    saveContact: async (jid, contactName, options = {}) => {
+      engine.contactWrites.push({ jid, contactName, ...options })
+    },
+    folders: async () => [],
+    devices: async () => [
+      { id: 0, current: false },
+      { id: 7, current: true },
+    ],
+    inspect: async (link) => {
+      const channelLink = /^https:\/\/whatsapp\.com\/channel\/([A-Za-z0-9]+)$/.exec(link)
+      const groupLink = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/.test(link)
+      if (!channelLink && !groupLink) throw new EngineError("validation_error", "not a WhatsApp invite link")
+      const chat = chats.find((one) => one.kind === (channelLink ? "newsletter" : "group"))
+      if (!chat) throw new EngineError("not_found", "WhatsApp has no such chat")
+      return {
+        jid: chat.jid,
+        kind: channelLink ? "newsletter" : "group",
+        name: chat.name ?? null,
+        description: null,
+        participants: chat.participants ?? null,
+        member: null,
+        approval: false,
+      }
+    },
     ...fakePrivacy(privacy),
     ...channels,
     sent,

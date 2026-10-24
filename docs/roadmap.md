@@ -9,19 +9,15 @@ feature: it may already be on the way. The order is approximate and can change. 
 `wa` links to your account as a device and keeps your chats in a local store: reading, search, sending text and
 files, replies, edits, deletes, reactions, polls, groups, channels, people and your own profile. The guide is
 [using wa](usage.md), and every command is in the [command reference](commands.md). What `wa` cannot do, and why,
-is in [not in wa yet](usage.md#not-in-wa-yet). `wa` is early: some of it has not been checked on real phones yet.
+is in [not in wa yet](usage.md#not-in-wa-yet).
 
-## In progress
-
-- **Bots through WhatsApp's official Cloud API**: a business number answering from `wa`, apart from your personal
-  account.
-- **A checked archive of your files**: saving every received file into a folder of your choice, with a check that
-  each copy is complete.
+The official Cloud API is available for [bots](bot.md), and [file archives](attachments.md) save received files
+with integrity checks. Invite previews, device ids, custom Lists and stored community comments are described in
+[using wa](usage.md#preview-links-devices-and-lists).
 
 ## Next
 
 - **Files in channels**: saving one from a post, and an album to a channel you run.
-- **Old files**: downloading a file that WhatsApp no longer keeps on its servers, from your phone.
 - **Business accounts**: WhatsApp Business labels, and another business's profile.
 - **A guide command** that walks you through common tasks step by step.
 

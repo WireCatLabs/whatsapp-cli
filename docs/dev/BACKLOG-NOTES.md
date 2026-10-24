@@ -300,18 +300,6 @@ Was item 5, "Live checks (with item 1)":
      works, 2026-10-17); whether one read receipt for the newest message clears the phone's unread count, or
      each unread message needs its own.
 
-## WA-30 · `EmitAppStateEventsOnFullSync` stays off
-
-Was item 5:
-
-   - **`EmitAppStateEventsOnFullSync` stays off (2026-10-22).** On, whatsmeow replays the whole collection after a
-     full sync (link, lost keys, a hash mismatch) as if it were new (whatsmeow appstate.go:70-72): every old star and
-     delete for the owner would print again in `watch --events`, which has one event for a live change and a replay,
-     and the address book would be written one contact at a time instead of in one batch (appstate.go:181-189). Off,
-     changes made while the device was out of sync are lost until the next push. whatsmeow writes mute, pin and
-     archive to its own chat settings either way (appstate.go:262-291), so a full sync could be followed by one push
-     of those, and replayed stars could go as a history batch (`HistoryBatch.stars`) rather than as events.
-
 ## WA-31 · The own profile photo: live check
 
 Was item 5:

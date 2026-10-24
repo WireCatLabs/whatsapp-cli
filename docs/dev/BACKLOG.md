@@ -21,12 +21,10 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Launch blockers (P1)
 
-- **WA-1** · P1 · core · 🚧 `fix/wa-launch` · Help and `commands --json` offer commands that fail with exit 2 `input.invalid`
-  (`chats folders *`, `account sessions *`, `chats inspect`, `contacts add|remove|rename|import`, `messages comments`).
-  Owner (2026-10-23): implement what WhatsApp allows (WA-50..53, WA-55), hide only what it cannot do — `account
-  sessions end` (only the phone ends other devices) and `contacts remove` (whatsmeow cannot send it) — in cli-core
-  `src/cli/messenger/lacks.ts`. The usage docs also wrongly say WhatsApp has no folders, comments or contact edits.
-  Evidence per command: cli-private `research/comparisons/wa.md`.
+- **WA-1** · P1 · core · 🟡 `feat/wa-launch-reads` · Finish adopting the released shared-store comment and
+  snapshot ports (cli-core #1884), then validate contact writes on a spare account before exposing them.
+  List writes remain in WA-56; bulk contact import needs a bounded write policy. Until validated, their adapter
+  methods stay in `lacks`; unsupported session termination and contact removal stay in `never`.
 - **WA-4** · P1 · live · A photo and a video "go as one album" (`docs/roadmap.md:8`, `docs/usage.md:224`), but the
   last live run showed two messages: run `bin/live-album`, then fix the docs or the send.
   [Notes](BACKLOG-NOTES.md#wa-4--album-does-the-phone-group-a-photo-and-a-video)
@@ -63,20 +61,7 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   `bin/standards-audit.sh` (slice B1 of the standards handoff).
 - **WA-19** · P2 · engine · Business-app features whatsmeow reaches: labels and another business's profile
   (NEED-1608 = A) — plan: cli-private `plans/2026-10-22-wa-business-app/handoff.md`.
-- **WA-20** · P2 · 🚧 `feat/wa-launch-reads` · risk · npm 11.17 warns that the `postinstall` is not covered by `allowScripts`; an npm that
-  enforces it skips `WA_INSTALL_AGENT` (`docs/installation.md:24`) — check npm 12, document `--allow-scripts`.
 - **WA-21** · P2 · engine · Channels: save a post's file, and what following and reading left open —
   `engine/cmd/wa-engine/`. [Notes](BACKLOG-NOTES.md#wa-21--channels-post-files-and-what-following-left-open)
-- **WA-50** · P2 · 🚧 `feat/wa-launch-reads` · engine · `contacts add|rename` through one app-state contact change, as wacli does on the same
-  library. Test on a spare account first: a bad app-state write breaks sync on every device.
-- **WA-51** · P2 · 🚧 `feat/wa-launch-reads` · engine · `chats inspect` for group and channel invite links: whatsmeow previews a group link
-  without joining; channel links already work.
-- **WA-52** · P2 · 🚧 `feat/wa-launch-reads` · engine · `account sessions list` as linked device ids (WhatsApp sends no device names); `end`
-  refused with a clear reason.
-- **WA-53** · P2 · 🚧 `feat/wa-launch-reads` · engine · `chats folders list|show` from WhatsApp Lists, which reach every linked device; needs
-  WA-30 first, and pairs with WA-19 business labels.
-- **WA-30** · P2 · 🚧 `feat/wa-launch-reads` · engine · `EmitAppStateEventsOnFullSync` stays off; changes made while out of sync are lost.
-  [Notes](BACKLOG-NOTES.md#wa-30--emitappstateeventsonfullsync-stays-off)
-
-- **WA-55** · P2 · engine · 🚧 `feat/wa-launch-reads` · `messages comments` for community announcement groups, reading first (channels have no
-  comments).
+- **WA-50** · P2 · engine · 🟡 `feat/wa-launch-reads` · Contact patch code and unit tests are ready;
+  `contacts add|rename` stay disabled until a spare-account check confirms the app-state write and sync on other devices.

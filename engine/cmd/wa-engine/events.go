@@ -27,6 +27,9 @@ func (e *engine) end(state string, why *refusal) {
 }
 
 func (e *engine) handle(raw any) {
+	if e.snapshotChange(raw) {
+		return
+	}
 	switch evt := raw.(type) {
 	case *events.Message:
 		if n := evt.Message.GetProtocolMessage().GetHistorySyncNotification(); n != nil {
@@ -90,7 +93,28 @@ func (e *engine) handle(raw any) {
 		e.offlineReplayed()
 	case *events.MediaRetry:
 		e.retries.deliver(evt)
+	case *events.LabelEdit, *events.LabelAssociationChat, *events.LabelAssociationMessage:
+		if err := e.labels.update(e.ctx, evt); err != nil {
+			e.labels.failed()
+		}
+	case *events.AppStateSyncError:
+		if evt.Name == appstate.WAPatchRegularHigh {
+			e.mu.Lock()
+			e.snapshot = waHistory{}
+			e.mu.Unlock()
+		}
+		if evt.Name == appstate.WAPatchRegular {
+			e.labels.failed()
+		}
 	case *events.AppStateSyncComplete:
+		if evt.Name == appstate.WAPatchRegularHigh {
+			e.flushSnapshot()
+		}
+		if evt.Name == appstate.WAPatchRegular {
+			if err := e.labels.complete(e.ctx); err != nil {
+				e.labels.failed()
+			}
+		}
 		// The address book arrives in this patch; until then contacts have no names.
 		if evt.Name == appstate.WAPatchCriticalUnblockLow {
 			e.out.event("history", waHistory{Kind: "other", Chats: []waChat{}, Contacts: e.contacts(), Messages: []waMessage{}, Votes: []waVote{}})

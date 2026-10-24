@@ -178,7 +178,7 @@ export const WHATSAPP: Messenger = {
   skill: SKILL,
   diagnose: async (command, base) =>
     diagnoseWhatsApp(base.settings.profile, base.env, environmentOf<Environment>(command).update),
-  // What WhatsApp does not have, so the shared commands do not offer it: forum topics, folders, more than one
+  // What WhatsApp does not have, so the shared commands do not offer it: forum topics, more than one
   // invite link per group (`chats link reset` replaces the one there is), answering every join request at once,
   // channel comments, history shown to people added later, and admins with some rights but not others: every admin
   // gets them all, so `admins add` takes no `--can`.
@@ -190,6 +190,7 @@ export const WHATSAPP: Messenger = {
   inviteLinkRevoke: false,
   joinRequestsAll: false,
   channelComments: false,
+  readsComments: true,
   addsWithHistory: false,
   // A member's record has no date the account was made, so the moderation rule `newAccount` could never match.
   knowsAccountAge: false,
@@ -226,11 +227,7 @@ export const WHATSAPP: Messenger = {
   chatMarkUnread: true,
   never: ["endOtherSessions", "removeContact"],
   lacks: [
-    "sessions",
     "chatEvents",
-    "comments",
-    "inspect",
-    "folders",
     "createFolder",
     "updateFolder",
     "deleteFolder",
