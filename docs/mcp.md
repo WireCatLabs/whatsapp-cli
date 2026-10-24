@@ -16,6 +16,11 @@ A few terms first:
 The server comes with `wa`; there is nothing else to install. By default it talks to the app over stdin and stdout.
 `wa personal mcp --http --public-url` serves it on a local port behind your HTTPS tunnel instead.
 
+Denied permissions do not hide commands. Full listings and searches include each command's
+`availability`: blocked commands have `available: false`, a reason and the relevant permission key;
+permitted commands have `available: true`. Arguments remain visible, and execution checks current
+permissions again. With a named profile, CLI help and discovery also show availability.
+
 ## Do you need it
 
 An AI agent that can run commands in a terminal (for example Claude Code, Codex, Cursor's agent or Gemini CLI) does
@@ -36,7 +41,7 @@ For ChatGPT or Claude **in the browser**, use `wa personal mcp --http` — see
 | [Six prompts](#prompts-and-chats-by-) | Catch up, reply, find, review, open tasks, link conversations |
 | [Chats by `@`](#prompts-and-chats-by-) | Attach a chat and its recent messages to the conversation |
 | The skill, `wa://skill` | The same text as `wa skill show` |
-| [Permissions](#what-an-agent-may-do) | The profile decides which commands the agent sees |
+| [Permissions](#what-an-agent-may-do) | The profile decides which commands the agent may run |
 
 The tools use the same catalogue as `tg` and `max`. Commands a linked WhatsApp device cannot perform, such as
 ending other sessions and removing contacts, are hidden. A command that WhatsApp cannot do yet is refused when it
