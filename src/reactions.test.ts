@@ -47,7 +47,10 @@ const watching = async (events: EngineEvent[] = []) => {
   }
   const result = await wa(["reacting", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
-  return result.lines.map((line) => JSON.parse(line))
+  return result.lines
+    .map((line) => JSON.parse(line))
+    .filter((record) => record.type === "item")
+    .map((record) => record.data)
 }
 
 const reactionOf = (reactor: string, reaction: string | null, reactedAt: string, own = false): WaReaction => ({
@@ -88,9 +91,9 @@ describe("reactions from WhatsApp", () => {
     ])
     expect(events.filter((event) => event.event === "person_reaction")).toMatchObject([
       {
-        chatId: seed.busy,
-        messageId: theirs.id,
-        reaction: { person: { id: seed.person }, own: false, reaction: "👍", reactedAt: "2026-09-01T10:01:00.000Z" },
+        chat_id: seed.busy,
+        message_id: theirs.id,
+        reaction: { person: { id: seed.person }, own: false, reaction: "👍", reacted_at: "2026-09-01T10:01:00.000Z" },
       },
       { reaction: { person: { id: other }, own: false, reaction: "👍" } },
       { reaction: { person: { id: self }, own: true, reaction: "🔥" } },

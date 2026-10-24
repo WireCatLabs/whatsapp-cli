@@ -95,8 +95,12 @@ the logged-in account
 every profile on this computer, and the account each is logged in as; asks the messenger nothing
 
 ```sh
-wa account list
+wa account list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 ### `wa account show`
 
@@ -142,20 +146,6 @@ wa account sessions list [query]
 | Argument | | What it is |
 |---|---|---|
 | `query` | optional | field:value terms; this list filters by none yet. |
-
-#### `wa account sessions end`
-
-log out every other device, your phone included; this one stays
-
-**Changes something in WhatsApp.**
-
-```sh
-wa account sessions end [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--others` | every session but this one. |
 
 ### `wa account privacy`
 
@@ -257,12 +247,13 @@ the Google Docs and Drive documents linked in a chat's stored messages
 every document link in the chat, newest first, and whether the store has it
 
 ```sh
-wa chats documents list <chat> [options]
+wa chats documents list <chat> [query] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
@@ -399,8 +390,12 @@ the chats whose member lists serve fetches daily into the local store — chats 
 every tracked chat: since when, and its last member count
 
 ```sh
-wa chats tracking list
+wa chats tracking list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 #### `wa chats tracking show`
 
@@ -1220,20 +1215,6 @@ wa contacts add <person>
 |---|---|---|
 | `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
 
-### `wa contacts remove`
-
-remove a person from your contacts; the chat stays, a name you gave them may not
-
-**Changes something in WhatsApp.**
-
-```sh
-wa contacts remove <person>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `person` | required | person id — `contacts lookup` finds one — or part of a known name. |
-
 ### `wa contacts block`
 
 stop a person from writing to you — they need not be a contact
@@ -1298,7 +1279,7 @@ read and send messages
 
 ### `wa messages evidence`
 
-a bounded evidence packet from stored messages, newest first
+general chat context, newest first, with references, coverage and fingerprints for verification
 
 ```sh
 wa messages evidence <chat> [options]
@@ -1354,9 +1335,9 @@ wa messages send <chat> [text] [options]
 | `--operation-id <id>` | repeat a send whose outcome was unknown, without risking a second copy. |
 | `--no-preview` | no preview card for a link in the text. |
 | `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
-| `--file <file>` | attach a file; the text becomes its caption. |
-| `--photo <file>` | attach a .jpg, .png or .webp as a photo; the text becomes its caption. |
-| `--as-file` | send the --file as a file to download, a video included. |
+| `--file <file>` | attach a file; the text becomes its caption; repeat it for an album. Default: ``. |
+| `--photo <file>` | attach a .jpg, .png or .webp as a photo; the text becomes its caption; repeat it for an album. Default: ``. |
+| `--as-file` | send each --file as a file to download, a video included. |
 | `--voice <file>` | send an Ogg Opus file as a voice message, alone, with no text. |
 | `--allow-any-file` | send a file even from credential folders or this CLI's own folders. |
 | `--filename <name>` | the name others see for the --file, instead of its name on disk. |
@@ -1899,7 +1880,7 @@ wa watch [options]
 
 | Option | What it does |
 |---|---|
-| `--events` | also edits, deletions, reactions, poll votes and chat events; every line then names its event. |
+| `--events` | include changes and receipts; each item names its event. |
 
 ## `wa serve`
 
@@ -2474,8 +2455,12 @@ remembered analysis permissions for this account's chats and provider endpoints
 which chats and provider endpoints you allowed to analyse, and when
 
 ```sh
-wa conversations consents list
+wa conversations consents list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 #### `wa conversations consents revoke`
 
@@ -3140,14 +3125,11 @@ wa stats messages unanswered [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
-| `--exact` | bare words match exact forms rather than stems. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
 | `--limit <n>` | report rows, 1–100; 20 if not given. |
 | `--answerer <person>` | stored name, alias, @username, ID or person:provider/account/id; ambiguous names require a choice; repeat for more. |
-| `--older-than <duration>` | minimum age of a question without an observed qualifying answer. |
 
 #### `wa stats messages discussion`
 
@@ -3163,14 +3145,10 @@ wa stats messages discussion [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
-| `--exact` | bare words match exact forms rather than stems. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
 | `--limit <n>` | report rows, 1–100; 20 if not given. |
-| `--min-views <n>` | minimum known cumulative views. |
-| `--max-replies <n>` | maximum observed discussion replies. |
 
 #### `wa stats messages top`
 
@@ -3189,11 +3167,8 @@ wa stats messages top [query] [options]
 | `--measure <name>` | the ranking metric; not with score or weights. One of: `views`, `reactions`, `forwards`, `comments`, `replies`, `thread-size`. |
 | `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
 | `--weights <json>` | the complete component weights; replaces preset weights. |
-| `--message-kind <kind>` | select proven all, posts or comments before ranking. One of: `all`, `posts`, `comments`. |
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--timezone <zone>` | the IANA timezone for dates and active days. |
-| `--exact` | bare words match exact forms rather than stems. |
 | `--limit <n>` | ranked rows, 1–100. |
 | `--saved <name\|id>` | run a saved query or ranking run; typed options replace stored options. |
 
@@ -3234,9 +3209,7 @@ wa stats contacts responses [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
-| `--exact` | bare words match exact forms rather than stems. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
 | `--limit <n>` | report rows, 1–100; 20 if not given. |
@@ -3259,14 +3232,10 @@ wa stats contacts top [query] [options]
 | `--measure <name>` | the ranking metric; not with score or weights. One of: `messages`, `words`, `reactions`, `replies`, `answers`, `answer-time`, `threads`, `active-days`. |
 | `--score <preset>` | helpful/active for authors; engaging for either target. One of: `helpful`, `active`, `engaging`. |
 | `--weights <json>` | the complete component weights; replaces preset weights. |
-| `--message-kind <kind>` | select proven all, posts or comments before ranking. One of: `all`, `posts`, `comments`. |
-| `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--timezone <zone>` | the IANA timezone for dates and active days. |
-| `--exact` | bare words match exact forms rather than stems. |
 | `--limit <n>` | ranked rows, 1–100. |
 | `--saved <name\|id>` | run a saved query or ranking run; typed options replace stored options. |
-| `--min-messages <n>` | minimum selected messages per author; 1, or 5 for engaging. |
 
 #### `wa stats contacts evidence`
 
@@ -3511,10 +3480,14 @@ wa tasks related <task> [options]
 
 ### `wa tasks duplicates`
 
+pairs of tasks that may be one job
+
+#### `wa tasks duplicates list`
+
 pairs of tasks a rule opened that may be one job, newest first, with score and reasons: merge, reject or defer each; decision:unsure lists the ones deferred to the owner
 
 ```sh
-wa tasks duplicates [query] [options]
+wa tasks duplicates list [query] [options]
 ```
 
 | Argument | | What it is |
@@ -3815,6 +3788,24 @@ wa search conversations <query> [options]
 | `--limit <n>` | how many. |
 | `--catch-up` | first build and embed, on this machine, the chats in scope that changed or were never built — within --max-chats and --max-chunks. |
 
+### `wa search runs`
+
+search recorded diagnostic metadata and events; literal words and field:value terms joined by AND; no message contents
+
+```sh
+wa search runs [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | runs starting on or after an ISO time or 2h / 1d ago. |
+| `--limit <n>` | matches per page, at most 100. Default: `20`. |
+| `--page <n>` | result page. Default: `1`. |
+
 ## `wa searches`
 
 saved searches and the history of search messages and stats messages show, kept in the local store; --saved runs one
@@ -3932,8 +3923,12 @@ the chats this profile may send to, when the list is on
 the chats on the list; empty and off until the first add
 
 ```sh
-wa recipients list
+wa recipients list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 ### `wa recipients add`
 
@@ -3982,8 +3977,12 @@ every attempt to send from this profile — never the text
 attempts to send, newest first: sent, refused, failed, or not known
 
 ```sh
-wa sends list [options]
+wa sends list [query] [options]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
@@ -4000,8 +3999,12 @@ recorded runs — what this tool did, and when
 recorded runs, newest first
 
 ```sh
-wa runs list [options]
+wa runs list [query] [options]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
@@ -4023,28 +4026,6 @@ wa runs show <run-id> [options]
 | Option | What it does |
 |---|---|
 | `--problems` | only failed responses, warnings and crashes. |
-
-### `wa runs search`
-
-search recorded diagnostic metadata and events; no message contents
-
-```sh
-wa runs search [query] [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `query` | optional | case-insensitive literal diagnostic text. |
-
-| Option | What it does |
-|---|---|
-| `--status <status>` | run outcome. One of: `success`, `failed`, `partial`, `running`. |
-| `--error-code <code>` | one stable error code. |
-| `--operation <name>` | one operation, such as messages.download. |
-| `--profile <name>` | one recorded profile. |
-| `--since-time <time>` | runs starting on or after an ISO time or 2h / 1d ago. |
-| `--limit <n>` | matches per page, at most 100. Default: `20`. |
-| `--page <n>` | result page. Default: `1`. |
 
 ### `wa runs path`
 

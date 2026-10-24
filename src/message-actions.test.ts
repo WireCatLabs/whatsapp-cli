@@ -132,7 +132,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
   })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), stderr: streams.stderr.join("") }
 }
 
 const acting = async (argv: string[], { settingsKeys = true } = {}) => {
@@ -528,6 +528,8 @@ const fromThePhone = async (events: EngineEvent[]) => {
     .split("\n")
     .filter(Boolean)
     .map((line) => JSON.parse(line))
+    .filter((record) => record.type === "item")
+    .map((record) => record.data)
 }
 
 const listedIds = async (chat: string, ...filters: string[]) => {
@@ -540,7 +542,13 @@ describe("stars and deletions made on the phone", () => {
   it("prints a star from the phone in watch, and keeps it until the phone takes it off", async () => {
     const star = (starred: boolean): EngineEvent => ({ event: "star", chat: seed.dialog, id: phoneStarred.id, starred })
     expect(await fromThePhone([star(true)])).toEqual([
-      { event: "star", chatId: seed.dialog, chatTitle: expect.any(String), messageId: phoneStarred.id, starred: true },
+      {
+        event: "star",
+        chat_id: seed.dialog,
+        chat_title: expect.any(String),
+        message_id: phoneStarred.id,
+        starred: true,
+      },
     ])
     expect(await listedIds(seed.dialog, "starred:true")).toContain(phoneStarred.id)
 

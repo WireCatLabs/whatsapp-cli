@@ -76,7 +76,7 @@ describe("chat state changed on the phone", () => {
       pushing({ jid: chat, kind: "group", muted: true }),
     ])
 
-    expect(printed).toBe("")
+    expect(JSON.parse(printed)).toMatchObject({ type: "end", complete: true })
     expect(await shown()).toMatchObject({
       title: "Book club",
       unread_count: 0,

@@ -5,8 +5,23 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **Live JSON output uses item and end records.** `watch --jsonl` wraps each message or event in
+  `{ "type": "item", "data": … }`, uses snake_case fields and finishes with a `type: "end"` record.
+  Update scripts that consumed bare messages or events.
+- **Diagnostic search is `search runs`.** Replace `runs search` and its filter flags with query terms such as
+  `status:failed`, `error_code:timeout`, `operation:messages.download` and `profile:work`.
+- **Duplicate-task lists require `tasks duplicates list`.** The bare group shows help.
+- **MCP exposes more writes through permission keys.** Commands that change future permissions or automation
+  require `mcp.authority: allow`; raw Cloud API calls require `bot.api: allow`. Both default to `deny` over MCP.
+  Store maintenance and other writes follow their command permissions.
+
+
 ### Fixed
 
+- Commands to end other sessions or remove contacts are hidden from help, discovery and MCP because a linked
+  WhatsApp device cannot perform them.
 - **The agent skill describes explicit read receipts correctly.** Reading changes no read state;
   `chats mark-read` clears the unread mark and sends the receipt. The top help points to linking examples
   without promising Windows instructions that setup help does not contain.

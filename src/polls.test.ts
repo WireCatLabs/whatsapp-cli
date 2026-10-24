@@ -79,7 +79,10 @@ const watching = async (events: EngineEvent[] = []) => {
   }
   const result = await wa(["voting", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
-  return result.lines.map((line) => JSON.parse(line))
+  return result.lines
+    .map((line) => JSON.parse(line))
+    .filter((record) => record.type === "item")
+    .map((record) => record.data)
 }
 
 const vote = (voter: string, answers: string[], votedAt: string, extra: Partial<WaVote> = {}): EngineEvent => ({
@@ -220,11 +223,11 @@ describe("votes from WhatsApp", () => {
     const events = await twoVoted()
     expect(events.filter((event) => event.event === "vote")).toMatchObject([
       {
-        chatId: base.busy,
-        messageId: counted.id,
-        vote: { person: { id: base.person }, answers: [answerId("Monday")] },
+        chat_id: base.busy,
+        message_id: counted.id,
+        vote: { person_id: base.person, answers: [answerId("Monday")] },
       },
-      { vote: { person: { id: other, name: "Synthetic Voter" }, answers: [answerId("Tuesday")] } },
+      { vote: { person_id: other, name: "Synthetic Voter", answers: [answerId("Tuesday")] } },
     ])
     expect(await show()).toMatchObject({
       answers: [
