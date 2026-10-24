@@ -130,7 +130,7 @@ Writes to WhatsApp: **no**. Allow: `Bash(wa personal inbox:*)`.
 - `wa personal inbox --new` — since the last `--new` run. Only `wa` knows that point; nobody else sees it.
 - `wa personal inbox 'date>2d'` — the last two days; the saved point stays where it was.
 
-None of them marks anything read. `--kind dialog` keeps one-to-one chats, `--kind group` groups.
+None of them marks anything read. `kind:dialog` keeps one-to-one chats, `kind:group` groups.
 
 ## Weekly report on a chat
 

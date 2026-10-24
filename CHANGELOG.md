@@ -17,6 +17,17 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **Use canonical command paths.** Contacts use `info`, `events` and `aliases remove`; chat invitations use
+  `links`, member checks use `check`, and join requests use `confirm` or `reject`. Metadata uses `show` and
+  `sync`; derived tags and search indexes use `rebuild`.
+- **Models and reports use explicit commands.** Use `models list kind:audio` or `kind:text`, `models download`,
+  `models keys set|remove`, `doctor reports show|create`, `commands info`, `mcp add` and `mcp check`.
+  Conversation links use `conversations links rebuild`; vector reports use `conversations embeddings status|clear`.
+  Retired command names are refused with their replacements.
+- **Retired flag aliases are removed.** Use `--analysis-provider`, `--embedding-provider`, `--consent-provider`,
+  `--claim`, `--answer-model`, `--template-mode`, `--text-file`, `--disappear-after` and the `kind:` query term.
+  Renamed permission keys are refused before work starts, with the exact replacement to put in configuration.
+
 - **Live JSON output uses item and end records.** `watch --jsonl` wraps each message or event in
   `{ "type": "item", "data": … }`, uses snake_case fields and finishes with a `type: "end"` record.
   Update scripts that consumed bare messages or events.

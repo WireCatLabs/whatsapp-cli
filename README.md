@@ -117,11 +117,11 @@ Your agent. Your WhatsApp. Your rules.
   comes with ready prompts: `/catch-up`, `/review`, `/reply`, `/find` and more.
 
 ```sh
-wa personal mcp setup claude-code   # or: wa personal mcp setup codex
+wa personal mcp add claude-code   # or: wa personal mcp add codex
 wa personal mcp config              # the entry for Claude Desktop, Cursor and others
 ```
 
-The profile can send by default, so `mcp setup` stops first. Check the profile's permissions, then run it again with
+The profile can send by default, so `mcp add` stops first. Check the profile's permissions, then run it again with
 `--allow-writes`.
 
 More: [the MCP server](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md) · [from the browser](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/remote.md)
@@ -254,7 +254,7 @@ changing anything; at `ask` the server shows no form, so set up approval in your
 
 ```sh
 claude mcp add wa -- wa personal mcp  # Claude Code, by hand
-wa personal mcp doctor                # check the local MCP server
+wa personal mcp check                # check the local MCP server
 ```
 
 **From the browser.** ChatGPT or Claude in the browser reach `wa personal mcp --http --public-url` behind your tunnel,

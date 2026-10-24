@@ -179,7 +179,7 @@ export const WHATSAPP: Messenger = {
   diagnose: async (command, base) =>
     diagnoseWhatsApp(base.settings.profile, base.env, environmentOf<Environment>(command).update),
   // What WhatsApp does not have, so the shared commands do not offer it: forum topics, more than one
-  // invite link per group (`chats link reset` replaces the one there is), answering every join request at once,
+  // invite link per group (`chats links reset` replaces the one there is), answering every join request at once,
   // channel comments, history shown to people added later, and admins with some rights but not others: every admin
   // gets them all, so `admins add` takes no `--can`.
   topics: false,

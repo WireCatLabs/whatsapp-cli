@@ -21,8 +21,8 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Launch blockers (P1)
 
-- **WA-1** · P1 · core · 🟡 `feat/wa-launch-reads` · Finish adopting the released shared-store comment and
-  snapshot ports (cli-core #1884), then validate contact writes on a spare account before exposing them.
+- **WA-1** · P1 · core · 🟡 `feat/wa-launch-reads` · Validate contact writes on a spare account before
+  exposing them; the shared-store comment and snapshot ports are adopted.
   List writes remain in WA-56; bulk contact import needs a bounded write policy. Until validated, their adapter
   methods stay in `lacks`; unsupported session termination and contact removal stay in `never`.
 - **WA-4** · P1 · live · A photo and a video "go as one album" (`docs/roadmap.md:8`, `docs/usage.md:224`), but the
