@@ -50,8 +50,8 @@ store: the joins, leaves, adds, removals, admin changes and titles the phone pus
 `stats chats show` counts in `members`; one from before the link the phone did not push is missing. `chats members
 history` shows who joined or left between member fetches. A group in a WhatsApp community names it in `parent_chat_id`, and the
 community itself is a group with `provider_metadata.community: true`, in the store (`chats list`, `chats show`) and
-in the answers of `chats create|join|update`. `chats mark-read` sends a read receipt only and may not clear a
-`chats mark-unread`.
+in the answers of `chats create|join|update`. `chats mark-read` clears the unread mark up to the chosen message
+and sends a read receipt.
 A channel (`…@newsletter`) is followed with `chats join <whatsapp.com/channel link>` and left with `chats leave`;
 `messages sync <channel>` reads its posts from WhatsApp's servers, and every post's sender is the channel.
 `messages send <channel> <text>` posts, with one file (`--photo`, `--file`, `--voice`) or none, only where the owner
@@ -145,9 +145,8 @@ linking. If your process predates installation, refresh your shell PATH yourself
 - **A refusal with exit code `5`, `7` or `8` on a change is the owner's decision, not a fault.** Do not work around
   it: do not change settings, do not call `wa personal recipients add`, do not wait and retry. Tell the owner the
   send did not go, and why.
-- **Reading marks nothing read** and shows nobody that you looked. Read freely. `wa personal chats mark-read` and
-  `--mark-read` on `messages list`, `inbox` and `review` send a read receipt, and the other side sees it: only when
-  the owner asked. `wa` never sends presence ("online", "typing").
+- **Reading marks nothing read** and shows nobody that you looked. Read freely. `wa personal chats mark-read`
+  sends a read receipt, and the other side sees it: only when the owner asked. `wa` never sends presence ("online", "typing").
 - **Not for:** mass mailing, status posts, other people's accounts, or automatic replies. `wa` has no `replies`, and
   `serve` never answers by itself: WhatsApp bans accounts that answer like a bot, so nothing sends unless the owner
   asked for that message.

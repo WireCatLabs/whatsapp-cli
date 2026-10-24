@@ -18,7 +18,7 @@ For agents:   wa skill show      rules and the discovery loop
 Getting started after installation:
   wa personal setup               Guided first run as profile personal; about 5 minutes
   wa personal setup --agent codex Link and install your agent's skill
-  wa setup --help                 Linking choices, examples and Windows instructions
+  wa setup --help                 Linking choices and examples
 Every account command names its profile first: `wa personal chats list`.
 
 For agents:

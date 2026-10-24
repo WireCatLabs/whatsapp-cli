@@ -64,7 +64,7 @@ const definition: ProgramDefinition = {
       "\nGetting started after installation:\n" +
         "  wa personal setup               Guided first run as profile personal; about 5 minutes\n" +
         "  wa personal setup --agent codex Link and install your agent's skill\n" +
-        "  wa setup --help                 Linking choices, examples and Windows instructions\n" +
+        "  wa setup --help                 Linking choices and examples\n" +
         "Every account command names its profile first: `wa personal chats list`.\n" +
         "\nFor agents:\n" +
         "  wa skill show                   Read the bundled instructions before using WhatsApp\n" +
