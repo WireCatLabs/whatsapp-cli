@@ -34,8 +34,10 @@ body. A rule that seems wrong for WhatsApp is raised in the PR or in the backlog
 What holds for `wa` alone, on top of the handbook:
 
 1. **This is the owner's real WhatsApp account.** Nothing sends, marks read or sends presence unless the command
-   typed asked for it (delivery receipts are normal client behaviour and stay on); live checks send only to the owner's own chat. Never message a number the owner has not
-   written to, never in bulk — WhatsApp bans accounts for both.
+   typed asked for it (delivery receipts are normal client behaviour and stay on); live checks send only to the owner's own chat,
+   except the owner-run `live-oneshot-drop --sender-profile` regression: after explicit confirmation, it sends
+   two probes between two different accounts the owner controls. This exception permits no other cross-account
+   checks. Never message a number the owner has not written to, never in bulk — WhatsApp bans accounts for both.
 2. **One connection per linked device.** A second connection makes WhatsApp drop the first; only the lock holder
    starts the engine. (`WC-LIFE-11`)
 3. **No whatsmeow or engine type crosses `src/adapter/`.** Above it, only cli-core's domain. A lint rule enforces the

@@ -13,9 +13,10 @@ never part of this one.
 
 ## The rules on WhatsApp
 
-- **Sends go only to the owner's own chat**, the chat with the account's own LID (`…@lid`). No other chat is
-  written to, not even a group the owner runs. WhatsApp bans accounts for messages to strangers and for bulk sends,
-  so a live check never risks either.
+- **Sends go to the owner's own chat**, the chat with the account's own LID (`…@lid`). The sole exception is
+  the owner-run automatic one-shot regression below: two probes between two different accounts the owner
+  explicitly confirms they control. No other chat is written to, including a group the owner runs.
+  WhatsApp bans accounts for messages to strangers and for bulk sends.
 - **The device is the main install's.** A worktree's `bin/wa` keeps its own `.wa/` folder with no device and its
   own store, and no worktree links one: a second linked device is a change to the owner's account. The main
   checkout's `bin/wa` keeps its device in `.wa/` but writes the shared WireCat store, so the scripts below read and
@@ -34,6 +35,7 @@ never part of this one.
 | Role | What it is | May a scenario write there? |
 |---|---|---|
 | **Own** | the chat with the owner's own account, by its LID | yes: messages it sends itself, deleted for everyone after |
+| **Owned peer** | a second, different account the same owner controls | only the two automatic one-shot probes, after confirmation |
 | **Store** | the owner's local store, filled by `serve` | read only |
 
 Only these. Never a real person's chat, not even to read it for a check.
@@ -82,13 +84,13 @@ also say the phone answered the LID chat under another id, such as its phone num
 
 ## Scripts the owner runs
 
-Eight checks need a person at the phone, so they are scripts in `bin/`. Only the owner runs them, from a terminal;
+These checks are scripts in `bin/`; most need a person at the phone. Only the owner runs them, from a terminal;
 an agent never does (`WC-TEST-18`). Each takes the profile as its first argument and never picks one: without it, or
 with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
 (`WC-LIFE-5`). Some calls differ: the restarted `serve` runs without a timeout, and `live-fresh-link` runs
 `session start` through `node` with a throwaway store, in human mode on the terminal so that wa draws the QR code
-there (below). The script asks before each step and passes `--yes` only after that. It prints exit
+there (below). Scripts ask before each step; automatic one-shot mode asks once for its complete two-send plan. They pass `--yes` only after confirmation. It prints exit
 codes, counts and yes or no: never a message's text, an id or a phone number (`WC-SECR-1`). A failed `wa` call
 shows only its command words, exit code and error code, since cli-core's JSON error names the chat and message it
 was about (`WC-SECR-6`); `session start` is the exception, as it runs on the terminal for the owner to scan. A
@@ -96,7 +98,7 @@ closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The sha
 
 | Script | Covers | What it changes | How it is put back |
 |---|---|---|---|
-| `bin/live-oneshot-drop <profile>` | [BACKLOG](BACKLOG.md) item 9: does a one-shot connection take a queued message that then never reaches the store? | stops `serve`; two messages from the phone to the own chat | starts `serve` again on every exit path; the owner deletes the two messages from the phone |
+| `bin/live-oneshot-drop <receiver-profile> [--sender-profile <sender-profile>]` | one-shot queued-message persistence regression | stops receiver `serve`; two messages from the phone to Own, or automatically from Owned peer | starts `serve` again on every exit path; the owner deletes the two messages from the phone |
 | `bin/live-poll-vote <profile>` | BACKLOG item 5, a vote cast by `wa`; W-style, own chat only | a poll and a vote in the own chat, through the running `serve` | the poll is deleted for everyone at the end; if the script stops early, it says to delete it from the phone |
 | `bin/live-older-history <profile>` | H1: one 50-message page as one `ON_DEMAND` notification or several, and whether it names the request by its id | restarts `serve` with the engine's log on; one history request from this device to the own phone | starts `serve` again as it was on every exit path; deletes the log |
 | `bin/live-fresh-link <new-profile>`, or `<profile> --finish` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes`; `--finish` connects that device once more | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
@@ -106,45 +108,42 @@ closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The sha
 | `bin/live-chat-events <profile> <group>` | BACKLOG item 5, `chats events`: does the phone's history push carry a group's service messages, with their people, so the store lists them? | one history request from this device to the own phone, through the running `serve`; nothing anyone else sees | nothing to put back: the store keeps the page and its changes |
 | `bin/live-forward-card <profile>` | BACKLOG item 5, forwarding a place and a contact card; own chat only | a place and a card the owner sends from the phone, and `wa`'s forward of each, all in the own chat, through the running `serve` | not undone by the script: the owner deletes the four messages from the phone |
 
-**`live-oneshot-drop`**, step by step:
+**`live-oneshot-drop`** checks whether a one-shot connection saves a queued message before `serve` restarts.
+Use two linked profiles for different accounts you control to send and check automatically:
 
-1. It reads the device lock with `doctor` (no connection). The lock names the Go engine's PID. It checks that the
-   engine runs with `--holder serve`, and that the engine's parent is exactly `node <main>/dist/bin/wa.js
-   <profile> serve`. Otherwise it stops nothing: a `serve` started another way cannot be started again the same
-   way.
-2. It counts a fresh marker word in the store (`search messages --offline`, and the own chat's newest 50 with
-   `messages list me --offline`). Both must be 0.
-3. After the owner's Enter it reads the lock again, and stops nothing if it changed. It stops `serve` with
-   `kill <pid>` and waits until both processes are gone and the lock is free.
-4. The owner sends the marker word to the own chat from the phone, while no device of this profile is connected,
-   so WhatsApp queues it.
-5. One one-shot connection: `doctor --online`, which connects and sends nothing (`WC-LIFE-1`).
-6. It waits for the lock to be free, then starts `serve` again from the main checkout with
-   `setsid nohup bin/wa <profile> serve`, stdin and stdout on `/dev/null`, and its diagnostics where the stopped
-   `serve` had them (the file or terminal behind its stderr; `/dev/null` for a pipe). It waits until `doctor`
-   shows the lock held by `serve` (`WC-LIFE-11`). The `EXIT` trap does the same on any earlier exit once `serve`
-   was stopped. Signals are ignored while it puts `serve` back, so a second Ctrl-C cannot leave it half done, and it
-   never starts a second `serve` while the stopped one, or one it already started, still runs. A start that fails
-   before `serve` holds the lock is tried again by the `EXIT` trap.
-7. The owner sends a control word while `serve` runs. Both words are counted again.
+```sh
+bin/live-oneshot-drop <receiver-profile> --sender-profile <sender-profile>
+```
 
-The last lines give the verdict:
+Confirm the plan once at the terminal. No phone typing is needed in this mode; opening WhatsApp on the phone
+alone does not create the marker and control messages. Without `--sender-profile`, the script instead prompts
+you to send both words from the phone's Message yourself chat. Both modes use the main checkout's installed build.
 
-| `doctor --online` | Marker | Control | Verdict |
-|---|---|---|---|
-| exit 0 | missing | found | BACKLOG item 9 holds: the one-shot took the queued message and it never reached the store |
-| exit 0 | found | found | not dropped this time; item 9 is not cleared, as `doctor --online` may end before WhatsApp delivers the queue |
-| exit 0 | either | missing | no verdict: `serve` is not saving messages at all |
-| other | any | any | no verdict: the one-shot may never have connected; also when a store read failed |
+1. Read both accounts' LIDs from `account list`, without printing them. Automatic mode refuses missing profiles
+   and profiles for the same account. Verify receiver `serve` and its engine by the device lock and process
+   arguments; stop nothing if they cannot be restored the same way.
+2. Check that fresh marker and control words are absent using offline search and the selected chat's newest
+   50 messages. Every read names the receiver profile and selected chat: sender rows in the shared store cannot
+   count as receiver delivery. Manual mode selects Own; automatic mode selects the sender's chat.
+3. After confirmation, recheck the lock and stop only the verified receiver `serve`. While it is disconnected,
+   send the marker, automatically from the explicit sender or manually from the phone. Automatic sends use
+   the usual CLI permissions and recipient checks; a refusal stops the check and restores `serve`.
+4. Check that the receiver lock is free, run `doctor --online` once, and check again. Unknown lock metadata or
+   an unexpected connection makes the result inconclusive. Count the marker **before** restarting `serve`.
+5. Restore `serve` with the original arguments and diagnostic destination, then send the control. Wait 20 seconds
+   and count both words again. The `EXIT` trap also restores `serve` on an early exit after stopping it, and
+   avoids starting a duplicate if a service manager has already restored it.
 
-The owner's run on 2026-10-18 gave the first row; [BACKLOG](BACKLOG.md) item 9 has the result.
+| Result | Script exit | Meaning |
+|---|---|---|
+| PASS | 0 | doctor succeeded; marker was present before restart and remains; control arrived |
+| FAIL | 1 | marker is missing before or after restart despite a received control |
+| INCONCLUSIVE / no verdict | 2 | marker appeared only after restart, control is missing, doctor/send/read failed, or receiver disconnection is unproven |
 
-`serve` is started in its own session (`setsid`, where there is one), so a Ctrl-C at a later prompt does not stop
-it; the last line says whether `serve` holds the lock. A one-shot `messages send` stays connected longer than
-`doctor --online`, so a found marker leaves the send case open. The marker is sent
-before the one-shot connects, not during it, because `doctor --online` ends too fast for a person to send in
-time; a queued message is the case item 9 worries about. While `serve` is stopped, other people's messages are in
-the same position, and that is said before step 3.
+Restoration failure also returns nonzero. A pass proves this run's queued-marker persistence; it does not cover
+every one-shot command or delivery timing. The final line checks that `serve` holds the lock again.
+The owner deletes the two probe messages from the phone afterwards. The script changes no permissions or
+recipient lists and sends no read receipts. While receiver `serve` is stopped, other incoming messages queue too.
 
 **`live-poll-vote`** needs `serve` running, so its writes go through it and no one-shot connection takes the
 device. It reads the own chat's id from `account list` (it must be in LID form) and never prints it. Then:

@@ -1,6 +1,6 @@
 ---
 name: test-live
-description: Test a whatsapp-cli change against the real WhatsApp before it ships — pick the live scenarios the change touches, get the owner's yes, have them run on the owner's installed wa in the owner's own chat only, put back what they change, record the shape of every answer and never its content. Use when asked to test live, check a branch on the real account, run the live scenarios, «проверить вживую», «прогнать живые сценарии».
+description: Test a whatsapp-cli change against the real WhatsApp before it ships — pick the live scenarios the change touches, get the owner's yes, have them run on the owner's installed wa in the owner's own chat (or the explicitly confirmed two-owned-account one-shot regression), put back what they change, record the shape of every answer and never its content. Use when asked to test live, check a branch on the real account, run the live scenarios, «проверить вживую», «прогнать живые сценарии».
 ---
 
 # Test a change live
@@ -48,7 +48,10 @@ the owner installed) against the owner's profile:
 A scenario that connects needs the device free: the owner stops `serve` first and starts it again after. An agent
 never stops the owner's `serve`, and never kills a process it did not start.
 
-Sends go only to the own chat. Keep reads small (`--limit 3`).
+Sends go only to the own chat, except `bin/live-oneshot-drop <receiver-profile> --sender-profile <sender-profile>`:
+with the owner’s explicit confirmation that both different accounts are theirs, that owner-run script sends
+exactly two probes from sender to receiver. It checks only the receiver’s account and the sender’s chat; it
+changes no permissions or recipient lists. Keep other reads small (`--limit 3`).
 
 Nine checks are scripts the owner runs, never the agent: `bin/live-oneshot-drop`, `bin/live-poll-vote`,
 `bin/live-older-history`, `bin/live-fresh-link`, `bin/live-chat-state`, `bin/live-album`, `bin/live-expired-file`,

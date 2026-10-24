@@ -33,9 +33,6 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Next (P2)
 
-- **WA-58** · P2 · ops · 🚧 `feat/wa-auto-oneshot` · Automate queued-marker and control sends in the one-shot
-  regression check using two explicitly selected owner-controlled accounts; keep receiver reads account-scoped.
-
 - **WA-7** · P2 · cli · 🚧 `feat/bot-*` Bots through Meta's Cloud API, `wa <profile> bot` (PRs #207–#210, #214) —
   plan: cli-private `plans/2026-10-22-wa-bot-api/handoff.md`.
 - **WA-8** · P2 · core · 🚧 `feat/media-archive` Checked file archives, `attachments download|check|jobs` (PR #203),
