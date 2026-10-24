@@ -27,10 +27,10 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   sessions end` (only the phone ends other devices) and `contacts remove` (whatsmeow cannot send it) — in cli-core
   `src/cli/messenger/lacks.ts`. The usage docs also wrongly say WhatsApp has no folders, comments or contact edits.
   Evidence per command: cli-private `research/comparisons/wa.md`.
-- **WA-2** · P1 · docs · Docs still describe the removed `--mark-read` and `catch_up_marks_read`, and an old
+- **WA-2** · P1 · 🚧 `fix/launch-docs-wa-2-3` · docs · Docs still describe the removed `--mark-read` and `catch_up_marks_read`, and an old
   `chats mark-read`: `skills/whatsapp-cli/SKILL.md:53,148-149`, `docs/configuration-reference.md:33`,
   `docs/limits.md:65`.
-- **WA-3** · P1 · cli · The top help promises "Windows instructions" in `setup --help`; there are none —
+- **WA-3** · P1 · 🚧 `fix/launch-docs-wa-2-3` · cli · The top help promises "Windows instructions" in `setup --help`; there are none —
   `src/program.ts:64`.
 - **WA-4** · P1 · live · A photo and a video "go as one album" (`docs/roadmap.md:8`, `docs/usage.md:224`), but the
   last live run showed two messages: run `bin/live-album`, then fix the docs or the send.
