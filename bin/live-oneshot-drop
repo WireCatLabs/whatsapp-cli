@@ -1,32 +1,45 @@
 #!/usr/bin/env sh
-# Live check for BACKLOG item 9: does a one-shot connection take a queued message that then never reaches the
-# store? The owner runs it from a terminal; an agent never does.
-#
-#   bin/live-oneshot-drop <profile>
-#
-# It stops the owner's `serve` (by its PID, after checking it is the main checkout's `bin/wa <profile> serve`),
-# asks for a message from the phone to the own chat while nothing is connected, runs one `doctor --online` (it
-# connects and sends nothing), starts `serve` again exactly so, and counts whether the message reached the store.
-# It prints counts and yes/no only: no message text, no id, no number.
+# The owner runs this regression check from a terminal, never an agent.
+#   bin/live-oneshot-drop <receiver-profile> [--sender-profile <owner-profile>]
+# The optional sender is another account owned by the same person. Reads stay in the receiver's account and chat.
 set -eu
+
+usage() {
+  echo "usage: $(basename -- "$0") <receiver-profile> [--sender-profile <owner-profile>]" >&2
+  exit 2
+}
+profile=${1:-}
+sender_profile=""
+case $# in
+  0 | 1) ;;
+  3) [ "$2" = --sender-profile ] && [ -n "$3" ] || usage; sender_profile=$3 ;;
+  *) usage ;;
+esac
 
 # shellcheck source-path=SCRIPTDIR source=lib/live.sh
 . "$(dirname -- "$0")/lib/live.sh"
 
-profile=${1:-}
 need_profile "$profile"
-serve_running "$profile" || die "no serve holds profile $profile's device — this check needs one running to stop"
+receiver_id=$(own_chat "$profile") || exit 1
+chat=$receiver_id
+if [ -n "$sender_profile" ]; then
+  need_profile "$sender_profile"
+  [ "$sender_profile" != "$profile" ] || die "the sender and receiver must be different profiles"
+  chat=$(own_chat "$sender_profile") || exit 1
+  [ "$chat" != "$receiver_id" ] || die "automatic mode needs two different owner-controlled accounts"
+fi
+serve_running "$profile" || die "no serve holds the receiver's device — this check needs one running to stop"
 find_serve "$profile" || exit 1
 
 run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
 marker="wacheck$run"
 control="wacontrol$run"
 
-# "<found by search> <found among the own chat's newest 50>", "?" for a read that failed.
+# The sender's outgoing row is in a different account and dialog; only receiver rows can count as delivery.
 hits() {
-  found=$(wa_json "$profile" search messages "$1" --offline --limit 5 --timeout 30s | json 'd.items.length') ||
+  found=$(wa_json "$profile" search messages "$1" "chat:$chat" --offline --limit 5 --timeout 30s | json 'd.items.length') ||
     found="?"
-  listed=$(wa_json "$profile" messages list me --offline --limit 50 --timeout 30s |
+  listed=$(wa_json "$profile" messages list "$chat" --offline --limit 50 --timeout 30s |
     json 'd.items.filter((one) => (one.text ?? "").includes(a)).length' "$1") || listed="?"
   echo "$found $listed"
 }
@@ -39,53 +52,100 @@ seen() {
   esac
 }
 
-shown() {
-  echo "${1% *} by search, ${1#* } among the own chat's newest 50"
+# Missing or malformed lock metadata cannot establish that the receiver is disconnected.
+receiver_free() {
+  lock_state=$(lock_of "$profile") || return 1
+  case "$lock_state" in
+    *"|false") return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
-[ "$(hits "$marker")" = "0 0" ] || die "the store reads failed or already hold the marker — stopping nothing"
+shown() {
+  echo "${1% *} by search, ${1#* } among the chat's newest 50"
+}
 
+for probe in "$marker" "$control"; do
+  [ "$(hits "$probe")" = "0 0" ] || die "the receiver store reads failed or already hold the marker — stopping nothing"
+done
+
+umask 077
+state_dir=$(mktemp -d "${TMPDIR:-/tmp}/wa-oneshot.XXXXXX")
+errs="$state_dir/errors"
 stopped=no
 started=""
 finish() {
+  result=$?
+  trap - EXIT
   hold_signals
-  restore_serve "$profile" || true
-  [ -n "$started" ] || return 0
-  if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; fi
+  # A service manager may have restored it; never start a second serve.
+  if serve_running "$profile"; then stopped=no; fi
+  restore_serve "$profile" || result=1
+  if [ -n "$started" ]; then
+    if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; result=1; fi
+  fi
+  rm -rf -- "$state_dir"
+  exit "$result"
 }
 trap finish EXIT
 on_signals
 
-cat <<EOF
+send_probe() {
+  attempt "$sender_profile" messages send "$receiver_id" "$2" --yes --timeout 60s
+  if [ "$rc" != 0 ]; then
+    echo "$1 send: exit $rc, error $(error_code || echo unknown) — no verdict" >&2
+    return 1
+  fi
+  confirmed=$(printf '%s' "$out" | json 'typeof d.item?.message?.id === "string" && d.item.message.id.length > 0') || confirmed=false
+  [ "$confirmed" = true ] || { echo "$1 send returned no sent message — no verdict" >&2; return 1; }
+  echo "$1 send: exit 0"
+}
 
-Plan, on profile $profile:
-  1. stop serve (pid $serve, its engine pid $engine) with kill, and wait for the lock to clear
-  2. you send yourself a message from the phone containing the word: $marker
-  3. one one-shot connection: wa $profile doctor --online (connects, reads the account, sends nothing)
-  4. serve starts again as before: $wa $profile serve, detached, output to /dev/null, diagnostics to $serve_err
-  5. you send yourself a second message, the control: $control
-  6. both words are counted in the store — counts only
+cat <<EOF_PLAN
 
-While serve is stopped, messages other people send you reach the store only if WhatsApp delivers them again;
-that is the question this check answers. Delete the two test messages from the phone afterwards.
-EOF
-confirm "Step 1 stops serve."
+Plan, on receiver profile $profile:
+  1. stop its serve (pid $serve, engine pid $engine), after checking the lock still belongs to it
+  2. queue a fresh marker while the receiver is disconnected
+  3. doctor --online connects once; count the marker immediately after it closes, before restarting serve
+  4. restore serve exactly as before, including on an early exit
+  5. send a control after serve is running; check both messages in the receiver's account and selected chat
+
+While serve is stopped, messages others send are queued too. The script changes no permissions or recipient lists.
+The two test messages remain in the chat; delete them from the phone afterwards.
+EOF_PLAN
+if [ -n "$sender_profile" ]; then
+  echo "Automatic sends use profile $sender_profile and its private chat with the receiver. No phone typing is needed."
+  confirm "Confirm both accounts are yours and allow these two test sends and the receiver serve pause."
+else
+  echo "Manual mode uses Message yourself on the phone."
+  confirm "Step 1 stops serve."
+fi
 
 stop_serve "$profile" || exit 1
+if [ -n "$sender_profile" ]; then
+  send_probe marker "$marker" || exit 2
+else
+  confirm "Step 2: on the phone, send yourself (Message yourself) a message containing $marker, wait for its tick."
+fi
 
-confirm "Step 2: on the phone, send yourself (Message yourself) a message containing $marker, wait for its tick."
-
+if ! receiver_free; then echo "No verdict: another connection took the receiver before the one-shot." >&2; exit 2; fi
 set +e
 wa_json "$profile" doctor --online --timeout 60s >/dev/null
 code=$?
 set -e
 echo "doctor --online exited $code"
+if ! receiver_free; then echo "No verdict: the receiver did not remain disconnected after the one-shot." >&2; exit 2; fi
+before_restart=$(hits "$marker")
 
 hold_signals
 restore_serve "$profile"
 on_signals
 
-confirm "Step 5: on the phone, send yourself a message containing $control."
+if [ -n "$sender_profile" ]; then
+  send_probe control "$control" || exit 2
+else
+  confirm "Step 5: on the phone, send yourself a message containing $control."
+fi
 echo "waiting 20 s for serve to save it"
 sleep 20
 
@@ -93,15 +153,14 @@ marker_hits=$(hits "$marker")
 control_hits=$(hits "$control")
 echo
 echo "── result ──"
-echo "marker, sent while nothing was connected: $(shown "$marker_hits")"
-echo "control, sent while serve ran:            $(shown "$control_hits")"
-case "$code $(seen "$marker_hits") $(seen "$control_hits")" in
-  "0 unknown "* | "0 "*" unknown") echo "No verdict: a store read failed." ;;
-  "0 "*" no") echo "No verdict: serve saved not even the control, so it is not saving messages at all." ;;
-  "0 no yes") echo "BACKLOG 9 holds: the one-shot connection took the queued message, and it never reached the store." ;;
-  "0 yes yes")
-    echo "The marker reached the store, as the fix for BACKLOG 9 expects. This alone cannot tell whether"
-    echo "doctor --online saved it or WhatsApp delivered it again to the restarted serve."
-    ;;
-  *) echo "No verdict: doctor --online failed, so the one-shot connection may never have connected." ;;
+echo "marker before serve restarted: $(shown "$before_restart")"
+echo "marker after serve restarted:  $(shown "$marker_hits")"
+echo "control while serve ran:       $(shown "$control_hits")"
+if [ "$code" != 0 ]; then echo "No verdict: doctor --online failed."; exit 2; fi
+case "$(seen "$before_restart") $(seen "$marker_hits") $(seen "$control_hits")" in
+  *unknown*) echo "No verdict: a receiver store read failed."; exit 2 ;;
+  *" no") echo "No verdict: serve did not save the control."; exit 2 ;;
+  "yes yes yes") echo "PASS: the one-shot saved the queued marker before serve restarted, and it remained afterwards." ;;
+  "no yes yes") echo "INCONCLUSIVE: the marker appeared only after serve restarted; the one-shot may have closed before delivery."; exit 2 ;;
+  *) echo "FAIL: the marker was lost although the control arrived."; exit 1 ;;
 esac

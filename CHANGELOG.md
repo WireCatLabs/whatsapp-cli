@@ -3,6 +3,18 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- The owner-run `bin/live-oneshot-drop` can send its two test messages automatically with
+  `--sender-profile`, using two explicitly confirmed accounts owned by the same person.
+
+### Changed — may break callers
+
+- The one-shot regression checks the receiver's store before restarting `serve`; delivery only after restart
+  is inconclusive. Lost messages and inconclusive checks now return nonzero.
+
 ## 0.7.0 — 24.10.2026
 
 ### Added
