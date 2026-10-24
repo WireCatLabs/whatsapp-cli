@@ -3,30 +3,29 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## 0.7.0 — 24.10.2026
+## Unreleased
 
 ### Added
 
-- The first command at a terminal asks once for your languages, other WireCat tools to install, and whether
-  commands and agents may only read. Pipes, agents and noninteractive runs skip the questions.
 - Preview a group or channel invite with `chats inspect` without joining it.
 - `account sessions list` shows linked device ids and marks this device. Names and last-active times are unavailable.
 - `chats folders list` and `show` read custom WhatsApp Lists and their chats from synced label state.
 - Incoming community announcement comments are decrypted into their post's stored thread; `messages comments`
   reads the comments this device has received. Channels have no comments, and comment sending stays unavailable.
 
-### Changed — may break callers
+### Fixed
 
-- **Use canonical command paths.** Contacts use `info`, `events` and `aliases remove`; chat invitations use
-  `links`, member checks use `check`, and join requests use `confirm` or `reject`. Metadata uses `show` and
-  `sync`; derived tags and search indexes use `rebuild`.
-- **Models and reports use explicit commands.** Use `models list kind:audio` or `kind:text`, `models download`,
-  `models keys set|remove`, `doctor reports show|create`, `commands info`, `mcp add` and `mcp check`.
-  Conversation links use `conversations links rebuild`; vector reports use `conversations embeddings status|clear`.
-  Retired command names are refused with their replacements.
-- **Retired flag aliases are removed.** Use `--analysis-provider`, `--embedding-provider`, `--consent-provider`,
-  `--claim`, `--answer-model`, `--template-mode`, `--text-file`, `--disappear-after` and the `kind:` query term.
-  Renamed permission keys are refused before work starts, with the exact replacement to put in configuration.
+- Full settings sync recovers stars and deletions as history updates, instead of presenting them as new live events.
+- The installation guide explains how to allow the optional agent-skill hook with npm's scoped `--allow-scripts` flag.
+
+## 0.7.0 — 24.10.2026
+
+### Added
+
+- The first command at a terminal asks once for your languages, other WireCat tools to install, and whether
+  commands and agents may only read. Pipes, agents and noninteractive runs skip the questions.
+
+### Changed — may break callers
 
 - **Live JSON output uses item and end records.** `watch --jsonl` wraps each message or event in
   `{ "type": "item", "data": … }`, uses snake_case fields and finishes with a `type: "end"` record.
@@ -43,8 +42,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
-- Full settings sync recovers stars and deletions as history updates, instead of presenting them as new live events.
-- The installation guide explains how to allow the optional agent-skill hook with npm's scoped `--allow-scripts` flag.
 - Commands to end other sessions or remove contacts are hidden from help, discovery and MCP because a linked
   WhatsApp device cannot perform them.
 - **The agent skill describes explicit read receipts correctly.** Reading changes no read state;
