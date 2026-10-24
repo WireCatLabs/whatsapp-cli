@@ -30,17 +30,6 @@ Was item 1:
 1. **Linking: live checks** (NEED-1387, own chat only). A fresh `session start` must keep the history push
    (the owner runs `bin/live-fresh-link`), and `self()` must be set immediately after pairing.
 
-## WA-6 · One-shot connections: live re-check
-
-Was item 9:
-
-9. **One-shot connections: live re-check.** Passive message and history listeners save what a command's
-   connection receives (`src/oneshot-listen.test.ts`); the engine waits up to 3 seconds for history downloads
-   before closing (`engine/cmd/wa-engine/historysync.go`). The owner must run `bin/live-oneshot-drop` again,
-   in the own chat, and confirm that the queued message survives `doctor --online` and the restarted `serve`.
-   Not verified: a push announced after the close wait ends. Consider holding its history receipt only if
-   the live run still loses a push; this also needs a cli-core port. See [history handling](ARCHITECTURE.md#3-history-comes-from-the-store).
-
 ## WA-11 · How long a rate limit and a ban hold writes
 
 Was item 14:
