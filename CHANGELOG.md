@@ -19,6 +19,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `bot templates list name:hello_world`. Meta applies the name predicate before paging; unsupported query fields
   are refused before a request. The retired flag has no compatibility alias.
 
+### Fixed
+
+- Permission-denied commands stay discoverable in CLI and MCP with current availability and reasons. Calls still enforce permissions; a listed command grants no execution access.
+
 ## 0.7.0 — 24.10.2026
 
 ### Added
