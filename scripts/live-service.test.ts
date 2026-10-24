@@ -31,7 +31,13 @@ current_pid=101
 stopped=no
 started=""
 lock_of() { [ "$running" = yes ] && echo 'serve (pid 101)|102|true' || echo '||false'; }
-lock_held() { [ "$running" = yes ]; }
+remaining_lock=no
+lock_held() {
+  if [ "$mode" = one-shot-closing ] && [ "$running" = no ] && [ "$remaining_lock" = yes ]; then
+    remaining_lock=no; return 0
+  fi
+  [ "$running" = yes ]
+}
 serve_running() { [ "$running" = yes ]; }
 ps() {
   case "$*" in
@@ -55,7 +61,7 @@ cat() {
 }
 readlink() { return 1; }
 
-sleep() { :; }
+sleep() { [ "$mode" != one-shot-closing ] || echo ACTION:wait; }
 kill() {
   if [ "$1" = -0 ]; then [ "$running" = yes ]; return; fi
   echo 'unexpected kill' >&2; return 1
@@ -147,6 +153,16 @@ describe("owner-run managed serve lifecycle", () => {
     )
     expect(result.status).not.toBe(0)
     expect(result.stdout).not.toContain("ACTION:")
+  })
+
+  it("waits for a closing one-shot before asking the service to start", () => {
+    const result = run(
+      "one-shot-closing",
+      "find_serve receiver --managed; stop_serve receiver; remaining_lock=yes; restore_serve receiver",
+    )
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.stdout.indexOf("ACTION:wait")).toBeGreaterThan(-1)
+    expect(result.stdout.indexOf("ACTION:start")).toBeGreaterThan(result.stdout.indexOf("ACTION:wait"))
   })
 
   it("does not replace a failed service start with an unmanaged process", () => {

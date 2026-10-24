@@ -258,6 +258,12 @@ stop_serve() {
 start_serve() {
   if [ -n "${serve_unit:-}" ]; then
     [ -z "${2:-}" ] || { echo "cannot change a managed serve's logging environment" >&2; return 1; }
+    tries=0
+    while lock_held "$1" && ! serve_running "$1"; do
+      tries=$((tries + 1))
+      [ "$tries" -le 30 ] || { echo "the one-shot still holds the lock after 30 s" >&2; return 1; }
+      sleep 1
+    done
     systemctl --user --no-block start -- "$serve_unit" || return 1
     tries=0
     until [ "$(systemctl --user show "$serve_unit" --property=ActiveState --value)" = active ] && serve_running "$1"; do
