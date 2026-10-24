@@ -36,6 +36,66 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       say({ id, ok: null })
       if (mode === "dies") setImmediate(() => process.exit(3))
       break
+    case "inspect":
+      if (fields.link !== "https://chat.whatsapp.com/TRANSPORT")
+        say({ id, error: { code: "validation_error", message: "wrong synthetic invite" } })
+      else
+        say({
+          id,
+          ok:
+            mode === "malformed-discovery"
+              ? { kind: "group" }
+              : {
+                  jid: "120363000000000001@g.us",
+                  kind: "group",
+                  name: "Synthetic preview",
+                  description: null,
+                  participants: 42,
+                  member: null,
+                  approval: true,
+                },
+        })
+      break
+    case "devices":
+      if (mode === "discovery-dies") process.exit(3)
+      say({
+        id,
+        ok: [
+          { id: mode === "malformed-discovery" ? "phone" : 0, current: false },
+          { id: 7, current: true },
+        ],
+      })
+      break
+    case "folders":
+      say({
+        id,
+        ok: [
+          {
+            id: "5",
+            name: "Synthetic list",
+            type: 5,
+            chats: mode === "malformed-discovery" ? null : ["120363000000000001@g.us"],
+          },
+        ],
+      })
+      break
+    case "commentGroup":
+      if (fields.jid !== "120363000000000001@g.us")
+        say({ id, error: { code: "validation_error", message: "not a synthetic announcement group" } })
+      else say({ id, ok: mode === "malformed-discovery" ? "true" : true })
+      break
+    case "saveContact":
+      if (fields.contactName === "crash before the answer") process.exit(3)
+      if (
+        fields.jid === "70000000002@s.whatsapp.net" &&
+        ((fields.contactName === "Synthetic Default" &&
+          fields.firstName === undefined &&
+          fields.phonebook === undefined) ||
+          (fields.contactName === "Synthetic Person" && fields.firstName === "Synthetic" && fields.phonebook === false))
+      )
+        say({ id, ok: null })
+      else say({ id, error: { code: "validation_error", message: "wrong synthetic contact fields" } })
+      break
     case "me":
       say({ id, ok: { jid: self, name: "Owner" } })
       break
