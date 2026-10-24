@@ -228,7 +228,7 @@ can be saved and forwarded later, since the store keeps what WhatsApp needs to f
 for a limited time, and a download of one it no longer keeps asks your phone to upload it again, which does not
 work yet ([not in wa yet](#not-in-wa-yet)). A place or a
 contact card is kept too, so it can be forwarded; neither is a file to save. WhatsApp has no speech
-recognition of its own, so `transcribe` uses a model on this machine (`wa models audio list`). What is kept, what
+recognition of its own, so `transcribe` uses a model on this machine (`wa models list kind:audio`). What is kept, what
 can be fetched again and how to search the text inside files: [file attachments](attachments.md).
 
 ## Older messages
@@ -287,7 +287,7 @@ Not built yet:
 WhatsApp has no such thing, or keeps it on the phone:
 
 - forum topics, chat folders (`chats folders`) and comments under channel posts (`messages comments`);
-- more than one invite link per group: `chats link reset` replaces the one there is;
+- more than one invite link per group: `chats links reset` replaces the one there is;
 - admins with only some rights: every admin has all of them;
 - polls that close, quizzes and anonymous polls;
 - silent, scheduled or send-as messages;

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process"
-import { readdirSync, readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -26,6 +26,7 @@ export const checkBaseline = (base: string): string[] => {
   if (!/^[a-f0-9]{40}$/.test(base)) throw new Error("pass the full base commit SHA")
   const git = (args: string[]) => execFileSync("git", args, { encoding: "utf8" })
   const previous = new Set(git(["ls-tree", "-r", "--name-only", base, "--", "lint/baseline/"]).trim().split("\n"))
+  if (!existsSync("lint/baseline")) return []
   return readdirSync("lint/baseline")
     .filter((name) => name.endsWith(".json"))
     .flatMap((name) => {

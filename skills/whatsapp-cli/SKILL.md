@@ -32,11 +32,11 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `messages forward`, `messages transcribe --local`, `messages star|unstar`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
 `polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `chats archive|unarchive|pin|unpin|mark-unread`,
 `chats delete|clear` (they ask first; not over MCP),
-`account update` (name, about and a square JPEG photo), `metadata refresh` (a group's title and description, for
-`tags auto`), group admin
+`account update` (name, about and a square JPEG photo), `metadata sync` (a group's title and description, for
+`tags rebuild`), group admin
 (`chats create|join|leave|update`, a group photo by `chats update --photo` (a square JPEG of 190 to 720 pixels a
-side) or `--remove-photo`, `chats link show|reset`, `chats members list|fetch|add|remove`,
-`chats admins add|remove`, `chats requests list|accept|decline`), `contacts profile|block|unblock|lookup|sync`, `account privacy show|set`,
+side) or `--remove-photo`, `chats links show|reset`, `chats members list|fetch|add|remove`,
+`chats admins add|remove`, `chats requests list|confirm|reject`), `contacts info|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
 `account privacy set` has WhatsApp's settings only (last seen, online, photo, about, read receipts, groups, calls);
 `--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.
@@ -109,7 +109,7 @@ the store does not hold yet needs its `…@g.us` id.
 
 ## Machine execution
 
-`wa commands schema messages list --json` describes one command's schemas and effects. Use `--json --no-input` for
+`wa commands info messages list --json` describes one command's schemas and effects. Use `--json --no-input` for
 headless work. `--json=id,text` keeps those fields of each list item, with the page and coverage around them. For
 ids use `--json=id`. `--max-output-bytes` and `--max-input-bytes` set byte budgets; one-shot actions default to 30
 seconds, changed with `--timeout`. Before a sensitive write, global `--dry-run` checks syntax and permissions; it
@@ -295,6 +295,10 @@ wa personal chats mark-read 100000000000001@lid    # the other side sees it: onl
 wa personal watch --jsonl                          # new messages as they arrive; holds the connection
 ```
 
+For `wa personal watch --jsonl`, read each message from the item record’s `data` field, using snake_case
+keys. With `--events`, `data.event` names the change. Wait for the final `type: "end"` record and check
+`complete`; an absent end means the stream was cut. A source failure also returns a nonzero exit code.
+
 An agent without a terminal (Claude Desktop, Cursor) uses the MCP server instead: `wa personal mcp`. The profile's
 `permissions` decide which commands it offers, through `wa_tools_search`, `wa_read` and `wa_write`; there is no
 confirmation form. `wa personal mcp config` prints the entry with full paths. `wa personal mcp --http --public-url
@@ -306,9 +310,9 @@ Never change permissions to get round a refusal. Guide:
 
 These work on what `wa` has stored and never connect:
 
-- **Conversations:** `wa personal conversations build --chat 120363000000000001@g.us --json` finds the threads in a
+- **Conversations:** `wa personal conversations links rebuild --chat 120363000000000001@g.us --json` finds the threads in a
   group, then `conversations list` and `conversations show`.
-- **People:** `contacts alias set|rm` is a local name, `contacts notes add|list|show|edit|remove` private notes;
+- **People:** `contacts aliases set|remove` is a local name, `contacts notes add|list|show|edit|remove` private notes;
   both stay on this computer and change nothing on WhatsApp. `contacts show --with-notes` includes the notes.
 - **Labels:** `wa personal tags add work --chat 120363000000000001@g.us` labels a chat, person, message or task;
   `tag:work` finds it in a search. `searches create` saves a search; `search messages --saved <name>` runs it.

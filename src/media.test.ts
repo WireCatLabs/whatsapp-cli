@@ -445,11 +445,11 @@ describe("transcribing a voice note", () => {
   it("asks for a model on this machine, since WhatsApp has no speech recognition", async () => {
     const result = await driving(["messages", "transcribe", base.busy, voice.id])
     expect(errorCode(result.stderr)).toBe("not_found")
-    expect(failure(result.stderr).message).toContain("models audio download")
+    expect(failure(result.stderr).message).toContain("models download")
   })
 
   it("lists the speech models", async () => {
-    const result = await wa(["media", "models", "audio", "list", "--json"])
+    const result = await wa(["media", "models", "list", "kind:audio", "--json"])
     expect(result.code).toBe(0)
   })
 })

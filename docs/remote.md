@@ -245,7 +245,7 @@ Those apps must log in again with a new code. This does not unlink the device fr
 - **The login page says "Too many wrong codes":** after five wrong codes it waits 30 seconds, then the terminal shows a
   new code. If you did not type them, someone found your address: stop the server, and think about a new device name
   in Tailscale.
-- **The app connects, but there are no tools:** `wa personal mcp doctor` checks that the MCP server starts and lists
+- **The app connects, but there are no tools:** `wa personal mcp check` checks that the MCP server starts and lists
   its tools. It does not check the link to WhatsApp or the tunnel; `wa personal doctor` reads the device's state.
 - **Reading works, writing fails:** the HTTP server does not go through `serve`, so a write is refused while `serve`
   runs; the error names it. Otherwise

@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import type { EngineEvent, WaVote, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const hashOf = (text: string) => createHash("sha256").update(text).digest("hex")
 const answerId = (text: string) => hashOf(text).slice(0, 8)
@@ -45,7 +46,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
   })
-  return { code, stdout: streams.stdout.join(""), lines: streams.stdout, stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), lines: streams.stdout, stderr: streams.stderr.join("") }
 }
 
 const polling = async (argv: string[]) => {
@@ -79,10 +80,7 @@ const watching = async (events: EngineEvent[] = []) => {
   }
   const result = await wa(["voting", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
-  return result.lines
-    .map((line) => JSON.parse(line))
-    .filter((record) => record.type === "item")
-    .map((record) => record.data)
+  return watchItems(result.lines)
 }
 
 const vote = (voter: string, answers: string[], votedAt: string, extra: Partial<WaVote> = {}): EngineEvent => ({

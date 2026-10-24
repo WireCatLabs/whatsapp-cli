@@ -49,24 +49,24 @@ remain subject to their command permissions, recipient lists and send limits.
 ## Connecting
 
 First run `wa personal setup --agent none` in a local terminal. It links the profile to your WhatsApp account. The
-MCP server never links for you. `wa personal mcp setup` then connects the app, as a separate step. An agent can
+MCP server never links for you. `wa personal mcp add` then connects the app, as a separate step. An agent can
 read `wa skill show` before you link; it explains both steps.
 
 **Codex or Claude Code on this computer:**
 
 ```sh
-wa personal mcp doctor             # check that MCP starts and lists tools
-wa personal mcp setup codex        # add it to Codex
-wa personal mcp setup claude-code  # or add it to Claude Code
+wa personal mcp check             # check that MCP starts and lists tools
+wa personal mcp add codex        # add it to Codex
+wa personal mcp add claude-code  # or add it to Claude Code
 ```
 
-Put a profile first, for example `wa work mcp setup codex`. Setup uses the app's own command and leaves its other
+Put a profile first, for example `wa work mcp add codex`. Setup uses the app's own command and leaves its other
 servers alone. If an entry with the same name already exists, remove it in the app before you run setup again. The
 default profile offers tools that write. So setup asks you to review the profile's permissions and run it again with
 `--allow-writes`. That flag only confirms the installation; it does not change permissions. To limit what the agent
 can do, set the profile's `permissions` first ([below](#what-an-agent-may-do)).
 
-`mcp doctor` reads no messages and does not connect to WhatsApp. A good result means the MCP handshake and the tool
+`mcp check` reads no messages and does not connect to WhatsApp. A good result means the MCP handshake and the tool
 list work. It does not mean the device is still linked; `wa personal doctor` and `wa personal account show` check
 that.
 

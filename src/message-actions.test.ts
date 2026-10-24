@@ -14,6 +14,7 @@ import {
 } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const base = contractSeed({ ids: whatsAppIds })
 const fresh: Message = {
@@ -524,12 +525,7 @@ const fromThePhone = async (events: EngineEvent[]) => {
   }
   const result = await wa(["actions", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
-  return result.stdout
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => JSON.parse(line))
-    .filter((record) => record.type === "item")
-    .map((record) => record.data)
+  return watchItems(result.stdout)
 }
 
 const listedIds = async (chat: string, ...filters: string[]) => {
@@ -787,12 +783,12 @@ describe("replies and live edits", () => {
   })
 })
 
-describe("wa stats messages counters refresh", () => {
+describe("wa stats messages counters sync", () => {
   it("answers that WhatsApp keeps no view, reaction or comment counts, and never starts the engine", async () => {
     const neverStarted = () => {
       throw new Error("a counter refresh on WhatsApp must never start the engine")
     }
-    const argv = ["actions", "stats", "messages", "counters", "refresh", "--chat", seed.busy, "--limit", "2"]
+    const argv = ["actions", "stats", "messages", "counters", "sync", "--chat", seed.busy, "--limit", "2"]
     const refreshed = await wa([...argv, "--json"], neverStarted)
     expect(refreshed.code, refreshed.stderr).toBe(0)
     const item = JSON.parse(refreshed.stdout).item

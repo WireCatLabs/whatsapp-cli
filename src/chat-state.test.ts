@@ -8,6 +8,7 @@ import { toChatUpdate } from "./adapter/map.js"
 import type { EngineEvent, WaChat, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 const PROFILE = "chat-state"
@@ -27,7 +28,7 @@ const wa = async (argv: string[], engine: () => WhatsAppEngine, signal?: AbortSi
     engine,
     ...(signal ? { signal } : {}),
   })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), stderr: streams.stderr.join("") }
 }
 
 const pushing = (pushed: WaChat): EngineEvent => ({
@@ -76,7 +77,7 @@ describe("chat state changed on the phone", () => {
       pushing({ jid: chat, kind: "group", muted: true }),
     ])
 
-    expect(JSON.parse(printed)).toMatchObject({ type: "end", complete: true })
+    expect(watchItems(printed)).toEqual([])
     expect(await shown()).toMatchObject({
       title: "Book club",
       unread_count: 0,

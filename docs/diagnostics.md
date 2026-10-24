@@ -23,7 +23,7 @@ A few words this page uses:
 | Find a failed run later | `wa personal runs list` | a failed run is kept by itself |
 | Keep a record of every run | `wa personal config set record true` | yes, every run |
 | Check the installation | `wa personal doctor`, `wa personal doctor --online` | no |
-| Make a problem report | `wa personal doctor report create` | yes, one file you send |
+| Make a problem report | `wa personal doctor reports create` | yes, one file you send |
 
 ## Show it: `--trace` and `--debug`
 
@@ -119,13 +119,13 @@ WhatsApp's from disk, without starting anything:
 ## A problem report
 
 ```sh
-wa personal doctor report create              # about the newest failed run
-wa personal doctor report create --run 20261001T080000Z-process-000001   # a made-up run id
+wa personal doctor reports create              # about the newest failed run
+wa personal doctor reports create --run 20261001T080000Z-process-000001   # a made-up run id
 ```
 
 It writes a JSON file — what `wa personal doctor` shows plus the run — and says where to send it: a new issue at
 [github.com/WireCatLabs/whatsapp-cli/issues](https://github.com/WireCatLabs/whatsapp-cli/issues/new). Read it before
-you send it. It holds no message text. `wa doctor report` alone shows what a report would hold and writes nothing.
+you send it. It holds no message text. `wa doctor reports show` alone shows what a report would hold and writes nothing.
 
 If no failed run is kept, run the failing command again; its failure is kept by itself.
 

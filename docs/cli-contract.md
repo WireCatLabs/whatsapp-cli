@@ -27,7 +27,7 @@ A few terms the page uses:
 | No questions in the middle of a run | `--no-input`; confirmation flags `--yes` and `--allow-dangerous` |
 | Runs that cannot hang or flood | A time limit and size limits for input and output |
 | Only the fields you need | `--json=<fields>` |
-| A command's options without reading the docs | `wa commands` and `wa commands schema` |
+| A command's options without reading the docs | `wa commands` and `wa commands info` |
 | To see what a command would do | `--dry-run` |
 | To know whether a failed write happened | `outcome_unknown` and `details.operation_id` |
 
@@ -117,14 +117,14 @@ automatically.
 ```sh
 wa personal messages list 120363000000000001@g.us --json=id,text
 wa commands messages list --json
-wa commands schema messages list --json
+wa commands info messages list --json
 ```
 
 `--json=id,text` keeps only the listed fields, separated by commas; a dot selects a nested field. The page
 information of the chosen format stays. For `page`, use `--json`: JSONL lists print the items without the page
 wrapper. A field that is missing stays missing; it does not become zero.
 
-`wa commands` describes options, allowed values, defaults and exit codes. `wa commands schema` gives a
+`wa commands` describes options, allowed values, defaults and exit codes. `wa commands info` gives a
 [JSON Schema](https://json-schema.org/specification) (version 2020-12) of the arguments and the result.
 `schemaVersion` is the version of this description and changes separately from the program's version.
 `outputSchemaCoverage` shows how much of the result the schema describes.

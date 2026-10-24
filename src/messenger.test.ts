@@ -161,7 +161,7 @@ describe("wa doctor", () => {
   })
 })
 
-describe("wa doctor report", () => {
+describe("wa doctor reports show", () => {
   it("writes wa's own block into a problem report, never the device keys, without starting the engine", async () => {
     const store = privateStore("reported")
     mkdirSync(dirname(store), { recursive: true, mode: 0o700 })
@@ -169,10 +169,10 @@ describe("wa doctor report", () => {
     const neverStarted = () => {
       throw new Error("a problem report must never start the engine")
     }
-    const preview = await wa(["reported", "doctor", "report", "--json"], { engine: neverStarted })
+    const preview = await wa(["reported", "doctor", "reports", "show", "--json"], { engine: neverStarted })
     expect(preview.code).toBe(0)
     const output = join(process.env.TMPDIR ?? "", "wa-report.json")
-    const created = await wa(["reported", "doctor", "report", "create", "--output", output, "--json"], {
+    const created = await wa(["reported", "doctor", "reports", "create", "--output", output, "--json"], {
       engine: neverStarted,
     })
     expect(created.code).toBe(0)
@@ -185,7 +185,7 @@ describe("wa doctor report", () => {
   })
 })
 
-describe("wa doctor report create --run", () => {
+describe("wa doctor reports create --run", () => {
   it("reports on the run wa failed, with the account's id as a label, without starting the engine", async () => {
     // An account of its own, whose store holds nothing of the chat whatever ran before; its phone pushes none of it,
     // as a one-shot connection saves what is pushed.
@@ -202,11 +202,14 @@ describe("wa doctor report create --run", () => {
     expect(run).toMatchObject({ command: "messages sync", status: "failed", errorCode: "not_found" })
 
     const output = join(tmpdir(), "wa-run-report.json")
-    const created = await wa(["failing", "doctor", "report", "create", "--run", run?.runId ?? "", "--output", output], {
-      engine: () => {
-        throw new Error("a problem report must never start the engine")
+    const created = await wa(
+      ["failing", "doctor", "reports", "create", "--run", run?.runId ?? "", "--output", output],
+      {
+        engine: () => {
+          throw new Error("a problem report must never start the engine")
+        },
       },
-    })
+    )
     expect(created.code, created.stderr).toBe(0)
     const text = readFileSync(output, "utf8")
     const report = JSON.parse(text)

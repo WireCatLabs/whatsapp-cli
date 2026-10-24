@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import type { EngineEvent, WaReaction, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 const theirs = seed.messages.find((message) => message.chatId === seed.busy && !message.outgoing) as Message
@@ -25,7 +26,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
   })
-  return { code, stdout: streams.stdout.join(""), lines: streams.stdout, stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), lines: streams.stdout, stderr: streams.stderr.join("") }
 }
 
 /** `wa watch` while the engine pushes `events`, as the phone would, then stops. */
@@ -47,10 +48,7 @@ const watching = async (events: EngineEvent[] = []) => {
   }
   const result = await wa(["reacting", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
-  return result.lines
-    .map((line) => JSON.parse(line))
-    .filter((record) => record.type === "item")
-    .map((record) => record.data)
+  return watchItems(result.lines)
 }
 
 const reactionOf = (reactor: string, reaction: string | null, reactedAt: string, own = false): WaReaction => ({
