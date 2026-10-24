@@ -63,3 +63,5 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   `engine/cmd/wa-engine/`. [Notes](BACKLOG-NOTES.md#wa-21--channels-post-files-and-what-following-left-open)
 - **WA-50** · P2 · engine · 🟡 `feat/wa-launch-reads` · Contact patch code and unit tests are ready;
   `contacts add|rename` stay disabled until a spare-account check confirms the app-state write and sync on other devices.
+
+- **WA-57** · P2 · cli · 🚧 `fix/bot-list-native-queries` Replace template-name filtering flags with a typed native list query and declare the template result schema (WC-CMD-19, WC-CMD-20).
