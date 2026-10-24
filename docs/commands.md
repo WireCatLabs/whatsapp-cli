@@ -4249,8 +4249,12 @@ wa bot auth remove
 every name on this machine that has a bot token; --check asks WhatsApp which bot each is
 
 ```sh
-wa bot list [options]
+wa bot list [query] [options]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
@@ -4265,8 +4269,12 @@ the chats this bot is in — WhatsApp gives a bot no list of them, so `list` sho
 chats this bot has seen on this machine — not a complete list from WhatsApp
 
 ```sh
-wa bot chats list
+wa bot chats list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 #### `wa bot chats show`
 
@@ -4318,12 +4326,13 @@ the admins of a chat the bot is an admin in
 the chat's admins and what each may do
 
 ```sh
-wa bot chats admins list <chat>
+wa bot chats admins list <chat> [query]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat id, or the title of a chat this bot has seen. |
+| `query` | optional | field:value terms; this list filters by none yet. |
 
 #### `wa bot chats admins add`
 
@@ -4488,12 +4497,13 @@ wa bot messages send <chat> [text] [options]
 the latest messages in a chat; where WhatsApp gives a bot no history, and with --offline, the ones this bot has seen on this machine
 
 ```sh
-wa bot messages list <chat> [options]
+wa bot messages list <chat> [query] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat id, user:<id> for a person, or the title of a chat this bot has seen. |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
@@ -4638,8 +4648,12 @@ the chats this bot may write to; with no list, every chat — `clear` removes th
 the chats on the list, or nothing when there is no list
 
 ```sh
-wa bot recipients list
+wa bot recipients list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 #### `wa bot recipients add`
 
@@ -4688,8 +4702,12 @@ what this bot sent, edited and deleted from this machine — ids and outcomes, n
 every send, edit and delete this bot made from this machine, with its outcome
 
 ```sh
-wa bot sends list
+wa bot sends list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 ### `wa bot watch`
 
@@ -4740,8 +4758,12 @@ the bot's command menu — what people see after /
 the commands in the menu now
 
 ```sh
-wa bot commands list
+wa bot commands list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
 
 #### `wa bot commands set`
 
@@ -4776,8 +4798,12 @@ where the messenger pushes this bot's updates — while one is set, `bot watch` 
 the webhooks this bot has
 
 ```sh
-wa bot webhooks list
+wa bot webhooks list [query]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms; this list filters by none yet. |
 
 #### `wa bot webhooks set`
 
@@ -5829,12 +5855,12 @@ approved messages: the only kind WhatsApp delivers 24 hours after a person wrote
 the business account's templates, with status, language and category
 
 ```sh
-wa bot templates list [options]
+wa bot templates list [query]
 ```
 
-| Option | What it does |
-|---|---|
-| `--name <name>` | only templates with this name. |
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 #### `wa bot templates send`
 

@@ -14,8 +14,10 @@ const WABA_ID = "200000000000002"
 let keyring: ReturnType<typeof memoryKeyring>
 let seen: { path: string; method: string; body: unknown }[]
 let answer: unknown
+let requests: URL[]
 
 const graph: FetchLike = async (url, init) => {
+  requests.push(new URL(url))
   seen.push({ path: new URL(url).pathname, method: init.method ?? "GET", body: init.body })
   return new Response(JSON.stringify(answer))
 }
@@ -43,12 +45,36 @@ const configure = (profile: Record<string, unknown>) => {
 beforeEach(() => {
   keyring = memoryKeyring()
   seen = []
+  requests = []
   answer = { data: [], paging: { next: "https://graph.facebook.com/next" } }
   configure({ phone_number_id: PHONE_ID, waba_id: WABA_ID })
   new BotTokenStore({ app: WA, profile: "cloudtest", keyring }).write("EAAtest0000made0up0token")
 })
 
 describe("wa <profile> bot templates and media, refusals", () => {
+  it("sends the name predicate to Meta without filtering its returned page", async () => {
+    answer = {
+      data: [{ name: "hello_world", status: "APPROVED", language: "en_US", category: "UTILITY" }],
+      paging: { next: "https://graph.facebook.com/next" },
+    }
+    const listed = await wa(["cloudtest", "bot", "templates", "list", "name:hello_world", "--json"])
+    expect(listed.code, listed.stderr).toBe(0)
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.searchParams.get("name")).toBe("hello_world")
+    expect(JSON.parse(listed.stdout).items).toHaveLength(1)
+    expect(JSON.parse(listed.stdout).page.has_more).toBe(true)
+  })
+
+  it.each([
+    { args: ["category:UTILITY"] },
+    { args: ["--name", "hello_world"] },
+    { args: ["name:hello_world OR name:other"] },
+  ])("refuses unsupported filters and the retired flag before calling Meta: %s", async ({ args }) => {
+    const listed = await wa(["cloudtest", "bot", "templates", "list", ...args, "--json"])
+    expect(listed.code).toBe(2)
+    expect(requests).toEqual([])
+  })
+
   it("**says when more templates wait** behind the first page", async () => {
     const listed = await wa(["cloudtest", "bot", "templates", "list", "--json"])
 
