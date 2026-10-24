@@ -3,6 +3,14 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Fixed
+
+- **The agent skill describes explicit read receipts correctly.** Reading changes no read state;
+  `chats mark-read` clears the unread mark and sends the receipt. The top help points to linking examples
+  without promising Windows instructions that setup help does not contain.
+
 ## 0.6.0 — 24.10.2026
 
 ### Added
