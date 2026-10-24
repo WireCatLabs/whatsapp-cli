@@ -29,7 +29,7 @@ if [ -n "$sender_profile" ]; then
   [ "$chat" != "$receiver_id" ] || die "automatic mode needs two different owner-controlled accounts"
 fi
 serve_running "$profile" || die "no serve holds the receiver's device — this check needs one running to stop"
-find_serve "$profile" || exit 1
+find_serve "$profile" --managed || exit 1
 
 run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
 marker="wacheck$run"
@@ -79,7 +79,7 @@ finish() {
   trap - EXIT
   hold_signals
   # A service manager may have restored it; never start a second serve.
-  if serve_running "$profile"; then stopped=no; fi
+  if [ -z "${serve_unit:-}" ] && serve_running "$profile"; then stopped=no; fi
   restore_serve "$profile" || result=1
   if [ -n "$started" ]; then
     if serve_running "$profile"; then echo "serve holds the lock: yes"; else echo "serve holds the lock: NO" >&2; result=1; fi
@@ -113,6 +113,9 @@ Plan, on receiver profile $profile:
 While serve is stopped, messages others send are queued too. The script changes no permissions or recipient lists.
 The two test messages remain in the chat; delete them from the phone afterwards.
 EOF_PLAN
+if [ -n "${serve_unit:-}" ]; then
+  echo "The receiver uses a systemd user service; it will be stopped and restored through that service."
+fi
 if [ -n "$sender_profile" ]; then
   echo "Automatic sends use profile $sender_profile and its private chat with the receiver. No phone typing is needed."
   confirm "Confirm both accounts are yours and allow these two test sends and the receiver serve pause."

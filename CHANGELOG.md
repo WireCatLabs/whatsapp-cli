@@ -22,6 +22,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Fixed
 
 - Permission-denied commands stay discoverable in CLI and MCP with current availability and reasons. Calls still enforce permissions; a listed command grants no execution access.
+- The owner-run one-shot regression can pause and restore a persistent systemd user service, including one
+  that selects its profile through its environment instead of a command argument.
 
 ## 0.7.0 — 24.10.2026
 

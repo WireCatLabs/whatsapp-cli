@@ -121,7 +121,10 @@ you to send both words from the phone's Message yourself chat. Both modes use th
 
 1. Read both accounts' LIDs from `account list`, without printing them. Automatic mode refuses missing profiles
    and profiles for the same account. Verify receiver `serve` and its engine by the device lock and process
-   arguments; stop nothing if they cannot be restored the same way.
+   arguments; stop nothing if they cannot be restored the same way. For a persistent systemd user service,
+   verify its MainPID and use the same service to stop and start. An implicit profile must be set by the unit's
+   `WA_PROFILE`, with the main checkout's `WA_CONFIG_DIR` and `WA_STATE_DIR`; quoted or escaped environment
+   values are refused. Transient services are refused because they may disappear when stopped.
 2. Check that fresh marker and control words are absent using offline search and the selected chat's newest
    50 messages. Every read names the receiver profile and selected chat: sender rows in the shared store cannot
    count as receiver delivery. Manual mode selects Own; automatic mode selects the sender's chat.
@@ -132,7 +135,7 @@ you to send both words from the phone's Message yourself chat. Both modes use th
    an unexpected connection makes the result inconclusive. Count the marker **before** restarting `serve`.
 5. Restore `serve` with the original arguments and diagnostic destination, then send the control. Wait 20 seconds
    and count both words again. The `EXIT` trap also restores `serve` on an early exit after stopping it, and
-   avoids starting a duplicate if a service manager has already restored it.
+   restores a managed receiver through its original service; direct launches avoid starting a duplicate.
 
 | Result | Script exit | Meaning |
 |---|---|---|

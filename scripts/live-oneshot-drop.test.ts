@@ -41,7 +41,7 @@ error_code() { json 'd.error.code' <"$errs"; }
 ${parsing}
 serve_running() { node "$wa" __running; }
 lock_of() { node "$wa" __lock; }
-find_serve() { serve=101; engine=102; serve_err=/dev/null; }
+find_serve() { serve=101; engine=102; serve_err=/dev/null; case "$WA_ONESHOT_FIXTURE_MODE" in managed-*) serve_unit=fixture.service ;; esac; }
 stop_serve() { stopped=yes; node "$wa" __stop; }
 restore_serve() { [ "$stopped" = yes ] || return 0; node "$wa" __restore; stopped=no; started=103; }
 hold_signals() { :; }
@@ -131,6 +131,16 @@ describe("owner-run automatic one-shot regression", () => {
     expect(result.stdout).toContain("INCONCLUSIVE:")
     expect(result.stdout).not.toContain("PASS:")
   })
+
+  it.each(["managed-send-refused", "managed-receiver-restarted"])(
+    "restores through the manager on early exit: %s",
+    (mode) => {
+      const result = run(mode)
+      expect(result.status).toBe(2)
+      expect(result.saved.running).toBe(true)
+      expect(result.saved.actions.filter((one) => one.action === "restore")).toHaveLength(1)
+    },
+  )
 
   it.each(["send-refused", "doctor-failed"])("restores serve and refuses a pass after %s", (mode) => {
     const result = run(mode)

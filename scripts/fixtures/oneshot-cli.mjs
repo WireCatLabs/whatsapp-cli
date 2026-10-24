@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from "node:fs"
 const path = process.env.WA_ONESHOT_FIXTURE_STATE
 if (!path) throw new Error("missing isolated fixture state")
 const state = JSON.parse(readFileSync(path, "utf8"))
-const mode = process.env.WA_ONESHOT_FIXTURE_MODE ?? "normal"
+const mode = (process.env.WA_ONESHOT_FIXTURE_MODE ?? "normal").replace(/^managed-/, "")
 const accounts = { receiver: "100000000000001@lid", sender: "100000000000002@lid", same: "100000000000001@lid" }
 const args = process.argv.slice(2)
 const answer = (value) => console.log(JSON.stringify(value))
