@@ -27,6 +27,8 @@ Three terms appear on every page:
 | See which questions nobody answered in your groups | [Groups](groups.md) |
 | Use WhatsApp from an app with no terminal, or from a chat in the browser | [The MCP server](mcp.md), [From the browser](remote.md) |
 
+How `wa` differs from other tools: [compared with other tools](compare.md).
+
 Every command does one thing, gives the same shape of answer every time, and has a fixed exit code for each kind of
 failure. This is why scripts and agents can rely on it.
 
@@ -66,4 +68,5 @@ a time may connect: [linking, devices and profiles](sessions.md).
 | [Diagnostics](diagnostics.md) | What did a command do, and what is never recorded? |
 | [Troubleshooting](troubleshooting.md) | Something does not work: what the screen says, and what to do |
 | [Security](security.md) | What does `wa` keep on my computer, and what can go wrong? |
+| [Compared with other tools](compare.md) | How does `wa` compare with wacli, whatsapp-mcp, mudslide and the Cloud API? |
 | [Roadmap](roadmap.md) | What is coming next? |
