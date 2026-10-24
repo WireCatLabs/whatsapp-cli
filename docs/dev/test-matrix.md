@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**272 ✅ · 825 ⛔ · 0 ❌** — 359 commands, 738 options.
+**272 ✅ · 823 ⛔ · 0 ❌** — 359 commands, 736 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -134,9 +134,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `contacts prepare` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
 | `contacts prepare` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts |
 | `contacts events` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
-| `contacts events` | `--scope` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
-| `contacts events` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
-| `contacts events` | `--until-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
 | `contacts events` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
 | `contacts events` | `--cursor` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/person-timeline.test.ts |
 | `contacts check` |  | ✅ |  |
@@ -584,6 +581,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `tasks add` | `--assignee` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks update` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks update` | `--category` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks update` | `--priority` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks update` | `--parent` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks update` | `--title` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks update` | `--description` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks update` | `--due` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
@@ -668,7 +667,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `search conversations` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search conversations` | `--catch-up` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search runs` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
-| `search runs` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search runs` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search runs` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `searches create` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/searches.test.ts) |
