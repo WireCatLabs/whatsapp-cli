@@ -30,8 +30,6 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   [Notes](BACKLOG-NOTES.md#wa-4--album-does-the-phone-group-a-photo-and-a-video)
 - **WA-5** · P1 · live · A fresh `session start` keeps the history push and sets `self()` — `bin/live-fresh-link`.
   [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
-- **WA-6** · P1 · live · A one-shot command no longer drops queued messages — re-run `bin/live-oneshot-drop`.
-  [Notes](BACKLOG-NOTES.md#wa-6--one-shot-connections-live-re-check)
 
 ## Next (P2)
 
