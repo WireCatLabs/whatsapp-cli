@@ -150,20 +150,41 @@ phone() {
 }
 
 # The profile's serve, from the lock: sets lock as read, engine and serve to the two PIDs, and serve_err to where
-# serve's diagnostics go. Fails unless serve is exactly the main checkout's `bin/wa <profile> serve`, the one
-# start_serve can start again the same way.
+# serve's diagnostics go. Default-profile launches need an explicitly opted-in, persistent user service.
 find_serve() {
+  serve_unit=""
+  serve_implicit=no
   lock=$(lock_of "$1")
   engine=$(echo "$lock" | cut -d'|' -f2)
   engine_args=$(ps -ww -o args= -p "$engine") || { echo "cannot read process $engine" >&2; return 1; }
   case "$engine_args" in
-    *wa-engine*" --holder serve"*) ;;
+    *wa-engine" --store $main/.wa/state/profiles/$1/private.db --holder serve") ;;
     *) echo "process $engine holds the lock but is not wa's engine for serve — stopping nothing" >&2; return 1 ;;
   esac
   serve=$(ps -o ppid= -p "$engine" | tr -d ' ')
   serve_args=$(ps -ww -o args= -p "$serve") || { echo "cannot read process $serve" >&2; return 1; }
+  # Only the one-shot regression opts into pausing the manager; logging/relink checks need their own launch.
+  if [ "${2:-}" = --managed ]; then
+    cgroup=$(cat "/proc/$serve/cgroup" 2>/dev/null) || cgroup=""
+    candidate=${cgroup##*/}
+    case "$candidate" in
+      *.service)
+        manager_pid=$(systemctl --user show "$candidate" --property=MainPID --value 2>/dev/null) || manager_pid=""
+        if [ "$manager_pid" = "$serve" ]; then
+          transient=$(systemctl --user show "$candidate" --property=Transient --value 2>/dev/null) || transient=""
+          [ "$transient" = no ] || { echo "cannot restore a transient or unverified service — stopping nothing" >&2; return 1; }
+          serve_unit=$candidate
+        fi
+        ;;
+    esac
+  fi
   case "$serve_args" in
     *" $main/dist/bin/wa.js $1 serve") ;;
+    *" $main/dist/bin/wa.js serve")
+      [ -n "$serve_unit" ] || { echo "a default-profile serve needs a verified persistent user service — stopping nothing" >&2; return 1; }
+      service_profile_matches "$1" || return 1
+      serve_implicit=yes
+      ;;
     *)
       echo "serve (pid $serve) was not started as $wa $1 serve; this script could not start it again the same way" >&2
       return 1
@@ -179,6 +200,25 @@ find_serve() {
   return 0
 }
 
+# The unit must explicitly preserve the profile and checkout paths when started again.
+service_profile_matches() {
+  systemctl --user show "$serve_unit" --property=Environment --value 2>/dev/null |
+    node -e '
+      let text = ""
+      process.stdin.on("data", (chunk) => (text += chunk)).on("end", () => {
+        // Refuse quoting/escapes rather than treating quoted content as another environment assignment.
+        if (/["\\\x27]/.test(text)) process.exit(1)
+        const env = new Map(text.trim().split(/\s+/).map((entry) => {
+          const at = entry.indexOf("=")
+          return [entry.slice(0, at), entry.slice(at + 1)]
+        }))
+        const [profile, main] = process.argv.slice(1)
+        process.exit(env.get("WA_PROFILE") === profile && env.get("WA_STATE_DIR") === `${main}/.wa/state` &&
+          env.get("WA_CONFIG_DIR") === `${main}/.wa/config` ? 0 : 1)
+      })
+    ' "$1" "$main" || { echo "the service profile or checkout environment cannot be verified — stopping nothing" >&2; return 1; }
+}
+
 # Stops the serve find_serve found, by its PID, once the lock still names it, and waits until both processes are gone
 # and the lock is free. Sets stopped=yes just before the kill, for the caller's EXIT trap.
 stop_serve() {
@@ -186,9 +226,18 @@ stop_serve() {
     echo "serve changed while the plan was on screen — stopping nothing; run the script again" >&2
     return 1
   }
+  [ "${serve_implicit:-no}" != yes ] || service_profile_matches "$1" || return 1
   # shellcheck disable=SC2034 # read by the caller's EXIT trap
-  stopped=yes
-  kill "$serve" || return 1
+  if [ -n "${serve_unit:-}" ]; then
+    [ "$(systemctl --user show "$serve_unit" --property=MainPID --value)" = "$serve" ] || {
+      echo "the service changed — stopping nothing" >&2; return 1;
+    }
+    stopped=yes
+    systemctl --user --no-block stop -- "$serve_unit" || return 1
+  else
+    stopped=yes
+    kill "$serve" || return 1
+  fi
   tries=0
   while kill -0 "$serve" 2>/dev/null || kill -0 "$engine" 2>/dev/null; do
     tries=$((tries + 1))
@@ -203,9 +252,29 @@ stop_serve() {
 }
 
 # Starts serve as find_serve found it: from the main checkout, detached, stdout to /dev/null, diagnostics to
-# serve_err. A second argument turns the engine's log on, into that file (WA_ENGINE_LOG). Sets started to serve's
+# serve_err, or through the verified user service. A second argument turns the engine's log on for direct
+# launches (WA_ENGINE_LOG). Sets started to serve's
 # PID and waits until serve holds the lock.
 start_serve() {
+  if [ -n "${serve_unit:-}" ]; then
+    [ -z "${2:-}" ] || { echo "cannot change a managed serve's logging environment" >&2; return 1; }
+    tries=0
+    while lock_held "$1" && ! serve_running "$1"; do
+      tries=$((tries + 1))
+      [ "$tries" -le 30 ] || { echo "the one-shot still holds the lock after 30 s" >&2; return 1; }
+      sleep 1
+    done
+    systemctl --user --no-block start -- "$serve_unit" || return 1
+    tries=0
+    until [ "$(systemctl --user show "$serve_unit" --property=ActiveState --value)" = active ] && serve_running "$1"; do
+      tries=$((tries + 1))
+      [ "$tries" -le 60 ] || { echo "the service does not hold the lock after 60 s" >&2; return 1; }
+      sleep 1
+    done
+    started=$(systemctl --user show "$serve_unit" --property=MainPID --value)
+    echo "serve holds the lock again through its user service"
+    return 0
+  fi
   # A one-shot cut short by Ctrl-C may hold the lock for a moment; serve started now would be refused it.
   tries=0
   while lock_held "$1"; do
@@ -243,6 +312,11 @@ start_serve() {
 # holds signals around it (hold_signals).
 restore_serve() {
   [ "$stopped" = yes ] || return 0
+  if [ -n "${serve_unit:-}" ]; then
+    start_serve "$1" || return 1
+    stopped=no
+    return 0
+  fi
   for pid in "$serve" "$started"; do
     if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
       echo "serve (pid $pid) is still running — not starting a second one" >&2
