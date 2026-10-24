@@ -23,7 +23,13 @@ Then link a profile and install the agent skill with `wa personal setup` (see [u
 The install itself writes nothing into your agents' folders. To install the agent skill without linking, run
 `wa skill install` (`--for claude` or `--for agents` for one folder). To have the install do it, set
 `WA_INSTALL_AGENT` to `all`, `claude`, `codex`, `cursor` or `gemini`:
-`WA_INSTALL_AGENT=all npm install --global @wirecat/whatsapp-cli`.
+`WA_INSTALL_AGENT=all npm install --global --allow-scripts=@wirecat/whatsapp-cli @wirecat/whatsapp-cli`.
+
+npm 12 blocks unapproved install hooks. If it prints `npm warn install-scripts` and says the package has
+`install scripts blocked because they are not covered by allowScripts`, `wa` still installs, but the
+`WA_INSTALL_AGENT` hook does not run. The scoped `--allow-scripts=@wirecat/whatsapp-cli` flag above allows that hook
+for this global install. Alternatively, leave hooks blocked and run `wa skill install` afterwards.
+See [npm's install-script policy](https://docs.npmjs.com/cli/v12/commands/npm-install/#allow-scripts).
 
 ## From source
 

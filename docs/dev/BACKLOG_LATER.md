@@ -65,8 +65,6 @@ as [BACKLOG.md](BACKLOG.md); an item moves there when it becomes P2. The researc
 ## Commands
 
 - **WA-54** · P3 · engine · `messages send --location`.
-- **WA-55** · P3 · engine · `messages comments` for community announcement groups, reading first (channels have no
-  comments).
 - **WA-56** · P3 · engine · Write Lists: `chats folders create|update|delete`; possible, no other tool does it yet.
 - **WA-49** · P3 · cli · 🚩 Mount cli-core's `schedule` (agent runs on a timer), as tg and max do — `src/program.ts`.
 

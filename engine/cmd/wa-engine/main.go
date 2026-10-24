@@ -63,6 +63,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep the phone-form chats in the device store; they will not be re-keyed")
 	}
 	e.phones = phones
+	labels, err := openLabels(ctx, db, device.ID == nil)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep synced labels in the device store")
+	}
+	e.labels = labels
 	// Right after pairing the phone pushes the whole history; no lookup goes out in that run.
 	if phones != nil {
 		asks, err := openLidAsker(e.ctx, db, device.ID == nil, e.askLIDs)

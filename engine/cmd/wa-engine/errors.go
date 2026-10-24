@@ -9,7 +9,8 @@ import (
 
 // writes are the requests that change something on WhatsApp: the "write" ops of ENGINE_OPS in src/engine/contract.ts.
 var writes = map[string]bool{
-	"send": true, "sendMedia": true, "sendAlbum": true, "forward": true, "edit": true, "revoke": true, "react": true,
+	"saveContact": true,
+	"send":        true, "sendMedia": true, "sendAlbum": true, "forward": true, "edit": true, "revoke": true, "react": true,
 	"read": true, "createPoll": true, "vote": true, "pin": true, "unpin": true, "createGroup": true, "join": true,
 	"leave": true, "updateGroup": true, "resetLink": true, "setGroupPhoto": true, "participants": true,
 	"answerRequest": true, "block": true, "setPrivacy": true, "logout": true, "mute": true,

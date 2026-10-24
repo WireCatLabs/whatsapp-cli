@@ -194,7 +194,7 @@ func names(h waHistory, chat string) bool {
 
 func (h waHistory) empty() bool {
 	return len(h.Chats) == 0 && len(h.Contacts) == 0 && len(h.Messages) == 0 && len(h.Votes) == 0 &&
-		len(h.Reactions) == 0 && len(h.Events) == 0
+		len(h.Reactions) == 0 && len(h.Events) == 0 && len(h.Stars) == 0 && len(h.Deletions) == 0
 }
 
 // olderAnchor reads the message the phone counts back from. whatsmeow keeps no messages, so it comes from the CLI's

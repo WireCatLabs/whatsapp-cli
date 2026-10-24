@@ -254,8 +254,8 @@ export const listenAdapter = ({
       }
       if (event.event !== "history") return
       flush()
-      const { rekeys, chats, contacts, messages, votes, reactions, events } = event.history
-      onBatch({
+      const { rekeys, chats, contacts, messages, votes, reactions, events, stars, deletions } = event.history
+      const batch = {
         rekeys: rekeys ?? [],
         chats: chats.map(toChatUpdate),
         people: contacts.map(toMember),
@@ -267,7 +267,10 @@ export const listenAdapter = ({
           reaction: toPersonReaction(reaction),
         })),
         events: (events ?? []).map((change) => ({ chatId: change.chat, change: toChatEvent(change) })),
-      })
+        stars: (stars ?? []).map((one) => ({ chatId: one.chat, messageId: one.message, starred: one.starred })),
+        deletions: (deletions ?? []).map((one) => ({ chatId: one.chat, messageId: one.message })),
+      }
+      onBatch(batch)
     }
     const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, warn, handed, expected)
     const handOn = () => {

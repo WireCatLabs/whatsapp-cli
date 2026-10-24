@@ -16,10 +16,11 @@ import (
 // WhatsApp has a LID for the user: cli-core cannot merge two stored chats, so the id is decided here, once
 // (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3).
 type converter struct {
-	self   types.JID // the account's LID, no device part
-	selfPN types.JID
-	lidFor func(pn types.JID) (types.JID, bool)
-	nameOf func(user types.JID) string
+	decryptComment func(*events.Message) (*waE2E.Message, error)
+	self           types.JID // the account's LID, no device part
+	selfPN         types.JID
+	lidFor         func(pn types.JID) (types.JID, bool)
+	nameOf         func(user types.JID) string
 }
 
 // known maps a phone number's user part to its LID, for what one batch or one message says itself.
@@ -149,6 +150,9 @@ type change struct {
 }
 
 func (c *converter) message(evt *events.Message, k known) (change, bool) {
+	if evt.Message.GetEncCommentMessage() != nil {
+		return c.comment(evt, k)
+	}
 	info := evt.Info
 	if info.Chat == types.StatusBroadcastJID {
 		return change{}, false
