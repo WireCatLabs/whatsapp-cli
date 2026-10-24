@@ -9,6 +9,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - The first command at a terminal asks once for your languages, other WireCat tools to install, and whether
   commands and agents may only read. Pipes, agents and noninteractive runs skip the questions.
+- Preview a group or channel invite with `chats inspect` without joining it.
+- `account sessions list` shows linked device ids and marks this device. Names and last-active times are unavailable.
+- `chats folders list` and `show` read custom WhatsApp Lists and their chats from synced label state.
+- Incoming community announcement comments are decrypted into their post's stored thread; `messages comments`
+  reads the comments this device has received. Channels have no comments, and comment sending stays unavailable.
 
 ### Changed — may break callers
 
@@ -24,14 +29,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **Shared commands use canonical names without compatibility aliases.** Use `contacts info|events|aliases`,
   `chats links`, `metadata show|sync`, `tasks update`, `commands info`, `mcp add|check` and
   `doctor reports show|create`. Models use `models list`, `models download` and `models keys`.
-
-### Added
-
-- Preview a group or channel invite with `chats inspect` without joining it.
-- `account sessions list` shows linked device ids and marks this device. Names and last-active times are unavailable.
-- `chats folders list` and `show` read custom WhatsApp Lists and their chats from synced label state.
-- Incoming community announcement comments are decrypted into their post's stored thread; `messages comments`
-  reads the comments this device has received. Channels have no comments, and comment sending stays unavailable.
 
 ### Fixed
 
