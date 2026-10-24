@@ -45,6 +45,8 @@ You:    Yes.
 **Early.** `wa` is new, and some of what it does has not yet been checked against real WhatsApp. The
 [backlog](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/dev/BACKLOG.md) lists the checks still to run.
 
+More: [compared with other tools](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/compare.md) · [on wirecat.dev](https://wirecat.dev/en/docs/wa/compare)
+
 ## Quick start
 
 ```sh
@@ -368,6 +370,7 @@ Every page is in [`docs/`](https://github.com/WireCatLabs/whatsapp-cli/blob/main
 | [configuration-reference](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/configuration-reference.md) | Every key, default, scope and variable |
 | [cli-contract](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/cli-contract.md) | Invocation, output, errors, headless runs, bounds and previews |
 | [limits](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/limits.md) | Limits, waits and the one connection per device |
+| [compare](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/compare.md) · [web](https://wirecat.dev/en/docs/wa/compare) | How does `wa` compare with wacli, whatsapp-mcp, mudslide and the Cloud API, and when does another tool fit better? |
 | [diagnostics](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/diagnostics.md) | What did a command do, and what is never recorded? |
 | [troubleshooting](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/troubleshooting.md) | Something does not work: what the screen says, and what to do |
 | [security](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/security.md) | What does `wa` keep on my computer, and what can go wrong? |

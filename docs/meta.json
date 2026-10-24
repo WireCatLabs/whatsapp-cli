@@ -25,6 +25,7 @@
     "configuration-reference",
     "cli-contract",
     "limits",
+    "compare",
     "---When something goes wrong---",
     "diagnostics",
     "troubleshooting",
