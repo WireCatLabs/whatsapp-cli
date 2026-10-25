@@ -11,6 +11,7 @@ Works with:
   memo context <person>   one person across messengers, mail, notes and meetings
 
 Start here:   wa personal setup  (any profile name works)
+              wa account list    your profiles and their logged-in accounts
 Next:         wa commands        every command, by section
               wa help options    output, offline, timeouts, dry run
 For agents:   wa skill show      rules and the discovery loop
