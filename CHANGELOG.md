@@ -3,10 +3,11 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.10.0 — 25.10.2026
 
 ### Changed — may break callers
 
+- **Each command is checked under its own permission key (cli-core 0.421.0).** `chats unmute` is checked only as `chats.unmute`, so a level saved on `chats.mute` no longer applies to it. `messages sync` is checked as `messages.sync`; a level on `messages` still applies. A saved permission key that no command checks now stops every command, bot ones included, with the `config unset` that removes it.
 - **`doctor --json` reports the config file's problems as `config.issues` (cli-core 0.423.0).** `config.error` is gone. Each issue has a `kind` (`invalid_json`, `unknown_setting`, `unknown_permission`, `missing_setting` or `invalid_value`), the `file`, the `profile` and `key` where they apply, `line` and `column` for invalid JSON, a sentence that says what the value has to be (never the value), and `fix`, the `config unset` command that removes it. `doctor` lists every problem in the file, still exits 0, and still answers when the JSON is broken. A profile lock, a flag or an environment variable the settings refuse is reported in `settings.error`.
 - **`default_profile`, `analysis_provider`, `analysis_model` and `analysis_base_url` are unknown settings, and `WA_ANALYSIS_PROVIDER`, `WA_ANALYSIS_MODEL` and `WA_ANALYSIS_BASE_URL` are not read.** A file that has one is refused like any unknown setting, with the `config unset` that removes it. Analysis is set with `models.analysis.provider`, `models.analysis.model` and `models.analysis.base_url` (`WA_MODELS_ANALYSIS_*`); `--model` and `--base-url` of `conversations links rebuild` override those.
 - **A command refused for a problem in the config file names the first problem and the command that removes it**, and says how many more `doctor` lists. `config show`, `set` and `unset` run on such a file, and `config unset` removes a setting no schema knows. An unknown permission key in any section of the file is refused, not only in the sections the command reads.
@@ -18,6 +19,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - **`wa skill status` and `wa skill show --for claude|agents`** (cli-base 0.56.0, through cli-core 0.427.0). `skill status` says, for Claude Code and for `~/.agents`, whether the installed SKILL.md matches this version; `skill show --for` prints the copy installed there.
 - **`wa store tables list` lists every table of the local archive** with its kind and rows; `--full` adds each table's size (cli-core 0.427.0). `store info` also says which tools opened the store, its journal mode, pages, migrations and last backup, and counts by provider, chat kind, account, year and attachment kind.
+
+### Fixed
+
+- **A crash in the middle of a command is reported like any other failure.** It used to print Node's stack trace; now it prints the `internal_error` failure (`command.crashed`) — one line at a terminal, the JSON error object otherwise — and still exits 1. A stack trace tells a script nothing it can act on, and can carry text that should not reach the screen. A script that read the stack trace on stderr reads the error object instead.
 
 ### Security
 
@@ -32,11 +37,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Changed — may break callers
 
 - **The shared store moves to version 33 (cli-core 0.420.0).** Once this version opens the store, a CLI on an older cli-core refuses it and asks to be upgraded, so upgrade every WireCat CLI that shares the store together.
-- **Each command is checked under its own permission key (cli-core 0.421.0).** `chats unmute` is checked only as `chats.unmute`, so a level saved on `chats.mute` no longer applies to it. `messages sync` is checked as `messages.sync`; a level on `messages` still applies. A saved permission key that no command checks now stops every command, bot ones included, with the `config unset` that removes it.
-
-### Fixed
-
-- **A crash in the middle of a command is reported like any other failure.** It used to print Node's stack trace; now it prints the `internal_error` failure (`command.crashed`) — one line at a terminal, the JSON error object otherwise — and still exits 1. A stack trace tells a script nothing it can act on, and can carry text that should not reach the screen. A script that read the stack trace on stderr reads the error object instead.
 
 ## 0.8.0 — 24.10.2026
 
