@@ -3,6 +3,16 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`store reset --dry-run` lists what a reset would empty and deletes nothing** (cli-core 0.429.0): the store's files and bytes, every data table with its rows, whether a backup comes first, and whether a serve or another process has the file open.
+
+### Fixed
+
+- **A bare `--version` answers before the program loads**: the bin starts through `@wirecat/cli-core/cli/start` (cli-core 0.429.0).
+
 ## 0.10.0 — 25.10.2026
 
 ### Changed — may break callers

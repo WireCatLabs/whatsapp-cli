@@ -1,7 +1,7 @@
 {
   "name": "@wirecat/whatsapp-cli",
   "version": "0.10.0",
-  "description": "A personal WhatsApp account from the terminal, as a linked device \u2014 built for agents and scripts",
+  "description": "A personal WhatsApp account from the terminal, as a linked device — built for agents and scripts",
   "license": "Apache-2.0",
   "author": "Viacheslav Ptsarev",
   "repository": {
@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "@wirecat/cli-base": "0.57.0",
-    "@wirecat/cli-core": "0.428.0",
+    "@wirecat/cli-core": "0.430.0",
     "commander": "15.0.0",
     "valibot": "1.5.0"
   },

@@ -2220,6 +2220,7 @@ wa store reset [options]
 | Option | What it does |
 |---|---|
 | `--no-backup` | delete the store without backing it up first. |
+| `--dry-run` | list every table it would empty, with its rows, and delete nothing. |
 
 ### `wa store copies`
 
