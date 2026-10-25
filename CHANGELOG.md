@@ -12,6 +12,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Changed — may break callers
 
 - **The shared store moves to version 33 (cli-core 0.420.0).** Once this version opens the store, a CLI on an older cli-core refuses it and asks to be upgraded, so upgrade every WireCat CLI that shares the store together.
+- **Each command is checked under its own permission key (cli-core 0.421.0).** `chats unmute` is checked only as `chats.unmute`, so a level saved on `chats.mute` no longer applies to it. `messages sync` is checked as `messages.sync`; a level on `messages` still applies. A saved permission key that no command checks now stops every command, bot ones included, with the `config unset` that removes it.
 
 ## 0.8.0 — 24.10.2026
 
