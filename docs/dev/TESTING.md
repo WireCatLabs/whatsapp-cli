@@ -53,3 +53,13 @@ real adapter and the fake engine. The `ServerReads` cases are skipped by design:
 let a change through (`WC-TEST-11`). Full validation (`ci.yml`) checks it on every pull request, through `pr.yml`,
 and again on each merge to `main`: stricter than the handbook's `WC-CI-5`, which keeps full tests for `main`
 (`WC-CI-7`), because a floor broken by a merge turned `main` red twice.
+
+## A version pull request skips the full validation
+
+A pull request that changes only `CHANGELOG.md` and the version in `package.json` (with the engine packages that
+carry it) and `src/version.ts`, against a
+`main` whose pull request passed every required check on the same tree (bin/release's version pull requests), runs
+`pnpm version:check` and `pnpm docs:check` instead, and reports the other required `validation / …` checks as
+passed, saying why ([`scripts/ci-unchanged.sh`](../../scripts/ci-unchanged.sh),
+[`scripts/ci-fingerprint.sh`](../../scripts/ci-fingerprint.sh)). The push to `main` that follows runs the full
+validation.
