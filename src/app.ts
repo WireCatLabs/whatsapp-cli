@@ -1,19 +1,8 @@
-import type { AppIdentity } from "@wirecat/cli-core/cli"
 import { type Configuration, settingsFor } from "@wirecat/cli-core/cli"
 import * as v from "valibot"
-import { REASONS } from "./reasons.js"
-import { VERSION } from "./version.js"
+import { WA } from "./identity.js"
 
-export const WA: AppIdentity = {
-  command: "wa",
-  appName: "whatsapp-cli",
-  envPrefix: "WA",
-  description: "A personal WhatsApp account from the command line, as a linked device, for agents and scripts",
-  version: VERSION,
-  issues: "https://github.com/WireCatLabs/whatsapp-cli/issues/new",
-  locale: "en-GB",
-  errors: { reasons: REASONS },
-}
+export { WA } from "./identity.js"
 
 /** The Graph API version the generated commands were built from; a newer one is a setting away. */
 export const GRAPH_VERSION = "v23.0"

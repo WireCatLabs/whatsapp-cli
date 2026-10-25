@@ -4,8 +4,7 @@ import { errorObjectOf, exitCodeOfError, renderError } from "@wirecat/cli-base"
 
 // Compiling the module files is most of a start; later runs reuse what this one compiled.
 enableCompileCache()
-// Loaded after the cache is on: the app identity already pulls in cli-core.
-const [{ startCli }, { WA }] = await Promise.all([import("@wirecat/cli-core/cli"), import("../app.js")])
+const [{ startCli }, { WA }] = await Promise.all([import("@wirecat/cli-core/cli"), import("../identity.js")])
 await startCli({
   app: WA,
   sqlite: true,
