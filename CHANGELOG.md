@@ -10,6 +10,18 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **`doctor --json` reports the config file's problems as `config.issues` (cli-core 0.423.0).** `config.error` is gone. Each issue has a `kind` (`invalid_json`, `unknown_setting`, `unknown_permission`, `missing_setting` or `invalid_value`), the `file`, the `profile` and `key` where they apply, `line` and `column` for invalid JSON, a sentence that says what the value has to be (never the value), and `fix`, the `config unset` command that removes it. `doctor` lists every problem in the file, still exits 0, and still answers when the JSON is broken. A profile lock, a flag or an environment variable the settings refuse is reported in `settings.error`.
 - **`default_profile`, `analysis_provider`, `analysis_model` and `analysis_base_url` are unknown settings, and `WA_ANALYSIS_PROVIDER`, `WA_ANALYSIS_MODEL` and `WA_ANALYSIS_BASE_URL` are not read.** A file that has one is refused like any unknown setting, with the `config unset` that removes it. Analysis is set with `models.analysis.provider`, `models.analysis.model` and `models.analysis.base_url` (`WA_MODELS_ANALYSIS_*`); `--model` and `--base-url` of `conversations links rebuild` override those.
 - **A command refused for a problem in the config file names the first problem and the command that removes it**, and says how many more `doctor` lists. `config show`, `set` and `unset` run on such a file, and `config unset` removes a setting no schema knows. An unknown permission key in any section of the file is refused, not only in the sections the command reads.
+- **`config set` saves `config.json` readable by you only (`0600`) (cli-core 0.428.0, cli-base 0.57.0).** It used to rewrite the file as `0644`. Anything that reads the config as another user — a system-wide service, a container under another uid — can no longer read it after the next save; run it as the owner, or give it its own config.
+- **A run record names how it was started and why it failed (cli-core 0.425.0).** `run.json`, `runs list`, `runs show` and `search runs` gain `cli_command` (the whole command, `wa messages list`), `argv` with every value that may be content written `[redacted]`, `agent` (the coding agent and its session, where it gives one) and, for a failed run, `error`. A run with no profile named leaves `profile` out instead of recording `default` (cli-core 0.424.0).
+- **The first screen says zm and drive are "searchable with your other WireCat data"** (cli-core 0.426.0).
+
+### Added
+
+- **`wa skill status` and `wa skill show --for claude|agents`** (cli-base 0.56.0, through cli-core 0.427.0). `skill status` says, for Claude Code and for `~/.agents`, whether the installed SKILL.md matches this version; `skill show --for` prints the copy installed there.
+- **`wa store tables list` lists every table of the local archive** with its kind and rows; `--full` adds each table's size (cli-core 0.427.0). `store info` also says which tools opened the store, its journal mode, pages, migrations and last backup, and counts by provider, chat kind, account, year and attachment kind.
+
+### Security
+
+- **`doctor` reports a `config.json` or config folder that other users can read, with the `chmod` that fixes it (cli-core 0.428.0).** `files.problems` lists the config file (wants `0600`) and its folder (wants `0700`), also when `WA_CONFIG_DIR` names the folder, and stderr prints `to make it private: chmod 600 '<path>'`. `files` is in the answer also with no profile named and when the settings are refused. Nothing is changed on disk; Windows is not checked.
 
 ## 0.9.0 — 25.10.2026
 

@@ -49,7 +49,8 @@ it. Without either, a command that uses an account stops with exit code `2` and 
 The settings for search stemming, phone countries, tasks and account groups (`search_stemmers.*`, `phone_countries`,
 `task_*`, `account_groups.*`) are listed under [`wa config set`](commands.md#wa-config-set).
 
-The file is written `0600` when first created. It holds no secret.
+The file is written `0600`, readable by you only, in a `0700` folder, and `config set` keeps it so. It holds no
+secret. `wa doctor` names the file or its folder when other users can read it ([diagnostics](diagnostics.md#check-the-installation-wa-doctor)).
 
 A setting the file does not know, a permission key that names no command, a value of the wrong type or a file that is
 not valid JSON stops every command but `config` and `doctor`, with exit code `3`. The message names the first problem
