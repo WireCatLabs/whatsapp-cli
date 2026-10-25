@@ -1778,7 +1778,7 @@ wa models list [query]
 
 ### `wa models download`
 
-download and verify one speech or embedding model
+download and verify one speech or embedding model: tens to hundreds of MB, each size in models list
 
 **Reads from an outside service.**
 
@@ -2109,7 +2109,7 @@ wa store clear [options]
 
 ### `wa store info`
 
-the store file: where it is, its size, its schema and how many rows it holds; changes nothing
+the store file: where it is, its size, its schema against the one this tool speaks, which tools used it and how many rows it holds, by provider, chat kind, account, year (UTC) and attachment kind, over every account; changes nothing
 
 ```sh
 wa store info
@@ -2238,6 +2238,22 @@ wa store copies delete <name>
 | Argument | | What it is |
 |---|---|---|
 | `name` | required | the copy's name, as `store repair` printed it. |
+
+### `wa store tables`
+
+the tables of the local archive
+
+#### `wa store tables list`
+
+every table of the local archive: its kind (data, search index, part of a search index, internal) and its rows, a search index's rows not counted; --full adds each table's size on disk, which reads the whole file (about ten seconds for 3 GB); changes nothing
+
+```sh
+wa store tables list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 ## `wa conversations`
 
@@ -5909,15 +5925,19 @@ the instructions an agent is given for this tool
 
 ### `wa skill show`
 
-print SKILL.md — `wa skill install` puts it where Claude Code, Codex and Gemini CLI look for it
+print SKILL.md — `wa skill install` puts it where Claude Code, Codex and Gemini CLI look for it; --for prints the copy already there
 
 ```sh
-wa skill show [name]
+wa skill show [name] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `name` | optional | one of the skills shipped for a task: follow-ups, link-conversations. |
+
+| Option | What it does |
+|---|---|
+| `--for <agents>` | print the copy installed for these agents instead of this version's. One of: `claude`, `agents`. |
 
 ### `wa skill install`
 
@@ -5932,6 +5952,14 @@ wa skill install [options]
 | Option | What it does |
 |---|---|
 | `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `all`. Default: `all`. |
+
+### `wa skill status`
+
+for each place `wa skill install` writes to: the path, the version installed there, and whether it is current, stale, missing or unversioned
+
+```sh
+wa skill status
+```
 
 ## Exit codes
 

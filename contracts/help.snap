@@ -6,8 +6,8 @@ Account commands start with your profile, a name you choose; none is ever assume
 Works with:
   tg                      Telegram in the same local store: search, review and tasks offline
   max                     MAX in the same local store: search, review and tasks offline
-  zm                      Zoom meetings: transcripts and summaries, searchable with your messages
-  drive                   Google Drive and Docs as local text, searchable with your messages
+  zm                      Zoom meetings: transcripts and summaries, searchable with your other WireCat data
+  drive                   Google Drive and Docs as local text, searchable with your other WireCat data
   memo context <person>   one person across messengers, mail, notes and meetings
 
 Start here:   wa personal setup  (any profile name works)
