@@ -221,6 +221,7 @@ export const whatsappBotApiCommand = (): Command => {
       if (binding.kind !== "http") throw new Error(`${operation.id} is not an HTTP operation`)
       const call: GraphCall = {
         path,
+        endpoint: binding.path.replace(/^\/\{Version\}/, "").replace(/\{[^}]+\}/g, ":id"),
         method: binding.method === "DELETE" ? "DELETE" : binding.method === "GET" ? "GET" : "POST",
         query: input.query,
         ...(form ? { form } : text !== undefined && text.trim() !== "" ? { json: text } : {}),

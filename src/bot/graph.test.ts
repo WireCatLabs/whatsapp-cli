@@ -4,7 +4,7 @@ import { type FetchLike, GraphTransport, refusalOf } from "./graph.js"
 const TOKEN = "EAAtest0000made0up0token"
 
 const transport = (fetch: FetchLike, more: { signal?: AbortSignal; timeoutMs?: number } = {}) => {
-  const events: { event: string; outcome?: string; errorCode?: string }[] = []
+  const events: { event: string; outcome?: string; errorCode?: string; endpointTemplate?: string }[] = []
   const graph = new GraphTransport({
     token: TOKEN,
     version: "v23.0",
@@ -15,9 +15,16 @@ const transport = (fetch: FetchLike, more: { signal?: AbortSignal; timeoutMs?: n
   return { graph, events }
 }
 
-const read = { path: "/100000000000001", method: "GET" as const, reads: true, operation: "getPhoneNumber" }
+const read = {
+  path: "/100000000000001",
+  endpoint: "/:id",
+  method: "GET" as const,
+  reads: true,
+  operation: "getPhoneNumber",
+}
 const write = {
   path: "/100000000000001/messages",
+  endpoint: "/:id/messages",
   method: "POST" as const,
   json: "{}",
   reads: false,
@@ -90,6 +97,29 @@ describe("the Graph transport", () => {
     const refusal = await graph.call(read).catch((error: Error) => error)
     expect(refusal).toMatchObject({ code: "authentication_error" })
     expect((refusal as Error).message).not.toContain(TOKEN)
+  })
+
+  it("gives a failed call's events its method and the path with ids as :id, never the id or the token", async () => {
+    const refused = transport(
+      async () => new Response(JSON.stringify({ error: { message: "no", code: 100 } }), { status: 400 }),
+    )
+    await refused.graph.call(write).catch(() => undefined)
+    const down = transport(async () => {
+      throw new TypeError("fetch failed")
+    })
+    await down.graph.call(read).catch(() => undefined)
+
+    expect(refused.events.at(-1)).toMatchObject({
+      method: "POST",
+      endpointTemplate: "/v23.0/:id/messages",
+      status: 400,
+      outcome: "error",
+    })
+    expect(down.events.at(-1)).toMatchObject({ method: "GET", endpointTemplate: "/v23.0/:id", outcome: "error" })
+    for (const events of [refused.events, down.events]) {
+      expect(JSON.stringify(events)).not.toContain("100000000000001")
+      expect(JSON.stringify(events)).not.toContain(TOKEN)
+    }
   })
 
   it("downloads a media file over https with the token, and says when its address has expired", async () => {

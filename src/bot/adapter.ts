@@ -40,6 +40,7 @@ export const whatsappBotAdapter = (
   const configure = (configuration: Record<string, string>) =>
     graph.call({
       path: `/${phoneNumberId()}`,
+      endpoint: "/:id",
       method: "POST",
       json: JSON.stringify({ webhook_configuration: configuration }),
       reads: false,
@@ -58,6 +59,7 @@ export const whatsappBotAdapter = (
     me: async () => {
       const number = (await graph.call({
         path: `/${phoneNumberId()}`,
+        endpoint: "/:id",
         method: "GET",
         query: { fields: "id,display_phone_number,verified_name" },
         reads: true,
@@ -81,6 +83,7 @@ export const whatsappBotAdapter = (
     webhooks: async (): Promise<BotWebhook[]> => {
       const answer = (await graph.call({
         path: `/${phoneNumberId()}`,
+        endpoint: "/:id",
         method: "GET",
         query: { fields: "webhook_configuration" },
         reads: true,

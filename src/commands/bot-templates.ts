@@ -95,6 +95,7 @@ export const botTemplatesCommand = (): Command => {
       await context.run(async (events) => {
         const answer = (await graph(events).call({
           path: `/${required(settings.wabaId, "waba_id", context.profile)}/message_templates`,
+          endpoint: "/:id/message_templates",
           method: "GET",
           query: { fields: "name,status,language,category", limit: "100", ...(name ? { name } : {}) },
           reads: true,
@@ -148,6 +149,7 @@ export const botTemplatesCommand = (): Command => {
           () =>
             graph(events).call({
               path: `/${required(settings.phoneNumberId, "phone_number_id", context.profile)}/messages`,
+              endpoint: "/:id/messages",
               method: "POST",
               json: body,
               reads: false,
@@ -182,6 +184,7 @@ export const botMediaCommand = (): Command => {
         const client = graph(events)
         const media = (await client.call({
           path: `/${mediaId}`,
+          endpoint: "/:id",
           method: "GET",
           reads: true,
           operation: "getMedia",
