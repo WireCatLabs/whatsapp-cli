@@ -1,6 +1,6 @@
 {
   "name": "@wirecat/whatsapp-cli",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "A personal WhatsApp account from the terminal, as a linked device — built for agents and scripts",
   "license": "Apache-2.0",
   "author": "Viacheslav Ptsarev",
@@ -67,12 +67,12 @@
     "valibot": "1.5.0"
   },
   "optionalDependencies": {
-    "@wirecat/whatsapp-engine-darwin-arm64": "0.10.0",
-    "@wirecat/whatsapp-engine-darwin-x64": "0.10.0",
-    "@wirecat/whatsapp-engine-linux-arm64": "0.10.0",
-    "@wirecat/whatsapp-engine-linux-x64": "0.10.0",
-    "@wirecat/whatsapp-engine-win32-arm64": "0.10.0",
-    "@wirecat/whatsapp-engine-win32-x64": "0.10.0"
+    "@wirecat/whatsapp-engine-darwin-arm64": "0.11.0",
+    "@wirecat/whatsapp-engine-darwin-x64": "0.11.0",
+    "@wirecat/whatsapp-engine-linux-arm64": "0.11.0",
+    "@wirecat/whatsapp-engine-linux-x64": "0.11.0",
+    "@wirecat/whatsapp-engine-win32-arm64": "0.11.0",
+    "@wirecat/whatsapp-engine-win32-x64": "0.11.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
