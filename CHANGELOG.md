@@ -5,6 +5,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **A failed `bot` command's run names the Cloud API call that failed.** `runs show` and `runs list` give its `error.http` the `method` and `endpoint_template` beside the status — `{ "method": "POST", "endpoint_template": "/v23.0/:id/messages", "status": 400 }` — where before they had only the status. Every id in the path is written `:id`, so the phone number id, the business account id and a media id never reach a run or a trace. Bot requests in `--trace` and in a recorded run carry the same two fields, and a pretty trace line shows them after the operation's name. A script that parses `--trace` text sees that extra column.
+
 ### Added
 
 - **`store reset --dry-run` lists what a reset would empty and deletes nothing** (cli-core 0.429.0): the store's files and bytes, every data table with its rows, whether a backup comes first, and whether a serve or another process has the file open.

@@ -19,6 +19,8 @@ export interface GraphOptions {
 export interface GraphCall {
   /** `/<phone-number-id>/messages`, without the version. */
   path: string
+  /** `path` with every id as `:id` — `/:id/messages`. What a trace line and a failed run show in its place. */
+  endpoint: string
   method: "GET" | "POST" | "DELETE"
   query?: Record<string, string>
   /** JSON text, sent as written so 64-bit ids keep their digits. */
@@ -62,7 +64,8 @@ export class GraphTransport {
     const timeoutMs = this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS
     const url = new URL(`${GRAPH}/${this.#options.version}${call.path}`)
     for (const [name, value] of Object.entries(call.query ?? {})) url.searchParams.set(name, value)
-    events?.({ event: "request", operation: call.operation })
+    const http = { method: call.method, endpointTemplate: `/${this.#options.version}${call.endpoint}` }
+    events?.({ event: "request", operation: call.operation, ...http })
     const started = performance.now()
     const signals = [AbortSignal.timeout(timeoutMs), ...(this.#options.signal ? [this.#options.signal] : [])]
     const headers: Record<string, string> = {
@@ -82,12 +85,13 @@ export class GraphTransport {
       text = await response.text()
     } catch (error) {
       const failure = this.#unanswered(call, error, timeoutMs)
-      events?.({ event: "response", operation: call.operation, outcome: "error", errorCode: failure.code })
+      events?.({ event: "response", operation: call.operation, ...http, outcome: "error", errorCode: failure.code })
       throw failure
     }
     const answered = {
       event: "response" as const,
       operation: call.operation,
+      ...http,
       status: response.status,
       bytes: Buffer.byteLength(text),
       durationMs: Math.round(performance.now() - started),

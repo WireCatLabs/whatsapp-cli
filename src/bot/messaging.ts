@@ -73,6 +73,7 @@ export const uploadMedia = async (
   form.append("file", file.blob, file.name)
   const answer = (await graph.call({
     path: `/${phoneNumberId}/media`,
+    endpoint: "/:id/media",
     method: "POST",
     form,
     reads: false,
@@ -126,6 +127,7 @@ export const sendMessage = async (
     firstId(
       await context.graph.call({
         path: `/${context.phoneNumberId}/messages`,
+        endpoint: "/:id/messages",
         method: "POST",
         json: JSON.stringify({ ...base, ...body }),
         reads: false,
