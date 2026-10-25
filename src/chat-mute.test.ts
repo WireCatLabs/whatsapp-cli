@@ -58,9 +58,9 @@ describe("wa chats mute", () => {
     expect(result.item).toMatchObject({ muted_until: null })
   })
 
-  it("refuses at permission readonly under chats.mute, and mutes nothing", async () => {
+  it("refuses unmute at permission readonly under chats.unmute, and changes nothing", async () => {
     const profile = "muting-readonly"
-    const set = ["config", "set", "permissions.chats.mute", "readonly"]
+    const set = ["config", "set", "permissions.chats.unmute", "readonly"]
     expect(await run([profile, ...set], { streams: captureStreams(), tty: false })).toBe(0)
     const result = await muting(["unmute", seed.dialog], { profile })
     expect(result.code).toBe(5)
