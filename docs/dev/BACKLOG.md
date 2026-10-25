@@ -63,7 +63,3 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   `engine/cmd/wa-engine/`. [Notes](BACKLOG-NOTES.md#wa-21--channels-post-files-and-what-following-left-open)
 - **WA-50** · P2 · engine · 🟡 `feat/wa-launch-reads` · Contact patch code and unit tests are ready;
   `contacts add|rename` stay disabled until a spare-account check confirms the app-state write and sync on other devices.
-- **WA-60** · P2 · cli · Switch `src/bin/wa.ts` to cli-core's `startCli` ([cli-core
-  #1924](https://github.com/WireCatLabs/cli-core/pull/1924)) for the crash catch and the SQLite swap; `run()`
-  (`src/program.ts:129`) keeps the signals and pipes through cli-core's `run`, so do not add a second set. Start:
-  `src/bin/wa.ts`.
