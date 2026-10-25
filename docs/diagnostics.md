@@ -113,6 +113,11 @@ WhatsApp's from disk, without starting anything:
 - **`lock`** — who last held the device's one connection (`serve (pid 4242)`), and whether that process still runs.
   The engine never clears the name, so a holder counts as running only while its process does.
 
+**`config.issues`** lists every problem in the config file: invalid JSON (with the line and column where reading
+stopped), a setting or a permission key `wa` does not know, a value of the wrong type. Each says what the value has to
+be, never the value itself. All but invalid JSON come with the `config unset` command that removes them (`fix`).
+`doctor` still answers, with exit code `0`.
+
 `--online` connects once. While `serve` runs, it uses `serve`'s connection instead
 ([one connection per device](sessions.md#one-connection-per-device)).
 

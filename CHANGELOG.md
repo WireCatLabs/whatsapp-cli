@@ -3,6 +3,14 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **`doctor --json` reports the config file's problems as `config.issues` (cli-core 0.423.0).** `config.error` is gone. Each issue has a `kind` (`invalid_json`, `unknown_setting`, `unknown_permission`, `missing_setting` or `invalid_value`), the `file`, the `profile` and `key` where they apply, `line` and `column` for invalid JSON, a sentence that says what the value has to be (never the value), and `fix`, the `config unset` command that removes it. `doctor` lists every problem in the file, still exits 0, and still answers when the JSON is broken. A profile lock, a flag or an environment variable the settings refuse is reported in `settings.error`.
+- **`default_profile`, `analysis_provider`, `analysis_model` and `analysis_base_url` are unknown settings, and `WA_ANALYSIS_PROVIDER`, `WA_ANALYSIS_MODEL` and `WA_ANALYSIS_BASE_URL` are not read.** A file that has one is refused like any unknown setting, with the `config unset` that removes it. Analysis is set with `models.analysis.provider`, `models.analysis.model` and `models.analysis.base_url` (`WA_MODELS_ANALYSIS_*`); `--model` and `--base-url` of `conversations links rebuild` override those.
+- **A command refused for a problem in the config file names the first problem and the command that removes it**, and says how many more `doctor` lists. `config show`, `set` and `unset` run on such a file, and `config unset` removes a setting no schema knows. An unknown permission key in any section of the file is refused, not only in the sections the command reads.
+
 ## 0.9.0 — 25.10.2026
 
 ### Added
