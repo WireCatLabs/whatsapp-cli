@@ -12,6 +12,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 ### Added
 
 - **`store reset --dry-run` lists what a reset would empty and deletes nothing** (cli-core 0.429.0): the store's files and bytes, every data table with its rows, whether a backup comes first, and whether a serve or another process has the file open.
+- **`search messages --discover` also finds messages close in meaning** once e5-small is downloaded and `conversations rebuild` has given messages their own vectors (cli-core 0.432.0). Each hit's `discovery.found_by` says which search found it. Until then discovery searches by words as before and says why. Nothing is downloaded and no text leaves the computer.
 
 ### Fixed
 

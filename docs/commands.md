@@ -2451,7 +2451,7 @@ wa conversations embeddings clear [options]
 
 ### `wa conversations rebuild`
 
-build, then embed with the model on this machine, the chats that changed since their build and the group chats never built — or only --chat; bounded per run, so run it again for the rest; never asks the messenger, downloads no model and sends no text anywhere
+build, then embed with the model on this machine, the chats that changed since their build and the group chats never built — or only --chat; with the default model, also each message on its own, which `search messages --discover` reads; bounded per run, so run it again for the rest; never asks the messenger, downloads no model and sends no text anywhere
 
 **Changes something on this computer only.**
 
@@ -3716,7 +3716,7 @@ wa search messages [query] [options]
 | `--newest` | newest first instead of best first. |
 | `--exact` | bare words and quotes match their exact form only, as exact:word does; text: still matches every form. |
 | `--context <n>` | messages before and after each hit; 2 in the terminal, 0 otherwise. |
-| `--discover` | find partial lexical matches and eligible replies in the local archive; results are evidence, not confirmed answers. |
+| `--discover` | find partial word matches, eligible replies and, once messages have vectors, messages close in meaning in the local archive; results are evidence, not confirmed answers. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
 | `--saved <name\|id>` | run a saved search or an earlier run; options typed here replace its own. |
 
