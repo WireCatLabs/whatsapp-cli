@@ -2359,8 +2359,8 @@ wa conversations links rebuild [options]
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--analyze` | link batches using the configured analysis provider; requires --chat and remembers consent for this chat/provider. |
 | `--analysis-provider <provider>` | analysis: agent, openai or anthropic. |
-| `--model <model>` | analysis model; overrides analysis_model. |
-| `--base-url <url>` | analysis API endpoint; overrides analysis_base_url. |
+| `--model <model>` | analysis model; overrides models.analysis.model. |
+| `--base-url <url>` | analysis API endpoint; overrides models.analysis.base_url. |
 | `--size <n>` | analysis answer messages per batch, 10–200; default 50. |
 | `--max-tokens <n>` | analysis input/output reservation cap per run; default 100000. |
 | `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
@@ -4032,7 +4032,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 | `value` | required | a number, true or false; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -4053,7 +4053,7 @@ wa config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, analysis_provider, analysis_model, analysis_base_url, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, default_profile, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 
 | Option | What it does |
 |---|---|

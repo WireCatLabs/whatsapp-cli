@@ -21,8 +21,6 @@ For each setting, the first of these that is set:
 
 `~/.config/whatsapp-cli/config.json`. No setting picks a profile: the first word (`wa work …`) or `WA_PROFILE` names
 it. Without either, a command that uses an account stops with exit code `2` and lists the profiles on this computer.
-A file that still has `default_profile` from an older `wa` stops that command too; `wa config unset default_profile`
-removes it.
 
 | Setting | Default | What it does | Overridden for one run by |
 |---|---|---|---|
@@ -46,15 +44,17 @@ removes it.
 | `embedding_model` | provider default | embedding model | `--model` |
 | `embedding_base_url` | provider default | embedding API endpoint | `--base-url` |
 | `embedding_dims` | model default | integer 1–65,536 | `--dims` |
-| `analysis_provider` | `agent` | `agent`, `openai` or `anthropic` | `build --analysis-provider` |
-| `analysis_model` | none | analysis model | `build --model` |
-| `analysis_base_url` | provider default | analysis API endpoint | `build --base-url` |
 | `models` | none | external models by purpose | `WA_MODELS_*` variables |
 
 The settings for search stemming, phone countries, tasks and account groups (`search_stemmers.*`, `phone_countries`,
 `task_*`, `account_groups.*`) are listed under [`wa config set`](commands.md#wa-config-set).
 
 The file is written `0600` when first created. It holds no secret.
+
+A setting the file does not know, a permission key that names no command, a value of the wrong type or a file that is
+not valid JSON stops every command but `config` and `doctor`, with exit code `3`. The message names the first problem
+and the `config unset` that removes it. `wa personal doctor` lists every problem in the file
+([diagnostics](diagnostics.md#check-the-installation-wa-doctor)).
 
 ## A bot profile
 
@@ -84,4 +84,4 @@ the access token lives in the system keychain ([a WhatsApp Business number as a 
 | `WA_ENGINE_LOG` | a file the engine appends its warnings to, phone numbers masked; unset, it logs nothing |
 | `WA_NO_UPDATE_CHECK` | `1` turns off the daily "a newer version exists" line |
 | `NO_COLOR` | no colour in the table view |
-| `WA_EMBEDDING_*`, `WA_ANALYSIS_*`, `WA_MODELS_*` | model settings |
+| `WA_EMBEDDING_*`, `WA_MODELS_*` | model settings |
