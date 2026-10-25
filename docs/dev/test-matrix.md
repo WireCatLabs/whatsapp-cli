@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**272 ✅ · 826 ⛔ · 0 ❌** — 361 commands, 737 options.
+**272 ✅ · 827 ⛔ · 0 ❌** — 361 commands, 738 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -315,6 +315,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `store repair` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store reset` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store reset` | `--no-backup` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
+| `store reset` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store copies delete` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `store tables list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/store-maintenance.test.ts, gaps.test.ts and store-mode.test.ts) |
 | `conversations list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
