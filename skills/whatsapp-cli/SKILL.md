@@ -3,6 +3,14 @@ name: whatsapp-cli
 description: >-
   Set up WhatsApp and read or send messages in the owner's personal account through wa. Use when asked to link or
   connect WhatsApp, find a WhatsApp chat or person, read a conversation, search messages, or send a message.
+metadata:
+  openclaw:
+    requires:
+      bins: [wa]
+    install:
+      - kind: node
+        package: "@wirecat/whatsapp-cli"
+        bins: [wa]
 ---
 
 # wa — the owner's personal WhatsApp from the command line
