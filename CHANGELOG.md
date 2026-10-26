@@ -18,6 +18,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **Every command spends less time getting ready (cli-base 0.62.0, cli-core 0.449.0).** The check of shared commands now
+  describes each command once, not again for every group above it. It was about 60% of each command's setup; in tg a
+  warm `run(["--version"])` went from 49 to 29 ms. It catches the same changes as before.
+
 - **Search by meaning and `search messages --discover`'s reranker run 2–3× faster on Linux and Apple-silicon Macs after the next `wa models download` (cli-core 0.448.0).** The download installs a native ONNX Runtime, and the models run on it; without it they run as before. The reranker now reads only the start of the message a hit replies to (cli-core 0.447.0).
 
 ## 0.12.0 — 26.10.2026
