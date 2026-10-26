@@ -40,7 +40,7 @@ without one.
 | `--full` | found messages with their whole text and every provider field. |
 | `--dry-run` | preview parsed arguments and permissions before running the action. |
 | `--yes` | go ahead without the question an ask level puts before a write. |
-| `--record` | keep this run — ids and timings, never message content. |
+| `--record` | keep this run, with the command as typed and secrets hidden; record_input false leaves the typed words out. |
 | `--no-record` | do not keep it, whatever the configuration says. |
 
 ## `wa session`
@@ -4049,7 +4049,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 | `value` | required | a number, true or false; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -4070,7 +4070,7 @@ wa config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>. |
 
 | Option | What it does |
 |---|---|
@@ -4176,6 +4176,44 @@ wa mcp [options]
 | `--port <port>` | the local port for --http (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
 | `--revoke` | forget every login given to a browser app; each must log in again. |
+
+### `wa mcp server`
+
+start, stop and check `mcp --http` in the background; status shows the login code for a browser app
+
+#### `wa mcp server start`
+
+start `mcp --http` apart from this shell and answer once it listens, with its login code
+
+**Changes something on this computer only.**
+
+```sh
+wa mcp server start [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--port <port>` | the local port (default 8765). |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
+| `--permission <key=level>` | make a permission stricter for this server only; repeat for more keys. |
+
+#### `wa mcp server stop`
+
+stop `mcp --http` — only one that `mcp server start` started
+
+**Changes something on this computer only.**
+
+```sh
+wa mcp server stop
+```
+
+#### `wa mcp server status`
+
+whether `mcp --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
+
+```sh
+wa mcp server status
+```
 
 ### `wa mcp config`
 
