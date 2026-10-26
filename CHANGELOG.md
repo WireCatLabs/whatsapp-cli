@@ -3,6 +3,24 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`search messages --discover` reranks its first 50 hits once a reranker is downloaded (cli-core 0.435.0).** A local model reads the question with each hit, and its score is mixed with discovery's own; the hits after the first 50 keep their order. The default is mMARCO (136 MB, `wa models download mmarco`); the profile setting `search_reranker` picks `bge-reranker-v2-m3` (588 MB) or `off`. Each reranked hit has `discovery.reranker_score`; `score` stays discovery's. Without the model, discovery keeps its order and says `not reranked: …` (in `--json` and MCP: `missing` and `next`). A search never downloads a model and never sends text anywhere; `--exact`, `--newest` and strict queries are untouched.
+- **`search all` finds messages by meaning too, once e5-small is downloaded and messages have their vectors (cli-core 0.435.0).** The meaning hits are merged with the word hits into one messages list; each item's `foundBy` says which search found it. A query with NOT, or with a filter under OR or in a group, stays words only. Without the model or the vectors, `search all` reads words as before and says why. `--exact` and `--backend server` stay words only.
+
+### Changed — may break callers
+
+- **The shared store moves to version 34 (cli-core 0.434.0).** Search by meaning ranks through a vector index kept in the store, built on the first open by this version. Once this version opens the store, a CLI on cli-core 0.433.0 or older refuses it and asks to be upgraded, so upgrade every WireCat CLI that shares the store together. When the index's SQLite extension is missing or does not load, opening the store fails with `store.vector-extension-missing` or `store.vector-extension-failed`: reinstall wa. `store check` reports `vector_indexes` and fails when an index is out of step.
+- **`wa upgrade --help` shows only `wa upgrade --check` as its example (cli-core 0.433.0).** The bare `wa upgrade` example is gone: copied and run, it upgraded.
+- **Analysis through Anthropic sends the key as `Authorization: Bearer` (cli-core 0.433.0).** It used to send `X-Api-Key`. A gateway at a custom `models.<purpose>.base_url` that reads `X-Api-Key` must read `Authorization` instead.
+
+### Fixed
+
+- **A stored vector goes once no text in the store uses it (cli-core 0.435.0).** An image whose picture changed and a purged chat (`store clear --left`, a chat merged into another) left vectors behind, and no longer do. `store rebuild` drops the ones older versions left (`unused_vectors_dropped`), and `store check` counts them (`vectors.unused`).
+- **`conversations embeddings clear --chat` drops the chat's message vectors too (cli-core 0.435.0)**, not only its conversations'.
+
 ## 0.11.0 — 25.10.2026
 
 ### Changed — may break callers
