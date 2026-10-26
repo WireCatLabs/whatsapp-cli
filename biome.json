@@ -6,7 +6,8 @@
       "**",
       "!**/dist",
       "!**/node_modules",
-      "!pnpm-lock.yaml",
+      "!**/pnpm-lock.yaml",
+      "!**/pnpm-workspace.yaml",
       "!.worktrees",
       "!config/wirecat",
       "!lint/baseline"
