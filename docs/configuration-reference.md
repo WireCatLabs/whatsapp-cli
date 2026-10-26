@@ -30,6 +30,7 @@ it. Without either, a command that uses an account stops with exit code `2` and 
 | `sender_colors` | `false` | a colour per sender in the table view of messages | none |
 | `search_catch_up` | `false` | prepare newly stored chats for local search: their graph and, where installed, their vectors | `--catch-up`, `--no-catch-up` |
 | `picture_search` | `false` | search stored pictures by what they show, once the model is downloaded | none |
+| `search_reranker` | `mmarco` | the model that reranks the first 50 hits of `search messages --discover`: `mmarco` (136 MB), `bge-reranker-v2-m3` (588 MB) or `off`. A reranker that is not downloaded is skipped, and discovery says so; `wa models download mmarco` downloads it | none |
 | `record` | `false` | keep every run | `--record`, `--no-record` |
 | `keep_runs_for_days` | `30` | recorded runs older than this are removed when the next one is kept | none |
 | `permissions` | everything allowed, except deleting and a few other changes ask | what the profile may do, per command | none; `--yes` only answers `ask`, it never lifts `deny` |
