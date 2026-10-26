@@ -299,10 +299,12 @@ For `wa personal watch --jsonl`, read each message from the item record’s `dat
 keys. With `--events`, `data.event` names the change. Wait for the final `type: "end"` record and check
 `complete`; an absent end means the stream was cut. A source failure also returns a nonzero exit code.
 
-An agent without a terminal (Claude Desktop, Cursor) uses the MCP server instead: `wa personal mcp`. The profile's
-`permissions` decide which commands it offers, through `wa_tools_search`, `wa_read` and `wa_write`; there is no
-confirmation form. `wa personal mcp config` prints the entry with full paths. `wa personal mcp --http --public-url
-https://laptop.example.ts.net` (the owner's own tunnel address) serves behind the owner's tunnel with its own login.
+An agent that cannot run commands (a chat app such as Claude Desktop, a remote agent) uses the MCP server instead:
+`wa personal mcp`. The profile's `permissions` decide which commands it offers, the same as on the command line,
+through `wa_tools_search`, `wa_read` and `wa_write`; there is no confirmation form. When you can run commands, use
+the commands above instead of MCP. `wa personal mcp config` prints the entry with full paths.
+`wa personal mcp --http --public-url https://laptop.example.ts.net` (the owner's own tunnel address) serves behind
+the owner's tunnel with its own login.
 Never change permissions to get round a refusal. Guide:
 [MCP](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md).
 
