@@ -84,8 +84,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ================================================================================
 
-github.com/dustin/go-humanize v1.0.1
-Source: https://github.com/dustin/go-humanize at commit 9ec74ab2f7a7161664182fd4e5e292fccffbc75f, and https://proxy.golang.org/github.com/dustin/go-humanize/@v/v1.0.1.zip
+github.com/dustin/go-humanize v1.1.0
+Source: https://github.com/dustin/go-humanize at commit 40736da3e8ed16369b5e6f109548f243d43a7e34, and https://proxy.golang.org/github.com/dustin/go-humanize/@v/v1.1.0.zip
 
 --- LICENSE
 
@@ -113,8 +113,8 @@ SOFTWARE.
 
 ================================================================================
 
-github.com/elliotchance/orderedmap/v3 v3.1.0
-Source: https://github.com/elliotchance/orderedmap at commit 9d80274286972e4b495b38de2923a4d5f9758c8d, and https://proxy.golang.org/github.com/elliotchance/orderedmap/v3/@v/v3.1.0.zip
+github.com/elliotchance/orderedmap/v3 v3.1.1
+Source: https://github.com/elliotchance/orderedmap at commit 52e7d06b83711821d4265e063720cb009c234ded, and https://proxy.golang.org/github.com/elliotchance/orderedmap/v3/@v/v3.1.1.zip
 
 --- LICENSE
 
@@ -177,8 +177,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================================
 
-github.com/mattn/go-colorable v0.1.14
-Source: https://github.com/mattn/go-colorable at commit 1f71342c1ee78c126bcb69cd26ed8c2be7e016b3, and https://proxy.golang.org/github.com/mattn/go-colorable/@v/v0.1.14.zip
+github.com/mattn/go-colorable v0.1.16
+Source: https://github.com/mattn/go-colorable at commit 56c5db567780daeef4a4ffbb2c14d7d4b6b94b9b, and https://proxy.golang.org/github.com/mattn/go-colorable/@v/v0.1.16.zip
 
 --- LICENSE
 
@@ -223,8 +223,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ================================================================================
 
-github.com/ncruces/go-strftime v1.0.0
-Source: https://github.com/ncruces/go-strftime at commit 7be8eef566cc7f1ae99e76af8f8208913758a28d, and https://proxy.golang.org/github.com/ncruces/go-strftime/@v/v1.0.0.zip
+github.com/ncruces/go-strftime v1.1.0
+Source: https://github.com/ncruces/go-strftime at commit fa91ab7a1dcba7937c8d408d1a4477d2a348581d, and https://proxy.golang.org/github.com/ncruces/go-strftime/@v/v1.1.0.zip
 
 --- LICENSE
 
@@ -252,8 +252,8 @@ SOFTWARE.
 
 ================================================================================
 
-github.com/petermattis/goid v0.0.0-20260820044319-269ab09b5261
-Source: https://github.com/petermattis/goid at commit 269ab09b52619af7cedac9eb8ac39e877898d1dd, and https://proxy.golang.org/github.com/petermattis/goid/@v/v0.0.0-20260820044319-269ab09b5261.zip
+github.com/petermattis/goid v0.0.0-20260918085751-abfca077860b
+Source: https://github.com/petermattis/goid at commit abfca077860ba5c833ea4356fe3104a9d2deabc2, and https://proxy.golang.org/github.com/petermattis/goid/@v/v0.0.0-20260918085751-abfca077860b.zip
 
 --- LICENSE
 
@@ -525,10 +525,12 @@ SOFTWARE.
 
 ================================================================================
 
-github.com/vektah/gqlparser/v2 v2.5.27
-Source: https://github.com/vektah/gqlparser at commit 338ee49080162b6111175973f084d0ebbc610f81, and https://proxy.golang.org/github.com/vektah/gqlparser/v2/@v/v2.5.27.zip
+github.com/vektah/gqlparser/v2 v2.5.64
+Source: https://github.com/vektah/gqlparser at commit 9cb3bccd423fe07961a79a98bd92e2a6636df692, and https://proxy.golang.org/github.com/vektah/gqlparser/v2/@v/v2.5.64.zip
 
 --- LICENSE
+
+MIT License
 
 Copyright (c) 2018 Adam Scarr
 
@@ -1234,8 +1236,8 @@ Public License instead of this License.  But first, please read
 
 ================================================================================
 
-go.mau.fi/util v0.10.1
-Source: https://github.com/mautrix/go-util.git at commit 88a9b67f87a8f06d7539acd44b30d8b90876f1e3, and https://proxy.golang.org/go.mau.fi/util/@v/v0.10.1.zip
+go.mau.fi/util v0.11.0
+Source: https://github.com/mautrix/go-util.git at commit 6f6dff84da7524d1cdb997985cee2e2afff76f40, and https://proxy.golang.org/go.mau.fi/util/@v/v0.11.0.zip
 
 --- LICENSE
 
@@ -1615,8 +1617,8 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 ================================================================================
 
-go.mau.fi/whatsmeow v0.0.0-20261015105041-df33a485cc46
-Source: https://github.com/tulir/whatsmeow.git at commit df33a485cc4629bbcacc0f0ad5e44c3ca5b3454b, and https://proxy.golang.org/go.mau.fi/whatsmeow/@v/v0.0.0-20261015105041-df33a485cc46.zip
+go.mau.fi/whatsmeow v0.0.0-20261017175727-b2b1e71d45e2
+Source: https://github.com/tulir/whatsmeow.git at commit b2b1e71d45e2ff171153b025b5a42f475bb30ef8, and https://proxy.golang.org/go.mau.fi/whatsmeow/@v/v0.0.0-20261017175727-b2b1e71d45e2.zip
 
 --- LICENSE
 
@@ -1996,8 +1998,8 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
 
 ================================================================================
 
-golang.org/x/crypto v0.57.0
-Source: https://go.googlesource.com/crypto at commit 3f62bf119e84c6e35e8518a2958089ade622d1a3, and https://proxy.golang.org/golang.org/x/crypto/@v/v0.57.0.zip
+golang.org/x/crypto v0.58.0
+Source: https://go.googlesource.com/crypto at commit 8fdf07b3114278fb3b78c1cf1814e08bd851eb4c, and https://proxy.golang.org/golang.org/x/crypto/@v/v0.58.0.zip
 
 --- LICENSE
 
@@ -2056,8 +2058,8 @@ shall terminate as of the date such litigation is filed.
 
 ================================================================================
 
-golang.org/x/exp v0.0.0-20260908205506-85c1c2202aba
-Source: https://go.googlesource.com/exp at commit 85c1c2202aba13ab812be55279024d8594344c1f, and https://proxy.golang.org/golang.org/x/exp/@v/v0.0.0-20260908205506-85c1c2202aba.zip
+golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e
+Source: https://go.googlesource.com/exp at commit f0251eb4aa3edefb2e1c158e57af104ae2de221a, and https://proxy.golang.org/golang.org/x/exp/@v/v0.0.0-20261014143641-f0251eb4aa3e.zip
 
 --- LICENSE
 
@@ -2116,8 +2118,8 @@ shall terminate as of the date such litigation is filed.
 
 ================================================================================
 
-golang.org/x/net v0.60.0
-Source: https://go.googlesource.com/net at commit 18ece0ce30bc35fa81fe72028bf309bb3ff3f4a5, and https://proxy.golang.org/golang.org/x/net/@v/v0.60.0.zip
+golang.org/x/net v0.61.0
+Source: https://go.googlesource.com/net at commit c1d31df183e51b1075a2fd670d6f6f4efb871773, and https://proxy.golang.org/golang.org/x/net/@v/v0.61.0.zip
 
 --- LICENSE
 
@@ -2176,8 +2178,8 @@ shall terminate as of the date such litigation is filed.
 
 ================================================================================
 
-golang.org/x/sync v0.23.0
-Source: https://go.googlesource.com/sync at commit f75267d8412fc1dfd12b343644a7ea46e4d9c85d, and https://proxy.golang.org/golang.org/x/sync/@v/v0.23.0.zip
+golang.org/x/sync v0.24.0
+Source: https://go.googlesource.com/sync at commit 36f2d70ecde9857dc4e363242a1369c7645d6770, and https://proxy.golang.org/golang.org/x/sync/@v/v0.24.0.zip
 
 --- LICENSE
 
@@ -2296,8 +2298,8 @@ shall terminate as of the date such litigation is filed.
 
 ================================================================================
 
-golang.org/x/text v0.42.0
-Source: https://go.googlesource.com/text at commit fafe4a06967e06550e69ee42787d9902845d2a3f, and https://proxy.golang.org/golang.org/x/text/@v/v0.42.0.zip
+golang.org/x/text v0.43.0
+Source: https://go.googlesource.com/text at commit ac40b0f06c159afb5bfca4d1860f8b4b60dbc160, and https://proxy.golang.org/golang.org/x/text/@v/v0.43.0.zip
 
 --- LICENSE
 
@@ -2416,8 +2418,8 @@ shall terminate as of the date such litigation is filed.
 
 ================================================================================
 
-modernc.org/libc v1.77.1
-Source: https://gitlab.com/cznic/libc at commit 9176651b0b6d3fb661a848553e5d608e47e2285e, and https://proxy.golang.org/modernc.org/libc/@v/v1.77.1.zip
+modernc.org/libc v1.79.1
+Source: https://gitlab.com/cznic/libc at commit 80d50b96631e3be60ded438852059f97bac386a9, and https://proxy.golang.org/modernc.org/libc/@v/v1.79.1.zip
 
 --- LICENSE
 
@@ -2890,8 +2892,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================================
 
-modernc.org/sqlite v1.60.1
-Source: https://gitlab.com/cznic/sqlite at commit b122d0417c01508beb55158faedeb64a0c5bfd8a, and https://proxy.golang.org/modernc.org/sqlite/@v/v1.60.1.zip
+modernc.org/sqlite v1.61.0
+Source: https://gitlab.com/cznic/sqlite at commit 4df1ebea0f1cf0cd6ec3245b26f5fec4234ce738, and https://proxy.golang.org/modernc.org/sqlite/@v/v1.61.0.zip
 
 --- LICENSE
 
@@ -2963,18 +2965,18 @@ and license texts it points at are the ones you have to carry with you.
 
 | Component | Version | License | Reached via | Text |
 | --- | --- | --- | --- | --- |
-| [github.com/dustin/go-humanize](https://pkg.go.dev/github.com/dustin/go-humanize) | v1.0.1 | MIT | modernc.org/libc, `go.mod` | [L1](#L1) |
+| [github.com/dustin/go-humanize](https://pkg.go.dev/github.com/dustin/go-humanize) | v1.1.0 | MIT | modernc.org/libc, `go.mod` | [L1](#L1) |
 | [github.com/google/uuid](https://pkg.go.dev/github.com/google/uuid) | v1.6.0 | BSD-3-Clause | modernc.org/libc, `go.mod` | [L2](#L2) |
 | [github.com/remyoudompheng/bigfft](https://pkg.go.dev/github.com/remyoudompheng/bigfft) | v0.0.0-20230129092748-24d4a6f8daec | BSD-3-Clause | modernc.org/fileutil, modernc.org/libc, modernc.org/mathutil, modernc.org/memory, `go.mod` | [L2](#L2) |
 | [Go](https://github.com/golang/go) | -- | BSD-3-Clause | modernc.org/libc | [N1](#N1) |
 | [go-netdb](https://github.com/dominikh/go-netdb) | -- | MIT | modernc.org/libc | [N1](#N1) |
-| [golang.org/x/sys](https://pkg.go.dev/golang.org/x/sys) | v0.48.0 | BSD-3-Clause | github.com/google/pprof, github.com/mattn/go-isatty, modernc.org/libc, modernc.org/memory, `go.mod` | [L3](#L3) |
-| [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) | v1.77.1 | BSD-3-Clause | `go.mod` | [L4](#L4) |
+| [golang.org/x/sys](https://pkg.go.dev/golang.org/x/sys) | v0.49.0 | BSD-3-Clause | github.com/google/pprof, github.com/mattn/go-isatty, modernc.org/libc, modernc.org/memory, `go.mod` | [L3](#L3) |
+| [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) | v1.79.0 | BSD-3-Clause | `go.mod` | [L4](#L4) |
 | [modernc.org/mathutil](https://pkg.go.dev/modernc.org/mathutil) | v1.7.1 | BSD-3-Clause | modernc.org/fileutil, modernc.org/libc, modernc.org/memory, `go.mod` | [L4](#L4) |
 | [modernc.org/memory](https://pkg.go.dev/modernc.org/memory) | v1.12.1 | BSD-3-Clause, attribution reference | modernc.org/libc, `go.mod` | [L4](#L4), [L2](#L2), [L5](#L5), [L6](#L6) |
 | [musl libc](https://musl.libc.org/) | -- | MIT | modernc.org/libc | [N1](#N1) |
 | [NixOS/nixpkgs](https://github.com/NixOS/nixpkgs) | -- | MIT | modernc.org/libc | [N1](#N1) |
-| [SQLite](https://sqlite.org/) | 3.53.4 | public domain | transpiled into `lib/` | [L7](#L7) |
+| [SQLite](https://sqlite.org/) | 3.54.1 | public domain | transpiled into `lib/` | [L7](#L7) |
 | [sqlite-vec](https://github.com/asg017/sqlite-vec) | v0.1.9 | MIT | transpiled into `vec/` | [L8](#L8) |
 | [SQLite `test_demovfs.c`](https://www.sqlite.org/src/doc/trunk/src/test_demovfs.c) | -- | public domain | `vfs/c/vfs.c`, transpiled into `vfs/` | [L7](#L7) |
 
@@ -2989,7 +2991,7 @@ not reach a program that imports `modernc.org/sqlite`.
 
 | Component | Version | License | Reached via | Text |
 | --- | --- | --- | --- | --- |
-| [github.com/google/pprof](https://pkg.go.dev/github.com/google/pprof) | v0.0.0-20260802141513-ef3492d7dac3 | Apache-2.0, BSD-3-Clause | `go.mod` | [L9](#L9), [L10](#L10) |
+| [github.com/google/pprof](https://pkg.go.dev/github.com/google/pprof) | v0.0.0-20261016150608-1facf8f91b50 | Apache-2.0, BSD-3-Clause | `go.mod` | [L9](#L9), [L10](#L10) |
 | [modernc.org/fileutil](https://pkg.go.dev/modernc.org/fileutil) | v1.4.0 | BSD-3-Clause | modernc.org/libc, `go.mod` | [L4](#L4), [L11](#L11) |
 
 ## 3. Components in the module graph, not compiled into anything
@@ -3010,14 +3012,14 @@ this one.
 | [github.com/hashicorp/golang-lru/v2](https://pkg.go.dev/github.com/hashicorp/golang-lru/v2) | v2.0.7 | MPL-2.0, BSD-3-Clause | modernc.org/libc | [L13](#L13), [L14](#L14) |
 | [github.com/ianlancetaylor/demangle](https://pkg.go.dev/github.com/ianlancetaylor/demangle) | v0.0.0-20250417193237-f615e6bd150b | BSD-3-Clause | github.com/google/pprof | [L2](#L2) |
 | [github.com/mattn/go-isatty](https://pkg.go.dev/github.com/mattn/go-isatty) | v0.0.24 | MIT | modernc.org/libc, `go.mod` | [L15](#L15) |
-| [github.com/ncruces/go-strftime](https://pkg.go.dev/github.com/ncruces/go-strftime) | v1.0.0 | MIT | modernc.org/libc, `go.mod` | [L8](#L8) |
-| [golang.org/x/mod](https://pkg.go.dev/golang.org/x/mod) | v0.41.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
-| [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) | v0.23.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
-| [golang.org/x/tools](https://pkg.go.dev/golang.org/x/tools) | v0.50.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
-| [modernc.org/cc/v4](https://pkg.go.dev/modernc.org/cc/v4) | v4.29.7 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
-| [modernc.org/ccgo/v4](https://pkg.go.dev/modernc.org/ccgo/v4) | v4.36.1 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
+| [github.com/ncruces/go-strftime](https://pkg.go.dev/github.com/ncruces/go-strftime) | v1.1.0 | MIT | modernc.org/libc, `go.mod` | [L8](#L8) |
+| [golang.org/x/mod](https://pkg.go.dev/golang.org/x/mod) | v0.42.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
+| [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) | v0.24.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
+| [golang.org/x/tools](https://pkg.go.dev/golang.org/x/tools) | v0.52.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
+| [modernc.org/cc/v4](https://pkg.go.dev/modernc.org/cc/v4) | v4.30.3 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
+| [modernc.org/ccgo/v4](https://pkg.go.dev/modernc.org/ccgo/v4) | v4.37.0 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
 | [modernc.org/gc/v2](https://pkg.go.dev/modernc.org/gc/v2) | v2.6.5 | BSD-3-Clause | modernc.org/libc | [L16](#L16) |
-| [modernc.org/gc/v3](https://pkg.go.dev/modernc.org/gc/v3) | v3.1.5 | BSD-3-Clause | modernc.org/libc | [L16](#L16) |
+| [modernc.org/gc/v3](https://pkg.go.dev/modernc.org/gc/v3) | v3.2.0 | BSD-3-Clause | modernc.org/libc | [L16](#L16) |
 | [modernc.org/goabi0](https://pkg.go.dev/modernc.org/goabi0) | v0.2.0 | BSD-3-Clause | modernc.org/libc | [L17](#L17) |
 | [modernc.org/opt](https://pkg.go.dev/modernc.org/opt) | v0.2.0 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
 | [modernc.org/sortutil](https://pkg.go.dev/modernc.org/sortutil) | v1.2.1 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
@@ -3276,7 +3278,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Applies to:
 
-- SQLite 3.53.4 (`LICENSE-SQLITE`)
+- SQLite 3.54.1 (`LICENSE-SQLITE`)
 - SQLite `test_demovfs.c`
 - SQLite test suite (`testdata/`)
 
