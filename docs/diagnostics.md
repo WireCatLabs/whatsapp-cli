@@ -7,8 +7,9 @@ holds no message text.
 A few words this page uses:
 
 - A **run** is one call of `wa`, from start to exit.
-- A **run record** is a folder that keeps what one run did: its command, its outcome and one line per operation. It
-  never holds message text, names or chat titles.
+- A **run record** is a folder that keeps what one run did: its command line, its outcome and one line per operation.
+  Those lines never hold message text, names or chat titles. What it keeps of the command line you typed is under
+  [What you typed](#what-you-typed).
 - **`wa personal doctor`** checks the installation: the version, the profile, the settings, the local store, and
   WhatsApp's own parts — the engine, the device keys and the lock.
 - A **problem report** is one JSON file made from `wa personal doctor` and a failed run. You attach it to an issue.
@@ -60,8 +61,8 @@ files:
 
 When a command ends in an error, its run is kept even without `--record`. `run.json` then has
 `"keptBecauseFailed": true`. This holds for every command and every error: a bad option, an unknown command, a check
-before any work, a refusal because another command holds the device. The record holds only the command's words, such
-as `messages send`, never what followed them.
+before any work, a refusal because another command holds the device. What the record keeps of the command line is
+under [What you typed](#what-you-typed); a run whose settings did not load hides every typed value that may be text.
 
 A run that worked leaves no record unless you ask for one, so a problem report always has a failure to attach.
 `--no-record`, or `"record": false` in the settings, turns this off too.
@@ -86,14 +87,29 @@ a time, by the folder's name, so nothing has to be opened to decide.
 
 ## What is never in a record
 
-A run record and `--trace` carry an operation's name, ids, counts, durations and error codes. They never carry:
+A run's events and `--trace` carry an operation's name, ids, counts, durations and error codes. They never carry:
 
 - the text of a message;
 - a chat title or a person's name;
-- **what you typed as `<chat>`**, because a typed chat is often a name;
 - a phone number, a pairing code or the device keys.
 
-The same is true for a report made from a run.
+### What you typed
+
+`run.json` also keeps the command line. What it keeps depends on your version of `wa`:
+
+- **A version that lists `record_input` in `wa personal config show`** keeps the command line as you typed it — a
+  chat's name, a search, message text — so you can read back what you ran. A secret is always `[redacted]`: the value
+  of an option named for a token, password, passphrase, secret, credential, cookie, authorization or API key; a
+  password inside a URL; a long string that looks like a token. To hide every typed value that may be text again:
+
+  ```sh
+  wa personal config set record_input false
+  ```
+
+- **An older version** keeps the command's words and option names, such as `messages send --md`. Every value that may
+  be text, such as what you typed as `<chat>`, is `[redacted]`.
+
+A problem report made from a run hides those typed values in every version.
 
 ## Check the installation: `wa doctor`
 
