@@ -2,6 +2,7 @@
   "name": "@wirecat/whatsapp-cli",
   "version": "0.12.0",
   "description": "A personal WhatsApp account from the terminal, as a linked device — built for agents and scripts",
+  "mcpName": "dev.wirecat/whatsapp-cli",
   "license": "Apache-2.0",
   "author": "Viacheslav Ptsarev",
   "repository": {
