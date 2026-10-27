@@ -7,12 +7,19 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **`wa mcp` with no profile serves every profile, on stdio and with `--http` (cli-core 0.450.0).** An AI app needs one
+  connector for WhatsApp, not one per profile. Each tool takes a required `profile` (every profile here, no default)
+  and the agent is told to ask when you did not name the account; the call runs in that profile's own
+  `wa <profile> mcp`, so its permissions apply as before. WhatsApp allows one connection per account: run
+  `wa <profile> serve` while another `wa` process may hold it. `--public-url` takes a path, `https://<name>.ts.net/wa`.
 - **`wa skill install --for hermes` gives Hermes Agent the skill, and `wa skill status` says what Hermes reads (cli-base 0.59.0).** It adds `~/.agents/skills` to Hermes's `skills.external_dirs` through `hermes config set`, keeping the folders already listed, or copies the file into Hermes's home when that fails. With no Hermes installed it fails with `not_found` and writes nothing. A bare `wa skill install` and `--for all` still write only the Claude Code and `~/.agents/skills` copies. `skill status --json` gains `hermes` beside `targets`.
 - **A run started by OpenClaw or Hermes Agent names that agent (cli-core 0.437.0).** `runs show` gives `agent` as `openclaw` for a command OpenClaw's agent ran, with `from_chat: true` when a chat message started it; a Hermes run carries its session, so a task claim from Hermes is held per session.
 - **The `whatsapp-cli` skill tells OpenClaw and ClawHub that it needs `wa`, and how to install it** (`metadata.openclaw`: `requires.bins` and the npm package `@wirecat/whatsapp-cli`). With `wa` missing from PATH, OpenClaw marks the skill not ready and offers to install the package. Claude Code and Codex ignore the block.
 - **`wa <profile> mcp server start|stop|status` runs the HTTP MCP server in the background (cli-core 0.445.0).** `start` takes `--public-url`, `--port` and `--permission` as `mcp --http` does and returns once the server listens; `status` gives the port, the address, the one-time login code and the apps that logged in; `stop` ends only the server it started.
 
 ### Changed — may break callers
+
+- **wa needs cli-base 0.63.0 (cli-core 0.450.0).** Nothing wa uses changed in it.
 
 - **A run record keeps the command line as typed (cli-core 0.439.0 to 0.447.0).** `runs show` and `run.json` carry `argv`, the words after `wa`, with secrets `[redacted]` (a secret-named option, a password in a URL, a known token format, a random-looking string) and a phone number never kept. `wa <profile> config set record_input false` keeps `[redacted]` in place of every typed value that may be text. Recorded events still hold ids, never a chat's title or a message's text.
 

@@ -4161,7 +4161,7 @@ wa upgrade [options]
 
 ## `wa mcp`
 
-serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa <profile> mcp`
+serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa <profile> mcp`; with no profile, `wa mcp` serves every profile and each tool asks which
 
 **Changes something in WhatsApp.**
 
@@ -4174,7 +4174,7 @@ wa mcp [options]
 | `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
 | `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
 | `--port <port>` | the local port for --http (default 8765). |
-| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
 | `--revoke` | forget every login given to a browser app; each must log in again. |
 
 ### `wa mcp server`
@@ -4194,7 +4194,7 @@ wa mcp server start [options]
 | Option | What it does |
 |---|---|
 | `--port <port>` | the local port (default 8765). |
-| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
 | `--permission <key=level>` | make a permission stricter for this server only; repeat for more keys. |
 
 #### `wa mcp server stop`
