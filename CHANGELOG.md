@@ -19,12 +19,17 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
-- **wa needs cli-base 0.63.0 (cli-core 0.450.0).** Nothing wa uses changed in it.
+- **wa needs cli-base 0.63.0 (cli-core 0.452.0).** Nothing wa uses changed in it.
 
 - **A run record keeps the command line as typed (cli-core 0.439.0 to 0.447.0).** `runs show` and `run.json` carry `argv`, the words after `wa`, with secrets `[redacted]` (a secret-named option, a password in a URL, a known token format, a random-looking string) and a phone number never kept. `wa <profile> config set record_input false` keeps `[redacted]` in place of every typed value that may be text. Recorded events still hold ids, never a chat's title or a message's text.
 
 ### Fixed
 
+- **Search by meaning and `--discover` run on the native ONNX Runtime on Windows too (cli-core 0.451.0).** After
+  `wa <profile> models download`, text models and the reranker use the native library on Windows x64 and arm64, as
+  they already did on Linux and macOS: 2–3× faster than WebAssembly. The download takes `onnxruntime.dll` from the
+  `onnxruntime-node` npm package (113.5 MB, once, checked by sha256). Picture models (CLIP, SigLIP2) use the native
+  library as well, wherever it is installed. Results are the same.
 - **Every command spends less time getting ready (cli-base 0.62.0, cli-core 0.449.0).** The check of shared commands now
   describes each command once, not again for every group above it. It was about 60% of each command's setup; in tg a
   warm `run(["--version"])` went from 49 to 29 ms. It catches the same changes as before.
