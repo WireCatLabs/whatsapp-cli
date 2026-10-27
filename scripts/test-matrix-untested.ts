@@ -318,7 +318,6 @@ export const UNTESTED: Untested[] = [
       ["--brief", "src/output-detail.test.ts"],
       ["--full", "src/output-detail.test.ts"],
       ["--yes", "src/cli/messenger/admin-commands.test.ts"],
-      ["--record", "src/cli/messenger/messenger.test.ts"],
       ["--no-record", "src/cli/json-fields.test.ts"],
       ["--help-all", "src/cli/help/first-screen.test.ts"],
     ] as const
