@@ -39,7 +39,7 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `messages edit`, `messages delete` (for the owner only; `--for-everyone` for everyone), `messages download`,
 `messages forward`, `messages transcribe --local`, `messages star|unstar`, `messages pin|unpin` (every pin tells the chat; `--expire-time 24h|7d|30d`), `reactions add|remove`,
 `polls create|show|vote|voters`, `chats mark-read`, `chats mute|unmute`, `chats archive|unarchive|pin|unpin|mark-unread`,
-`chats delete|clear` (they ask first; not over MCP),
+`chats delete|clear` (in a terminal they ask first),
 `account update` (name, about and a square JPEG photo), `metadata sync` (a group's title and description, for
 `tags rebuild`), group admin
 (`chats create|join|leave|update`, a group photo by `chats update --photo` (a square JPEG of 190 to 720 pixels a
@@ -177,7 +177,8 @@ never pick one.
   output and paste the QR text block into the chat as a code block, exactly as printed, for the owner to scan in
   WhatsApp → Settings → Linked devices → Link a device. WhatsApp renews the code after 60 seconds and then about
   every 20 seconds: paste each new block at once and say the old one expired. With `--json` each code is also a
-  stderr line `{"event":"qr","qr":{"text",…}}`. Linking is not on MCP; with only MCP, ask the owner to run it.
+  stderr line `{"event":"qr","qr":{"text",…}}`. Linking is not on MCP; with only MCP, ask the owner to run it
+  or to link from WireCat Desktop (Tools → WhatsApp → Manage).
 - **Never ask for the phone number or a pairing code in the chat.** A pairing-code link (`--method phone`, or
   `session start phone`) is for the owner to run in their own terminal.
 
