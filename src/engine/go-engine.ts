@@ -42,6 +42,17 @@ export interface GoEngineOptions {
   warn?: (line: string) => void
   /** Tests run a stand-in: the program, and the arguments before the engine's own. */
   command?: { file: string; args: string[] }
+  /** Told as each request goes out; the function it returns is told how the request ended. */
+  observe?: (op: EngineOp) => (end: EngineCallEnd) => void
+}
+
+/** How one request ended, without anything it carried: a chat id is a phone number, so a message's is the only id. */
+export interface EngineCallEnd {
+  counts?: Record<string, number>
+  ids?: Record<string, string>
+  /** Set when it failed: the engine's error code, `invalid_response` for an answer this wa cannot read. */
+  code?: string
+  reason?: string
 }
 
 const HELLO_WAIT_MS = 15_000
@@ -169,9 +180,27 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
   ): Promise<T> => {
     if (exited) return Promise.reject(STOPPED())
     const id = nextId++
+    const finish = options.observe?.(op)
+    const ids = idsOf(fields)
     const answer = new Promise<unknown>((resolve, reject) => pending.set(id, { op, resolve, reject }))
     child.stdin?.write(`${JSON.stringify({ id, op, ...fields })}\n`)
-    return answer.then((value) => v.parse(schema, value))
+    const parsed = answer.then((value) => v.parse(schema, value))
+    if (!finish) return parsed
+    return parsed.then(
+      (value) => {
+        finish({ ...ids, ...countsOf(value) })
+        return value
+      },
+      (error: unknown) => {
+        finish({
+          ...ids,
+          ...(error instanceof EngineError
+            ? { code: error.code, ...(error.reason ? { reason: error.reason } : {}) }
+            : { code: "invalid_response" }),
+        })
+        throw error
+      },
+    )
   }
 
   const close = async () => {
@@ -272,6 +301,18 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     ...goChannels(request),
   }
 }
+
+const countsOf = (value: unknown): { counts?: Record<string, number> } => {
+  if (Array.isArray(value)) return { counts: { results: value.length } }
+  const messages = (value as { messages?: unknown } | null)?.messages
+  return Array.isArray(messages) ? { counts: { messages: messages.length } } : {}
+}
+
+/** `keyFields` names a message id `message`; the shape check keeps a text field of that name out if one is added. */
+const MESSAGE_ID = /^[A-Za-z0-9]{1,64}$/
+
+const idsOf = (fields: Record<string, unknown>): { ids?: Record<string, string> } =>
+  typeof fields.message === "string" && MESSAGE_ID.test(fields.message) ? { ids: { message: fields.message } } : {}
 
 const replyFields = (replyTo: string | undefined, quoted: WaQuote | undefined) => ({
   ...(replyTo === undefined ? {} : { replyTo }),

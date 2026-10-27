@@ -7,6 +7,8 @@ import {
   type BaseEnvironment,
   environmentOf,
   type Messenger,
+  providerRequest,
+  runEvent,
 } from "@wirecat/cli-core/cli"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
@@ -19,7 +21,7 @@ import { resolveSettings, WA } from "./app.js"
 import type { FetchLike } from "./bot/graph.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
-import { startGoEngine } from "./engine/go-engine.js"
+import { type EngineCallEnd, startGoEngine } from "./engine/go-engine.js"
 import { privateStore } from "./paths.js"
 
 export interface EngineRequest {
@@ -97,6 +99,7 @@ const startEngine = async (
       ...request,
       env: base.env,
       warn: base.renderer.warn,
+      observe: engineWire,
       ...(engineCommand ? { command: engineCommand } : {}),
     })
   } catch (error) {
@@ -257,4 +260,11 @@ export const WHATSAPP: Messenger = {
     }
     return whatsAppAdapter(engine, options.stored, words, base.renderer.warn)
   },
+}
+
+/** One engine request as a wire line of the run under way; this side sends each request once, so each is attempt 1. */
+export const engineWire = (op: string) => {
+  const end = providerRequest(op, runEvent, { transport: "wa-engine", attempt: 1 })
+  return ({ code, reason, ...rest }: EngineCallEnd) =>
+    end({ ...rest, ...(code ? { errorCode: code, ...(reason ? { providerError: reason } : {}) } : {}) })
 }
