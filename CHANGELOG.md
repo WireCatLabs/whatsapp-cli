@@ -3,6 +3,22 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **The MCP server is `wa <profile> mcp serve`; `wa <profile> mcp` alone prints help.** Browser logins are
+  forgotten with `wa <profile> mcp revoke` instead of `mcp --revoke`, and `wa mcp serve` with no profile serves every
+  profile. A bot's server is `wa <name> bot mcp serve`. An app entry that runs `wa personal mcp` must change to
+  `wa personal mcp serve`: run `wa personal mcp add <app>` or `wa personal mcp config` again. `mcp server start`,
+  the entries `mcp config` prints and the MCP Registry entry already run the new command (cli-core 0.463.0).
+- **`wa skill show|status|install --json` print `{ item, meta }`.** The skill's fields moved under `item`; the
+  Windows installer reads them from there (cli-core 0.462.0).
+
+### Added
+
+- **`wa <profile> mcp server status` says what each logged-in browser app last did** (cli-core 0.454.0).
+
 ## 0.13.0 — 27.10.2026
 
 ### Added

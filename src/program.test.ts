@@ -190,7 +190,7 @@ describe("wa messages send", () => {
       expect((await wa(["agent", "config", "set", `permissions.${key}`, "allow"])).code).toBe(0)
     const engines: FakeEngine[] = []
     const mcp = await mcpOverStdio((streams) =>
-      run(["agent", "mcp"], {
+      run(["agent", "mcp", "serve"], {
         streams: captureStreams(),
         tty: false,
         ...streams,

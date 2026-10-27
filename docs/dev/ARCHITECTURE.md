@@ -495,7 +495,7 @@ cli-core does this; `wa` only opts in. `WHATSAPP` in [`src/messenger.ts`](../../
 lock (`<state>/serve/<profile>.sock`, mode `0600`; not the engine's `private.db.lock`) and writes its address into
 that lock. A command that would connect
 finds the address there and runs inside `serve`, on `serve`'s connection, instead of starting an engine of its own.
-The send guard and the permissions run in `serve` with the client's environment. Linking, `mcp --http` and
+The send guard and the permissions run in `serve` with the client's environment. Linking, `mcp serve --http` and
 `--offline` or `--dry-run` runs stay in their own process. cli-core's `relay-route` picks what goes through `serve`;
 its `serve-relay` is `serve`'s side. On Windows the relay is off for now, so there the lock refuses as in §6. Nothing
 in `src/adapter/` or `engine/` knows about the relay. `session start`, `session end` and `setup` are marked

@@ -105,7 +105,7 @@ export const WHATSAPP_BOT: BotMessenger = {
 
 type Run = (argv: string[], environment?: Environment) => Promise<number>
 
-/** `bot mcp`. The program hands in its own `run`: importing it here would close a loop through the program. */
+/** `bot mcp serve`. The program hands in its own `run`: importing it here would close a loop through the program. */
 export const botMcp = (run: Run): BotMcp => ({
   program: async (): Promise<RunBotCommand> => (argv, environment) => run(argv, environment as Environment),
   skill: SKILL,

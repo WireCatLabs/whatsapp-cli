@@ -95,7 +95,7 @@ export const UNTESTED: Untested[] = [
       "src/commands/bot.test.ts and bot-api.test.ts (an id flag over the setting, --body, --body-file)",
   })),
   {
-    command: "bot mcp",
+    command: "bot mcp serve",
     reason:
       "serves MCP on stdin until the client closes; cli-core's src/mcp/bot/server.test.ts drives the server, " +
       "src/commands/bot.test.ts the config entry and the commands the tools run",
@@ -279,7 +279,7 @@ export const UNTESTED: Untested[] = [
       "src/media.test.ts drives --download, the option that reaches the engine",
   })),
   ...["--permission", "--http", "--public-url"].map((option) => ({
-    command: "mcp",
+    command: "mcp serve",
     option,
     reason:
       "cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with " +
@@ -288,18 +288,17 @@ export const UNTESTED: Untested[] = [
       "for the process's SIGINT and has no signal a test can hand in",
   })),
   {
-    command: "mcp",
+    command: "mcp serve",
     option: "--port",
     reason:
       "cli-core's shared option, the local port for --http; its range check in src/cli/messenger/mcp-command.ts has " +
       "no cli-core test yet, and wa adds nothing to it",
   },
   {
-    command: "mcp",
-    option: "--revoke",
+    command: "mcp revoke",
     reason:
-      "cli-core's shared option over the token file only; cli-core's src/mcp/http/oauth.test.ts drives the " +
-      "revokeAll it calls, not the flag; wa adds nothing to it",
+      "cli-core's shared command over the token file only; cli-core's src/cli/messenger/messenger.test.ts runs it " +
+      "and src/mcp/http/oauth.test.ts drives the revokeAll it calls; wa adds nothing to it",
   },
   ...["--defaults", "--personal", "--bot"].map((option) => ({
     command: "config set",
