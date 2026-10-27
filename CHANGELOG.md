@@ -7,6 +7,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **cli-core 0.469.0 and cli-base 0.65.0.** cli-core 0.469 accepts only cli-base 0.65, so both pins move together.
+  cli-base 0.65 knows the verbs `serve` and `revoke`, so their lint overrides are gone, and its `cli-dev bundle` finds
+  a server started with a flag before `mcp serve`. From cli-core 0.467 every run is recorded by default, successes
+  too, and says who asked for it (`via`); `record: false` now keeps failures. From cli-core 0.468, an MCP server offers
+  a command that only fetches into the store through its read tool.
 - **The MCP server is `wa <profile> mcp serve`; `wa <profile> mcp` alone prints help.** Browser logins are
   forgotten with `wa <profile> mcp revoke` instead of `mcp --revoke`, and `wa mcp serve` with no profile serves every
   profile. A bot's server is `wa <name> bot mcp serve`. An app entry that runs `wa personal mcp` must change to
