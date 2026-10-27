@@ -14,10 +14,26 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   the entries `mcp config` prints and the MCP Registry entry already run the new command (cli-core 0.463.0).
 - **`wa skill show|status|install --json` print `{ item, meta }`.** The skill's fields moved under `item`; the
   Windows installer reads them from there (cli-core 0.462.0).
+- **`wa account list` says whether each profile is signed in on this computer** (`signed_in`), and search hits of
+  every kind name the fields an agent must read as data (`untrusted`). A caller that checks them against an older,
+  strict copy of the schema refuses the new field (cli-core 0.464.0 and 0.466.0).
 
 ### Added
 
 - **`wa <profile> mcp server status` says what each logged-in browser app last did** (cli-core 0.454.0).
+- **`wa upgrade` restarts the browser MCP server that `wa mcp server start` launched** on the same port, address and
+  limits (`mcp_servers`, old → new version); one started by hand is left running and named. Agent sessions over
+  stdio still on the old version are listed (`stale_sessions`): restart them from your agent app. This works from the
+  next upgrade on (cli-core 0.464.0).
+
+### Fixed
+
+- **`wa mcp serve` with no profile marks the profiles that are not signed in.** It listed every profile, so an app
+  could pick one with no linked device and fail. Each profile is now labelled (`default — not signed in`) in the
+  app's menu and in the description, and a call for one that is not signed in answers how to sign it in:
+  `wa <profile> setup`, or from WireCat Desktop.
+- **The login page of the browser MCP server says each code works for one login.** After an app logs in, a new code
+  appears in WireCat Desktop and in `wa mcp server status` (cli-core 0.466.0).
 
 ## 0.13.0 — 27.10.2026
 

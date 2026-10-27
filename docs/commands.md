@@ -5987,7 +5987,7 @@ the instructions an agent is given for this tool
 
 ### `wa skill show`
 
-print SKILL.md — `wa skill install` puts it where Claude Code, Codex and Gemini CLI look for it; --for prints the copy already there
+print SKILL.md — `wa skill install` puts it where Claude Code, Codex, Gemini CLI and OpenClaw look for it, and where Hermes does on request; --for prints the copy already there
 
 ```sh
 wa skill show [name] [options]
