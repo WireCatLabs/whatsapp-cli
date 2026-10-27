@@ -43,6 +43,9 @@ interface GraphError {
   fbtrace_id?: string
 }
 
+/** Graph calls are never retried here, so every line is a first attempt. */
+const WIRE = { level: "wire", transport: "http", attempt: 1 } as const
+
 /** A run of digits long enough to be a phone number: Meta's words can quote the recipient, which no error may carry. */
 const NUMBER = /\+?\d[\d\s-]{6,}\d/g
 
@@ -64,7 +67,11 @@ export class GraphTransport {
     const timeoutMs = this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS
     const url = new URL(`${GRAPH}/${this.#options.version}${call.path}`)
     for (const [name, value] of Object.entries(call.query ?? {})) url.searchParams.set(name, value)
-    const http = { method: call.method, endpointTemplate: `/${this.#options.version}${call.endpoint}` }
+    const http = {
+      method: call.method,
+      endpointTemplate: `/${this.#options.version}${call.endpoint}`,
+      ...WIRE,
+    }
     events?.({ event: "request", operation: call.operation, ...http })
     const started = performance.now()
     const signals = [AbortSignal.timeout(timeoutMs), ...(this.#options.signal ? [this.#options.signal] : [])]
@@ -85,7 +92,14 @@ export class GraphTransport {
       text = await response.text()
     } catch (error) {
       const failure = this.#unanswered(call, error, timeoutMs)
-      events?.({ event: "response", operation: call.operation, ...http, outcome: "error", errorCode: failure.code })
+      events?.({
+        event: "response",
+        operation: call.operation,
+        ...http,
+        durationMs: Math.round(performance.now() - started),
+        outcome: "error",
+        errorCode: failure.code,
+      })
       throw failure
     }
     const answered = {
@@ -121,6 +135,12 @@ export class GraphTransport {
   async download(address: string, operation: string): Promise<{ bytes: Uint8Array; type: string | null }> {
     const url = new URL(address)
     if (url.protocol !== "https:") throw new CliError("invalid_response", "Meta gave a media address that is not https")
+    const { events } = this.#options
+    // The address is Meta's signed media link: no template of it is safe to keep, so the line has the verb only.
+    const http = { method: "GET", ...WIRE }
+    events?.({ event: "request", operation, ...http })
+    const started = performance.now()
+    const durationMs = () => Math.round(performance.now() - started)
     let response: Response
     try {
       response = await this.#fetch(url.toString(), {
@@ -132,15 +152,45 @@ export class GraphTransport {
         ]),
       })
     } catch (error) {
-      throw this.#unanswered({ operation, reads: true }, error, this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS)
+      const failure = this.#unanswered({ operation, reads: true }, error, this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS)
+      events?.({
+        event: "response",
+        operation,
+        ...http,
+        durationMs: durationMs(),
+        outcome: "error",
+        errorCode: failure.code,
+      })
+      throw failure
     }
-    if (!response.ok)
-      throw new CliError(
+    if (!response.ok) {
+      const failure = new CliError(
         response.status === 404 || response.status === 410 ? "not_found" : "invalid_response",
         `Meta answered ${response.status} for the media file — its address lives five minutes; ask for it again`,
         { operation, status: response.status },
       )
-    return { bytes: new Uint8Array(await response.arrayBuffer()), type: response.headers.get("content-type") }
+      events?.({
+        event: "response",
+        operation,
+        ...http,
+        status: response.status,
+        durationMs: durationMs(),
+        outcome: "error",
+        errorCode: failure.code,
+      })
+      throw failure
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer())
+    events?.({
+      event: "response",
+      operation,
+      ...http,
+      status: response.status,
+      bytes: bytes.byteLength,
+      durationMs: durationMs(),
+      outcome: "ok",
+    })
+    return { bytes, type: response.headers.get("content-type") }
   }
 
   #unanswered(call: Pick<GraphCall, "operation" | "reads">, error: unknown, timeoutMs: number): CliError {

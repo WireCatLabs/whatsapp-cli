@@ -21,8 +21,8 @@ A few words this page uses:
 | See each operation as it happens | `wa --trace …` | no, prints to stderr only |
 | See the whole failure | `wa --debug …` | no, prints to stderr only |
 | Keep a record of one run | `wa --record …` | yes, a run record |
-| Find a failed run later | `wa personal runs list` | a failed run is kept by itself |
-| Keep a record of every run | `wa personal config set record true` | yes, every run |
+| Find a run later | `wa personal runs list` | every run is kept by itself |
+| Keep failed runs only | `wa personal config set record false` | yes, failed runs |
 | Check the installation | `wa personal doctor`, `wa personal doctor --online` | no |
 | Make a problem report | `wa personal doctor reports create` | yes, one file you send |
 
@@ -55,35 +55,40 @@ files:
 
 - `run.json` — the command, the profile, the version of `wa`, Node and the system, when it started and ended, the
   outcome and the error code;
-- `events.jsonl` — the same operations `--trace` shows, one per line.
+- `events.jsonl` — the same operations `--trace` shows, one per line. Under each operation are the requests it made,
+  marked `"level": "wire"`: to the WhatsApp engine (`"transport": "wa-engine"`, the engine's request name such as
+  `send` or `older`), or to Meta's Graph API for `bot` commands (`"transport": "http"`, the method and the path with
+  ids as `:id`). Each has its duration, outcome and error code. An engine request keeps a message's id when it has
+  one and never a chat's: a chat id holds a phone number. A media download keeps no address at all.
 
-## A failed run is always kept
+## Every run is kept
 
-When a command ends in an error, its run is kept even without `--record`. `run.json` then has
-`"keptBecauseFailed": true`. This holds for every command and every error: a bad option, an unknown command, a check
-before any work, a refusal because another command holds the device. What the record keeps of the command line is
+Every run is kept without `--record`, a run that worked too. A failed run is kept for every command and every error:
+a bad option, an unknown command, a check before any work, a refusal because another command holds the device. What the record keeps of the command line is
 under [What you typed](#what-you-typed); a run whose settings did not load hides every typed value that may be text.
 
-A run that worked leaves no record unless you ask for one, so a problem report always has a failure to attach.
-`--no-record`, or `"record": false` in the settings, turns this off too.
+A run that worked and logged no events is one line in the day's index, with no folder; `runs show` finds it there.
+A command that runs until stopped (`watch`, `serve`, `mcp serve`) and a command WireCat Desktop runs for itself keep
+a run that worked only under `--record`. `--no-record` keeps nothing, not even a failure.
 
 Successful searches keep their own history, apart from run records: see
 [search](search.md).
 
-## When to record every run
+## When to record less
 
 ```sh
-wa personal config set record true          # this profile
-wa personal --no-record chats list          # but not this one
+wa personal config set record false         # this profile: failed runs only
+wa personal --no-record chats list          # this run: nothing
 ```
 
-By default a run that worked is not written until you ask. A messenger tool that keeps a folder of whom you read and
-when would be a diary of your life that nobody asked for.
+A run that worked keeps the command line as typed, such as the text of a message you sent; `record_input` decides
+whether it does ([What you typed](#what-you-typed)). `"record": false` keeps failed runs and drops the rest.
 
 ## How long it lives
 
-**30 days**, or `keep_runs_for_days` in the settings. Old runs are removed only when a new one is kept, a whole day at
-a time, by the folder's name, so nothing has to be opened to decide.
+A failed run **30 days** (`keep_runs_for_days`), a run that worked **7 days** (`keep_successful_runs_for_days`). The
+runs folder stays under `runs_size_limit_mb` (200): past it, the oldest runs that worked go first. Old runs are removed
+only when a new one is kept, a whole day at a time, by the folder's name, so nothing has to be opened to decide.
 
 ## What is never in a record
 

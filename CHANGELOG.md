@@ -7,6 +7,13 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **Every run is recorded by default, a run that worked too (cli-core 0.467.0).** Runs that worked are kept 7 days
+  (`keep_successful_runs_for_days`), failed runs 30 (`keep_runs_for_days`), and the runs folder stays under
+  `runs_size_limit_mb` (200). **Privacy:** with `record_input` on, as by default, every successful `messages send` now
+  leaves its typed words in a local `0600` run record for 7 days. `record: false` keeps failed runs only (before, it
+  kept nothing); `record_input: false` masks the typed words everywhere; `--no-record` keeps nothing.
+  `keptBecauseFailed` is no longer set.
+- **wa needs cli-core 0.467.0 and cli-base 0.64.0.**
 - **The MCP server is `wa <profile> mcp serve`; `wa <profile> mcp` alone prints help.** Browser logins are
   forgotten with `wa <profile> mcp revoke` instead of `mcp --revoke`, and `wa mcp serve` with no profile serves every
   profile. A bot's server is `wa <name> bot mcp serve`. An app entry that runs `wa personal mcp` must change to
@@ -20,6 +27,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **A recorded run lists each request under its operation (cli-core 0.467.0).** Every request to the
+  WhatsApp engine, and every Graph API call and media download of `wa <profile> bot`, is a `wire` line in the run's
+  `events.jsonl` with its duration, outcome and error code. Engine lines keep a message's id, never a chat's id, a
+  phone number or text; Graph lines keep the path with ids as `:id`, never the address as sent or its query.
 - **`wa <profile> mcp server status` says what each logged-in browser app last did** (cli-core 0.454.0).
 - **`wa upgrade` restarts the browser MCP server that `wa mcp server start` launched** on the same port, address and
   limits (`mcp_servers`, old → new version); one started by hand is left running and named. Agent sessions over
