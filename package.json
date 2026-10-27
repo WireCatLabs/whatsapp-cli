@@ -25,7 +25,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc --build --force",
+    "build": "tsc --build --force && cli-dev bundle --bin dist/bin/wa.js",
     "typecheck": "tsc --build --force --emitDeclarationOnly && tsc -p tsconfig.test.json && tsc -p tsconfig.scripts.json",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -40,6 +40,7 @@
     "bot:generate:check": "node --experimental-strip-types scripts/bot/generate.ts --check",
     "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts",
     "smoke:bun": "bun run scripts/smoke.ts",
+    "smoke:node": "node --experimental-strip-types scripts/smoke.ts",
     "release:check": "pnpm build && node --experimental-strip-types scripts/release-check.ts",
     "docs:check": "cli-dev docs-check --rules scripts/release/checks.ts --pages && cspell --no-progress --no-summary README.md 'docs/*.md' && rumdl check --config config/wirecat/rumdl.toml README.md docs/*.md",
     "parity:check": "pnpm build && node dist/bin/wa.js commands --json | cli-core-parity wa && node dist/bin/wa.js commands --json | cli-core-parity wa --pages README.md docs/*.md",
@@ -84,6 +85,7 @@
     "@vitest/coverage-v8": "^5.0.5",
     "@wirecat/cli-testing": "0.5.3",
     "cspell": "10.4.0",
+    "esbuild": "0.28.2",
     "lefthook": "2.2.2",
     "markdownlint-cli2": "0.24.0",
     "rumdl": "^0.3.0",

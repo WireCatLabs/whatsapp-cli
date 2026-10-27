@@ -30,6 +30,7 @@ jobs:
       # The test matrix is rebuilt from this run's argv log, so the diff also catches a stale
       # test-matrix.md; the parity lines read the command tree from the dist/ built above.
       checks: |
+        pnpm smoke:node
         pnpm contracts:check
         pnpm contracts:upgrade
         pnpm security:no-leak

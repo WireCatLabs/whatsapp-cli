@@ -6,7 +6,7 @@
  *   pnpm build && pnpm smoke:bun
  */
 import { spawnSync } from "node:child_process"
-import { mkdtempSync, rmSync } from "node:fs"
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -66,6 +66,26 @@ check("doctor exits cleanly with no login", doctor.status === 0)
 const offline = wa("chats", "list", "--offline", "--json")
 check("an offline read with nothing recorded fails", offline.status !== 0)
 check("and keeps stdout clean", offline.stdout === "")
+
+// The published bin is a loader for dist/bundle/ (cli-dev bundle, WC-LAY-10): these load from the bundle.
+const loader = readFileSync("dist/bin/wa.js", "utf8")
+check("the bin starts the bundle", loader.includes('import("../bundle/wa.js")'))
+const preloaded = [...loader.matchAll(/"\.\.\/bundle\/([^"]+)"/g)].map(([, chunk]) => chunk ?? "")
+check(
+  "a server preloads only chunks the bundle has",
+  preloaded.length > 1 && preloaded.every((chunk) => existsSync(join("dist/bundle", chunk))),
+)
+const recorded = spawnSync(process.execPath, ["dist/bin/wa.js", "--version"], {
+  encoding: "utf8",
+  env: { ...process.env, WA_TEST_ARGV_LOG: join(isolated, "argv.jsonl") },
+})
+check("the loader's --version is the bundle's", recorded.stdout === version.stdout)
+check("skill show finds cli-core's skills from the bundle", wa("skill", "show", "follow-ups").stdout.startsWith("---"))
+// A profile takes a read as far as the store: its SQLite loads from cli-core's own dependencies.
+wa("smoke", "config", "set", "limit", "20")
+const stored = wa("smoke", "chats", "list", "--offline", "--json")
+check("the store opens and has nothing recorded", stored.stderr.includes('"reason":"item.not-found"'))
+check("doctor finds the document readers", wa("doctor", "--json").stdout.includes('"unpdf":"built in"'))
 
 rmSync(isolated, { recursive: true, force: true })
 
