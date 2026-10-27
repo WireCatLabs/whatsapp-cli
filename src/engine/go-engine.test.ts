@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest"
 import { engineBinary, enginePackage } from "../engine-binary.js"
 import { assertPrivate } from "../testing/private-files.js"
 import type { EngineEvent, LoginCode, WaAttachment } from "./contract.js"
-import { startGoEngine } from "./go-engine.js"
+import { type EngineCallEnd, startGoEngine } from "./go-engine.js"
 
 const STUB = fileURLToPath(new URL("../testing/engine-stub.mjs", import.meta.url))
 
@@ -445,5 +445,26 @@ describe("channel wire contracts", () => {
     } finally {
       await engine.close()
     }
+  })
+
+  it("tells the observer how each request ended, without chat ids or text", async () => {
+    const seen: [string, EngineCallEnd][] = []
+    const engine = await startGoEngine({
+      storePath: "/nowhere/private.db",
+      holder: "serve",
+      command: { file: process.execPath, args: [STUB, "--mode", "ok"] },
+      observe: (op) => (end) => seen.push([op, end]),
+    })
+    await engine.directory()
+    await engine.send({ chat: "70000000009@s.whatsapp.net", text: "secret words", id: "3EB0AA" })
+    const key = { chat: "120363000000000001@g.us", id: "3EB0AB", fromMe: true, sender: null }
+    await expect(engine.pin(key, 3600)).rejects.toMatchObject({ code: "validation_error" })
+    await engine.close()
+    expect(seen).toEqual([
+      ["directory", { counts: { results: 0 } }],
+      ["send", {}],
+      ["pin", { ids: { message: "3EB0AB" }, code: "validation_error" }],
+      ["close", {}],
+    ])
   })
 })

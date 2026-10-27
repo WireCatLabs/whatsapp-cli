@@ -131,6 +131,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **A recorded run lists each request under its operation (cli-core with record-every-run).** Every request to the
+  WhatsApp engine, and every Graph API call and media download of `wa <profile> bot`, is a `wire` line in the run's
+  `events.jsonl` with its duration, outcome and error code. Engine lines keep a message's id, never a chat's id, a
+  phone number or text; Graph lines keep the path with ids as `:id`, never the address as sent or its query.
 - **`wa <profile> mcp server status` says what each logged-in browser app last did** (cli-core 0.454.0).
 - **`wa upgrade` restarts the browser MCP server that `wa mcp server start` launched** on the same port, address and
   limits (`mcp_servers`, old → new version); one started by hand is left running and named. Agent sessions over
