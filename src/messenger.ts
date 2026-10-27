@@ -162,6 +162,8 @@ export const WHATSAPP: Messenger = {
   provider: "whatsapp",
   name: "WhatsApp",
   resolveSettings,
+  // A linked device keeps its keys in the private store; a business number has its own `bot mcp`.
+  profileState: (profile, env) => (existsSync(privateStore(profile, env)) ? "signed-in" : "signed-out"),
   history: "store",
   // WhatsApp sends a chat's unread count only in the history push; between pushes the store counts new messages.
   unreadCounts: "store",

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -505,3 +505,13 @@ const arrived = (id: string) =>
       replyTo: null,
     },
   }) as const
+
+describe("which profiles are signed in", () => {
+  it("counts a profile signed in only when its linked device's store is on this computer", () => {
+    const env = { WA_STATE_DIR: mkdtempSync(join(tmpdir(), "wa-state-")) }
+    mkdirSync(dirname(privateStore("personal", env)), { recursive: true })
+    writeFileSync(privateStore("personal", env), "")
+    expect(WHATSAPP.profileState?.("personal", env)).toBe("signed-in")
+    expect(WHATSAPP.profileState?.("default", env)).toBe("signed-out")
+  })
+})
