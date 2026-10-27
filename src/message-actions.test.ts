@@ -252,7 +252,13 @@ describe("wa messages pin", () => {
       throw new Error("a refused pin must never connect")
     }
     const mcp = await mcpOverStdio((streams) =>
-      run(["agent", "mcp"], { streams: captureStreams(), tty: false, env: env(), ...streams, engine: neverConnect }),
+      run(["agent", "mcp", "serve"], {
+        streams: captureStreams(),
+        tty: false,
+        env: env(),
+        ...streams,
+        engine: neverConnect,
+      }),
     )
     const answer = await mcp.call("wa_write", {
       command: "messages pin",
@@ -415,7 +421,7 @@ describe("wa messages delete", () => {
     expect((await wa(["agent", "config", "set", "permissions.messages.delete", "allow"])).code).toBe(0)
     let engine: FakeEngine | undefined
     const mcp = await mcpOverStdio((streams) =>
-      run(["agent", "mcp"], {
+      run(["agent", "mcp", "serve"], {
         streams: captureStreams(),
         tty: false,
         env: env(),
@@ -458,7 +464,7 @@ describe("an agent's messages delete over MCP, by permission level", () => {
   const agentDeletes = async (profile: string, message: Message) => {
     let engine: FakeEngine | undefined
     const mcp = await mcpOverStdio((streams) =>
-      run([profile, "mcp"], {
+      run([profile, "mcp", "serve"], {
         streams: captureStreams(),
         tty: false,
         env: env(),
@@ -651,7 +657,7 @@ describe("wa messages star", () => {
   it("lets an agent star a message over MCP", async () => {
     let engine: FakeEngine | undefined
     const mcp = await mcpOverStdio((streams) =>
-      run(["agent", "mcp"], {
+      run(["agent", "mcp", "serve"], {
         streams: captureStreams(),
         tty: false,
         env: env(),

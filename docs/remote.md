@@ -7,10 +7,10 @@ what your profile permits, and you know how to stop it or take its access back.
 
 Terms used on this page:
 
-- **MCP** (Model Context Protocol) is the standard way an AI app calls outside tools. `wa personal mcp` is the MCP
+- **MCP** (Model Context Protocol) is the standard way an AI app calls outside tools. `wa personal mcp serve` is the MCP
   server that comes with `wa`; the [MCP server guide](mcp.md) covers apps on your own computer.
 - **Remote connection** means the app connects from its own servers, over the internet, to the address you give it.
-  `wa personal mcp --http` serves the same tools over HTTP on `127.0.0.1` for this.
+  `wa personal mcp serve --http` serves the same tools over HTTP on `127.0.0.1` for this.
 - **HTTPS tunnel** is a program that gives a port on your computer a public HTTPS address. This page uses
   [Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel); Cloudflare Tunnel also works. You do not
   need to buy a domain for Funnel.
@@ -20,7 +20,7 @@ Terms used on this page:
   person who sees that terminal can connect an app.
 
 ```text
-ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal mcp --http (login) ──▶ WhatsApp
+ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal mcp serve --http (login) ──▶ WhatsApp
 ```
 
 ## What you can do
@@ -36,13 +36,13 @@ ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal 
 ## Before you start
 
 - **Whoever logs in reads your WhatsApp.** The login needs the access code from your terminal. Never put a tunnel in
-  front of `wa personal mcp` without `--http`: that mode has no login at all.
+  front of `wa personal mcp serve` without `--http`: that mode has no login at all.
 - **Profile permissions decide what the app may change.** `deny` and `readonly` block writes; `ask` and `allow` let
   a requested MCP write go through without a form on the server. The app's own approval is separate and depends on
   its settings. The recipient list and the hourly limit still apply
   ([what an agent may do](mcp.md#what-an-agent-may-do), [permissions](permissions.md)).
 - **The server shares the device's one connection with `serve`.** Reads from the local store work while `serve`
-  runs. Unlike the terminal and `wa personal mcp`, the HTTP server does not go through `serve`: a send, an edit or a
+  runs. Unlike the terminal and `wa personal mcp serve`, the HTTP server does not go through `serve`: a send, an edit or a
   reaction from the app is refused until `serve` stops, and `serve` cannot start while the server holds a connection
   ([one connection, shared with `serve`](mcp.md#one-connection-shared-with-serve)).
 - **The computer that runs `wa` must stay on.** To use it from a phone, or from a laptop with nothing installed, run
@@ -63,7 +63,7 @@ The setup steps for each operating system have not all been tried on that system
 
 Install `wa` and link a profile first ([installation](installation.md), [linking](sessions.md)). Use the same
 operating system user and profile for setup and for the MCP server. Put a profile before the command when needed:
-`wa work mcp`. Tailscale is a separate installation.
+`wa work mcp serve`. Tailscale is a separate installation.
 
 Install [Tailscale](https://tailscale.com/download), sign in, and enable
 [Funnel](https://tailscale.com/docs/features/tailscale-funnel): MagicDNS, HTTPS certificates and Funnel permission
@@ -94,7 +94,7 @@ Second window: normal PowerShell, as the user who linked `wa`:
 
 ```powershell
 $mcpPublicUrl = Read-Host 'Paste the HTTPS origin printed by Funnel (no /mcp)'
-wa.cmd personal mcp --http --port 8765 --public-url $mcpPublicUrl
+wa.cmd personal mcp serve --http --port 8765 --public-url $mcpPublicUrl
 ```
 
 Run both processes in Windows itself. WSL is a separate environment: a Windows tunnel that points at the Windows
@@ -114,7 +114,7 @@ Second Terminal window, as the same user who ran `wa personal setup`. This works
 ```sh
 printf 'Paste the HTTPS origin printed by Funnel (no /mcp): '
 IFS= read -r mcpPublicUrl
-wa personal mcp --http --port 8765 --public-url "$mcpPublicUrl"
+wa personal mcp serve --http --port 8765 --public-url "$mcpPublicUrl"
 ```
 
 ### Linux (Terminal)
@@ -131,7 +131,7 @@ Second terminal window: your normal user, without `sudo`, so `wa` finds the devi
 ```sh
 printf 'Paste the HTTPS origin printed by Funnel (no /mcp): '
 IFS= read -r mcpPublicUrl
-wa personal mcp --http --port 8765 --public-url "$mcpPublicUrl"
+wa personal mcp serve --http --port 8765 --public-url "$mcpPublicUrl"
 ```
 
 ## Run several servers together
@@ -168,7 +168,7 @@ local service to `http://127.0.0.1:8765`, and run MCP on that same computer.
 Start the server in a second terminal:
 
 ```sh
-wa personal mcp --http --port 8765 --public-url https://mcp.example.com
+wa personal mcp serve --http --port 8765 --public-url https://mcp.example.com
 ```
 
 Add `https://mcp.example.com/mcp` to your AI app with OAuth and DCR, as described in
@@ -232,7 +232,7 @@ another server uses Funnel: it clears all routes.
 Taking access back from apps is separate from stopping a process. To log out every app for a profile:
 
 ```sh
-wa personal mcp --revoke --json
+wa personal mcp revoke --json
 ```
 
 Those apps must log in again with a new code. This does not unlink the device from WhatsApp.

@@ -347,14 +347,15 @@ describe("wa <profile> bot", () => {
     })
   })
 
-  it("**prints the bot's MCP server entry**, which runs `wa <profile> bot mcp`", async () => {
+  it("**prints the bot's MCP server entry**, which runs `wa <profile> bot mcp serve`", async () => {
     const printed = await wa(["cloudtest", "bot", "mcp", "config", "--json"])
 
     expect(printed.code).toBe(0)
-    expect(JSON.parse(printed.stdout).item.config.mcpServers["wa-bot-cloudtest"].args.slice(-3)).toEqual([
+    expect(JSON.parse(printed.stdout).item.config.mcpServers["wa-bot-cloudtest"].args.slice(-4)).toEqual([
       "cloudtest",
       "bot",
       "mcp",
+      "serve",
     ])
     expect(seen).toEqual([])
   })

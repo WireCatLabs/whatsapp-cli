@@ -22,7 +22,7 @@ no WhatsApp account.
 | `bot webhooks set <url>` | Point this number's webhook at an address; `bot webhooks list` and `delete` read and remove it. |
 | `bot media download <id> --output <file>` | Save a file someone sent, by the media id `bot watch --jsonl` printed. |
 | `bot api <operation>` | Every Cloud API operation `wa` keeps, generated from Meta's OpenAPI file. |
-| `bot mcp` | The bot's commands as MCP tools for an agent. |
+| `bot mcp serve` | The bot's commands as MCP tools for an agent. |
 
 A chat is the person's phone number in digits, such as `70000000001`. Meta names some people only by a
 business-scoped user id; `bot watch` shows that chat as `user:<id>`, and you send to it the same way.
@@ -80,7 +80,7 @@ wa cloudtest bot watch --public-url https://<name>.ts.net:8443
 - It refuses any delivery whose `X-Hub-Signature-256` does not match your app secret.
 - It answers Meta only after the message is in the local store, so a crash or a full disk loses nothing: Meta sends
   it again.
-- `--port` changes the local port. The receiver needs its own port and its own public address beside `mcp --http`.
+- `--port` changes the local port. The receiver needs its own port and its own public address beside `mcp serve --http`.
 
 The tunnel must keep one address: Meta checks each new address again. Use Tailscale Funnel or a named Cloudflare
 Tunnel, set up as in [ChatGPT, Codex or Claude in the browser](remote.md#webhook-receiver-for-a-bot). A Cloudflare

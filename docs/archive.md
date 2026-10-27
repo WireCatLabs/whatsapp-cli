@@ -311,7 +311,7 @@ wa personal store migrate              # bring the store up to this version's sc
   store.
 - **`restore` keeps the store it replaces** beside it and says where. It refuses while `serve` runs for any profile
   — `wa personal server stop` first — and checks that the backup is a readable, undamaged store. Afterwards, restart
-  every `serve` and `mcp` of any WireCat CLI that was running, so they read the restored store.
+  every `serve` and `mcp serve` of any WireCat CLI that was running, so they read the restored store.
 - **`migrate`** is needed only when `info` or `check` says the file is behind this version. Take a backup first. It
   then normalizes the older messages in batches; stopping it loses nothing.
 - **Nothing here comes back from WhatsApp.** A message lost from the store cannot be fetched again; keep a backup.
