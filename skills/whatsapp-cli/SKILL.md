@@ -88,13 +88,13 @@ the store does not hold yet needs its `…@g.us` id.
   `serve`. `--all` is refused: there is no chat list to walk.
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
-  reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp`.
+  reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp serve`.
   Permissions and the send guard still apply. It never asks: a write at permission level `ask` needs `--yes`
   (`--allow-dangerous` for a deletion), or it is refused and says so. Never stop the owner's `serve`. If `serve`
   is starting or does not answer, the command fails; tell the owner. With no `serve`, `watch` and every command that
   connects take the device's lock; a second one is refused with exit `12` and names the holder. On Windows nothing
   goes through `serve` yet, so there a command that connects is refused that way while `serve` runs
-  (`serve (pid 4242)`): tell the owner, do not stop it. `wa personal mcp` keeps a connection it opened until two
+  (`serve (pid 4242)`): tell the owner, do not stop it. `wa personal mcp serve` keeps a connection it opened until two
   minutes pass without a call, and `serve` cannot start meanwhile.
 - **A change to a message needs it in the store.** WhatsApp addresses a message by its id *and* its sender, so
   `messages edit`, `messages delete`, `messages star|unstar`, `reactions add|remove`, `polls show|vote|voters` and
@@ -309,10 +309,10 @@ keys. With `--events`, `data.event` names the change. Wait for the final `type: 
 `complete`; an absent end means the stream was cut. A source failure also returns a nonzero exit code.
 
 An agent that cannot run commands (a chat app such as Claude Desktop, a remote agent) uses the MCP server instead:
-`wa personal mcp`. The profile's `permissions` decide which commands it offers, the same as on the command line,
+`wa personal mcp serve`. The profile's `permissions` decide which commands it offers, the same as on the command line,
 through `wa_tools_search`, `wa_read` and `wa_write`; there is no confirmation form. When you can run commands, use
 the commands above instead of MCP. `wa personal mcp config` prints the entry with full paths.
-`wa personal mcp --http --public-url https://laptop.example.ts.net` (the owner's own tunnel address) serves behind
+`wa personal mcp serve --http --public-url https://laptop.example.ts.net` (the owner's own tunnel address) serves behind
 the owner's tunnel with its own login.
 Never change permissions to get round a refusal. Guide:
 [MCP](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md).

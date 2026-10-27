@@ -32,7 +32,7 @@ local store and never connect, so they work beside it
 
 ## The pace
 
-Every request `wa` makes for a profile — from a command, `wa personal mcp` or `wa personal serve` — takes a turn in
+Every request `wa` makes for a profile — from a command, `wa personal mcp serve` or `wa personal serve` — takes a turn in
 one pace for that profile. The turns are kept under the state folder, so two terminals line up behind each other
 instead of each going at full speed. Different profiles have their own pace each.
 

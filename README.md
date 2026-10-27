@@ -115,7 +115,7 @@ Your agent. Your WhatsApp. Your rules.
   [skill](https://github.com/WireCatLabs/whatsapp-cli/blob/main/skills/whatsapp-cli/SKILL.md) tells them how: `wa personal setup --agent …` or `wa skill install` puts it in
   place, and `wa skill show` prints it before linking. An agent links by QR: it pastes the code into the chat as text for you
   to scan, and never asks for your phone number or a code.
-- **Apps without a terminal** (Claude Desktop, Cursor and other MCP clients) connect to `wa personal mcp`. It
+- **Apps without a terminal** (Claude Desktop, Cursor and other MCP clients) connect to `wa personal mcp serve`. It
   comes with ready prompts: `/catch-up`, `/review`, `/reply`, `/find` and more.
 
 ```sh
@@ -255,11 +255,11 @@ wa skill show                     # the complete instructions, without installin
 changing anything; at `ask` the server shows no form, so set up approval in your agent app.
 
 ```sh
-claude mcp add wa -- wa personal mcp  # Claude Code, by hand
-wa personal mcp check                # check the local MCP server
+claude mcp add wa -- wa personal mcp serve  # Claude Code, by hand
+wa personal mcp check                       # check the local MCP server
 ```
 
-**From the browser.** ChatGPT or Claude in the browser reach `wa personal mcp --http --public-url` behind your tunnel,
+**From the browser.** ChatGPT or Claude in the browser reach `wa personal mcp serve --http --public-url` behind your tunnel,
 after a login with a one-time access code from your terminal.
 
 More: [the MCP server](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/mcp.md) · [from the browser](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/remote.md)

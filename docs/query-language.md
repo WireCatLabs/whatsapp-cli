@@ -177,7 +177,7 @@ When an agent searches through `wa`'s MCP server, `wa_read` (`command: "search m
 `query`, and `timezone` for the calendar zone. `chat` takes an id or a stored name; `source`, `newest`, `context` and
 `limit` work as the command options do; `saved` runs a saved search. `thread`, `thread_hops`, `thread_messages`,
 `thread_bytes` and `thread_within` match the `--thread…` options. The answer has the same fields as `--json`.
-`wa_read` (`command: "stats messages show"`) counts the same queries. `wa personal mcp --no-record`, or `record` set to
+`wa_read` (`command: "stats messages show"`) counts the same queries. `wa personal mcp serve --no-record`, or `record` set to
 `false`, keeps the server's calls out of the query history ([MCP](mcp.md)).
 
 ## Next

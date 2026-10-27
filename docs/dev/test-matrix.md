@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**272 ✅ · 833 ⛔ · 0 ❌** — 364 commands, 741 options.
+**272 ✅ · 833 ⛔ · 0 ❌** — 365 commands, 740 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -726,12 +726,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `complete` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/complete-command.test.ts) |
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
-| `mcp` |  | ✅ |  |
-| `mcp` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
-| `mcp` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
-| `mcp` | `--port` | ⛔ | cli-core's shared option, the local port for --http; its range check in src/cli/messenger/mcp-command.ts has no cli-core test yet, and wa adds nothing to it |
-| `mcp` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
-| `mcp` | `--revoke` | ⛔ | cli-core's shared option over the token file only; cli-core's src/mcp/http/oauth.test.ts drives the revokeAll it calls, not the flag; wa adds nothing to it |
+| `mcp serve` |  | ✅ |  |
+| `mcp serve` | `--permission` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
+| `mcp serve` | `--http` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
+| `mcp serve` | `--port` | ⛔ | cli-core's shared option, the local port for --http; its range check in src/cli/messenger/mcp-command.ts has no cli-core test yet, and wa adds nothing to it |
+| `mcp serve` | `--public-url` | ⛔ | cli-core's shared MCP server options, tested in cli-core (src/cli/messenger/mcp-command-http.test.ts, with the HTTP server stubbed). Over HTTP the server is built by the same createServer as over stdio, so wa's tool list and its delete refusal are the ones src/message-actions.test.ts drives on stdio; the HTTP server waits for the process's SIGINT and has no signal a test can hand in |
+| `mcp revoke` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
 | `mcp server start` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
 | `mcp server start` | `--port` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
 | `mcp server start` | `--public-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/mcp-doctor.test.ts and src/mcp/mcp.test.ts) |
@@ -830,7 +830,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot contacts show` | `--limit` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/people.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot contacts show` | `--sync-first` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/people.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot me` |  | ✅ |  |
-| `bot mcp` |  | ⛔ | serves MCP on stdin until the client closes; cli-core's src/mcp/bot/server.test.ts drives the server, src/commands/bot.test.ts the config entry and the commands the tools run |
+| `bot mcp serve` |  | ⛔ | serves MCP on stdin until the client closes; cli-core's src/mcp/bot/server.test.ts drives the server, src/commands/bot.test.ts the config entry and the commands the tools run |
 | `bot mcp config` |  | ✅ |  |
 | `bot api add-phone-numbers` |  | ⛔ | generated from Meta's OpenAPI file: one execute path for every operation, driven against a Graph stand-in in src/commands/bot.test.ts; the manifest's effects and ids in src/bot/manifest.test.ts |
 | `bot api add-phone-numbers` | `--business-id` | ⛔ | generated from Meta's OpenAPI file: one execute path for every operation, driven against a Graph stand-in in src/commands/bot.test.ts; the manifest's effects and ids in src/bot/manifest.test.ts |

@@ -3671,7 +3671,7 @@ find things by text: one resource when you know it (messages, notes), or search 
 
 ### `wa search all`
 
-search messenger messages and notes in the local store, and a meeting account's transcripts when --source names one — best match first; not mail (the separate memo CLI searches it: memo search mail), tasks, people, memories or projects. Use it when you do not know where something was written; search messages or notes reads one kind with all its fields
+search messenger messages and notes in the local store, calendar events when the store holds a calendar, and a meeting account's transcripts when --source names one — best match first; not mail (the separate memo CLI searches it: memo search mail), tasks, people, memories or projects. Use it when you do not know where something was written; search messages or notes reads one kind with all its fields
 
 ```sh
 wa search all <query> [options]
@@ -3683,7 +3683,7 @@ wa search all <query> [options]
 
 | Option | What it does |
 |---|---|
-| `--only <resources>` | only these resources, separated by commas: messages, notes; meetings when --source names a meeting account. |
+| `--only <resources>` | only these resources, separated by commas: messages, notes, events; meetings when --source names a meeting account. |
 | `--source <accounts>` | only these accounts, separated by commas: provider:account as a hit shows it, a provider, a kind or group:<name>; each resource reads the ones of its kind, and meetings only when it names one. |
 | `--max-meetings <n>` | how many of the meeting account's meetings to look through, newest first, or all for every one (default 100). |
 | `--limit <n>` | how many. |
@@ -4161,12 +4161,16 @@ wa upgrade [options]
 
 ## `wa mcp`
 
-serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa <profile> mcp`; with no profile, `wa mcp` serves every profile and each tool asks which
+serve this profile to an agent over MCP and set it up — `claude mcp add wa -- wa <profile> mcp serve`
+
+### `wa mcp serve`
+
+serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa <profile> mcp serve`; with no profile, `wa mcp serve` serves every profile and each tool asks which
 
 **Changes something in WhatsApp.**
 
 ```sh
-wa mcp [options]
+wa mcp serve [options]
 ```
 
 | Option | What it does |
@@ -4175,15 +4179,24 @@ wa mcp [options]
 | `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
 | `--port <port>` | the local port for --http (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
-| `--revoke` | forget every login given to a browser app; each must log in again. |
+
+### `wa mcp revoke`
+
+forget every login `mcp serve --http` gave a browser app, of this profile or, with no profile, of the server of every profile; each app must log in again
+
+**Changes something on this computer only.**
+
+```sh
+wa mcp revoke
+```
 
 ### `wa mcp server`
 
-start, stop and check `mcp --http` in the background; status shows the login code for a browser app
+start, stop and check `mcp serve --http` in the background; status shows the login code for a browser app
 
 #### `wa mcp server start`
 
-start `mcp --http` apart from this shell and answer once it listens, with its login code
+start `mcp serve --http` apart from this shell and answer once it listens, with its login code
 
 **Changes something on this computer only.**
 
@@ -4199,7 +4212,7 @@ wa mcp server start [options]
 
 #### `wa mcp server stop`
 
-stop `mcp --http` — only one that `mcp server start` started
+stop `mcp serve --http` — only one that `mcp server start` started
 
 **Changes something on this computer only.**
 
@@ -4209,7 +4222,7 @@ wa mcp server stop
 
 #### `wa mcp server status`
 
-whether `mcp --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
+whether `mcp serve --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
 
 ```sh
 wa mcp server status
@@ -4925,7 +4938,17 @@ wa bot me
 
 ### `wa bot mcp`
 
-serve this bot to an agent over MCP, on stdin and stdout — `claude mcp add sales-bot -- wa sales bot mcp`
+serve this bot to an agent over MCP and set it up — `claude mcp add sales-bot -- wa sales bot mcp serve`
+
+#### `wa bot mcp serve`
+
+serve this bot to an agent over MCP, on stdin and stdout — `claude mcp add sales-bot -- wa sales bot mcp serve`
+
+**Changes something in WhatsApp.**
+
+```sh
+wa bot mcp serve
+```
 
 #### `wa bot mcp config`
 
@@ -5964,7 +5987,7 @@ the instructions an agent is given for this tool
 
 ### `wa skill show`
 
-print SKILL.md — `wa skill install` puts it where Claude Code, Codex and Gemini CLI look for it; --for prints the copy already there
+print SKILL.md — `wa skill install` puts it where Claude Code, Codex, Gemini CLI and OpenClaw look for it, and where Hermes does on request; --for prints the copy already there
 
 ```sh
 wa skill show [name] [options]

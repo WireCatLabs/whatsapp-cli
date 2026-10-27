@@ -15,7 +15,7 @@ A few terms the page uses:
   failure.
 - **Machine mode** is output as JSON for a program, instead of text for a person.
 - **One-shot command** does one thing and exits, for example `wa personal messages list`. A **persistent command**
-  keeps running until you stop it: `watch`, `serve` and `mcp`.
+  keeps running until you stop it: `watch`, `serve` and `mcp serve`.
 - **Write** is any command that changes something in WhatsApp: it sends, edits, deletes, reacts or marks read.
 
 ## What you can rely on

@@ -7,14 +7,14 @@ can connect the app to your account, choose what the agent may do, and use ready
 A few terms first:
 
 - **MCP** ([Model Context Protocol](https://modelcontextprotocol.io)) is a standard way for an AI app to use outside
-  tools. The app is the **MCP client**; `wa personal mcp` is the **MCP server**.
+  tools. The app is the **MCP client**; `wa personal mcp serve` is the **MCP server**.
 - A **tool** is one action the server offers the agent, such as "read" or "write".
 - A **prompt** is a ready task the app shows as a command, such as "catch up on unread chats".
 - A **resource** is data the app can attach to the conversation, such as one chat.
 - A **profile** is one set of settings and one linked device in `wa`; see [profiles](profiles.md).
 
 The server comes with `wa`; there is nothing else to install. By default it talks to the app over stdin and stdout.
-`wa personal mcp --http --public-url` serves it on a local port behind your HTTPS tunnel instead.
+`wa personal mcp serve --http --public-url` serves it on a local port behind your HTTPS tunnel instead.
 
 Denied permissions do not hide commands. Full listings and searches include each command's
 `availability`: blocked commands have `available: false`, a reason and the relevant permission key;
@@ -30,7 +30,7 @@ skill that `wa skill show` prints. MCP is for:
 - apps without a terminal, such as Claude Desktop or Cursor's chat;
 - anyone who wants the app to ask before each send.
 
-For ChatGPT or Claude **in the browser**, use `wa personal mcp --http` — see
+For ChatGPT or Claude **in the browser**, use `wa personal mcp serve --http` — see
 [ChatGPT, Codex or Claude in the browser](remote.md).
 
 ## What the server gives
@@ -78,13 +78,13 @@ that.
 **Claude Code, by hand:**
 
 ```sh
-claude mcp add wa -- wa personal mcp
+claude mcp add wa -- wa personal mcp serve
 ```
 
 With another profile — it goes first, as in any command:
 
 ```sh
-claude mcp add wa-work -- wa work mcp
+claude mcp add wa-work -- wa work mcp serve
 ```
 
 **Claude Desktop, Cursor and other apps:** `wa` prints the entry for their settings file:
@@ -100,7 +100,7 @@ wa work mcp config                  # another profile
     "wa-personal": {
       "type": "stdio",
       "command": "/usr/bin/node",
-      "args": ["/usr/lib/node_modules/@wirecat/whatsapp-cli/dist/bin/wa.js", "personal", "mcp"],
+      "args": ["/usr/lib/node_modules/@wirecat/whatsapp-cli/dist/bin/wa.js", "personal", "mcp", "serve"],
       "env": { "XDG_RUNTIME_DIR": "/run/user/1000" }
     }
   }
@@ -219,5 +219,5 @@ without a call, and in any case 5 minutes after it opened. The next call connect
 even when the app sends them together.
 
 Over stdin and stdout, the server exits as soon as the app closes stdin, and closes its connection to WhatsApp. Over
-HTTP it runs until Ctrl-C. `wa personal mcp --revoke` ends every login given to a browser app and keeps the linked
+HTTP it runs until Ctrl-C. `wa personal mcp revoke` ends every login given to a browser app and keeps the linked
 device. See [ChatGPT, Codex or Claude in the browser](remote.md).

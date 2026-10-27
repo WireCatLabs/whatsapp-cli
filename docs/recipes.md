@@ -10,7 +10,7 @@ Terms on this page:
 - **Agent** — an AI program that runs commands on your computer for you.
 - **Skill** — a file that tells the agent how to use `wa`. `wa skill install` puts it where the agent looks for it.
 - **MCP client** — an AI app without a terminal, such as Claude Desktop. It reaches `wa` through the MCP server
-  `wa personal mcp` instead of running commands.
+  `wa personal mcp serve` instead of running commands.
 - **Headless mode** — the agent takes one request, does it and exits, with no conversation. Claude Code calls it
   `-p` mode; Codex calls it `codex exec`.
 - **cron** — the scheduler built into Linux and macOS. It starts a command at set times.

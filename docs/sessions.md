@@ -109,11 +109,11 @@ this WhatsApp login is in use by serve (pid 4242)
 it runs inside `serve`, on `serve`'s connection. It reaches `serve` through a socket next to `serve`'s lock
 (`<state>/serve/<profile>.sock`, mode `0600`, so only your own user can open it). This covers sends, edits,
 deletions, reactions, marking read, downloads, group and people commands, `watch`, `doctor --online` and the MCP
-server `wa <profile> mcp`. The send guard and the profile's permissions still apply. A command run this way never
+server `wa <profile> mcp serve`. The send guard and the profile's permissions still apply. A command run this way never
 asks: a write at permission level `ask` needs `--yes` (`--allow-dangerous` for a deletion), or it is refused and
 says so.
 
-- **Not through `serve`:** linking and unlinking (`session start`, `session end`, `setup`) and `mcp --http`.
+- **Not through `serve`:** linking and unlinking (`session start`, `session end`, `setup`) and `mcp serve --http`.
   `chats list` and `chats show` read the local store, so they never connect. `--offline` and `--dry-run` runs do
   not connect at all.
 - **`serve` is starting or does not answer:** the command fails. It never opens a second connection.
@@ -123,7 +123,7 @@ says so.
 - **Windows:** commands do not go through `serve`. While `serve` runs, a command that connects is refused as above,
   with exit code 12.
 
-With no `serve` running, each command connects on its own. While one of them holds the device, or `wa personal mcp`,
+With no `serve` running, each command connects on its own. While one of them holds the device, or `wa personal mcp serve`,
 which keeps its connection for two minutes after a call, `serve` cannot start. Reads never connect, so they work
 beside any of them.
 
