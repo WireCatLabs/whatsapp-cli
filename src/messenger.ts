@@ -52,7 +52,8 @@ const holderOf = (command: Command): string => {
 /** The commands the adapter's messages send a person to, with this profile named first. */
 const wordsFor = (profile: string) => checkWords<Check>("wa", profile)
 
-const loginHint = (profile: string) => `\`wa ${asFirstWord(profile)}setup\``
+const loginHint = (profile: string) =>
+  `\`wa ${asFirstWord(profile)}setup\` in a terminal, or link from WireCat Desktop (Tools → WhatsApp → Manage)`
 
 /** A code to show while linking: the engine's, in the terms a command may see. */
 export interface LinkCode {

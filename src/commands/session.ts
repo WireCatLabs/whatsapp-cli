@@ -37,7 +37,8 @@ export const AGENTS_LINK_BY_QR =
   "shows nothing until it exits. Read its output and paste the QR text block into the chat as a code block,\n" +
   "exactly as printed. WhatsApp renews the code after 60 seconds, then about every 20: paste each new block\n" +
   'at once and say the old one expired. With --json each code is also a stderr line {"event":"qr","qr":{...}}.\n' +
-  "Linking is not offered over MCP; an agent with only MCP asks the person to run the command.\n"
+  "Linking is not offered over MCP; an agent with only MCP asks the person to run the command or to link from\n" +
+  "WireCat Desktop (Tools → WhatsApp → Manage).\n"
 
 const sessionCommandDefinition = (): Command => {
   // Linking waits for a person, and unlinking removes the owner's device: neither is an agent's call.
