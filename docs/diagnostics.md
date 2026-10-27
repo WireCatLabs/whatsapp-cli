@@ -20,9 +20,9 @@ A few words this page uses:
 |---|---|---|
 | See each operation as it happens | `wa --trace …` | no, prints to stderr only |
 | See the whole failure | `wa --debug …` | no, prints to stderr only |
-| Keep a record of one run | `wa --record …` | yes, a run record |
-| Find a failed run later | `wa personal runs list` | a failed run is kept by itself |
-| Keep a record of every run | `wa personal config set record true` | yes, every run |
+| Find a run later | `wa personal runs list` | every run is kept by itself |
+| Keep one run out | `wa personal --no-record …` | nothing |
+| Keep only failed runs | `wa personal config set record false` | failed runs |
 | Check the installation | `wa personal doctor`, `wa personal doctor --online` | no |
 | Make a problem report | `wa personal doctor reports create` | yes, one file you send |
 
@@ -64,26 +64,29 @@ When a command ends in an error, its run is kept even without `--record`. `run.j
 before any work, a refusal because another command holds the device. What the record keeps of the command line is
 under [What you typed](#what-you-typed); a run whose settings did not load hides every typed value that may be text.
 
-A run that worked leaves no record unless you ask for one, so a problem report always has a failure to attach.
-`--no-record`, or `"record": false` in the settings, turns this off too.
+Every run is recorded, the ones that worked too, so a problem report always has the run to attach.
+`--no-record` keeps nothing for one run; `"record": false` in the settings keeps failed runs only.
 
 Successful searches keep their own history, apart from run records: see
 [search](search.md).
 
-## When to record every run
+## When to keep only failed runs
 
 ```sh
-wa personal config set record true          # this profile
-wa personal --no-record chats list          # but not this one
+wa personal config set record false         # profile "personal": failed runs only
+wa personal --no-record chats list          # this run: nothing at all
 ```
 
-By default a run that worked is not written until you ask. A messenger tool that keeps a folder of whom you read and
-when would be a diary of your life that nobody asked for.
+A run that worked holds the ids of the chats you read and, with `record_input` on, what you typed (a message you
+sent, a chat named by its title). It is kept only on this computer, readable only by you, for 7 days. Set `record`
+to `false` if you would rather not keep it at all.
 
 ## How long it lives
 
-**30 days**, or `keep_runs_for_days` in the settings. Old runs are removed only when a new one is kept, a whole day at
-a time, by the folder's name, so nothing has to be opened to decide.
+A run that worked lives **7 days** (`keep_successful_runs_for_days`), a failed one **30 days** (`keep_runs_for_days`).
+The runs folder also stays under **200 MB** (`runs_size_limit_mb`): past it, the oldest runs that worked go first.
+Old runs are removed only when a new one is kept, a whole day at a time, by the folder's name, so nothing has to be
+opened to decide.
 
 ## What is never in a record
 
