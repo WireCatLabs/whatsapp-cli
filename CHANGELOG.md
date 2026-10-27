@@ -33,6 +33,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **`wa` starts in about half the time: the package runs from a bundle.** A command loaded about a thousand module
+  files before doing any work; it now loads a few dozen that hold the same code, built by cli-base's
+  `cli-dev bundle`. Warm `wa messages list --help` went from 416 to 200 ms, `wa --version` from 39 to 18 ms. Output is
+  unchanged; the WhatsApp engine is still found in its platform package. A running `wa serve` or `wa mcp serve` loads
+  all of its code soon after it starts, so upgrading `wa` in place does not break it. The package is larger: 2.7 MB
+  to download instead of 0.3 MB.
 - **`wa mcp serve` with no profile marks the profiles that are not signed in.** It listed every profile, so an app
   could pick one with no linked device and fail. Each profile is now labelled (`default — not signed in`) in the
   app's menu and in the description, and a call for one that is not signed in answers how to sign it in:
