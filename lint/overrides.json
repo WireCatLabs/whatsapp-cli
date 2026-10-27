@@ -5,26 +5,5 @@
     "reason": "cli-core's shared bot search filters by person with a flag; WC-CMD-12 wants it in the query (from:), a change cli-core makes for every CLI",
     "owner": "@leemour",
     "review_after": "2027-01-23"
-  },
-  {
-    "rule": "unknown-verb",
-    "target": "mcp serve",
-    "reason": "cli-core 0.463.0 names the MCP server `serve` and the login reset `revoke` (NEED-1871, NEED-1880); the verbs are in cli-base main (cli-base#384) but not in a release cli-core accepts yet. Drop on that bump",
-    "owner": "@leemour",
-    "review_after": "2027-01-27"
-  },
-  {
-    "rule": "unknown-verb",
-    "target": "bot mcp serve",
-    "reason": "cli-core 0.463.0 names the MCP server `serve` and the login reset `revoke` (NEED-1871, NEED-1880); the verbs are in cli-base main (cli-base#384) but not in a release cli-core accepts yet. Drop on that bump",
-    "owner": "@leemour",
-    "review_after": "2027-01-27"
-  },
-  {
-    "rule": "unknown-verb",
-    "target": "mcp revoke",
-    "reason": "cli-core 0.463.0 names the MCP server `serve` and the login reset `revoke` (NEED-1871, NEED-1880); the verbs are in cli-base main (cli-base#384) but not in a release cli-core accepts yet. Drop on that bump",
-    "owner": "@leemour",
-    "review_after": "2027-01-27"
   }
 ]
