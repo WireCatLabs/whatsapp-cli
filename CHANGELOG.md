@@ -9,6 +9,11 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 - **A shared contact card shows its name and phone**, online and from the store: in JSON the attachment has `contact`
   (`name`, `first_name`, `last_name`, `phone`). The vCard itself is still never printed. Needs cli-core 0.477.0.
+- **`reactions list <chat> <message>`** shows who reacted to a message, newest first, and takes `reaction:🔥` and
+  `--limit`/`--cursor`. WhatsApp has no request for it, so the list is what the local store received (the history push,
+  `serve` and `watch`), not a live answer: a reaction sent with `reactions add`, or one that arrived while nothing
+  listened, is missing. Each person is listed once, with their newest reaction; one taken back is left out. A channel
+  refuses it (`reactions.broadcast`). Needs the cli-core that adds `StoredMessages.reactors`.
 
 ### Changed — may break callers
 
@@ -16,8 +21,6 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   so a script that passes it fails as an unknown option; drop it. `--hide-phone` is the opt-in that leaves a number out
   (WhatsApp gives none for the account or a person, so it changes nothing here). The MCP tool `contacts info` is gone
   and a saved permission `contacts.info` is refused with the `config unset` that removes it; `contacts.show` covers it.
-- **`reactions list` is not offered.** The shared command needs each reactor of one message; WhatsApp sends them, but
-  cli-core's store gives the adapter no way to read them back per message.
 
 ## 0.16.0 — 29.10.2026
 

@@ -62,6 +62,7 @@ const lookups = (owner: string): StoredMessages => {
       )[0],
     wroteTo: async () => false,
     pollVotes: async () => [],
+    reactors: async () => [],
   }
 }
 const stored = lookups(account ?? "")

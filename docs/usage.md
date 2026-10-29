@@ -52,6 +52,7 @@ wa personal messages edit "Book club" 3EB0A1B2C3D4E5F6A7B8 "the new text"
 wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8                 # for you only
 wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8 --for-everyone
 wa personal reactions add "Book club" 3EB0A1B2C3D4E5F6A7B8 👍
+wa personal reactions list "Book club" 3EB0A1B2C3D4E5F6A7B8 reaction:🔥   # from the archive, not live
 wa personal messages pin "Book club" 3EB0A1B2C3D4E5F6A7B8 --expire-time 24h
 wa personal messages unpin "Book club" 3EB0A1B2C3D4E5F6A7B8
 wa personal chats mark-read "Book club"
