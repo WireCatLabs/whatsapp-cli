@@ -4165,7 +4165,7 @@ serve this profile to an agent over MCP and set it up — `claude mcp add wa -- 
 
 ### `wa mcp serve`
 
-serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa <profile> mcp serve`; with no profile, `wa mcp serve` serves every profile and each tool asks which
+serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add wa -- wa <profile> mcp serve`; `wa mcp serve --profiles a,b` or `--profiles all` serves those profiles from one server and each tool asks which
 
 **Changes something in WhatsApp.**
 
@@ -4176,19 +4176,24 @@ wa mcp serve [options]
 | Option | What it does |
 |---|---|
 | `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 | `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
 | `--port <port>` | the local port for --http (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
 
 ### `wa mcp revoke`
 
-forget every login `mcp serve --http` gave a browser app, of this profile or, with no profile, of the server of every profile; each app must log in again
+forget every login `mcp serve --http` gave a browser app, of this profile or of the server `--profiles` names; each app must log in again
 
 **Changes something on this computer only.**
 
 ```sh
-wa mcp revoke
+wa mcp revoke [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 
 ### `wa mcp server`
 
@@ -4209,6 +4214,7 @@ wa mcp server start [options]
 | `--port <port>` | the local port (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
 | `--permission <key=level>` | make a permission stricter for this server only; repeat for more keys. |
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
 #### `wa mcp server stop`
 
@@ -4217,16 +4223,24 @@ stop `mcp serve --http` — only one that `mcp server start` started
 **Changes something on this computer only.**
 
 ```sh
-wa mcp server stop
+wa mcp server stop [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
 #### `wa mcp server status`
 
 whether `mcp serve --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
 
 ```sh
-wa mcp server status
+wa mcp server status [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
 ### `wa mcp config`
 
@@ -4239,6 +4253,7 @@ wa mcp config [options]
 | Option | What it does |
 |---|---|
 | `--permission <key=level>` | make a permission stricter for this server only, like messages.send=deny; it never loosens the profile; repeat for more keys. |
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 
 ### `wa mcp add`
 

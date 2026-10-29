@@ -217,6 +217,24 @@ describe("wa messages send", () => {
     expect(sentBefore).toEqual([])
     expect(allowed.isError).toBe(false)
   })
+
+  it("serves MCP only for the profiles named: none is refused, --profiles all starts", async () => {
+    for (const profile of ["served-a", "served-b"])
+      expect((await wa([profile, "config", "set", "limit", "40"])).code).toBe(0)
+
+    const { WA_PROFILE: _, ...env } = process.env
+    const streams = captureStreams()
+    expect(await run(["mcp", "serve"], { streams, tty: false, env })).toBe(2)
+    expect(JSON.parse(streams.stderr.join("")).error).toMatchObject({
+      code: "validation_error",
+      details: { profiles: expect.arrayContaining(["served-a", "served-b"]) },
+    })
+
+    const mcp = await mcpOverStdio((stdio) =>
+      run(["mcp", "serve", "--profiles", "all"], { streams: captureStreams(), tty: false, env, ...stdio }),
+    )
+    expect(await mcp.close()).toBe(0)
+  })
 })
 
 describe("reads from the store", () => {

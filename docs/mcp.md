@@ -87,6 +87,15 @@ With another profile — it goes first, as in any command:
 claude mcp add wa-work -- wa work mcp serve
 ```
 
+One server for several profiles — each tool call then names its profile:
+
+```sh
+claude mcp add wa -- wa mcp serve --profiles work,personal
+claude mcp add wa -- wa mcp serve --profiles all   # every profile on this computer
+```
+
+`wa mcp serve` with no profile and no `--profiles` is refused and lists the profiles; `wa` never picks one for you.
+
 **Claude Desktop, Cursor and other apps:** `wa` prints the entry for their settings file:
 
 ```sh

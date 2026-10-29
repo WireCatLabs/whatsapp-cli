@@ -3,6 +3,20 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **`wa mcp serve` with no profile is refused; name what it serves.** Run `wa <profile> mcp serve` for one profile,
+  `wa mcp serve --profiles work,personal` for a list, or `wa mcp serve --profiles all` for every profile. With none it
+  exits `2` with `validation_error` and lists the profiles. The same holds for `--http`, `mcp revoke`,
+  `mcp server start|stop|status` and `mcp config`. An app entry that runs `wa mcp serve` with no profile stops
+  working: print it again with `wa mcp config --profiles all`, or `wa <profile> mcp config`. The MCP Registry entry
+  now runs `wa mcp serve --profiles all` (cli-core 0.470.0).
+- **cli-core 0.473.0.** Every message `wa` prints says whether you sent it (`sender_is_me`). A failed run's record
+  keeps the network's error code (`runs show`, `error.cause_code`). `--offline --transcribe` lists the voice messages
+  it could not transcribe under `missing`, with the command that does.
+
 ## 0.14.0 — 29.10.2026
 
 ### Changed — may break callers
