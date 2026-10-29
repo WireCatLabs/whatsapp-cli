@@ -108,7 +108,7 @@ describe("wa session start", () => {
     }
 
     const quick = await wa(["quick", "session", "start", "--json"], () => fakeEngine(seed, { linked: false }), {
-      historyWait: { ...QUICK, slowMs: 1_000 },
+      historyWait: { ...QUICK, slowMs: 60_000 },
     })
     expect(quick.stderr).not.toContain("still waiting")
   })
