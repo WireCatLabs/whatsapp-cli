@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**273 ✅ · 838 ⛔ · 0 ❌** — 364 commands, 747 options.
+**276 ✅ · 838 ⛔ · 0 ❌** — 365 commands, 749 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -227,6 +227,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages sync` | `--catch-up-time` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--background` | ✅ |  |
 | `messages sync` | `--dry-run` | ✅ |  |
+| `reactions list` |  | ✅ |  |
+| `reactions list` | `--limit` | ✅ |  |
+| `reactions list` | `--cursor` | ✅ |  |
 | `reactions add` |  | ✅ |  |
 | `reactions remove` |  | ✅ |  |
 | `polls show` |  | ✅ |  |

@@ -120,4 +120,22 @@ describe("reactions from WhatsApp", () => {
     await watching([history(reactionOf(other, "👍", "2026-09-01T09:07:00.000Z"))])
     expect(await reactionsOn()).toMatchObject({ counts: [{ reaction: "😂", count: 1 }], total: 1 })
   })
+  it("lists who reacted from the store, page by page, and narrows to one emoji", async () => {
+    await watching([live(seed.person, "👍", "2026-09-01T10:01:00.000Z"), live(other, "❤️", "2026-09-01T10:02:00.000Z")])
+    const list = async (...more: string[]) => {
+      const listed = await wa(["reacting", "reactions", "list", seed.busy, theirs.id, "--json", ...more], () =>
+        fakeEngine(seed),
+      )
+      expect(listed.code, listed.stderr).toBe(0)
+      return JSON.parse(listed.stdout)
+    }
+    const first = await list("--limit", "1")
+    expect(first).toMatchObject({ page: { has_more: true }, items: [{ reaction: "❤️", person: { id: other } }] })
+    const second = await list("--limit", "1", "--cursor", first.page.next_cursor)
+    expect(second).toMatchObject({
+      page: { has_more: false },
+      items: [{ reaction: "👍", person: { id: seed.person } }],
+    })
+    expect((await list("--limit", "5", "reaction:👍")).items).toHaveLength(1)
+  })
 })

@@ -25,7 +25,7 @@ export const reactionAdapter = ({
     const skip = cursor === undefined ? 0 : Number(cursor)
     if (!Number.isInteger(skip) || skip < 0)
       throw new CliError("validation_error", "that cursor is not one this list gave")
-    const all = (await stored.reactors(chatId, messageId)).filter(
+    const all = ((await stored.reactors?.(chatId, messageId)) ?? []).filter(
       (reactor) => emoji === undefined || reactor.reaction === emoji,
     )
     const items = all.slice(skip, skip + limit)
