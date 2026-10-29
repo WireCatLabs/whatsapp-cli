@@ -21,17 +21,17 @@
       "packageArguments": [
         {
           "type": "positional",
-          "valueHint": "profile",
-          "description": "The wa profile you signed in with",
-          "isRequired": true
-        },
-        {
-          "type": "positional",
           "value": "mcp"
         },
         {
           "type": "positional",
           "value": "serve"
+        },
+        {
+          "type": "named",
+          "name": "--profiles",
+          "value": "all",
+          "description": "Serve every wa profile on this computer; each tool call names its profile"
         }
       ]
     }
