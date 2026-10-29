@@ -1606,6 +1606,25 @@ wa messages sync [chat] [options]
 
 react to messages
 
+### `wa reactions list`
+
+who reacted to a message, newest first; refused where the chat hides the list
+
+```sh
+wa reactions list <chat> <message> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `message` | required | the message id. |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many to show. |
+| `--cursor <cursor>` | go on from where the last page stopped; page.next gives it. |
+
 ### `wa reactions add`
 
 put your reaction on a message; it replaces the one you had

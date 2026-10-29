@@ -35,6 +35,7 @@ import { toAccount, toChat, toMember, toMessage } from "./map.js"
 import { pinAdapter } from "./pins.js"
 import { type PollAdapter, pollAdapter } from "./polls.js"
 import { type PrivacyAdapter, privacyAdapter } from "./privacy.js"
+import { type ReactionAdapter, reactionAdapter } from "./reactions.js"
 import { onDisk, sendAdapter } from "./sends.js"
 import { AFTER_EVERY_MESSAGE, type SettingsAdapter, settingsAdapter, settingsWrite } from "./settings.js"
 
@@ -65,6 +66,7 @@ const NOTHING_STORED: StoredMessages = {
   anchor: async () => undefined,
   wroteTo: async () => false,
   pollVotes: async () => [],
+  reactors: async () => [],
 }
 
 // whatsmeow's EditWindow: WhatsApp clients ignore an edit that comes later.
@@ -114,7 +116,7 @@ export const whatsAppAdapter = (
 
   const core: Omit<
     WhatsAppAdapter,
-    keyof (GroupAdapter & PollAdapter & PrivacyAdapter & MessagePins & SettingsAdapter)
+    keyof (GroupAdapter & PollAdapter & PrivacyAdapter & MessagePins & SettingsAdapter & ReactionAdapter)
   > = {
     ...discoveryAdapter(engine, translated),
     ...commentAdapter(engine, stored, translated),
@@ -271,6 +273,7 @@ export const whatsAppAdapter = (
     ...channelWrites({ ...core, ...polls }),
     ...privacyAdapter({ engine, translated }),
     ...pinAdapter({ engine, held, keyOf, translated }),
+    ...reactionAdapter({ stored, held }),
     ...settingsAdapter({ engine, translated, words, stored, keyOf, onDisk }),
   }
 }

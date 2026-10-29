@@ -64,7 +64,8 @@ walk.
 - **The history push**, and what `serve` and `watch` hear: messages, edits, deletions and reactions. Each person's
   newest reaction is kept, so a message shows how many people reacted with each emoji and which one is yours. A
   reaction taken back is dropped, and an older push never brings back a reaction changed since. Your reactions from
-  the phone are stored; one you send with `reactions add` goes to WhatsApp but is not stored.
+  the phone are stored; one you send with `reactions add` goes to WhatsApp but is not stored. `reactions list` reads
+  these, so it lists the reactions the archive received, not a live answer from WhatsApp.
 - **The messages you send** with `wa`.
 - **Whether the other person got and read your message**, in a one-to-one chat: `delivery` is `delivered` once it
   reached their phone, and `read` once they opened it (a played voice note counts). It only moves forward. It comes

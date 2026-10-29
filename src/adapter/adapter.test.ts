@@ -65,6 +65,7 @@ describe("whatsAppAdapter", () => {
       anchor: async () => undefined,
       wroteTo: async () => false,
       pollVotes: async () => [],
+      reactors: async () => [],
     }
     const engine = fakeEngine(seed)
     const end = Date.parse(original.timestamp) + 20 * 60_000

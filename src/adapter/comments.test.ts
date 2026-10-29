@@ -11,6 +11,7 @@ const stored = {
   anchor: async () => undefined,
   wroteTo: async () => false,
   pollVotes: async () => [],
+  reactors: async () => [],
 }
 const translated = <T>(work: Promise<T>): Promise<T> => work
 
