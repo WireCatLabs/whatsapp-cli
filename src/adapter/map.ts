@@ -8,6 +8,7 @@ import type {
   Member,
   Message,
   PersonReaction,
+  SharedContact,
 } from "@wirecat/cli-core"
 import * as v from "valibot"
 import {
@@ -85,6 +86,40 @@ export const toChatEvent = ({ id, timestamp, event, by, byName, people, title }:
   ...(title === undefined ? {} : { title }),
 })
 
+// A vCard line is `NAME;PARAM=x:value`; a card holds one `N` and `FN`, and one `TEL` per number.
+const vcardLines = (vcard: string, property: string): string[] =>
+  vcard
+    .split(/\r?\n/)
+    .flatMap((line) => {
+      const colon = line.indexOf(":")
+      if (colon < 0) return []
+      const [name = ""] = line.slice(0, colon).split(";")
+      const group = name.split(".").pop() ?? ""
+      return group.toUpperCase() === property ? [line.slice(colon + 1).trim()] : []
+    })
+    .filter(Boolean)
+
+// The number is the first `TEL`, as the sender typed it; a card with none has a name alone.
+export const toSharedContact = (card: { name: string; vcard: string }): SharedContact => {
+  const [family = "", given = ""] = (vcardLines(card.vcard, "N")[0] ?? "").split(";").map((part) => part.trim())
+  const phone = vcardLines(card.vcard, "TEL")[0]
+  const name = vcardLines(card.vcard, "FN")[0] ?? card.name
+  return {
+    name,
+    ...(given ? { firstName: given } : {}),
+    ...(family ? { lastName: family } : {}),
+    ...(phone ? { phone } : {}),
+  }
+}
+
+const cardOf = (ref: WaAttachment["ref"]): { name: string; vcard: string } | undefined =>
+  ref !== undefined && "card" in ref ? ref.card : undefined
+
+const contactOf = (kind: WaAttachment["kind"], ref: WaAttachment["ref"]): { contact?: SharedContact } => {
+  const card = kind === "contact" ? cardOf(ref) : undefined
+  return card ? { contact: toSharedContact(card) } : {}
+}
+
 // In the domain type's order, so an answer from the store prints byte for byte the same.
 export const toAttachment = ({
   kind,
@@ -108,6 +143,7 @@ export const toAttachment = ({
   ...(mime === undefined ? {} : { mime }),
   ...(duration === undefined ? {} : { duration }),
   ...(ref === undefined ? {} : { providerRef: ref }),
+  ...contactOf(kind, ref),
 })
 
 export const toMessage = (message: WaMessage): Message => ({

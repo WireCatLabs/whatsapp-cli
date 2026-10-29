@@ -124,6 +124,7 @@ export const UNTESTED: Untested[] = [
     ["account update", "--last-name"],
     ["account update", "--description"],
     ["account update", "--photo"],
+    ["account update", "--hide-phone"],
     ["chats folders create", "--chat"],
     ["chats folders update", "--add"],
     ["chats folders update", "--remove"],

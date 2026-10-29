@@ -227,7 +227,8 @@ has no sticker sets to pick one from by id, so there is no `--sticker`. Photos, 
 can be saved and forwarded later, since the store keeps what WhatsApp needs to fetch them again; WhatsApp keeps a file
 for a limited time, and a download of one it no longer keeps asks your phone to upload it again, which does not
 work yet ([not in wa yet](#not-in-wa-yet)). A place or a
-contact card is kept too, so it can be forwarded; neither is a file to save. WhatsApp has no speech
+contact card is kept too, so it can be forwarded; neither is a file to save. A contact card shows its name and
+phone, and in JSON the attachment has a `contact` field; the vCard itself is never printed. WhatsApp has no speech
 recognition of its own, so `transcribe` uses a model on this machine (`wa models list kind:audio`). What is kept, what
 can be fetched again and how to search the text inside files: [file attachments](attachments.md).
 

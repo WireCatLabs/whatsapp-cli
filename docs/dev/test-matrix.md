@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**273 ✅ · 838 ⛔ · 0 ❌** — 365 commands, 746 options.
+**273 ✅ · 838 ⛔ · 0 ❌** — 364 commands, 747 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -18,12 +18,13 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `setup` | `--method` | ✅ |  |
 | `account list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/account-list.test.ts |
 | `account show` |  | ✅ |  |
-| `account show` | `--show-phone` | ✅ |  |
+| `account show` | `--hide-phone` | ✅ |  |
 | `account update` |  | ✅ |  |
 | `account update` | `--first-name` | ✅ |  |
 | `account update` | `--last-name` | ✅ |  |
 | `account update` | `--description` | ✅ |  |
 | `account update` | `--photo` | ✅ |  |
+| `account update` | `--hide-phone` | ⛔ | WhatsApp has no counterpart, so the adapter leaves it out and the command is refused whatever the option; src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core src/cli/messenger/command-capabilities.test.ts the rule |
 | `account sessions list` |  | ✅ |  |
 | `account sessions end` |  | ✅ |  |
 | `account sessions end` | `--others` | ✅ |  |
@@ -122,10 +123,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `contacts list` | `--page` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts list` | `--all` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
 | `contacts list` | `--order` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
-| `contacts show` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
+| `contacts show` |  | ✅ |  |
 | `contacts show` | `--with-notes` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/people-answers.test.ts |
-| `contacts info` |  | ✅ |  |
-| `contacts info` | `--show-phone` | ✅ |  |
+| `contacts show` | `--hide-phone` | ✅ |  |
 | `contacts context` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts context` | `--limit` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts context` | `--since-time` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |

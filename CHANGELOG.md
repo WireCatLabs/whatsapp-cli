@@ -3,6 +3,22 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **A shared contact card shows its name and phone**, online and from the store: in JSON the attachment has `contact`
+  (`name`, `first_name`, `last_name`, `phone`). The vCard itself is still never printed. Needs cli-core 0.477.0.
+
+### Changed — may break callers
+
+- **`contacts info` is `contacts show`**, which takes `--offline` to answer from the store alone. `--show-phone` is gone,
+  so a script that passes it fails as an unknown option; drop it. `--hide-phone` is the opt-in that leaves a number out
+  (WhatsApp gives none for the account or a person, so it changes nothing here). The MCP tool `contacts info` is gone
+  and a saved permission `contacts.info` is refused with the `config unset` that removes it; `contacts.show` covers it.
+- **`reactions list` is not offered.** The shared command needs each reactor of one message; WhatsApp sends them, but
+  cli-core's store gives the adapter no way to read them back per message.
+
 ## 0.16.0 — 29.10.2026
 
 ### Changed — may break callers

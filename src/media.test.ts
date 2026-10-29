@@ -389,10 +389,12 @@ describe("wa messages forward", () => {
     expect(result.stdout + result.stderr).not.toContain("VCARD")
   })
 
-  it("never prints a contact card's vCard or a file's keys, even in the most detailed text view", async () => {
+  it("shows a contact card's name and phone, never its vCard or a file's keys, even in the most detailed text view", async () => {
     const result = await wa(["media", "messages", "list", base.busy, "-vv", "--offline"])
     expect(result.code, result.stderr).toBe(0)
-    expect(result.stdout).toContain('{"kind":"contact","name":"Ann Lee"}')
+    expect(result.stdout).toContain(
+      '{"kind":"contact","name":"Ann Lee","contact":{"name":"Ann Lee","phone":"+00 000 000 0001"}}',
+    )
     expect(result.stdout).not.toContain("VCARD")
     expect(result.stdout).not.toContain("directPath")
   })

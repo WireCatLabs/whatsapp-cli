@@ -104,7 +104,7 @@ wa account list [query]
 
 ### `wa account show`
 
-who this profile is logged in as; the phone number shows its last four digits
+who this profile is logged in as, with the phone number
 
 ```sh
 wa account show [options]
@@ -112,7 +112,7 @@ wa account show [options]
 
 | Option | What it does |
 |---|---|
-| `--show-phone` | print the whole phone number. |
+| `--hide-phone` | leave the phone number out. |
 
 ### `wa account update`
 
@@ -130,6 +130,7 @@ wa account update [options]
 | `--last-name <name>` | your last name. |
 | `--description <text>` | about you. |
 | `--photo <file>` | a new profile photo — a .jpg or .jpeg file. |
+| `--hide-phone` | leave the phone number out of the answer. |
 
 ### `wa account sessions`
 
@@ -937,7 +938,7 @@ wa contacts list [query] [options]
 
 ### `wa contacts show`
 
-one person and the chats you share with them
+one person: what the messenger says about them — handles, flags, last seen, phone, when they registered — your alias, the chats you share, how many of their messages the store holds in each, and the earlier names and usernames the store saw them with; --offline answers from the store alone
 
 ```sh
 wa contacts show <person> [options]
@@ -950,22 +951,7 @@ wa contacts show <person> [options]
 | Option | What it does |
 |---|---|
 | `--with-notes` | include your private notes, subject to contacts.notes.list permission. |
-
-### `wa contacts info`
-
-everything the messenger says about one person — handles, flags, last seen, when they registered — and how many of their messages the store holds in each chat you share, the first and the last, and the earlier names and usernames the store saw them with
-
-```sh
-wa contacts info <person> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `person` | required | their id, @username, or part of their name. |
-
-| Option | What it does |
-|---|---|
-| `--show-phone` | print the whole phone number. |
+| `--hide-phone` | leave the phone number out. |
 
 ### `wa contacts context`
 
