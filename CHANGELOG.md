@@ -3,6 +3,14 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **The agent skill is listed on ClawHub as `wirecat-whatsapp`.** Install it with
+  `openclaw skills install @wirecat/wirecat-whatsapp`. The `whatsapp-cli` listing is no longer updated.
+  `wa skill install` still writes `skills/whatsapp-cli/`.
+
 ## 0.15.0 — 29.10.2026
 
 ### Changed — may break callers
