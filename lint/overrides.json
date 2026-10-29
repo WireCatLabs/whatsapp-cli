@@ -5,5 +5,26 @@
     "reason": "cli-core's shared bot search filters by person with a flag; WC-CMD-12 wants it in the query (from:), a change cli-core makes for every CLI",
     "owner": "@leemour",
     "review_after": "2027-01-23"
+  },
+  {
+    "rule": "option-role",
+    "target": "account show --hide-phone",
+    "reason": "cli-core 0.477.0 opt-in that leaves the phone out; the vocabulary has no role for it yet (tg-cli baselines it the same way)",
+    "owner": "@leemour",
+    "review_after": "2027-01-29"
+  },
+  {
+    "rule": "option-role",
+    "target": "account update --hide-phone",
+    "reason": "cli-core 0.477.0 opt-in that leaves the phone out; the vocabulary has no role for it yet (tg-cli baselines it the same way)",
+    "owner": "@leemour",
+    "review_after": "2027-01-29"
+  },
+  {
+    "rule": "option-role",
+    "target": "contacts show --hide-phone",
+    "reason": "cli-core 0.477.0 opt-in that leaves the phone out; the vocabulary has no role for it yet (tg-cli baselines it the same way)",
+    "owner": "@leemour",
+    "review_after": "2027-01-29"
   }
 ]

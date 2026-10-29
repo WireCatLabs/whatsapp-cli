@@ -44,7 +44,7 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `tags rebuild`), group admin
 (`chats create|join|leave|update`, a group photo by `chats update --photo` (a square JPEG of 190 to 720 pixels a
 side) or `--remove-photo`, `chats links show|reset`, `chats members list|fetch|add|remove`,
-`chats admins add|remove`, `chats requests list|confirm|reject`), `contacts info|block|unblock|lookup|sync`, `account privacy show|set`,
+`chats admins add|remove`, `chats requests list|confirm|reject`), `contacts show|block|unblock|lookup|sync`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
 `account privacy set` has WhatsApp's settings only (last seen, online, photo, about, read receipts, groups, calls);
 `--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.

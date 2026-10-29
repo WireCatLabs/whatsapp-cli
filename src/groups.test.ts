@@ -610,8 +610,8 @@ describe("wa chats requests", () => {
 })
 
 describe("wa account show", () => {
-  it("names the linked account, and has no phone number to show even with --show-phone", async () => {
-    for (const flags of [[], ["--show-phone"]]) {
+  it("names the linked account, and has no phone number to show, with or without --hide-phone", async () => {
+    for (const flags of [[], ["--hide-phone"]]) {
       const result = await acting("account", "show", ...flags)
       expect(result.code).toBe(0)
       expect(result.body).toMatchObject({ id: seed.account?.id, name: seed.account?.name })
@@ -622,13 +622,13 @@ describe("wa account show", () => {
 
 describe("wa contacts", () => {
   it("reads a person's profile from WhatsApp", async () => {
-    const result = await acting("contacts", "info", seed.person)
+    const result = await acting("contacts", "show", seed.person)
     expect(result.code).toBe(0)
     expect(result.body).toMatchObject({ id: seed.person, has_photo: true })
   })
 
-  it("has no phone number in a profile, even with --show-phone", async () => {
-    const result = await acting("contacts", "info", seed.person, "--show-phone")
+  it("has no phone number in a profile, with or without --hide-phone", async () => {
+    const result = await acting("contacts", "show", seed.person, "--hide-phone")
     expect(result.code).toBe(0)
     expect(result.body).toMatchObject({ id: seed.person })
     expect(result.body.phone ?? null).toBeNull()

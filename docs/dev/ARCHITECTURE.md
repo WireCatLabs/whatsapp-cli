@@ -413,7 +413,7 @@ message, a history push, a send's result or the chat directory: the engine takes
 whatsmeow's store does not answer, and keeps the row after the 30 days of repeats. A re-keyed chat named in phone
 form again is not put back on the lookups' list.
 
-For a chat still in phone form the engine asks WhatsApp itself, with the request `contacts info` makes
+For a chat still in phone form the engine asks WhatsApp itself, with the request `contacts show` makes
 (`GetUserInfo`), whose answer whatsmeow stores with the LID. Many such requests in a row are what a scraper sends,
 so they are bounded: only for chats already in the account (the table above), five people per request, one request
 per 10 seconds (the number lookup's gap, with a pace of their own so the owner's `lookup` is never refused for

@@ -209,6 +209,8 @@ export const WHATSAPP: Messenger = {
   adminRights: ADMIN_RIGHTS,
   pickAdminRights: false,
   // A WhatsApp poll stays open, and any vote in it can be changed; everyone sees who voted for what.
+  // The store saves each person's reaction but cli-core gives the adapter no way to read them back per message.
+  reactionsList: false,
   pollClose: false,
   pollRevote: false,
   pollVoters: true,
