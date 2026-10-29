@@ -3,7 +3,7 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.17.0 — 29.10.2026
 
 ### Added
 
@@ -13,7 +13,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `--limit`/`--cursor`. WhatsApp has no request for it, so the list is what the local store received (the history push,
   `serve` and `watch`), not a live answer: a reaction sent with `reactions add`, or one that arrived while nothing
   listened, is missing. Each person is listed once, with their newest reaction; one taken back is left out. A channel
-  refuses it (`reactions.broadcast`). Needs the cli-core that adds `StoredMessages.reactors`.
+  refuses it (`reactions.broadcast`). Needs cli-core 0.480.0.
 
 ### Changed — may break callers
 
