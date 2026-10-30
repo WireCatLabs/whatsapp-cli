@@ -3,13 +3,14 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.18.0 — 30.10.2026
 
 ### Added
 
 - **`messages transcribe` hears an audio file someone sent, not only a voice note.** An iPhone recording reaches
   WhatsApp as an `audio/mp4` file; it is now transcribed by the local model. MP3, FLAC and Ogg Vorbis need nothing
-  extra; AAC/M4A needs `ffmpeg` on the machine. cli-core 0.481.0.
+  extra; AAC/M4A needs `ffmpeg` on the machine, and without it the command says so. Audio longer than an hour is
+  refused. cli-core 0.481.0.
 
 ## 0.17.0 — 29.10.2026
 
