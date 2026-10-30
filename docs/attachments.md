@@ -21,7 +21,7 @@ Some words on this page:
 | Send a file, a photo, a video or a voice note | `wa personal messages send --file`, `--photo`, `--voice` |
 | Save the files of a message, or of a whole chat | `wa personal messages download` |
 | Send a stored message again, file included | `wa personal messages forward` |
-| Hear a voice note as text | `wa personal messages transcribe` |
+| Hear a voice note or an audio file as text | `wa personal messages transcribe` |
 | See the files the store knows, and which still need text | `wa personal attachments list` |
 | Read text from saved files into the search index | `wa personal attachments extract` |
 | Keep text that your agent read from a scan or a photo | `wa personal attachments update` |
@@ -109,7 +109,7 @@ A forward reuses the file's keys and does not check that WhatsApp still keeps th
 downloading it first. An old file may reach the recipient as one that will not open. To be sure, download it and send
 it as a new file.
 
-## Voice notes as text
+## Voice notes and audio files as text
 
 ```sh
 wa personal models list kind:audio                    # the speech models, and which are downloaded
@@ -118,8 +118,12 @@ wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local
 ```
 
 WhatsApp has no speech recognition of its own, so `transcribe` always uses a model on this machine; `--local` says
-so explicitly, and `--model` picks one. The voice note does not leave your computer. Without a downloaded model the
+so explicitly, and `--model` picks one. The recording does not leave your computer. Without a downloaded model the
 command stops with exit `6` and names the model to download.
+
+An audio file someone sent is heard the same way: a recording made in another app, such as an iPhone's Voice Memos,
+arrives as a file, not a voice note. MP3, FLAC and Ogg files need nothing more. AAC and M4A, the iPhone's format, need
+`ffmpeg` installed on this machine; without it the command says so. Audio longer than an hour is refused.
 
 ## Read the text of files
 
