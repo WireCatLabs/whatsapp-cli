@@ -2,7 +2,7 @@ import { cpSync, mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { Readable } from "node:stream"
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import { openStore } from "@wirecat/cli-core/store"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
@@ -24,6 +24,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
   const code = await run(argv, {
     streams,
     tty: false,
+    keyring: memoryKeyring(),
     env: { ...process.env, MESSAGING_STORE: store },
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
