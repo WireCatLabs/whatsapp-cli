@@ -3,6 +3,19 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Fixed
+
+- **`tags list name:` ignores case in any alphabet, not only Latin.** `tags list 'name:*ТАРТ*'` now finds a chat or
+  contact called «Тартус»; before, only A–Z folded, so a Cyrillic, Greek or accented name missed unless the case
+  matched. The first run after the upgrade moves your local store to a new format (version 38) and fills the folded
+  copies of chat titles and contact names; nothing is fetched from WhatsApp. cli-core 0.484.0.
+
+### Changed — may break callers
+
+- **The first screen (`--help`) lists `gcal` under "Works with"**, beside `drive`. cli-core 0.482.0.
+
 ## 0.18.0 — 30.10.2026
 
 ### Added
