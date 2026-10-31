@@ -73,6 +73,9 @@ wa personal search notes 'budget source:internal'  # only notes written in memo
 and explains why. Mail and notes reach the store through memo: `memo sync --mail` and `memo import`. Without them,
 `search all` searches messages only.
 
+Notes match any part of a word, in any letter case, and their titles are searched too. A search of one or two
+characters is refused with "search needs at least three characters".
+
 The rest of this page is about searching messages, `wa personal search messages`.
 
 ## Try a focused search
