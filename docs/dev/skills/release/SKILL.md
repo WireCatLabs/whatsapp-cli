@@ -1,20 +1,20 @@
 ---
 name: release
-description: Prepare and check a whatsapp-cli release for the owner to publish — run release:check, draft the changelog in the handbook's headings, audit the docs against what changed, review the change against the handbook and CLAUDE.md, run the live scenarios with the owner's yes, raise the version in a pull request, write the release report for that tree; the owner merges it, signs with bin/sign-release and publishes with bin/release, never an agent. Use when asked to release, prepare a release, cut a version, «выпуск», «выпустить версию».
+description: Prepare and check a whatsapp-cli release for the owner to publish — run release:check, draft the changelog in the handbook's headings, audit the docs against what changed, review the change against the handbook and CLAUDE.md, run the live scenarios with the owner's yes, raise the version in a pull request, write the release report, then ask the owner; bin/release runs only after the owner's yes for that version. Use when asked to release, prepare a release, cut a version, «выпуск», «выпустить версию».
 ---
 
 # Release whatsapp-cli
 
-**An agent never releases `wa`.** It runs on the owner's real WhatsApp account, and a release carries the owner's
-signed report (`WC-REL-10`). An agent does steps 0 to 6: it opens the `chore(release)` pull request and writes the
-report. It never merges that pull request, signs the report, runs `bin/sign-release` or `bin/release`, or starts
-`release.yml`. The owner does those, in step 7.
+**`wa` is released only after the owner says yes in the conversation** (`WC-REL-10`). It runs on the owner's real
+WhatsApp account. An agent does steps 0 to 6: it opens the `chore(release)` pull request, writes the report and asks
+the owner whether to release that version. Without that yes it never merges that pull request, runs `bin/release` or
+starts `release.yml`. One yes covers one version.
 
 The rules are the handbook's
 [Releases page](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/releases.md) (`WC-REL-<n>`), which
 wins over this skill. The steps tg, max and wa share are in cli-core's
 [RELEASING.md](https://github.com/WireCatLabs/cli-core/blob/main/docs/dev/RELEASING.md). Read both first. This skill
-orders them for `wa` and adds what is `wa`'s: the six engine packages, the signed report and the owner's real
+orders them for `wa` and adds what is `wa`'s: the six engine packages, the report and the owner's real
 WhatsApp account.
 
 ## 0. What changed
@@ -81,33 +81,22 @@ Commit `chore(release): <version>`, rebase onto `origin/main`, push and open the
 
 Then write the report: `docs_ai/releases/whatsapp-cli/<version>.md` in the main checkout's `docs_ai/` (cli-private),
 in the shape of the template in `docs_ai/releases/README.md`. It is headed `# <version>` and holds what changed for a
-user and the results of steps 1 to 5. The report is written after the version is raised: `bin/sign-release` compares
-the tree of the merged `main` with the tree the report names, and that tree must already hold the new version. An
-agent never merges, so the commit line is always
+user and the results of steps 1 to 5. Commit and push `docs_ai/`, then ask the owner whether to release this version,
+with the pull request and the report's path. Anything merged into `main` before the release: rebase, run
+`pnpm release:check` again and update the report.
 
-```text
-Commit: TO-FILL (tree must be <tree sha>)
-```
+## 7. Publish, after the owner's yes
 
-with `git rev-parse HEAD^{tree}` of the pushed, up-to-date release branch; a squash merge of it keeps that tree.
-Leave out the `Signed off:` line. **Never write it yourself.** Commit and push `docs_ai/`, then tell the owner the
-pull request and the report's path. Anything merged into `main` before the owner signs changes the tree: rebase,
-run `pnpm release:check` again and rewrite the report.
-
-## 7. The owner publishes
-
-The owner merges the pull request once CI is green, then, in the main checkout on a clean `main`:
+Once the owner says yes for this version, merge the pull request once CI is green, then, in the main checkout on a
+clean `main`:
 
 ```sh
-bin/sign-release      # pulls main, checks its tree against the report, writes the commit and the dated sign-off
 bin/release           # starts release.yml, which publishes from GitHub Actions
 ```
 
-`bin/release` refuses unless the report has `Commit: <HEAD>` and a dated `Signed off:` line (`WC-REL-10`). It takes
-the release lock (`WC-REL-3`), folds a late
-`## Unreleased` into the dated version (`WC-REL-15`), takes the next free version if another session published first
-(`WC-REL-5`) and runs `release:check` again. When it only folds the changelog or renumbers, it carries the report to
-the new commit itself.
+`bin/release` takes the release lock (`WC-REL-3`), folds a late `## Unreleased` into the dated version
+(`WC-REL-15`), takes the next free version if another session published first (`WC-REL-5`) and runs
+`release:check` again.
 
 npm's trusted publishing is set on all seven packages (the owner, 2026-10-20), so plain `bin/release` publishes: it
 starts `release.yml`, which publishes the validated packages with provenance (`WC-REL-11`, `WC-REL-12`), engines
