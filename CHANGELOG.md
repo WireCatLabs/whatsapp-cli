@@ -3,6 +3,23 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **Notes, documents and contact notes are found by any part of a word, in any letter case.** `search notes 'bud'`
+  finds «Budget», and a Cyrillic word matches whatever its case; the title is searched too, not only the text, and
+  results come back in milliseconds. A search of one or two characters is refused with "search needs at least three
+  characters", as message search already does; an empty one still filters nothing. The first run after the upgrade
+  moves your local store to a new format (version 40); notes stored before it are indexed in batches by
+  `search notes` or `store migrate`, and until then they are matched as before. Nothing is fetched from WhatsApp. Run
+  every WireCat command line tool on this version the same day: an older one does not index new notes in a store
+  already at version 40. cli-core 0.490.0.
+
+### Fixed
+
+- **A budgeted mail sync finishes locating a large folder** in the shared store (`memo`, `mail`). cli-core 0.491.0.
+
 ## 0.19.0 — 30.10.2026
 
 ### Fixed
