@@ -51,7 +51,7 @@
       "stream": "stdout",
       "kind": "json",
       "contains": "\"value\":7",
-      "diagnostic": "WA_CONFIG_DIR, WA_STATE_DIR or WA_CACHE_DIR is set \u2014 a profile's keyring entry is not the usual one, so a session made without them reads as none\n"
+      "diagnostic": "WA_CONFIG_DIR, WA_STATE_DIR or WA_CACHE_DIR is set — a session is still read from the usual keyring entry, but a sign-in made with them is kept apart, in a temporary entry that session end removes\n"
     },
     {
       "id": "candidate-store-migrate",
@@ -112,7 +112,7 @@
       "stream": "stdout",
       "kind": "json",
       "contains": "\"value\":7",
-      "diagnostic": "WA_CONFIG_DIR, WA_STATE_DIR or WA_CACHE_DIR is set \u2014 a profile's keyring entry is not the usual one, so a session made without them reads as none\n"
+      "diagnostic": "WA_CONFIG_DIR, WA_STATE_DIR or WA_CACHE_DIR is set — a session is still read from the usual keyring entry, but a sign-in made with them is kept apart, in a temporary entry that session end removes\n"
     },
     {
       "id": "device-layout-preserved",
