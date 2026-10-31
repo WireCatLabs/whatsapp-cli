@@ -3,6 +3,32 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`search messages` says how many messages match in all: `page.total`** (cli-core 0.501.0). `--json` adds
+  `page.total: { value, relation }`, shaped as Elasticsearch's `hits.total`: `eq` is the exact count, `gte` a lower
+  bound (counting stops at 10,000). The terminal adds `showing 1–20 of 144` under the hits.
+- **`search messages --discover` shows follow-ups**, later messages that may cancel or change a hit, and no longer
+  fails on a question with a time or a ratio ("until 22:00?") (cli-core 0.492.0, 0.496.0).
+- **`messages list --offline`, `search messages` and `search all` say when the store holds a chat only in part**,
+  with the `messages sync` step that would fill it (cli-core 0.493.0).
+
+### Changed — may break callers
+
+- **whatsapp-cli requires cli-base 0.67.0** (cli-core 0.501.0).
+- **`search messages`, `search all` and `messages list --offline` answer `meta.complete: false`** when a chat they
+  read is held only in part, with `missing` and `next` naming it (cli-core 0.493.0). A script that read
+  `meta.complete` as "every source answered" now also sees the archive's gaps.
+- **An unknown `transcribeWith` in a profile refuses to transcribe** with `validation_error`, naming the four values;
+  any value other than `local` used to mean asking the messenger first (cli-core 0.499.0).
+
+### Security
+
+- **A run with moved folders no longer copies the owner's sign-in into the keyring when it refreshes a token**
+  (cli-core 0.494.0).
+
 ## 0.20.0 — 31.10.2026
 
 ### Changed — may break callers
