@@ -21,12 +21,26 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Changed — may break callers
 
+- **`search messages --discover` searches by meaning when the query uses `-`, `NOT`, `OR`, groups, phrases or
+  `exact:`** (cli-core 0.506.0). Such a query ran strict search alone. Now its words still match the whole query
+  (`discovery.method: "lexical-strict"`), and messages near in meaning to its wanted words join them. Every hit found
+  by meaning, and every reply and follow-up added, matches every field of the query and every excluded word.
+
 - **whatsapp-cli requires cli-base 0.67.0** (cli-core 0.501.0).
 - **`search messages`, `search all` and `messages list --offline` answer `meta.complete: false`** when a chat they
   read is held only in part, with `missing` and `next` naming it (cli-core 0.493.0). A script that read
   `meta.complete` as "every source answered" now also sees the archive's gaps.
 - **An unknown `transcribeWith` in a profile refuses to transcribe** with `validation_error`, naming the four values;
   any value other than `local` used to mean asking the messenger first (cli-core 0.499.0).
+
+### Fixed
+
+- **`search messages --discover` with a narrow filter (`chat:`, `date:`) ranks that filter's own messages by
+  meaning** when it holds at most 100,000 messages, instead of the 100 nearest overall, so it fills its page
+  (cli-core 0.506.0).
+- **`search messages --discover` works on a read-only store** (cli-core 0.506.0).
+- **A long rebuild in one process no longer makes another process's write fail with "database is locked"**
+  (cli-core 0.506.0).
 
 ### Security
 
