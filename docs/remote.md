@@ -251,6 +251,5 @@ Those apps must log in again with a new code. This does not unlink the device fr
   runs; the error names it. Otherwise
   check the profile's permissions and any `--permission` overrides: `deny` and `readonly` block writes whatever the
   app approves.
-- **You need a record of the calls:** `wa personal runs list` shows them. Successful calls appear only when recording
-  is on; failed calls are kept by default, unless recording was turned off with `"record": false` or `--no-record`
-  ([diagnostics](diagnostics.md)).
+- **You need a record of the calls:** `wa personal runs list` shows them. Every call is kept by default;
+  `"record": false` keeps failed calls only, `--no-record` nothing ([diagnostics](diagnostics.md)).

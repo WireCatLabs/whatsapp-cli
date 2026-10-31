@@ -3,7 +3,15 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
-import { COMMAND_NEEDS, listRuns, repliesPathFor, runsDirFor, type ServerSystem } from "@wirecat/cli-core/cli"
+import {
+  COMMAND_NEEDS,
+  findRun,
+  listRuns,
+  readEvents,
+  repliesPathFor,
+  runsDirFor,
+  type ServerSystem,
+} from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "./adapter/adapter.js"
@@ -182,6 +190,31 @@ describe("wa doctor reports show", () => {
       lock: { holder: null, running: false },
     })
     expect(JSON.stringify(report)).not.toContain("synthetic device key marker")
+  })
+})
+
+describe("a recorded run's engine requests", () => {
+  it("writes each engine request as a wire line, with no chat id, number or text", async () => {
+    linked("gowire")
+    const sent = await wa(
+      ["gowire", "messages", "send", "100000000000002@lid", "words never kept", "--record", "--json"],
+      stub("ok"),
+    )
+    expect(sent.code, sent.stderr).toBe(0)
+    const dir = runsDirFor(WA, process.env)
+    const runId = listRuns(dir).find((one) => one.profile === "gowire")?.runId ?? ""
+    const events = readEvents(findRun(dir, runId)?.dir ?? "")
+    const wire = events.filter((event) => event.level === "wire")
+    expect(wire.map((event) => [event.event, event.operation, event.outcome])).toEqual(
+      expect.arrayContaining([
+        ["provider.request", "send", undefined],
+        ["provider.response", "send", "ok"],
+      ]),
+    )
+    for (const event of wire) expect(event).toMatchObject({ transport: "wa-engine", attempt: 1 })
+    const written = JSON.stringify(wire)
+    expect(written).not.toContain("@")
+    expect(written).not.toContain("words never kept")
   })
 })
 

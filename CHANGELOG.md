@@ -7,6 +7,10 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **A recorded run lists each request under its operation (cli-core 0.467.0).** Every request to the
+  WhatsApp engine, and every Graph API call and media download of `wa <profile> bot`, is a `wire` line in the run's
+  `events.jsonl` with its duration, outcome and error code. Engine lines keep a message's id, never a chat's id, a
+  phone number or text; Graph lines keep the path with ids as `:id`, never the address as sent or its query.
 - **`search messages` says how many messages match in all: `page.total`** (cli-core 0.501.0). `--json` adds
   `page.total: { value, relation }`, shaped as Elasticsearch's `hits.total`: `eq` is the exact count, `gte` a lower
   bound (counting stops at 10,000). The terminal adds `showing 1–20 of 144` under the hits.

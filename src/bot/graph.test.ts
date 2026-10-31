@@ -1,15 +1,16 @@
+import type { RequestEvent } from "@wirecat/cli-core/cli"
 import { describe, expect, it } from "vitest"
 import { type FetchLike, GraphTransport, refusalOf } from "./graph.js"
 
 const TOKEN = "EAAtest0000made0up0token"
 
 const transport = (fetch: FetchLike, more: { signal?: AbortSignal; timeoutMs?: number } = {}) => {
-  const events: { event: string; outcome?: string; errorCode?: string; endpointTemplate?: string }[] = []
+  const events: RequestEvent[] = []
   const graph = new GraphTransport({
     token: TOKEN,
     version: "v23.0",
     fetch,
-    events: (event) => events.push(event),
+    events: (event) => events.push(event as RequestEvent),
     ...more,
   })
   return { graph, events }
@@ -148,6 +149,29 @@ describe("the Graph transport", () => {
     await expect(broken.graph.download("https://lookaside.example/ok", "downloadMedia")).rejects.toMatchObject({
       code: "invalid_response",
     })
+  })
+})
+
+describe("the Graph transport's run lines", () => {
+  it("marks every call and download a first wire attempt over http, without the address or the query", async () => {
+    const { graph, events } = transport(async (url) =>
+      url.endsWith("/gone") ? new Response("", { status: 404 }) : new Response("{}"),
+    )
+    await graph.call({ ...read, query: { fields: "id" } })
+    await graph.download("https://lookaside.example/media?mid=777", "downloadMedia")
+    await expect(graph.download("https://lookaside.example/gone", "downloadMedia")).rejects.toThrow()
+    expect(events.map(({ event, operation, outcome, status }) => [event, operation, outcome, status])).toEqual([
+      ["request", "getPhoneNumber", undefined, undefined],
+      ["response", "getPhoneNumber", "ok", 200],
+      ["request", "downloadMedia", undefined, undefined],
+      ["response", "downloadMedia", "ok", 200],
+      ["request", "downloadMedia", undefined, undefined],
+      ["response", "downloadMedia", "error", 404],
+    ])
+    for (const event of events) expect(event).toMatchObject({ level: "wire", transport: "http", attempt: 1 })
+    expect(events[3]).toMatchObject({ bytes: 2, method: "GET" })
+    const written = JSON.stringify(events)
+    for (const sent of ["lookaside", "mid=", "fields=", "100000000000001", TOKEN]) expect(written).not.toContain(sent)
   })
 })
 

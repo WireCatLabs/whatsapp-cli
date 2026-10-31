@@ -55,13 +55,16 @@ files:
 
 - `run.json` — the command, the profile, the version of `wa`, Node and the system, when it started and ended, the
   outcome and the error code;
-- `events.jsonl` — the same operations `--trace` shows, one per line.
+- `events.jsonl` — the same operations `--trace` shows, one per line. Under each operation are the requests it made,
+  marked `"level": "wire"`: to the WhatsApp engine (`"transport": "wa-engine"`, the engine's request name such as
+  `send` or `older`), or to Meta's Graph API for `bot` commands (`"transport": "http"`, the method and the path with
+  ids as `:id`). Each has its duration, outcome and error code. An engine request keeps a message's id when it has
+  one and never a chat's: a chat id holds a phone number. A media download keeps no address at all.
 
-## A failed run is always kept
+## Every run is kept
 
-When a command ends in an error, its run is kept even without `--record`. `run.json` then has
-`"keptBecauseFailed": true`. This holds for every command and every error: a bad option, an unknown command, a check
-before any work, a refusal because another command holds the device. What the record keeps of the command line is
+Every run is kept without `--record`, a run that worked too. A failed run is kept for every command and every error:
+a bad option, an unknown command, a check before any work, a refusal because another command holds the device. What the record keeps of the command line is
 under [What you typed](#what-you-typed); a run whose settings did not load hides every typed value that may be text.
 
 Every run is recorded, the ones that worked too, so a problem report always has the run to attach.
