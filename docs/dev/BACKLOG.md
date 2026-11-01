@@ -47,6 +47,13 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   drops the device (mautrix `phoneping.go`, without its fake request) — `engine/cmd/wa-engine/receipts.go`.
 - **WA-66** · P2 · engine · Recover a broken settings sync: a full resync first, then a snapshot request to the
   phone at most once per 48 hours — `engine/cmd/wa-engine/events.go`.
+- **WA-67** · P1 · engine · Keep whatsmeow's warnings always, in cli-core's per-profile provider log, waits on a
+  release of cli-core #2318. After the bump: `src/engine/go-engine.ts` sets `WA_ENGINE_LOG` for the engine to
+  `openProviderLog(providerLogPathFor(app, profile, env))` unless the caller's environment already sets it;
+  `engine/cmd/wa-engine/main.go` adds `"kind"` to each line: `decrypt` for "Error decrypting message", `socket` for
+  websocket close errors, `history` for the ON_DEMAND batch lines, else none. The redacting writer stays in front.
+  Check: `doctor --json` shows `provider_log.last_day.kinds.decrypt` after a forced failure in an engine test; docs
+  `configuration-reference.md` (`WA_ENGINE_LOG` now only moves the file) and `ARCHITECTURE.md` "Nothing private".
 - **WA-7** · P2 · cli · 🚧 `feat/bot-*` Bots through Meta's Cloud API, `wa <profile> bot` (PRs #207–#210, #214) —
   plan: cli-private `plans/2026-10-22-wa-bot-api/handoff.md`.
 - **WA-8** · P2 · core · 🚧 `feat/media-archive` Checked file archives, `attachments download|check|jobs` (PR #203),
