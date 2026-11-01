@@ -47,7 +47,11 @@ func holdLock(storePath, holder string) (*os.File, *refusal) {
 // create one), several means the file is not ours to guess in. The database comes back too, for the engine's own
 // table beside whatsmeow's.
 func openDevice(ctx context.Context, storePath string, linking bool, logger waLog.Logger) (*store.Device, *sql.DB, *failure) {
-	dsn := "file:" + storePath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
+	// A deferred transaction that reads, then writes fails at once with SQLITE_BUSY when another connection wrote in
+	// between; busy_timeout does not help it. whatsmeow decrypts each message in such a transaction, and a failed one
+	// is a lost message: the history push announcements of a fresh link arrive together. Immediate waits instead.
+	dsn := "file:" + storePath +
+		"?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_txlock=immediate"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, nil, &failure{"provider_error", "cannot open the device store"}
@@ -73,11 +77,16 @@ func openDevice(ctx context.Context, storePath string, linking bool, logger waLo
 	}
 }
 
+// fullSyncDays is how far back the phone's full sync reaches. Without it the phone sends one year; mautrix-whatsapp
+// observes about three years as the phone's own cap and that a larger value does no harm.
+const fullSyncDays = 3650
+
 // lookLikeABrowser sets what WhatsApp sees at pairing: a desktop browser on the host system, never this tool.
-// Desktop with full sync asks the phone for all history, not the last few months.
+// Desktop with full sync asks the phone for its history, not the last three months.
 func lookLikeABrowser() {
 	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_DESKTOP.Enum()
 	store.DeviceProps.RequireFullSync = proto.Bool(true)
+	store.DeviceProps.HistorySyncConfig.FullSyncDaysLimit = proto.Uint32(fullSyncDays)
 	store.SetOSInfo(osName(), [3]uint32{0, 1, 0})
 }
 

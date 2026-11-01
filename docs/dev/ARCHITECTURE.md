@@ -306,9 +306,11 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
 - **Markdown**: `formatMarkdown` is cli-core's shared `parseMarkdownSpans`; `send` and `edit` write its spans back as
   WhatsApp's own marks (`toWhatsApp` in `src/adapter/format-markdown.ts`), so the engine only ever sends text.
 - **Nothing private on stderr or in a log.** The engine writes fixed wording to stderr. whatsmeow's own log names
-  JIDs, and a phone JID is a phone number, so it is off; `WA_ENGINE_LOG=<file>` turns it on at warning level, into a
-  file kept like `private.db`, through a writer that masks every user JID (phone, device or LID form, and an old
-  group id, which starts with its creator's number) and any other run of seven or more digits
+  JIDs, and a phone JID is a phone number. Its warnings go to cli-core's per-profile provider log
+  (`providerLogPathFor`, mode 600, capped at 1 MB with one older file; `WA_ENGINE_LOG=<file>` moves them), tagged with a
+  `kind` that `doctor` counts per day (`decrypt`, `history`, `media`, `socket`), through a writer that masks every
+  user JID (phone, device or LID form, and an old group id, which starts with its creator's number) and any other run
+  of seven or more digits
   (`engine/cmd/wa-engine/redact.go`, WC-SECR-1). Errors reach the CLI as one of the contract's codes with fixed
   wording, and a reason where the recovery differs (`src/reasons.ts`).
 - **Names without the phone.** WhatsApp has no "list chats" request. cli-core answers a name the store holds, and

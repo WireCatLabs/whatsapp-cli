@@ -35,8 +35,9 @@ wa personal session start          # a QR code to scan in WhatsApp > Settings > 
 wa personal session start phone    # type your number, then a pairing code on the phone
 ```
 
-Right after linking, the phone sends your history once. `session start` keeps it in the local store and stops when
-the phone goes quiet. Then `wa personal server install` keeps receiving in the background. `wa personal session end`
+Right after linking, the phone sends your history once, in parts, while WhatsApp is open on it. `session start`
+keeps it in the local store and stops when the phone goes quiet. Then install `serve`, so the parts that come later
+are saved too ([after linking](installation.md#after-linking-keep-serve-running)). `wa personal session end`
 unlinks the device and deletes its keys here.
 
 Only one `wa` command may connect a profile at a time; WhatsApp would drop the first connection. While `serve` runs,

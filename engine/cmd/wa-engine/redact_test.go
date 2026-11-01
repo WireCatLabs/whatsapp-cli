@@ -82,3 +82,17 @@ func TestTheEngineLogDropsMediaURLsAndTheirTokens(t *testing.T) {
 		}
 	}
 }
+
+func TestTheEngineLogTagsADecryptFailureForDoctor(t *testing.T) {
+	var file bytes.Buffer
+	logger := waLog.Zerolog(zerolog.New(redacting{&file}).Level(zerolog.WarnLevel))
+	logger.Warnf("Error decrypting message %s from %s: failed to save identity: database is locked", "AC4A", "100000000000126@lid")
+	logger.Warnf("something else")
+	lines := strings.Split(strings.TrimSpace(file.String()), "\n")
+	if !strings.HasPrefix(lines[0], `{"kind":"decrypt",`) {
+		t.Fatalf("decrypt failure not tagged: %s", lines[0])
+	}
+	if strings.Contains(lines[1], `"kind"`) {
+		t.Fatalf("an untagged warning got a kind: %s", lines[1])
+	}
+}

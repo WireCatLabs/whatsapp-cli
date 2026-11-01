@@ -37,8 +37,29 @@ func (r redacting) Write(line []byte) (int, error) {
 	masked = mediaParam.ReplaceAll(masked, []byte("${1}=…"))
 	masked = userJID.ReplaceAll(masked, []byte("…${1}${2}"))
 	masked = bareNumber.ReplaceAllFunc(masked, maskNumber)
+	masked = withKind(masked)
 	if _, err := r.out.Write(masked); err != nil {
 		return 0, err
 	}
 	return len(line), nil
+}
+
+// kinds tag a line for cli-core's provider log, whose doctor counts each kind: a decrypt failure is a lost message.
+var kinds = []struct{ kind, says string }{
+	{"decrypt", `"message":"Error decrypting message`},
+	{"history", `"message":"on-demand history:`},
+	{"media", `"message":"media.`},
+	{"socket", `WebSocket`},
+}
+
+func withKind(line []byte) []byte {
+	if !bytes.HasPrefix(line, []byte("{")) {
+		return line
+	}
+	for _, k := range kinds {
+		if bytes.Contains(line, []byte(k.says)) {
+			return append([]byte(`{"kind":"`+k.kind+`",`), line[1:]...)
+		}
+	}
+	return line
 }

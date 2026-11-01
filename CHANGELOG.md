@@ -3,6 +3,28 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Fixed
+
+- **History the phone sends after linking is no longer lost to a command that does not save it.** The phone sends
+  its history in parts, for minutes. A send, a download or `messages sync` connected in that time downloaded a part,
+  dropped it, and told WhatsApp it had arrived. Now every announced part is written to the device file before it is
+  acknowledged, and only `serve` or a link downloads it; a part another command heard waits until `serve` connects.
+  A part that cannot be written is left unacknowledged, so WhatsApp sends it again. Engine
+  `SynchronousAck` and the decrypted-event buffer, as in mautrix-whatsapp.
+- **A fresh link no longer loses the phone's history announcements to a locked device file.** whatsmeow decrypts each
+  message in a transaction; two at once failed with `database is locked`, and the phone did not send them again. The
+  device file now opens with immediate transactions, so they wait.
+- **Linking asks the phone for up to ten years of history.** Without a limit the phone's full sync covers one year;
+  older chats held only their latest message, and `messages sync` could not count back past that year.
+- **whatsmeow's warnings are always kept**, in cli-core's per-profile provider log (cli-core 0.528.0), and `doctor`
+  counts the last day's by kind under `provider_log`; `decrypt` is a message that could not be read.
+  `WA_ENGINE_LOG` now only moves the file.
+- **The docs say to keep `serve` running after linking**, and on Linux to enable its unit at login: `server install`
+  writes it but does not enable it ([after linking](docs/installation.md#after-linking-keep-serve-running)).
+- **`messages sync` on a chat with nothing stored says when to try again**: once `serve` has saved its next message.
+
 ## 0.21.0 — 31.10.2026
 
 ### Added

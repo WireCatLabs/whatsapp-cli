@@ -20,8 +20,10 @@ Terms used on this page:
 
 WhatsApp has no request for "chats". Three things fill the store, and nothing else:
 
-- **The history push** right after linking. `wa <profile> session start` and `setup` keep the connection open and
-  save it, until the phone has been quiet for 45 seconds.
+- **The history push** after linking. `wa <profile> session start` and `setup` keep the connection open and save
+  it, until the phone has been quiet for 45 seconds. The phone can send more parts later; `serve` saves them, and a
+  part another command heard first waits in the device file until `serve` connects. The phone decides how much it
+  sends: usually every chat with its latest messages, and recent months in full.
 - **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send. An edit
   keeps the message's own time, reply and reactions; only an edit of a message the store lacks is saved with the
   edit's time. A chat you read on the phone gets an unread count of 0, and each new message from someone else adds one.
@@ -37,7 +39,8 @@ connected may still come when `serve` starts again.
 
 WhatsApp keeps no copy of your chats on its servers: the only full copy is on your phone. So there is no download, only
 a request to the phone: "send me the 50 messages of this chat before this one". `wa` counts back from the oldest
-message of the chat the store already holds, so a chat the store has nothing of cannot be asked about.
+message of the chat the store already holds, so a chat the store has nothing of cannot be asked about. Such a chat
+fills from its next message: once `serve` has saved one, `messages sync` counts back from it.
 
 **Open WhatsApp on your phone first.** The phone answers while the app is open; in the background it keeps the request
 and answers when you next open it. A request it does not answer within 25 seconds fails with `timeout`; the late answer
@@ -164,7 +167,8 @@ wa personal server start  # starts it — through the unit, now that there is on
 wa personal server status
 ```
 
-On Linux, `systemctl --user enable` with the unit's name makes it start at every login. On macOS the agent goes into
+On Linux, `server install` does not make the unit start at login. `systemctl --user enable wa-serve-personal.service`
+does (`server install` prints the unit's name). On macOS the agent goes into
 `~/Library/LaunchAgents/`.
 
 - The unit runs the `node` and the `wa` that installed it. Install it again after moving either, for example after

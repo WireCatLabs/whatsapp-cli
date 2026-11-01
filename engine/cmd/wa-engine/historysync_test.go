@@ -126,8 +126,8 @@ func TestOnlyTheAccountsOwnHistoryAnnouncementIsDownloaded(t *testing.T) {
 		evt.Info.IsFromMe = fromMe
 		return evt
 	}
-	e.handle(announce(false))
-	e.handle(announce(true))
+	e.handleReporting(announce(false))
+	e.handleReporting(announce(true))
 	if !e.downloads.settled(time.Second) {
 		t.Fatal("not settled")
 	}

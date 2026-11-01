@@ -237,7 +237,7 @@ export const whatsAppAdapter = (
         throw new CliError(
           "not_found",
           "nothing of this chat is in the local store to count back from — the phone sends messages older than one " +
-            `the store holds; ${words("serve")} keeps the store filled`,
+            `the store holds; once ${words("serve")} has saved this chat's next message, run this again`,
         )
       const older = await translated(
         engine.older({ ...keyOf(chatId, anchor), timestamp: anchor.timestamp }, Math.min(limit, OLDER_MAX)),

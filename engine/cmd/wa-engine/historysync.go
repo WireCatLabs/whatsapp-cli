@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"go.mau.fi/whatsmeow"
@@ -18,16 +19,21 @@ import (
 var historyWait = 3 * time.Second
 
 // historyDownloads takes over whatsmeow's own history loop (message.go, handleHistorySyncNotificationLoop), one push
-// at a time in arrival order as that loop does, so that close can wait for the one in flight. whatsmeow acks the
-// announcement as it arrives and WhatsApp never sends it again: an exit mid-download loses the batch.
+// at a time in arrival order as that loop does, so that close can wait for the one in flight. Each push is kept in
+// the device store before it gets here (historypushes.go): an exit mid-download leaves it for the next listening run
+// instead of losing it.
 type historyDownloads struct {
 	fetch   func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error)
 	deliver func(context.Context, *events.HistorySync)
+	// after answers for a push with an id once it is handed on (ok) or its download failed.
+	after func(ctx context.Context, id string, ok bool)
 
-	queue chan *waE2E.HistorySyncNotification
-	mu    sync.Mutex
-	open  int
-	idle  chan struct{} // closed while nothing is queued or in flight
+	queue chan queuedPush
+	// closing stops handing on kept pushes: nobody listens any more, and a kept push waits for the next listening run.
+	closing atomic.Bool
+	mu      sync.Mutex
+	open    int
+	idle    chan struct{} // closed while nothing is queued or in flight
 }
 
 func newHistoryDownloads(
@@ -36,7 +42,7 @@ func newHistoryDownloads(
 ) *historyDownloads {
 	idle := make(chan struct{})
 	close(idle)
-	h := &historyDownloads{fetch: fetch, deliver: deliver, queue: make(chan *waE2E.HistorySyncNotification, 32), idle: idle}
+	h := &historyDownloads{fetch: fetch, deliver: deliver, queue: make(chan queuedPush, 32), idle: idle}
 	go h.loop(context.Background())
 	return h
 }
@@ -64,30 +70,48 @@ func downloadsFor(client *whatsmeow.Client, handle func(any)) *historyDownloads 
 	)
 }
 
-func (h *historyDownloads) add(n *waE2E.HistorySyncNotification) {
+type queuedPush struct {
+	id           string
+	notification *waE2E.HistorySyncNotification
+}
+
+func (h *historyDownloads) add(n *waE2E.HistorySyncNotification) { h.addKept("", n) }
+
+// addKept queues a push kept under id, the announcing message's id.
+func (h *historyDownloads) addKept(id string, n *waE2E.HistorySyncNotification) {
 	h.mu.Lock()
 	if h.open == 0 {
 		h.idle = make(chan struct{})
 	}
 	h.open++
 	h.mu.Unlock()
-	h.queue <- n
+	h.queue <- queuedPush{id: id, notification: n}
 }
 
 func (h *historyDownloads) loop(ctx context.Context) {
-	for n := range h.queue {
-		h.one(ctx, n)
+	for push := range h.queue {
+		h.one(ctx, push)
 	}
 }
 
-func (h *historyDownloads) one(ctx context.Context, n *waE2E.HistorySyncNotification) {
+func (h *historyDownloads) one(ctx context.Context, push queuedPush) {
 	defer h.done()
+	n := push.notification
 	data, err := h.fetch(ctx, n)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "wa-engine: a history push could not be downloaded")
+		if h.after != nil {
+			h.after(ctx, push.id, false)
+		}
+		return
+	}
+	if push.id != "" && h.closing.Load() {
 		return
 	}
 	h.deliver(ctx, &events.HistorySync{Data: data, Notification: n})
+	if h.after != nil {
+		h.after(ctx, push.id, true)
+	}
 }
 
 func (h *historyDownloads) done() {

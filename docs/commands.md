@@ -1574,7 +1574,7 @@ wa messages links <chat> <message>
 
 ### `wa messages sync`
 
-bring a chat's history in the local store up to date, newest first; run it again to continue; --all syncs every chat
+bring a chat's history in the local store up to date, newest first; run it again to continue; --all syncs every chat; with --json, stderr carries progress lines: {"event":"progress","step":"sync","chats","chats_done","fetched"}, counts only
 
 **Changes something on this computer only.**
 
@@ -3410,7 +3410,7 @@ wa tasks update <task> [options]
 | Option | What it does |
 |---|---|
 | `--category <name>` | what it is about, from the list tasks categories prints: money, documents, meeting, …; a change is kept in the task's history. |
-| `--priority <n>` | priority from 0 (urgent) through 4 (low). |
+| `--priority <n>` | low, medium, high, critical or none; 0 (urgent) … 4 (low) still read as before. |
 | `--parent <id>` | parent task in the same project; none clears it. |
 | `--title <title>` | one line: the action and its object — send Alex the API token. |
 | `--description <text>` | the detail, in Markdown: who owes whom, done when, next step, keywords. |
