@@ -50,6 +50,7 @@ var kinds = []struct{ kind, says string }{
 	{"history", `"message":"on-demand history:`},
 	{"media", `"message":"media.`},
 	{"socket", `WebSocket`},
+	{"socket", `"message":"Keepalive timed out`},
 }
 
 func withKind(line []byte) []byte {

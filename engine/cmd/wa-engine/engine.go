@@ -50,7 +50,9 @@ type engine struct {
 	downloads *historyDownloads
 	pushes    *historyPushes // nil when private.db could not hold the table: pushes are then downloaded at once
 	listening bool           // this run hands history pushes to the CLI; any other only keeps them
-	queued    sync.Map       // push ids queued in this process, so a replay and a repeat are not downloaded twice
+	reachout  *reachout
+	recovery  *appStateRecovery
+	queued    sync.Map // push ids queued in this process, so a replay and a repeat are not downloaded twice
 
 	following follows // e.client; a test answers for WhatsApp here
 	joining   joins   // likewise
@@ -77,6 +79,12 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	// plaintext until a handler succeeds, so the second delivery reaches handleReporting.
 	e.client.EnableDecryptedEventBuffer = true
 	e.client.EmitAppStateEventsOnFullSync = true
+	// A recipient whose phone could not decrypt a message asks for it again, often after a one-shot send exited;
+	// without the copy in the device file that message stays unreadable for them. whatsmeow drops it after 7 days.
+	e.client.UseRetryMessageStore = true
+	// A message this device could not decrypt is asked of the phone after 5 s if the sender has not resent it; the
+	// answer arrives as an ordinary message with the same id, so the store gets it. mautrix-whatsapp does the same.
+	e.client.AutomaticMessageRerequestFromPhone = true
 	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on each message, and an
 	// album's files may need them for the phone to group them; on the wire wa should look like those clients.
 	e.client.SendReportingTokens = true

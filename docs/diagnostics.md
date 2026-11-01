@@ -134,6 +134,9 @@ WhatsApp's from disk, without starting anything:
   never opens the keys and never changes a file mode itself. Windows is not checked.
 - **`lock`** — who last held the device's one connection (`serve (pid 4242)`), and whether that process still runs.
   The engine never clears the name, so a holder counts as running only while its process does.
+- **`phone`** — when the engine last saw the phone online (`last_seen`, from the phone's own read receipts and file
+  answers) and how many days ago. WhatsApp unlinks a device whose phone stays away about two weeks; from 12 days
+  `doctor` warns on stderr and adds `warning`. `null` until a connected command has seen the phone.
 
 **`config.issues`** lists every problem in the config file: invalid JSON (with the line and column where reading
 stopped), a setting or a permission key `wa` does not know, a value of the wrong type. Each says what the value has to

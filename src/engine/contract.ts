@@ -386,6 +386,8 @@ export const engineReason = v.picklist([
   "client.outdated",
   "account.banned",
   "account.rate-limited",
+  "account.reachout-restricted",
+  "message.rejected",
   "settings.keys-missing",
   "media.not-on-phone",
   "media.phone-cannot-decrypt",

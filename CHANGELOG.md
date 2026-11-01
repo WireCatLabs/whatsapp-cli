@@ -3,6 +3,29 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`doctor` says when the phone was last online, and warns from 12 days.** WhatsApp unlinks a device whose phone
+  stays away about two weeks. The engine notes the phone's own read receipts and file answers in a stamp beside the
+  keys; `doctor` answers `whatsapp.phone: { last_seen, days_away, warning? }`.
+
+### Fixed
+
+- **A broken settings sync mends itself.** When WhatsApp's synced settings (mutes, archives, pins, labels, the
+  address book) fail to apply, the engine runs a full sync of that collection, and if that fails too, asks the phone
+  to rebuild it, at most every 48 hours. Before, the collection stayed stale until the device was linked again.
+- **A message this device could not decrypt is asked of the phone.** If the sender does not resend it within 5
+  seconds, the engine asks the owner's phone for it (whatsmeow's `AutomaticMessageRerequestFromPhone`), and the
+  answer is stored like any message. Before, such a message was lost.
+- **WhatsApp's refusal of a message to a new contact says so, and until when.** Send code 463 answers
+  `permission_error` with reason `account.reachout-restricted` and, when WhatsApp announced the restriction, its end
+  (`until`); codes 421 and 479 answer `message.rejected`. Both used to be a bare "WhatsApp refused the request".
+- **A message sent from a one-shot command can be sent again when the recipient's phone asks for it.** The engine
+  keeps a copy of each sent message in the device file for 7 days (whatsmeow's `UseRetryMessageStore`); before, only a
+  running process could answer such a request, and the message stayed unreadable for that recipient.
+
 ## 0.22.0 — 01.11.2026
 
 ### Added

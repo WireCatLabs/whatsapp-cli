@@ -87,6 +87,31 @@ export const lockState = (
 }
 
 /** `doctor`'s WhatsApp block: the engine, the device keys and the lock, read from disk without starting anything. */
+/** WhatsApp drops a linked device whose phone has been away about two weeks; mautrix-whatsapp warns at 12 days. */
+export const PHONE_AWAY_WARN_DAYS = 12
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** When the engine last saw the phone online, from the stamp beside the keys (`engine/cmd/wa-engine/phoneseen.go`). */
+export const phoneState = (
+  storePath: string,
+  now = Date.now(),
+): { last_seen: string | null; days_away: number | null; warning?: string } => {
+  const stamp = `${storePath}.phone-seen`
+  if (!existsSync(stamp)) return { last_seen: null, days_away: null }
+  const seen = statSync(stamp).mtimeMs
+  const days = Math.floor((now - seen) / DAY_MS)
+  return {
+    last_seen: new Date(seen).toISOString(),
+    days_away: days,
+    ...(days >= PHONE_AWAY_WARN_DAYS
+      ? {
+          warning: `the phone has not been online for ${days} days; open WhatsApp on it before WhatsApp unlinks this device`,
+        }
+      : {}),
+  }
+}
+
 export const diagnoseWhatsApp = (
   profile: string,
   env: NodeJS.ProcessEnv,
@@ -95,11 +120,13 @@ export const diagnoseWhatsApp = (
   engine: ReturnType<typeof engineState>
   device: { path: string; exists: boolean; files: ReturnType<typeof deviceModes> }
   lock: ReturnType<typeof lockState>
+  phone: ReturnType<typeof phoneState>
 } => {
   const store = privateStore(profile, env)
   return {
     engine: engineState(env, update),
     device: { path: store, exists: existsSync(store), files: deviceModes(store) },
     lock: lockState(`${store}.lock`),
+    phone: phoneState(store),
   }
 }

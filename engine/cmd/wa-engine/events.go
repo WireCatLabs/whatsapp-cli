@@ -76,6 +76,9 @@ func (e *engine) handle(raw any) {
 			e.out.event("history", history)
 		}
 	case *events.Receipt:
+		if evt.IsFromMe && evt.Sender.Device == 0 {
+			phoneSeen(phoneSeenStamp, evt.Timestamp)
+		}
 		for _, receipt := range e.conv.receipts(evt) {
 			e.out.event("receipt", receipt)
 		}
@@ -105,12 +108,14 @@ func (e *engine) handle(raw any) {
 	case *events.OfflineSyncCompleted:
 		e.offlineReplayed()
 	case *events.MediaRetry:
+		phoneSeen(phoneSeenStamp, evt.Timestamp)
 		e.retries.deliver(evt)
 	case *events.LabelEdit, *events.LabelAssociationChat, *events.LabelAssociationMessage:
 		if err := e.labels.update(e.ctx, evt); err != nil {
 			e.labels.failed()
 		}
 	case *events.AppStateSyncError:
+		e.recovery.failed(e.ctx, evt, time.Now())
 		if evt.Name == appstate.WAPatchRegularHigh {
 			e.mu.Lock()
 			e.snapshot = waHistory{}
@@ -148,6 +153,8 @@ func (e *engine) handle(raw any) {
 		e.end("logged_out", loggedOut)
 	case *events.StreamReplaced:
 		e.end("replaced", replaced)
+	case *events.NotifyAccountReachoutTimelock:
+		e.reachout.noticed(e.ctx, evt)
 	case *events.TemporaryBan:
 		e.end("banned", bannedFor(evt.Expire, time.Now()))
 	case *events.ClientOutdated:

@@ -219,7 +219,10 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   `privacySettings`, and refuses what WhatsApp has no value for.
 - **Settings requests** (`engine/cmd/wa-engine/appstate.go`; the contract in
   [`src/engine/settings.ts`](../../src/engine/settings.ts)): writes to the account's synced settings ("app state"),
-  which WhatsApp syncs to the account's other devices and nobody else sees. Each goes through `sendAppState`, which
+  which WhatsApp syncs to the account's other devices and nobody else sees. A collection whose patches fail to apply
+  is mended as mautrix-whatsapp does (`engine/cmd/wa-engine/appstaterecovery.go`): a full sync once per run, then, if
+  that fails too, a request to the phone to rebuild it, at most every 48 hours (`wa_appstate_recovery`). Each goes
+  through `sendAppState`, which
   sends a whatsmeow patch with `SendAppState`, answers `settings.keys-missing` while WhatsApp has not sent this device
   the keys a patch is sealed with, counts a patch the server took as done even if reading the settings back failed, and
   answers `outcome_unknown` when the patch left and no answer came. `mute` (`jid`, `until`: `forever`, an RFC 3339 time,
