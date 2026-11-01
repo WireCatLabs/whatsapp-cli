@@ -7,12 +7,25 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Added
 
+- **A message hit names its files**: `search messages` and `search all` hits carry `attachments` (position, kind,
+  name, size) (cli-core 0.532.0).
+- **`messages download --offline`** copies the files this computer already holds and never connects; `--attachment
+  <n>` picks one. `messages download` also takes a `msg:` locator in place of chat and id (cli-core 0.532.0).
+- **`messages link` lists a message's files** (`files`); WhatsApp gives no file its own link, so each `url` is null
+  with reason `unsupported_provider` (cli-core 0.532.0).
 - **`doctor` says when the phone was last online, and warns from 12 days.** WhatsApp unlinks a device whose phone
   stays away about two weeks. The engine notes the phone's own read receipts and file answers in a stamp beside the
   keys; `doctor` answers `whatsapp.phone: { last_seen, days_away, warning? }`.
 
+### Changed — may break callers
+
+- **whatsapp-cli requires cli-base 0.71.0** (cli-core 0.529.0).
+
 ### Fixed
 
+- **A `serve` unit survives the next `wa upgrade` with pnpm** (cli-core 0.534.0). `server install` wrote a versioned
+  folder of pnpm's store that the upgrade removes; it now writes the link pnpm repoints. Run `wa <profile> server
+  install` once after this upgrade.
 - **A broken settings sync mends itself.** When WhatsApp's synced settings (mutes, archives, pins, labels, the
   address book) fail to apply, the engine runs a full sync of that collection, and if that fails too, asks the phone
   to rebuild it, at most every 48 hours. Before, the collection stayed stale until the device was linked again.

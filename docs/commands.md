@@ -1365,7 +1365,7 @@ wa messages context <chat> [message] [options]
 
 ### `wa messages download`
 
-save a message's photos, files, videos and voice notes to a folder — or a whole chat's with --all
+save a message's photos, files, videos and voice notes to a folder — or a whole chat's with --all; with --offline, copy the ones this computer already holds, one by --attachment
 
 **Changes something on this computer only.**
 
@@ -1375,12 +1375,13 @@ wa messages download <chat> [message] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `message` | optional | the message id; left out with --all. |
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); or a msg: locator, with no message id after it. |
+| `message` | optional | the message id; left out with --all or a locator. |
 
 | Option | What it does |
 |---|---|
 | `--output-dir <dir>` | where to save them; created if missing. Default: `.`. |
+| `--attachment <n>` | which file of the message, from 1; needed when it has more than one. |
 | `--all` | every file of the chat, newest first; run it again to continue where it stopped. |
 | `--pause <duration>` | with --all, a pause between pages, to stay under the provider's limits. Default: `2s`. |
 | `--extract` | read text layers from the files this download maps into the local content index. |
