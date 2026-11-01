@@ -77,6 +77,9 @@ func main() {
 		e.pushes = pushes
 	}
 	e.listening = *listening
+	if e.recovery, err = openAppStateRecovery(ctx, db, device.ID == nil, e.client); err != nil {
+		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep settings-sync recovery in the device store; none will be tried")
+	}
 	if e.reachout, err = openReachout(ctx, db, device.ID == nil); err != nil {
 		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep the new-contacts restriction in the device store")
 	}

@@ -19,6 +19,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A broken settings sync mends itself.** When WhatsApp's synced settings (mutes, archives, pins, labels, the
+  address book) fail to apply, the engine runs a full sync of that collection, and if that fails too, asks the phone
+  to rebuild it, at most every 48 hours. Before, the collection stayed stale until the device was linked again.
 - **A message this device could not decrypt is asked of the phone.** If the sender does not resend it within 5
   seconds, the engine asks the owner's phone for it (whatsmeow's `AutomaticMessageRerequestFromPhone`), and the
   answer is stored like any message. Before, such a message was lost.

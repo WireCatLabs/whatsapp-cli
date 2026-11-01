@@ -51,6 +51,7 @@ type engine struct {
 	pushes    *historyPushes // nil when private.db could not hold the table: pushes are then downloaded at once
 	listening bool           // this run hands history pushes to the CLI; any other only keeps them
 	reachout  *reachout
+	recovery  *appStateRecovery
 	queued    sync.Map // push ids queued in this process, so a replay and a repeat are not downloaded twice
 
 	following follows // e.client; a test answers for WhatsApp here

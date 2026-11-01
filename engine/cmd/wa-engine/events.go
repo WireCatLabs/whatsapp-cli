@@ -115,6 +115,7 @@ func (e *engine) handle(raw any) {
 			e.labels.failed()
 		}
 	case *events.AppStateSyncError:
+		e.recovery.failed(e.ctx, evt, time.Now())
 		if evt.Name == appstate.WAPatchRegularHigh {
 			e.mu.Lock()
 			e.snapshot = waHistory{}

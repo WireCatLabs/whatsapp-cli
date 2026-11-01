@@ -40,8 +40,6 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   the phone's resend arrives with the same id (the resend itself is on: `AutomaticMessageRerequestFromPhone`). Needs
   a cli-core decision on how a placeholder looks in the shared store (a flag, not searchable text) —
   `engine/cmd/wa-engine/events.go`.
-- **WA-66** · P2 · engine · Recover a broken settings sync: a full resync first, then a snapshot request to the
-  phone at most once per 48 hours — `engine/cmd/wa-engine/events.go`.
 - **WA-7** · P2 · cli · 🚧 `feat/bot-*` Bots through Meta's Cloud API, `wa <profile> bot` (PRs #207–#210, #214) —
   plan: cli-private `plans/2026-10-22-wa-bot-api/handoff.md`.
 - **WA-8** · P2 · core · 🚧 `feat/media-archive` Checked file archives, `attachments download|check|jobs` (PR #203),
