@@ -3,13 +3,7 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## 0.22.0 — 01.11.2026
-
-### Added
-
-- **`doctor` counts the engine's warnings of the last day under `provider_log`** (cli-core 0.528.0). They are always
-  kept now, phone numbers masked, in a private per-profile file of at most 1 MB with one older file; `decrypt` counts
-  messages that could not be read. `WA_ENGINE_LOG` now only moves the file.
+## Unreleased
 
 ### Added
 
@@ -31,6 +25,17 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 - **A message sent from a one-shot command can be sent again when the recipient's phone asks for it.** The engine
   keeps a copy of each sent message in the device file for 7 days (whatsmeow's `UseRetryMessageStore`); before, only a
   running process could answer such a request, and the message stayed unreadable for that recipient.
+
+## 0.22.0 — 01.11.2026
+
+### Added
+
+- **`doctor` counts the engine's warnings of the last day under `provider_log`** (cli-core 0.528.0). They are always
+  kept now, phone numbers masked, in a private per-profile file of at most 1 MB with one older file; `decrypt` counts
+  messages that could not be read. `WA_ENGINE_LOG` now only moves the file.
+
+### Fixed
+
 - **History the phone sends after linking is no longer lost to a command that does not save it.** The phone sends
   its history in parts, for minutes. A send, a download or `messages sync` connected in that time downloaded a part,
   dropped it and told WhatsApp it had arrived. Now every announced part is written to the device file before it is
