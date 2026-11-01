@@ -3,6 +3,20 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Fixed
+
+- **History the phone sends after linking is no longer lost to a command that does not save it.** The phone sends
+  its history in parts, for minutes. A send, a download or `messages sync` connected in that time downloaded a part,
+  dropped it, and told WhatsApp it had arrived. Now every announced part is written to the device file before it is
+  acknowledged, and only `serve` or a link downloads it; a part another command heard waits until `serve` connects.
+  A part that cannot be written is left unacknowledged, so WhatsApp sends it again. Engine
+  `SynchronousAck` and the decrypted-event buffer, as in mautrix-whatsapp.
+- **The docs say to keep `serve` running after linking**, and on Linux to enable its unit at login: `server install`
+  writes it but does not enable it ([after linking](docs/installation.md#after-linking-keep-serve-running)).
+- **`messages sync` on a chat with nothing stored says when to try again**: once `serve` has saved its next message.
+
 ## 0.21.0 — 31.10.2026
 
 ### Added
