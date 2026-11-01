@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+# Links a profile's device again so the phone pushes the whole history once more, then hands the push over to a
+# serve unit that keeps running. For a profile whose first link lost most of its history. The owner runs it from a
+# terminal: the QR code needs the phone.
+#
+#   bin/relink-device <profile>
+#
+# Runs this checkout's build against the owner's real profile and store (not .wa/ like bin/wa), so the build must speak
+# the shared store's schema: the script refuses otherwise. The old device keys are copied beside the store first;
+# the copy is the owner's to remove.
+set -eu
+
+profile=${1:-}
+[ -n "$profile" ] || { echo "usage: $(basename -- "$0") <profile>" >&2; exit 2; }
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+[ -f "$root/dist/bin/wa.js" ] && [ -x "$root/engine/bin/wa-engine" ] ||
+  { echo "build first: pnpm build && (cd engine && go build -o bin/wa-engine ./cmd/wa-engine)" >&2; exit 1; }
+wa() { WA_ENGINE="$root/engine/bin/wa-engine" node "$root/dist/bin/wa.js" "$profile" "$@"; }
+
+store=$(wa doctor --json --no-input | node -e 'const d=JSON.parse(require("fs").readFileSync(0)).item
+  if (d.store.schema !== d.store.speaks) { console.error(`store schema ${d.store.schema}, this build speaks ${d.store.speaks}`); process.exit(1) }
+  process.stdout.write(d.whatsapp.device.path)')
+
+if [ -f "$store" ]; then
+  backup="$store.before-relink-$(date +%Y%m%d%H%M%S)"
+  cp -p "$store" "$backup" && chmod 600 "$backup"
+  echo "old device keys copied to $backup"
+  wa server stop >/dev/null 2>&1 || true
+  wa session end
+fi
+
+cat <<EOF
+
+Keep WhatsApp open on the phone, on charge, until the end: the phone sends the history in chunks for a while.
+Scan the QR code in WhatsApp → Settings → Linked devices → Link a device.
+
+EOF
+wa session start
+wa server install
+wa server start
+echo
+echo "serve now keeps receiving. Leave the phone open for 15–30 minutes, then tell the agent to check."
