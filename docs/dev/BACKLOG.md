@@ -33,6 +33,20 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Next (P2)
 
+- **WA-61** · P2 · engine · A history push counts as handed when emitted to the CLI, not when stored: add a CLI
+  acknowledgement after the store write and mark the row then (mautrix deletes it in the store transaction) —
+  `engine/cmd/wa-engine/historypushes.go`, `src/adapter/listen.ts`.
+- **WA-62** · P2 · engine · Report the send codes 463 (restricted from new contacts), 421 and 479 as their own
+  errors, and keep the end date from WhatsApp's restriction notice; pairs with WA-11 —
+  `engine/cmd/wa-engine/errors.go`.
+- **WA-63** · P2 · engine · Store a "could not be decrypted" placeholder for an undecryptable message and replace it
+  when the phone resends it (`UnavailableRequestID`), as mautrix does — `engine/cmd/wa-engine/events.go`.
+- **WA-64** · P2 · engine · Turn on `UseRetryMessageStore`, so a message sent from a one-shot command can still be
+  resent when the recipient asks after the command exited — `engine/cmd/wa-engine/engine.go`.
+- **WA-65** · P2 · cli · Record when the phone was last seen and warn in `status` after 12 days, before WhatsApp
+  drops the device (mautrix `phoneping.go`, without its fake request) — `engine/cmd/wa-engine/receipts.go`.
+- **WA-66** · P2 · engine · Recover a broken settings sync: a full resync first, then a snapshot request to the
+  phone at most once per 48 hours — `engine/cmd/wa-engine/events.go`.
 - **WA-7** · P2 · cli · 🚧 `feat/bot-*` Bots through Meta's Cloud API, `wa <profile> bot` (PRs #207–#210, #214) —
   plan: cli-private `plans/2026-10-22-wa-bot-api/handoff.md`.
 - **WA-8** · P2 · core · 🚧 `feat/media-archive` Checked file archives, `attachments download|check|jobs` (PR #203),
