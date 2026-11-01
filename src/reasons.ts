@@ -10,6 +10,12 @@ export const REASONS: ErrorReason[] = defineReasons(
       ["client.outdated", "provider_unavailable", "WhatsApp no longer accepts this version of wa"],
       ["account.banned", "permission_error", "WhatsApp has banned or restricted this account"],
       ["account.rate-limited", "rate_limited", "WhatsApp asked this account to slow down"],
+      [
+        "account.reachout-restricted",
+        "permission_error",
+        "WhatsApp has restricted this account from messaging new contacts",
+      ],
+      ["message.rejected", "provider_error", "WhatsApp rejected the message"],
       ["settings.keys-missing", "provider_unavailable", "WhatsApp has not sent the keys a settings change needs yet"],
       ["media.not-on-phone", "not_found", "neither WhatsApp nor the phone keeps this file any more"],
       ["media.phone-cannot-decrypt", "not_found", "the phone could not read the request to upload this file again"],

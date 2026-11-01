@@ -199,7 +199,8 @@ several minutes, only while WhatsApp is open on it, and only `serve` saves the l
 - **Branch on the exit code, then on `error.code` and `error.reason` in the stderr object — never on the text**:
   `0` success, `2` bad input or something WhatsApp cannot do here, `4` not linked (or WhatsApp logged the device
   out), `5` the profile may not do this (its `permissions`; the error names the key), or WhatsApp banned or
-  restricted the account (do not retry; tell the owner), `6` not found — a chat, or a message the store lacks, `7`
+  restricted the account (do not retry; tell the owner; `account.reachout-restricted` refuses only new contacts,
+  until the date it names), `6` not found — a chat, or a message the store lacks, `7`
   the chat is not on the list of allowed recipients, or the change asks first and nobody answered (stop and ask the
   owner), `8` a limit (`sends_per_hour`, or WhatsApp's own: `account.rate-limited` holds every write, reactions and
   read receipts too, for 15 minutes), `12` another command holds the device (`device.in-use`: stop it or use `serve`), took it over

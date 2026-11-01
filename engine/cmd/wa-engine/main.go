@@ -76,6 +76,9 @@ func main() {
 		e.pushes = pushes
 	}
 	e.listening = *listening
+	if e.reachout, err = openReachout(ctx, db, device.ID == nil); err != nil {
+		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep the new-contacts restriction in the device store")
+	}
 	// Right after pairing the phone pushes the whole history; no lookup goes out in that run.
 	if phones != nil {
 		asks, err := openLidAsker(e.ctx, db, device.ID == nil, e.askLIDs)

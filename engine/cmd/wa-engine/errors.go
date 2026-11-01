@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 )
@@ -38,6 +39,13 @@ func (e *engine) refusalFor(op string, err error) *refusal {
 	if refused.Reason == "account.rate-limited" {
 		e.asks.hold(e.ctx)
 	}
+	if refused.Reason == "account.reachout-restricted" {
+		if ends, ok := e.reachout.ends(e.ctx, time.Now()); ok {
+			dated := *refused
+			dated.Until = iso(ends)
+			return &dated
+		}
+	}
 	if ended := e.endedBy(); ended != nil && refused.Code == "network_error" {
 		return ended
 	}
@@ -59,6 +67,9 @@ func classify(err error) *refusal {
 	var reasoned *refusal
 	if errors.As(err, &reasoned) {
 		return reasoned
+	}
+	if sent := sendRefusal(err); sent != nil {
+		return sent
 	}
 	refused := classifyFailure(err)
 	var iq *whatsmeow.IQError

@@ -36,9 +36,6 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 - **WA-61** · P2 · engine · A history push counts as handed when emitted to the CLI, not when stored: add a CLI
   acknowledgement after the store write and mark the row then (mautrix deletes it in the store transaction) —
   `engine/cmd/wa-engine/historypushes.go`, `src/adapter/listen.ts`.
-- **WA-62** · P2 · engine · Report the send codes 463 (restricted from new contacts), 421 and 479 as their own
-  errors, and keep the end date from WhatsApp's restriction notice; pairs with WA-11 —
-  `engine/cmd/wa-engine/errors.go`.
 - **WA-63** · P2 · engine · Store a "could not be decrypted" placeholder for an undecryptable message and replace it
   when the phone resends it (`UnavailableRequestID`), as mautrix does — `engine/cmd/wa-engine/events.go`.
 - **WA-65** · P2 · cli · Record when the phone was last seen and warn in `status` after 12 days, before WhatsApp

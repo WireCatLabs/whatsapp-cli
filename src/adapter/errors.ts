@@ -48,5 +48,14 @@ export const fromEngine = (
       },
     )
   }
+  if (error.reason === "account.reachout-restricted") {
+    const ends = error.until === undefined ? Number.NaN : Date.parse(error.until)
+    if (ends > now)
+      return new CliError(
+        error.code,
+        `${error.message} until ${new Date(ends).toLocaleString("sv-SE", { timeZone: zone, hour12: false })} (${zone})`,
+        { ...reason, until: at(ends) },
+      )
+  }
   return new CliError(error.code, error.message, reason)
 }

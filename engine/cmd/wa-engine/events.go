@@ -148,6 +148,8 @@ func (e *engine) handle(raw any) {
 		e.end("logged_out", loggedOut)
 	case *events.StreamReplaced:
 		e.end("replaced", replaced)
+	case *events.NotifyAccountReachoutTimelock:
+		e.reachout.noticed(e.ctx, evt)
 	case *events.TemporaryBan:
 		e.end("banned", bannedFor(evt.Expire, time.Now()))
 	case *events.ClientOutdated:

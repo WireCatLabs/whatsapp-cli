@@ -13,6 +13,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **WhatsApp's refusal of a message to a new contact says so, and until when.** Send code 463 answers
+  `permission_error` with reason `account.reachout-restricted` and, when WhatsApp announced the restriction, its end
+  (`until`); codes 421 and 479 answer `message.rejected`. Both used to be a bare "WhatsApp refused the request".
 - **A message sent from a one-shot command can be sent again when the recipient's phone asks for it.** The engine
   keeps a copy of each sent message in the device file for 7 days (whatsmeow's `UseRetryMessageStore`); before, only a
   running process could answer such a request, and the message stayed unreadable for that recipient.
