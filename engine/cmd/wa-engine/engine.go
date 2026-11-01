@@ -48,6 +48,9 @@ type engine struct {
 	calls calls
 
 	downloads *historyDownloads
+	pushes    *historyPushes // nil when private.db could not hold the table: pushes are then downloaded at once
+	listening bool           // this run hands history pushes to the CLI; any other only keeps them
+	queued    sync.Map       // push ids queued in this process, so a replay and a repeat are not downloaded twice
 
 	following follows // e.client; a test answers for WhatsApp here
 	joining   joins   // likewise
@@ -67,11 +70,13 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf, decryptComment: e.decryptComment}
 	e.refreshSelf()
 	e.client.ManualHistorySyncDownload = true
+	e.client.DisableManualHistorySyncReceipt = true
 	e.client.EmitAppStateEventsOnFullSync = true
 	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on each message, and an
 	// album's files may need them for the phone to group them; on the wire wa should look like those clients.
 	e.client.SendReportingTokens = true
 	e.downloads = downloadsFor(e.client, e.handle)
+	e.downloads.after = e.pushHanded
 	e.client.AddEventHandler(e.handle)
 	return e
 }

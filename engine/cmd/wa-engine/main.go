@@ -22,6 +22,7 @@ func main() {
 	storePath := flag.String("store", "", "the profile's device store (private.db)")
 	holder := flag.String("holder", "wa", "who holds the connection, named to anyone refused it")
 	linking := flag.Bool("link", false, "allow an empty store: this run links a new device")
+	listening := flag.Bool("listen", false, "this run saves what WhatsApp pushes; others only keep history pushes")
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 	if *showVersion {
@@ -68,6 +69,13 @@ func main() {
 		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep synced labels in the device store")
 	}
 	e.labels = labels
+	pushes, err := openHistoryPushes(ctx, db, device.ID == nil)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep history pushes in the device store; each is downloaded at once")
+	} else {
+		e.pushes = pushes
+	}
+	e.listening = *listening
 	// Right after pairing the phone pushes the whole history; no lookup goes out in that run.
 	if phones != nil {
 		asks, err := openLidAsker(e.ctx, db, device.ID == nil, e.askLIDs)

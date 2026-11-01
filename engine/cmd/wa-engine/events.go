@@ -34,7 +34,7 @@ func (e *engine) handle(raw any) {
 	case *events.Message:
 		if n := evt.Message.GetProtocolMessage().GetHistorySyncNotification(); n != nil {
 			if evt.Info.IsFromMe && e.downloads != nil {
-				e.downloads.add(n)
+				e.historyPush(evt.Info.ID, n)
 			}
 		} else if evt.Info.Chat.Server == types.NewsletterServer {
 			if post, ok := e.conv.channelPost(evt); ok {
@@ -126,6 +126,7 @@ func (e *engine) handle(raw any) {
 		// groups and the channels.
 		go e.joinedGroups()
 		go e.followedChannels()
+		go e.replayHistoryPushes()
 	case *events.Disconnected, *events.KeepAliveTimeout:
 		e.out.connection("disconnected", "")
 	case *events.KeepAliveRestored:
