@@ -343,6 +343,9 @@ others. WhatsApp is different in three ways:
 [tg](https://github.com/WireCatLabs/tg-cli) for Telegram and [max](https://github.com/WireCatLabs/max-cli) for MAX, in
 the same local store.
 
+Questions and setup help: join the [WireCat Discord](https://discord.gg/DebENqbRrJ). Bugs go to this
+repository's issues.
+
 ## Technical docs
 
 Every page is in [`docs/`](https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/README.md):
