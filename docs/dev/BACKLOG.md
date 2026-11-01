@@ -36,8 +36,10 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 - **WA-61** · P2 · engine · A history push counts as handed when emitted to the CLI, not when stored: add a CLI
   acknowledgement after the store write and mark the row then (mautrix deletes it in the store transaction) —
   `engine/cmd/wa-engine/historypushes.go`, `src/adapter/listen.ts`.
-- **WA-63** · P2 · engine · Store a "could not be decrypted" placeholder for an undecryptable message and replace it
-  when the phone resends it (`UnavailableRequestID`), as mautrix does — `engine/cmd/wa-engine/events.go`.
+- **WA-63** · P2 · core · Store a "could not be decrypted" placeholder for an undecryptable message, replaced when
+  the phone's resend arrives with the same id (the resend itself is on: `AutomaticMessageRerequestFromPhone`). Needs
+  a cli-core decision on how a placeholder looks in the shared store (a flag, not searchable text) —
+  `engine/cmd/wa-engine/events.go`.
 - **WA-65** · P2 · cli · Record when the phone was last seen and warn in `status` after 12 days, before WhatsApp
   drops the device (mautrix `phoneping.go`, without its fake request) — `engine/cmd/wa-engine/receipts.go`.
 - **WA-66** · P2 · engine · Recover a broken settings sync: a full resync first, then a snapshot request to the

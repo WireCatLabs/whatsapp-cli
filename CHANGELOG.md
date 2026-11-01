@@ -13,6 +13,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A message this device could not decrypt is asked of the phone.** If the sender does not resend it within 5
+  seconds, the engine asks the owner's phone for it (whatsmeow's `AutomaticMessageRerequestFromPhone`), and the
+  answer is stored like any message. Before, such a message was lost.
 - **WhatsApp's refusal of a message to a new contact says so, and until when.** Send code 463 answers
   `permission_error` with reason `account.reachout-restricted` and, when WhatsApp announced the restriction, its end
   (`until`); codes 421 and 479 answer `message.rejected`. Both used to be a bare "WhatsApp refused the request".
