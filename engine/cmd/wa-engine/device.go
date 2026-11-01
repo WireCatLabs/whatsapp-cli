@@ -47,7 +47,11 @@ func holdLock(storePath, holder string) (*os.File, *refusal) {
 // create one), several means the file is not ours to guess in. The database comes back too, for the engine's own
 // table beside whatsmeow's.
 func openDevice(ctx context.Context, storePath string, linking bool, logger waLog.Logger) (*store.Device, *sql.DB, *failure) {
-	dsn := "file:" + storePath + "?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
+	// A deferred transaction that reads, then writes fails at once with SQLITE_BUSY when another connection wrote in
+	// between; busy_timeout does not help it. whatsmeow decrypts each message in such a transaction, and a failed one
+	// is a lost message: the history push announcements of a fresh link arrive together. Immediate waits instead.
+	dsn := "file:" + storePath +
+		"?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_txlock=immediate"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, nil, &failure{"provider_error", "cannot open the device store"}
