@@ -96,3 +96,11 @@ func TestTheEngineLogTagsADecryptFailureForDoctor(t *testing.T) {
 		t.Fatalf("an untagged warning got a kind: %s", lines[1])
 	}
 }
+
+func TestTheEngineLogCountsAKeepaliveTimeoutAsTheConnection(t *testing.T) {
+	var file bytes.Buffer
+	waLog.Zerolog(zerolog.New(redacting{&file}).Level(zerolog.WarnLevel)).Warnf("Keepalive timed out")
+	if !strings.HasPrefix(file.String(), `{"kind":"socket",`) {
+		t.Fatalf("keepalive timeout not tagged: %s", file.String())
+	}
+}
