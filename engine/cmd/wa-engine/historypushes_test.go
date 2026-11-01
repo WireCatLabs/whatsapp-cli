@@ -109,3 +109,31 @@ func TestAPushWhoseDownloadKeepsFailingIsGivenUp(t *testing.T) {
 		t.Fatal("a given-up push still waits")
 	}
 }
+
+func TestAPushStillDownloadingAtCloseWaitsForTheNextListeningRun(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "private.db")
+	release := make(chan struct{})
+	e, delivered := pushEngine(t, path, true, func() error { <-release; return nil })
+	e.historyPush("PUSH1", fullChunk(2))
+	e.downloads.closing.Store(true)
+	close(release)
+	e.downloads.settled(time.Second)
+	if delivered.Load() != 0 {
+		t.Fatal("a push was handed on while closing, with nobody listening")
+	}
+	if len(e.pushes.waiting(context.Background())) != 1 {
+		t.Fatal("the push does not wait for the next run")
+	}
+}
+
+func TestAPushThatCannotBeKeptIsLeftUnacknowledged(t *testing.T) {
+	e, _ := pushEngine(t, filepath.Join(t.TempDir(), "private.db"), true, func() error { return nil })
+	e.pushes.db.Close()
+	evt := incoming(selfPN, selfPN, &waE2E.Message{ProtocolMessage: &waE2E.ProtocolMessage{
+		HistorySyncNotification: fullChunk(1),
+	}})
+	evt.Info.IsFromMe = true
+	if e.handleReporting(evt) {
+		t.Fatal("reported success for a push that was not kept")
+	}
+}

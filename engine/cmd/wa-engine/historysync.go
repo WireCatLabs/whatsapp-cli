@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"go.mau.fi/whatsmeow"
@@ -19,8 +20,8 @@ var historyWait = 3 * time.Second
 
 // historyDownloads takes over whatsmeow's own history loop (message.go, handleHistorySyncNotificationLoop), one push
 // at a time in arrival order as that loop does, so that close can wait for the one in flight. Each push is kept in
-// the device store before it gets here (historypushes.go), and acknowledged only once handed on: an exit
-// mid-download leaves it for the next listening run instead of losing it.
+// the device store before it gets here (historypushes.go): an exit mid-download leaves it for the next listening run
+// instead of losing it.
 type historyDownloads struct {
 	fetch   func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error)
 	deliver func(context.Context, *events.HistorySync)
@@ -28,9 +29,11 @@ type historyDownloads struct {
 	after func(ctx context.Context, id string, ok bool)
 
 	queue chan queuedPush
-	mu    sync.Mutex
-	open  int
-	idle  chan struct{} // closed while nothing is queued or in flight
+	// closing stops handing on kept pushes: nobody listens any more, and a kept push waits for the next listening run.
+	closing atomic.Bool
+	mu      sync.Mutex
+	open    int
+	idle    chan struct{} // closed while nothing is queued or in flight
 }
 
 func newHistoryDownloads(
@@ -100,6 +103,9 @@ func (h *historyDownloads) one(ctx context.Context, push queuedPush) {
 		if h.after != nil {
 			h.after(ctx, push.id, false)
 		}
+		return
+	}
+	if push.id != "" && h.closing.Load() {
 		return
 	}
 	h.deliver(ctx, &events.HistorySync{Data: data, Notification: n})

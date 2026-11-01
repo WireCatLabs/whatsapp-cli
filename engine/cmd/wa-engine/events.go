@@ -26,16 +26,29 @@ func (e *engine) end(state string, why *refusal) {
 	e.out.connection(state, until)
 }
 
+// handleReporting is handle with whatsmeow's success report: an announced history push that could not be kept is
+// left unacknowledged (SynchronousAck), so WhatsApp delivers it again.
+func (e *engine) handleReporting(raw any) bool {
+	if evt, ok := raw.(*events.Message); ok {
+		if n := evt.Message.GetProtocolMessage().GetHistorySyncNotification(); n != nil {
+			if evt.Info.IsFromMe && e.downloads != nil {
+				return e.historyPush(evt.Info.ID, n)
+			}
+			return true
+		}
+	}
+	e.handle(raw)
+	return true
+}
+
 func (e *engine) handle(raw any) {
 	if e.snapshotChange(raw) {
 		return
 	}
 	switch evt := raw.(type) {
 	case *events.Message:
-		if n := evt.Message.GetProtocolMessage().GetHistorySyncNotification(); n != nil {
-			if evt.Info.IsFromMe && e.downloads != nil {
-				e.historyPush(evt.Info.ID, n)
-			}
+		if evt.Message.GetProtocolMessage().GetHistorySyncNotification() != nil {
+			return // handleReporting keeps it
 		} else if evt.Info.Chat.Server == types.NewsletterServer {
 			if post, ok := e.conv.channelPost(evt); ok {
 				e.out.event("message", post)

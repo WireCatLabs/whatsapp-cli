@@ -70,14 +70,16 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	e.conv = &converter{lidFor: e.lidFor, nameOf: e.nameOf, decryptComment: e.decryptComment}
 	e.refreshSelf()
 	e.client.ManualHistorySyncDownload = true
-	e.client.DisableManualHistorySyncReceipt = true
+	// mautrix-whatsapp's practice: a message is acknowledged only once every handler returned, and a history push
+	// only once it is kept in the device store (handleReporting).
+	e.client.SynchronousAck = true
 	e.client.EmitAppStateEventsOnFullSync = true
 	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on each message, and an
 	// album's files may need them for the phone to group them; on the wire wa should look like those clients.
 	e.client.SendReportingTokens = true
 	e.downloads = downloadsFor(e.client, e.handle)
 	e.downloads.after = e.pushHanded
-	e.client.AddEventHandler(e.handle)
+	e.client.AddEventHandlerWithSuccessStatus(e.handleReporting)
 	return e
 }
 
@@ -137,6 +139,7 @@ func (e *engine) run(in io.Reader) {
 			e.answer(req)
 		}()
 	}
+	e.downloads.closing.Store(true)
 	if !e.downloads.settled(historyWait) {
 		fmt.Fprintln(os.Stderr, "wa-engine: a history push was still downloading at exit; it is not saved")
 	}

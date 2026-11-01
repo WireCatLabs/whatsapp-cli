@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"go.mau.fi/whatsmeow/proto/waE2E"
-	"go.mau.fi/whatsmeow/types"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -42,28 +41,19 @@ func openHistoryPushes(ctx context.Context, db *sql.DB, unlinked bool) (*history
 	return &historyPushes{db: db}, nil
 }
 
-// keep records a push as announced. It answers false when the push is known already: the phone announces it again
-// to a run that never acknowledged it.
-func (h *historyPushes) keep(ctx context.Context, id string, n *waE2E.HistorySyncNotification) bool {
-	if h == nil {
-		return true
-	}
+// keep records a push as announced; one announced again is kept once.
+func (h *historyPushes) keep(ctx context.Context, id string, n *waE2E.HistorySyncNotification) error {
 	blob, err := proto.Marshal(n)
 	if err != nil {
-		return true
+		return err
 	}
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	res, err := h.db.ExecContext(ctx, `INSERT OR IGNORE INTO wa_history_pushes
+	_, err = h.db.ExecContext(ctx, `INSERT OR IGNORE INTO wa_history_pushes
 		(id, sync_type, chunk, progress, oldest_at, received_at, notification) VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		id, n.GetSyncType().String(), n.GetChunkOrder(), n.GetProgress(), n.GetOldestMsgInChunkTimestampSec(),
 		time.Now().Unix(), blob)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep a history push in the device store")
-		return true
-	}
-	added, _ := res.RowsAffected()
-	return added == 1
+	return err
 }
 
 // waiting is every push kept and not yet handed on or given up on, oldest first.
@@ -130,16 +120,21 @@ func (h *historyPushes) finish(ctx context.Context, id, column string) {
 
 // historyPush keeps a push the phone announced and, in a listening run, queues its download. An on-demand push
 // answers `messages sync` in the run that asked, so any run downloads it. Without the table every push is downloaded
-// at once, as before it existed.
-func (e *engine) historyPush(id string, n *waE2E.HistorySyncNotification) {
+// at once, as before it existed. It answers false when the push could not be kept: with SynchronousAck whatsmeow
+// then leaves the announcement unacknowledged, and WhatsApp delivers it again.
+func (e *engine) historyPush(id string, n *waE2E.HistorySyncNotification) bool {
 	if e.pushes == nil {
-		e.queuePush(id, n)
-		return
+		e.queuePush("", n)
+		return true
 	}
-	e.pushes.keep(e.ctx, id, n)
+	if err := e.pushes.keep(e.ctx, id, n); err != nil {
+		fmt.Fprintln(os.Stderr, "wa-engine: cannot keep a history push in the device store")
+		return false
+	}
 	if e.listening || n.GetSyncType() == waE2E.HistorySyncType_ON_DEMAND {
 		e.queuePush(id, n)
 	}
+	return true
 }
 
 // replayHistoryPushes queues the pushes an earlier run kept and did not hand on. Downloads need the connection.
@@ -161,8 +156,7 @@ func (e *engine) queuePush(id string, n *waE2E.HistorySyncNotification) {
 	e.downloads.addKept(id, n)
 }
 
-// pushHanded records how a download ended and, once the push is handed on, acknowledges it: WhatsApp announces an
-// unacknowledged push again, which is what a run that dies mid-download relies on.
+// pushHanded records how a download ended.
 func (e *engine) pushHanded(ctx context.Context, id string, ok bool) {
 	if !ok {
 		e.pushes.failed(ctx, id)
@@ -170,9 +164,4 @@ func (e *engine) pushHanded(ctx context.Context, id string, ok bool) {
 		return
 	}
 	e.pushes.handed(ctx, id)
-	if id != "" {
-		if err := e.client.SendProtocolMessageReceipt(ctx, types.MessageID(id), types.ReceiptTypeHistorySync); err != nil {
-			fmt.Fprintln(os.Stderr, "wa-engine: a history push was kept but could not be acknowledged")
-		}
-	}
 }
