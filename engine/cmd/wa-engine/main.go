@@ -46,6 +46,7 @@ func main() {
 	}
 	defer lock.Close()
 	lookupStamp = *storePath + ".lookup"
+	phoneSeenStamp = *storePath + ".phone-seen"
 
 	// SIGINT reaches the whole process group on Ctrl+C; the CLI decides when to stop, through stdin.
 	signal.Ignore(os.Interrupt)

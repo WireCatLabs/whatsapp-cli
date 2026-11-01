@@ -11,6 +11,12 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   kept now, phone numbers masked, in a private per-profile file of at most 1 MB with one older file; `decrypt` counts
   messages that could not be read. `WA_ENGINE_LOG` now only moves the file.
 
+### Added
+
+- **`doctor` says when the phone was last online, and warns from 12 days.** WhatsApp unlinks a device whose phone
+  stays away about two weeks. The engine notes the phone's own read receipts and file answers in a stamp beside the
+  keys; `doctor` answers `whatsapp.phone: { last_seen, days_away, warning? }`.
+
 ### Fixed
 
 - **A message this device could not decrypt is asked of the phone.** If the sender does not resend it within 5
