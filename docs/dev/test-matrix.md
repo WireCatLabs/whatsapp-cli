@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**277 ✅ · 837 ⛔ · 0 ❌** — 365 commands, 749 options.
+**277 ✅ · 838 ⛔ · 0 ❌** — 365 commands, 750 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -189,6 +189,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages context` | `--after-n` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/thread-context.test.ts |
 | `messages download` |  | ✅ |  |
 | `messages download` | `--output-dir` | ✅ |  |
+| `messages download` | `--attachment` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/attachments.test.ts |
 | `messages download` | `--all` | ✅ |  |
 | `messages download` | `--pause` | ✅ |  |
 | `messages download` | `--extract` | ✅ |  |
