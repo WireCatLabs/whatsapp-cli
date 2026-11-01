@@ -73,6 +73,9 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	// mautrix-whatsapp's practice: a message is acknowledged only once every handler returned, and a history push
 	// only once it is kept in the device store (handleReporting).
 	e.client.SynchronousAck = true
+	// A message WhatsApp delivers again after a refused handler cannot be decrypted twice; whatsmeow keeps the
+	// plaintext until a handler succeeds, so the second delivery reaches handleReporting.
+	e.client.EnableDecryptedEventBuffer = true
 	e.client.EmitAppStateEventsOnFullSync = true
 	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on each message, and an
 	// album's files may need them for the phone to group them; on the wire wa should look like those clients.
