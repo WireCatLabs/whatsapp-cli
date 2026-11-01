@@ -86,7 +86,7 @@ the access token lives in the system keychain ([a WhatsApp Business number as a 
 | `WIRECAT_STATE_DIR` | the WireCat folder every CLI shares: the local store and the speech models |
 | `WA_READ_ONLY` | `1` makes this process read-only: every change, linking and unlinking the device included, is refused |
 | `WA_ENGINE` | the path of an engine program to run instead of the installed one |
-| `WA_ENGINE_LOG` | a file the engine appends its warnings to, phone numbers masked; unset, it logs nothing |
+| `WA_ENGINE_LOG` | where the engine appends its warnings, phone numbers masked; unset, the profile's provider log, which `doctor` counts (`provider_log`) |
 | `WA_NO_UPDATE_CHECK` | `1` turns off the daily "a newer version exists" line |
 | `NO_COLOR` | no colour in the table view |
 | `WA_EMBEDDING_*`, `WA_MODELS_*` | model settings |

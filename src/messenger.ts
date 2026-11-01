@@ -7,6 +7,8 @@ import {
   type BaseEnvironment,
   environmentOf,
   type Messenger,
+  openProviderLog,
+  providerLogPathFor,
   providerRequest,
   runEvent,
 } from "@wirecat/cli-core/cli"
@@ -83,6 +85,16 @@ export const openEngine = async (
   return engine
 }
 
+// whatsmeow's warnings always reach cli-core's provider log, which doctor counts; WA_ENGINE_LOG only moves them.
+const withProviderLog = (env: NodeJS.ProcessEnv, profile: string): NodeJS.ProcessEnv => {
+  if (env.WA_ENGINE_LOG) return env
+  try {
+    return { ...env, WA_ENGINE_LOG: openProviderLog(providerLogPathFor(WA, profile, env)) }
+  } catch {
+    return env
+  }
+}
+
 const startEngine = async (
   request: EngineRequest,
   base: Pick<BaseContext, "settings" | "env" | "renderer">,
@@ -97,7 +109,7 @@ const startEngine = async (
   try {
     return await startGoEngine({
       ...request,
-      env: base.env,
+      env: withProviderLog(base.env, profile),
       warn: base.renderer.warn,
       observe: engineWire,
       ...(engineCommand ? { command: engineCommand } : {}),
