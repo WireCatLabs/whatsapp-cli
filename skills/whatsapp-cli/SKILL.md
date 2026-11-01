@@ -85,7 +85,8 @@ the store does not hold yet needs its `…@g.us` id.
 - **Older history** can only be asked of the owner's phone, 50 messages at a time, counting back from the oldest
   stored message of one chat: `wa <profile> messages sync <chat>`. The phone answers only with WhatsApp open on it:
   ask the owner to open it first. No answer is exit `timeout`, not an empty chat; a late answer is still saved by
-  `serve`. `--all` is refused: there is no chat list to walk.
+  `serve`. `--all` is refused: there is no chat list to walk. A chat with nothing stored (`not_found`) cannot be
+  asked about until `serve` saves its next message; tell the owner that, do not retry.
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp serve`.
@@ -183,8 +184,9 @@ never pick one.
   `session start phone`) is for the owner to run in their own terminal.
 
 A profile linked before is checked without linking again, and nothing is asked. Do not link a profile twice: a new
-link is a new device on the owner's phone. After linking, `wa personal server install` keeps the store filled in the
-background — only when the owner asked for it.
+link is a new device on the owner's phone. After linking, the phone sends history in parts for
+several minutes, only while WhatsApp is open on it, and only `serve` saves the late parts: suggest
+`wa personal server install` and keeping the phone open — install it only when the owner agrees.
 
 ## Output
 

@@ -13,8 +13,9 @@ First, the words this page uses:
 - **Linked device**: `wa` on this computer, as WhatsApp sees it. You link it from the phone, the way you link
   WhatsApp Web, and the phone lists it under Settings → Linked devices. Its keys live in one file on this computer.
   Whoever has that file can read and send as you, so treat it like your password.
-- **History push**: the copy of your recent chats the phone sends once, seconds after linking. `wa` keeps what
-  arrives; older messages of one chat can be asked of the phone later
+- **History push**: the copy of your chats the phone sends once after linking, in parts, over several minutes, and
+  only while WhatsApp is open on it. `wa` keeps what arrives; older messages of one chat can be asked of the phone
+  later
   ([older history](archive.md#older-history-from-your-phone)).
 - **Profile**: a name for one linked device on this computer, with its own keys and settings. Every command that
   uses an account names it, so you pick one name at setup (`wa personal setup`) and use it from then on
@@ -49,6 +50,10 @@ or `--timeout`, ends only this wait: the device stays linked, what arrived is ke
 with exit code `0`. `wa personal setup` waits the same way, then goes on to its remaining steps under the
 command's usual time limit, started afresh. Then keep receiving with `wa personal server install`
 ([the local store](archive.md)).
+
+Keep WhatsApp open on the phone until `serve` runs: the phone can send more parts after `session start` stops. A part
+that arrives while some other command is connected, a send for example, is kept in the device file and not saved.
+`serve` saves it when it next connects.
 
 ### When an agent runs the link
 
