@@ -13,6 +13,9 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A message sent from a one-shot command can be sent again when the recipient's phone asks for it.** The engine
+  keeps a copy of each sent message in the device file for 7 days (whatsmeow's `UseRetryMessageStore`); before, only a
+  running process could answer such a request, and the message stayed unreadable for that recipient.
 - **History the phone sends after linking is no longer lost to a command that does not save it.** The phone sends
   its history in parts, for minutes. A send, a download or `messages sync` connected in that time downloaded a part,
   dropped it and told WhatsApp it had arrived. Now every announced part is written to the device file before it is

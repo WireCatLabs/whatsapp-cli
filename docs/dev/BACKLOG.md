@@ -41,8 +41,6 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   `engine/cmd/wa-engine/errors.go`.
 - **WA-63** · P2 · engine · Store a "could not be decrypted" placeholder for an undecryptable message and replace it
   when the phone resends it (`UnavailableRequestID`), as mautrix does — `engine/cmd/wa-engine/events.go`.
-- **WA-64** · P2 · engine · Turn on `UseRetryMessageStore`, so a message sent from a one-shot command can still be
-  resent when the recipient asks after the command exited — `engine/cmd/wa-engine/engine.go`.
 - **WA-65** · P2 · cli · Record when the phone was last seen and warn in `status` after 12 days, before WhatsApp
   drops the device (mautrix `phoneping.go`, without its fake request) — `engine/cmd/wa-engine/receipts.go`.
 - **WA-66** · P2 · engine · Recover a broken settings sync: a full resync first, then a snapshot request to the

@@ -77,6 +77,9 @@ func newEngine(ctx context.Context, device *store.Device, out *wire, logger waLo
 	// plaintext until a handler succeeds, so the second delivery reaches handleReporting.
 	e.client.EnableDecryptedEventBuffer = true
 	e.client.EmitAppStateEventsOnFullSync = true
+	// A recipient whose phone could not decrypt a message asks for it again, often after a one-shot send exited;
+	// without the copy in the device file that message stays unreadable for them. whatsmeow drops it after 7 days.
+	e.client.UseRetryMessageStore = true
 	// WhatsApp Web, Baileys and mautrix-whatsapp put a message secret and a reporting token on each message, and an
 	// album's files may need them for the phone to group them; on the wire wa should look like those clients.
 	e.client.SendReportingTokens = true

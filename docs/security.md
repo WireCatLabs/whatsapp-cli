@@ -11,6 +11,8 @@ text on your screen, how to report a vulnerability — is on the
 - **The linked device's keys**, in `~/.local/share/whatsapp-cli/profiles/<profile>/private.db` (on Windows,
   `%LOCALAPPDATA%\whatsapp-cli\Data\profiles\<profile>\private.db`). Anyone who copies this file can read and
   send as you until you remove the device on your phone (Settings → Linked devices). Only your user can read it.
+  It also keeps a copy of each message you send for 7 days, so a recipient whose phone could not decrypt it can ask
+  for it again.
 - **Your chats and messages**, in the WireCat store shared with tg and max.
 - **Settings**, in `~/.config/whatsapp-cli/`. Never a secret.
 
