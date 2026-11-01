@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"go.mau.fi/whatsmeow/store"
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
@@ -51,5 +52,12 @@ func TestConcurrentDecryptionTransactionsWaitInsteadOfFailingBusy(t *testing.T) 
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestPairingAsksThePhoneForMoreThanAYearOfHistory(t *testing.T) {
+	lookLikeABrowser()
+	if got := store.DeviceProps.GetHistorySyncConfig().GetFullSyncDaysLimit(); got <= 365 {
+		t.Fatalf("full sync days limit %d, want more than a year", got)
 	}
 }
