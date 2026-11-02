@@ -5,8 +5,14 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **whatsapp-cli requires cli-base 0.73.0** (cli-core 0.543.0).
+
 ### Fixed
 
+- **Mail sync no longer loads every stored email of an account each round**, which slowed every command sharing the
+  store (cli-core 0.541.0).
 - **History the phone sends after linking is kept until the local store has it.** A link while the store could not be
   written (a damaged file) marked every history part done, deleted it from WhatsApp's server, and reported the
   messages kept. Now a part counts as done only once cli-core has stored it; until then it stays in the device file
