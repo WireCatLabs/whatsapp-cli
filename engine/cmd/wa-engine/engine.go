@@ -222,6 +222,9 @@ func (e *engine) dispatch(req request) (any, error) {
 		return e.forward(req)
 	case "older":
 		return e.older(req)
+	case "historySaved":
+		e.historySaved(req.Push, req.Saved)
+		return nil, nil
 	case "logout":
 		return nil, e.logout()
 	}

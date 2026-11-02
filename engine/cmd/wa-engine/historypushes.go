@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/proto/waE2E"
 	"google.golang.org/protobuf/proto"
 )
@@ -156,12 +157,41 @@ func (e *engine) queuePush(id string, n *waE2E.HistorySyncNotification) {
 	e.downloads.addKept(id, n)
 }
 
-// pushHanded records how a download ended.
+// pushHanded records a download that failed; one that worked waits for historySaved.
 func (e *engine) pushHanded(ctx context.Context, id string, ok bool) {
 	if !ok {
 		e.pushes.failed(ctx, id)
 		e.queued.Delete(id)
+	}
+}
+
+// historySaved is the CLI's answer for a kept push it was handed. Stored, the push is done and its file on WhatsApp's
+// server goes; not stored, it waits for the next listening run, which downloads it again.
+func (e *engine) historySaved(id string, saved bool) {
+	if e.pushes == nil || id == "" {
 		return
 	}
-	e.pushes.handed(ctx, id)
+	if !saved {
+		fmt.Fprintln(os.Stderr, "wa-engine: a history push was not stored; the next serve hands it on again")
+		return
+	}
+	n := e.pushes.notificationOf(e.ctx, id)
+	e.pushes.handed(e.ctx, id)
+	if n != nil && e.client != nil && e.client.IsConnected() {
+		_ = e.client.DeleteMedia(e.ctx, whatsmeow.MediaHistory, n.GetDirectPath(), n.GetFileEncSHA256(), n.GetEncHandle())
+	}
+}
+
+func (h *historyPushes) notificationOf(ctx context.Context, id string) *waE2E.HistorySyncNotification {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	var blob []byte
+	if h.db.QueryRowContext(ctx, `SELECT notification FROM wa_history_pushes WHERE id = ?`, id).Scan(&blob) != nil {
+		return nil
+	}
+	n := &waE2E.HistorySyncNotification{}
+	if blob == nil || proto.Unmarshal(blob, n) != nil {
+		return nil
+	}
+	return n
 }

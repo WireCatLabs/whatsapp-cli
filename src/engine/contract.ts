@@ -86,6 +86,8 @@ export const ENGINE_OPS = {
   channelMessages: "read",
   // Records the store's phone-form chats in the engine's own table; nothing reaches WhatsApp.
   storedChats: "read",
+  // Marks a kept history push stored, so the engine drops it and its file on WhatsApp's server.
+  historySaved: "read",
   // Reads whatsmeow's LID map for a typed phone-form chat; nothing reaches WhatsApp.
   canonicalChat: "read",
 } as const
@@ -321,6 +323,8 @@ export const waHistory = v.strictObject({
   deletions: v.optional(v.array(v.strictObject({ chat: jid, message: v.string() }))),
   rekeys: v.optional(v.array(waRekey)),
   events: v.optional(v.array(waChatEvent)),
+  /** The kept push this is: the CLI answers `historySaved` for it once it is stored, or not. */
+  push: v.optional(v.string()),
 })
 
 /**
@@ -617,6 +621,11 @@ export interface WhatsAppEngine extends GroupEngine, PrivacyEngine, SettingsEngi
    * the device knows goes out as a `rekey` event too, and none is looked up or recorded. Never connects.
    */
   storedChats(chats: string[], recipients?: string[]): Promise<void>
+  /**
+   * Whether the kept history push `push` (a `history` event's `push`) reached the local store. Stored, the engine is
+   * done with it; not stored, it hands it on again in the next listening run. Never connects.
+   */
+  historySaved(push: string, saved: boolean): Promise<void>
   /**
    * The chat id the store keeps a typed one-to-one chat under: its LID when whatsmeow's map knows it, else the id as
    * typed. Reads the map only, never connects, and records nothing.

@@ -33,11 +33,7 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Next (P2)
 
-- **WA-61** · P2 · core · A history push counts as handed when emitted to the CLI, not when stored: mark the row
-  only after the store write (mautrix deletes it in the store transaction). Waits on cli-core: `feed` and
-  `listenHistory` take `onBatch: (batch) => void` (`ports/messenger.d.ts`), so the adapter never learns when a batch
-  is written; it needs a promise back, then an engine op `historyStored(id)` and the push id on the history event —
-  `engine/cmd/wa-engine/historypushes.go`, `src/adapter/listen.ts`.
+
 - **WA-63** · P2 · core · Store a "could not be decrypted" placeholder for an undecryptable message, replaced when
   the phone's resend arrives with the same id (the resend itself is on: `AutomaticMessageRerequestFromPhone`). Needs
   a cli-core decision on how a placeholder looks in the shared store (a flag, not searchable text) —

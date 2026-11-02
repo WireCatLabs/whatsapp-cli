@@ -34,6 +34,9 @@ type request struct {
 	Emoji   *string `json:"emoji,omitempty"`
 	// pin: how many seconds it lasts; 0 is the default.
 	Duration uint32 `json:"duration,omitempty"`
+	// historySaved: the kept push, and whether the CLI stored it.
+	Push  string `json:"push,omitempty"`
+	Saved bool   `json:"saved,omitempty"`
 
 	// older: when the anchor message was sent, and how many before it. deleteChat, clearChat, archiveChat,
 	// unarchiveChat, markChatRead, markChatUnread: when the message the patch is bounded by was sent. deleteForMe: when
@@ -142,6 +145,8 @@ type waHistory struct {
 	Rekeys []waRekey `json:"rekeys,omitempty"`
 	// Joins, leaves, admin changes and new titles, from the groups' service messages.
 	Events []waChatEvent `json:"events,omitempty"`
+	// The kept push this is, for historySaved; empty for one the device store does not keep.
+	Push string `json:"push,omitempty"`
 
 	oldest  map[string]rawKey // per chat, the oldest message the phone sent, kept or skipped
 	sent    map[string]int    // per chat, how many messages the phone sent, kept or skipped

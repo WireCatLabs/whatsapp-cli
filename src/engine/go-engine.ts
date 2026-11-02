@@ -291,6 +291,9 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
       await request("logout", {}, nothing)
       self = null
     },
+    historySaved: async (push, saved) => {
+      await request("historySaved", { push, saved }, nothing)
+    },
     storedChats: async (chats, recipients) => {
       await request("storedChats", { chats, ...(recipients?.length ? { recipients } : {}) }, nothing)
     },

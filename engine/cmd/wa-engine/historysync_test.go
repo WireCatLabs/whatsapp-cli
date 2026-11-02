@@ -23,7 +23,7 @@ func TestCloseWaitsForAHistoryPushStillDownloading(t *testing.T) {
 			<-release
 			return &waHistorySync.HistorySync{}, nil
 		},
-		func(_ context.Context, evt *events.HistorySync) { handed = append(handed, evt) },
+		func(_ context.Context, _ string, evt *events.HistorySync) { handed = append(handed, evt) },
 	)
 	h.add(&waE2E.HistorySyncNotification{})
 	h.add(&waE2E.HistorySyncNotification{})
@@ -45,7 +45,7 @@ func closingEngine(fetch func(context.Context, *waE2E.HistorySyncNotification) (
 	e, _ := followingEngine(&fakeFollows{})
 	e.stop = func() {}
 	e.client = whatsmeow.NewClient(&store.Device{}, nil)
-	e.downloads = newHistoryDownloads(fetch, func(context.Context, *events.HistorySync) { delivered.Store(true) })
+	e.downloads = newHistoryDownloads(fetch, func(context.Context, string, *events.HistorySync) { delivered.Store(true) })
 	return e
 }
 
@@ -101,7 +101,7 @@ func TestAFailedHistoryDownloadDoesNotHoldCloseUp(t *testing.T) {
 		func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error) {
 			return nil, errors.New("synthetic download failure")
 		},
-		func(context.Context, *events.HistorySync) { t.Error("a failed download was handed on") },
+		func(context.Context, string, *events.HistorySync) { t.Error("a failed download was handed on") },
 	)
 	h.add(&waE2E.HistorySyncNotification{})
 	if !h.settled(time.Second) {
@@ -117,7 +117,7 @@ func TestOnlyTheAccountsOwnHistoryAnnouncementIsDownloaded(t *testing.T) {
 			asked <- struct{}{}
 			return nil, errors.New("synthetic")
 		},
-		func(context.Context, *events.HistorySync) {},
+		func(context.Context, string, *events.HistorySync) {},
 	)
 	announce := func(fromMe bool) *events.Message {
 		evt := incoming(selfPN, selfPN, &waE2E.Message{ProtocolMessage: &waE2E.ProtocolMessage{

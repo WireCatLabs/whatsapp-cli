@@ -136,6 +136,8 @@ export interface FakeEngine extends WhatsAppEngine, FakeGroups, FakePrivacy, Fak
   markedRead: WaAnchor[]
   /** Each `storedChats` request, by the chat ids it carried. */
   storedAsked: string[][]
+  /** Each `historySaved` answer the CLI gave, in order. */
+  savedAnswers: { push: string; saved: boolean }[]
   /** Each `storedChats` request's recipient ids, empty when it carried none. */
   recipientsAsked: string[][]
   /** Each id `canonicalChat` was asked for. */
@@ -213,6 +215,7 @@ export const fakeEngine = (
   const markedUnread: WaAnchor[] = []
   const markedRead: WaAnchor[] = []
   const storedAsked: string[][] = []
+  const savedAnswers: { push: string; saved: boolean }[] = []
   const recipientsAsked: string[][] = []
   const canonicalAsked: string[] = []
   const keysMissing = () =>
@@ -294,6 +297,7 @@ export const fakeEngine = (
     markedUnread,
     markedRead,
     storedAsked,
+    savedAnswers,
     recipientsAsked,
     canonicalAsked,
     closed: false,
@@ -500,6 +504,9 @@ export const fakeEngine = (
     canonicalChat: async (jid) => {
       canonicalAsked.push(jid)
       return lids[jid] ?? jid
+    },
+    historySaved: async (push, saved) => {
+      savedAnswers.push({ push, saved })
     },
     storedChats: async (chats, recipients = []) => {
       storedAsked.push(chats)

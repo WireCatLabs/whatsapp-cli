@@ -30,7 +30,7 @@ func pushEngine(t *testing.T, path string, listening bool, fetch func() error) (
 			}
 			return &waHistorySync.HistorySync{}, nil
 		},
-		func(context.Context, *events.HistorySync) { delivered.Add(1) },
+		func(context.Context, string, *events.HistorySync) { delivered.Add(1) },
 	)
 	e.downloads.after = e.pushHanded
 	return e, &delivered
@@ -67,11 +67,32 @@ func TestARunThatIsNotListeningKeepsAPushForServeToHandOn(t *testing.T) {
 	if !serve.downloads.settled(time.Second) || served.Load() != 1 {
 		t.Fatalf("serve handed on %d kept pushes, want 1", served.Load())
 	}
+	if handed, _, _ := pushRow(t, serve, "PUSH1"); handed {
+		t.Fatal("a push was marked handed before the CLI said it is stored")
+	}
+	serve.historySaved("PUSH1", true)
 	if handed, _, _ := pushRow(t, serve, "PUSH1"); !handed {
-		t.Fatal("the handed push is not marked")
+		t.Fatal("the stored push is not marked")
 	}
 	if len(serve.pushes.waiting(context.Background())) != 0 {
-		t.Fatal("a handed push still waits")
+		t.Fatal("a stored push still waits")
+	}
+}
+
+func TestAPushTheCLICouldNotStoreWaitsForTheNextServe(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "private.db")
+	serve, _ := pushEngine(t, path, true, func() error { return nil })
+	serve.historyPush("PUSH1", fullChunk(4))
+	serve.downloads.settled(time.Second)
+	serve.historySaved("PUSH1", false)
+	if len(serve.pushes.waiting(context.Background())) != 1 {
+		t.Fatal("a push the store did not take is no longer kept")
+	}
+
+	next, delivered := pushEngine(t, path, true, func() error { return nil })
+	next.replayHistoryPushes()
+	if !next.downloads.settled(time.Second) || delivered.Load() != 1 {
+		t.Fatalf("the next serve handed it on %d times, want 1", delivered.Load())
 	}
 }
 
