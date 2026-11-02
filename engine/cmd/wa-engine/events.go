@@ -65,16 +65,9 @@ func (e *engine) handle(raw any) {
 			}
 		}
 	case *events.HistorySync:
-		history := e.conv.history(evt.Data, e.client.ParseWebMessage)
-		e.remember(history.Chats)
-		rekeys := e.historyRekeys(history)
-		if history.Kind == "on_demand" {
-			history = e.onDemand(history, evt.Notification)
-		}
-		history.Rekeys = rekeys
-		if history.Kind != "on_demand" || !history.empty() || len(rekeys) > 0 {
-			e.out.event("history", history)
-		}
+		e.history("", evt)
+	case keptHistory:
+		e.history(evt.id, evt.HistorySync)
 	case *events.Receipt:
 		if evt.IsFromMe && evt.Sender.Device == 0 {
 			phoneSeen(phoneSeenStamp, evt.Timestamp)
@@ -189,4 +182,25 @@ func bannedFor(expire time.Duration, now time.Time) *refusal {
 	dated := *banned
 	dated.Until = iso(now.Add(expire))
 	return &dated
+}
+
+// history hands a push on to the CLI. A kept push names its id, so the CLI can say once it is stored.
+func (e *engine) history(push string, evt *events.HistorySync) {
+	history := e.conv.history(evt.Data, e.client.ParseWebMessage)
+	e.remember(history.Chats)
+	rekeys := e.historyRekeys(history)
+	if history.Kind == "on_demand" {
+		history = e.onDemand(history, evt.Notification)
+	}
+	history.Rekeys = rekeys
+	// An on-demand answer goes to the request that asked for it, which can ask again: it is done once handed on.
+	if history.Kind == "on_demand" {
+		if !history.empty() || len(rekeys) > 0 {
+			e.out.event("history", history)
+		}
+		e.historySaved(push, true)
+		return
+	}
+	history.Push = push
+	e.out.event("history", history)
 }

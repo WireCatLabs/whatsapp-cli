@@ -61,7 +61,11 @@ links, and the socket carries new messages after that. So `WHATSAPP.history` is 
   what `watch` would, without connecting, and cli-core saves it before the command exits. A history push is saved
   the same way: `listenHistory` hands on what `feed` would. whatsmeow acknowledges a push as it is announced, so the
   engine downloads pushes itself (`historysync.go`, one at a time in arrival order, as whatsmeow's own loop) and
-  close waits up to 3 s for one still downloading, inside the 5 s the CLI gives the engine to exit.
+  close waits up to 3 s for one still downloading, inside the 5 s the CLI gives the engine to exit. Each announced
+  push is a row of `wa_history_pushes` in the device file (`historypushes.go`); the `history` event names it
+  (`push`), and the CLI answers `historySaved` once cli-core's handler says the batch is in the store. Only then is the
+  row marked handed and the file deleted from WhatsApp's server; a push not stored waits for the next listening run.
+  An on-demand answer is done once handed on: the request that asked can ask again.
 - **Older history is asked of the phone.** The adapter's `history` (cli-core's `ServerReads.history`, what
   `messages sync` pages through) sends the engine's `older` request, counting back from a stored message: the oldest
   one of the chat on the first page, then the newest stored at or before the time the last page reached. Its

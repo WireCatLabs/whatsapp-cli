@@ -463,6 +463,29 @@ describe("whatsAppAdapter", () => {
     expect(batches.at(-1)?.chats?.[0]).not.toHaveProperty("unreadCount")
   })
 
+  it("tells the engine whether each kept history push reached the store", async () => {
+    const engine = fakeEngine(seed)
+    const notice = { jid: seed.busy, kind: "group" as const, parent: null }
+    const controller = new AbortController()
+    const storesOnlyChats = async (batch: HistoryBatch) => (batch.chats?.length ?? 0) > 0
+    const listened = whatsAppAdapter(engine).listenHistory?.(storesOnlyChats, controller.signal)
+    const pushed = (push: string | undefined, chats: (typeof notice)[]) =>
+      engine.push({
+        event: "history",
+        history: { kind: "full", chats, contacts: [], messages: [], votes: [], ...(push ? { push } : {}) },
+      })
+    pushed("PUSH1", [notice])
+    pushed("PUSH2", [])
+    pushed(undefined, [notice])
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    controller.abort()
+    await listened
+    expect(engine.savedAnswers).toEqual([
+      { push: "PUSH1", saved: true },
+      { push: "PUSH2", saved: false },
+    ])
+  })
+
   it("hands the engine only the stored phone-form one-to-one chats, in one request, and none when there are none", async () => {
     const engine = fakeEngine(seed)
     const adapter = whatsAppAdapter(engine)

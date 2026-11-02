@@ -209,6 +209,9 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "canonicalChat":
       say({ id, ok: fields.jid === "70000000009@s.whatsapp.net" ? "100000000000002@lid" : fields.jid })
       break
+    case "historySaved":
+      say({ id, ok: null })
+      break
     case "storedChats":
       for (const chat of [...fields.chats, ...(fields.recipients ?? [])])
         say({ event: "rekey", from: chat, to: "100000000000002@lid" })

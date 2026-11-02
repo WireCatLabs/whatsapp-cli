@@ -23,9 +23,10 @@ var historyWait = 3 * time.Second
 // the device store before it gets here (historypushes.go): an exit mid-download leaves it for the next listening run
 // instead of losing it.
 type historyDownloads struct {
-	fetch   func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error)
-	deliver func(context.Context, *events.HistorySync)
-	// after answers for a push with an id once it is handed on (ok) or its download failed.
+	fetch func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error)
+	// deliver hands a downloaded push on; id is the kept push's, empty for one the device store does not keep.
+	deliver func(ctx context.Context, id string, evt *events.HistorySync)
+	// after answers for a push with an id whose download failed; a delivered one waits for the CLI's historySaved.
 	after func(ctx context.Context, id string, ok bool)
 
 	queue chan queuedPush
@@ -38,7 +39,7 @@ type historyDownloads struct {
 
 func newHistoryDownloads(
 	fetch func(context.Context, *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error),
-	deliver func(context.Context, *events.HistorySync),
+	deliver func(ctx context.Context, id string, evt *events.HistorySync),
 ) *historyDownloads {
 	idle := make(chan struct{})
 	close(idle)
@@ -50,22 +51,30 @@ func newHistoryDownloads(
 // downloadsFor downloads with whatsmeow's storage done before the batch is handed on: the push's phone-to-LID
 // mappings are what its re-keys are read from, and an exit would lose storage still running in the background.
 func downloadsFor(client *whatsmeow.Client, handle func(any)) *historyDownloads {
+	dropFile := func(ctx context.Context, n *waE2E.HistorySyncNotification) {
+		_ = client.DeleteMedia(ctx, whatsmeow.MediaHistory, n.GetDirectPath(), n.GetFileEncSHA256(), n.GetEncHandle())
+	}
 	return newHistoryDownloads(
 		func(ctx context.Context, n *waE2E.HistorySyncNotification) (*waHistorySync.HistorySync, error) {
 			return client.DownloadHistorySync(ctx, n, true)
 		},
-		func(ctx context.Context, evt *events.HistorySync) {
-			// whatsmeow's dispatch survives a handler's panic and still deletes the blob; so does this.
+		func(ctx context.Context, id string, evt *events.HistorySync) {
 			func() {
 				defer func() {
 					if recover() != nil {
 						fmt.Fprintln(os.Stderr, "wa-engine: a history push could not be handled")
 					}
 				}()
-				handle(evt)
+				if id == "" {
+					handle(evt)
+				} else {
+					handle(keptHistory{id: id, HistorySync: evt})
+				}
 			}()
-			n := evt.Notification
-			_ = client.DeleteMedia(ctx, whatsmeow.MediaHistory, n.GetDirectPath(), n.GetFileEncSHA256(), n.GetEncHandle())
+			// A kept push keeps its file on WhatsApp's server until the CLI says it is stored (historySaved).
+			if id == "" {
+				dropFile(ctx, evt.Notification)
+			}
 		},
 	)
 }
@@ -108,10 +117,13 @@ func (h *historyDownloads) one(ctx context.Context, push queuedPush) {
 	if push.id != "" && h.closing.Load() {
 		return
 	}
-	h.deliver(ctx, &events.HistorySync{Data: data, Notification: n})
-	if h.after != nil {
-		h.after(ctx, push.id, true)
-	}
+	h.deliver(ctx, push.id, &events.HistorySync{Data: data, Notification: n})
+}
+
+// keptHistory is a downloaded push the device store keeps until the CLI has saved it.
+type keptHistory struct {
+	id string
+	*events.HistorySync
 }
 
 func (h *historyDownloads) done() {

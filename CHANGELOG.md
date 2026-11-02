@@ -3,6 +3,15 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Fixed
+
+- **History the phone sends after linking is kept until the local store has it.** A link while the store could not be
+  written (a damaged file) marked every history part done, deleted it from WhatsApp's server, and reported the
+  messages kept. Now a part counts as done only once cli-core has stored it; until then it stays in the device file
+  and on WhatsApp's server, and the next `serve` hands it on again.
+
 ## 0.23.0 — 01.11.2026
 
 ### Added

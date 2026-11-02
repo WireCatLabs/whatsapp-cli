@@ -270,7 +270,10 @@ export const listenAdapter = ({
         stars: (stars ?? []).map((one) => ({ chatId: one.chat, messageId: one.message, starred: one.starred })),
         deletions: (deletions ?? []).map((one) => ({ chatId: one.chat, messageId: one.message })),
       }
-      onBatch(batch)
+      const saved: unknown = await onBatch(batch)
+      // The phone pushes this once: the engine keeps it until the store has it. A handler that stores nothing says
+      // nothing, and the push counts as stored.
+      if (event.history.push) await engine.historySaved(event.history.push, saved !== false).catch(() => {})
     }
     const pushes = listening(engine, ["history", "rekey", "connection"], signal, words, warn, handed, expected)
     const handOn = () => {
