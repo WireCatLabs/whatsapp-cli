@@ -55,9 +55,9 @@ func TestConcurrentDecryptionTransactionsWaitInsteadOfFailingBusy(t *testing.T) 
 	}
 }
 
-func TestPairingAsksThePhoneForMoreThanAYearOfHistory(t *testing.T) {
-	lookLikeABrowser()
-	if got := store.DeviceProps.GetHistorySyncConfig().GetFullSyncDaysLimit(); got <= 365 {
-		t.Fatalf("full sync days limit %d, want more than a year", got)
+func TestPairingAsksThePhoneForTheHistoryTheCLINames(t *testing.T) {
+	lookLikeABrowser(400)
+	if got := store.DeviceProps.GetHistorySyncConfig().GetFullSyncDaysLimit(); got != 400 {
+		t.Fatalf("full sync days limit %d, want 400", got)
 	}
 }

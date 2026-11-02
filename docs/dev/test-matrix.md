@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**277 ✅ · 838 ⛔ · 0 ❌** — 365 commands, 750 options.
+**277 ✅ · 839 ⛔ · 0 ❌** — 365 commands, 751 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -226,6 +226,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages sync` | `--catch-up-chunks` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--catch-up-messages` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--catch-up-time` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
+| `messages sync` | `--full-history` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/history-limits.test.ts and src/cli/messenger/stored.test.ts |
 | `messages sync` | `--background` | ✅ |  |
 | `messages sync` | `--dry-run` | ✅ |  |
 | `reactions list` |  | ✅ |  |

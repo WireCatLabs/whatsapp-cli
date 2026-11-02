@@ -4,6 +4,7 @@ import { PassThrough } from "node:stream"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
 import { PASTE_QR, plainQr } from "@wirecat/cli-core"
+import type { MessengerAdapter } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { whatsAppAdapter } from "../adapter/adapter.js"
@@ -111,6 +112,18 @@ describe("wa session start", () => {
       historyWait: { ...QUICK, slowMs: 60_000 },
     })
     expect(quick.stderr).not.toContain("still waiting")
+  })
+
+  it("counts only the history the store kept", async () => {
+    const batch = { chats: [{ id: seed.busy }], messages: [{ id: "1" }, { id: "2" }], people: [] }
+    const adapter = (saved: boolean) =>
+      ({
+        feed: async (onBatch: (batch: unknown, saved?: Promise<boolean>) => void) =>
+          onBatch(batch, Promise.resolve(saved)),
+      }) as unknown as MessengerAdapter
+    const quick = { firstMs: 5_000, quietMs: 0 }
+    expect((await receiveHistory(adapter(true), quick, () => {})).messages).toBe(2)
+    expect(await receiveHistory(adapter(false), quick, () => {})).toEqual({ chats: 0, messages: 0, people: 0 })
   })
 
   it("asks nothing and counts nothing when the profile is already linked", async () => {

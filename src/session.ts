@@ -4,6 +4,7 @@ import { atTerminal, loginQr, readSecret } from "@wirecat/cli-core"
 import {
   asFirstWord,
   environmentOf,
+  type HistoryBatch,
   type MessengerAdapter,
   type MessengerContext,
   secretInputOf,
@@ -50,6 +51,7 @@ export const receiveHistory = async (
   signal?: AbortSignal,
 ): Promise<Received> => {
   const received: Received = { chats: 0, messages: 0, people: 0 }
+  const writes: Promise<void>[] = []
   const stop = new AbortController()
   const end = () => stop.abort()
   let timer = setTimeout(end, wait.firstMs)
@@ -57,10 +59,16 @@ export const receiveHistory = async (
   signal?.addEventListener("abort", end, { once: true })
   try {
     await Promise.all([
-      adapter.feed?.((batch) => {
-        received.chats += batch.chats?.length ?? 0
-        received.messages += batch.messages?.length ?? 0
-        received.people += batch.people?.length ?? 0
+      adapter.feed?.((batch: HistoryBatch, saved?: Promise<boolean>) => {
+        // Counted once the store has it: a store that cannot write keeps nothing, and the link must not say kept.
+        const count = (stored: boolean) => {
+          if (!stored) return
+          received.chats += batch.chats?.length ?? 0
+          received.messages += batch.messages?.length ?? 0
+          received.people += batch.people?.length ?? 0
+        }
+        if (saved) writes.push(saved.then(count))
+        else count(true)
         clearTimeout(slow)
         clearTimeout(timer)
         timer = setTimeout(end, wait.quietMs)
@@ -72,6 +80,7 @@ export const receiveHistory = async (
     clearTimeout(timer)
     signal?.removeEventListener("abort", end)
   }
+  await Promise.all(writes)
   return received
 }
 

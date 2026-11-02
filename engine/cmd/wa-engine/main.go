@@ -23,6 +23,7 @@ func main() {
 	holder := flag.String("holder", "wa", "who holds the connection, named to anyone refused it")
 	linking := flag.Bool("link", false, "allow an empty store: this run links a new device")
 	listening := flag.Bool("listen", false, "this run saves what WhatsApp pushes; others only keep history pushes")
+	historyDays := flag.Uint("history-days", defaultHistoryDays, "at linking: how many days of history to ask the phone for")
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 	if *showVersion {
@@ -58,7 +59,7 @@ func main() {
 		out.refuse(refused)
 		os.Exit(1)
 	}
-	lookLikeABrowser()
+	lookLikeABrowser(uint32(*historyDays))
 	e := newEngine(ctx, device, out, logger.Sub("client"))
 	phones, err := openPhoneChats(ctx, db, device.ID == nil)
 	if err != nil {

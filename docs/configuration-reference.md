@@ -28,6 +28,9 @@ it. Without either, a command that uses an account stops with exit code `2` and 
 | `timeout_ms` | none | how long **one** request may wait, in milliseconds; for the whole command use `--timeout` | none |
 | `color` | from the terminal | colour in the table view | none; with no setting, `NO_COLOR` turns it off |
 | `sender_colors` | `false` | a colour per sender in the table view of messages | none |
+| `history_dialog_days` | `1095` | how many days back the phone's history of a one-to-one chat is kept, 1 to 1095; linking asks the phone for the longer of this and `history_group_days` | `messages sync <chat> --full-history` |
+| `history_group_days` | `365` | how many days back the history of a group of more than 2 people is kept, 1 to 1095 | `messages sync <chat> --full-history` |
+| `history_group_members_max` | `50` | a group with more people keeps none of its pushed history; `store status` lists what was left out | `messages sync <chat> --full-history` |
 | `search_catch_up` | `false` | prepare newly stored chats for local search: their graph and, where installed, their vectors | `--catch-up`, `--no-catch-up` |
 | `picture_search` | `false` | search stored pictures by what they show, once the model is downloaded | none |
 | `search_reranker` | `mmarco` | the model that reranks the first 50 hits of `search messages --discover`: `mmarco` (136 MB), `bge-reranker-v2-m3` (588 MB) or `off`. A reranker that is not downloaded is skipped, and discovery says so; `wa models download mmarco` downloads it | none |

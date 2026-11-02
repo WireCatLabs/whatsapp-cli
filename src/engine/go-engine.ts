@@ -38,6 +38,8 @@ export interface GoEngineOptions {
   /** Allows an empty store: this run links a new device. */
   link?: boolean
   /** The run saves what WhatsApp pushes (`serve`, a link); any other run only keeps a history push for one that does. */
+  /** At linking: how many days of history to ask the phone for. */
+  historyDays?: number
   listen?: boolean
   env?: NodeJS.ProcessEnv
   /** The engine's own diagnostics, fixed wording only. */
@@ -98,6 +100,7 @@ export const startGoEngine = async (options: GoEngineOptions): Promise<WhatsAppE
     options.holder,
     ...(options.link ? ["--link"] : []),
     ...(options.listen ? ["--listen"] : []),
+    ...(options.link && options.historyDays ? ["--history-days", String(options.historyDays)] : []),
   ]
   const child = spawn(command.file, args, { env, stdio: ["pipe", "pipe", "pipe"], windowsHide: true })
   const hub = eventHub()

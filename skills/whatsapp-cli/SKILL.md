@@ -87,6 +87,12 @@ the store does not hold yet needs its `…@g.us` id.
   ask the owner to open it first. No answer is exit `timeout`, not an empty chat; a late answer is still saved by
   `serve`. `--all` is refused: there is no chat list to walk. A chat with nothing stored (`not_found`) cannot be
   asked about until `serve` saves its next message; tell the owner that, do not retry.
+- **Not all history is stored, on purpose.** The phone's history is saved within the profile's limits: one-to-one
+  chats 3 years (`history_dialog_days`), groups of more than 2 people 1 year (`history_group_days`), and nothing of
+  a group above 50 people (`history_group_members_max`). An answer that read a chat with skipped history says so:
+  `meta.complete: false`, `missing` with `field: "history_limits"`, and a `next` step. Say that to the owner
+  instead of "no messages"; `wa <profile> store status` lists the chats. Fetch a chat in full only when the owner
+  asks: `wa <profile> messages sync <chat> --full-history`.
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp serve`.
