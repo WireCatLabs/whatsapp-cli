@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**277 ✅ · 839 ⛔ · 0 ❌** — 365 commands, 751 options.
+**277 ✅ · 840 ⛔ · 0 ❌** — 365 commands, 752 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1122,6 +1122,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--max-output-bytes` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/agent-contract.test.ts |
 | *global* | `--brief` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/output-detail.test.ts |
 | *global* | `--full` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/output-detail.test.ts |
+| *global* | `--compact` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/compact.test.ts |
 | *global* | `--dry-run` | ✅ |  |
 | *global* | `--yes` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/admin-commands.test.ts |
 | *global* | `--record` | ✅ |  |

@@ -3,6 +3,19 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`messages sync` keeps to the history limits too** (cli-core 0.551.0): a one-to-one chat is asked back at most
+  `history_dialog_days`, a group `history_group_days`, and a group above `history_group_members_max` people is not
+  asked; `--full-history` lifts it for one chat, and the answer says what it left out (`limited`).
+- **`--compact`: one line per item** in the text view (cli-base 0.75.0).
+
+### Changed — may break callers
+
+- **whatsapp-cli requires cli-base 0.75.0** (cli-core 0.551.0).
+
 ## 0.26.0 — 02.11.2026
 
 ### Fixed
