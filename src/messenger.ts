@@ -39,6 +39,8 @@ export interface Environment extends BaseEnvironment {
   engine?: (request: EngineRequest) => unknown
   /** Tests run a stand-in for the Go engine binary, through the real client. */
   engineCommand?: { file: string; args: string[] }
+  /** Tests say whether `upgrade` installed the new version's engine. */
+  engineInstalled?: () => boolean
   /** Tests shorten how long `session start` waits for the phone's history. */
   historyWait?: { firstMs: number; quietMs: number; slowMs?: number }
   /** npm, the package manager and this install's path, for `upgrade` and the update notice; tests hand them in. */

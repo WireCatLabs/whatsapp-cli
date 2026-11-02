@@ -1,18 +1,21 @@
-import { mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { itemEnvelopeSchema } from "@wirecat/cli-base/standards"
 import * as v from "valibot"
 import { describe, expect, it, onTestFinished } from "vitest"
+import { enginePackage } from "../engine-binary.js"
 import { run } from "../program.js"
 import type { UpdateEnvironment } from "../update.js"
+import { engineInstalled } from "./update.js"
 
 const PNPM =
   "/home/a/.local/share/pnpm/store/v11/links/@wirecat/whatsapp-cli/0.1.0/x/node_modules/@wirecat/whatsapp-cli/dist/update.js"
 
 const update = async (
   argv: string[],
-  { latest = "99.0.0" as string | null, scriptPath = PNPM, exit = 0, restartExit = 0 } = {},
+  { latest = "99.0.0" as string | null, scriptPath = PNPM, exit = 0, restartExit = 0, engine = true } = {},
 ) => {
   const ran: string[][] = []
   const environment: UpdateEnvironment = {
@@ -25,7 +28,12 @@ const update = async (
     },
   }
   const streams = captureStreams()
-  const code = await run(["upgrade", ...argv, "--json"], { streams, tty: false, update: environment })
+  const code = await run(["upgrade", ...argv, "--json"], {
+    streams,
+    tty: false,
+    update: environment,
+    engineInstalled: () => engine,
+  })
   const [out] = streams.stdout
   const result = out ? v.parse(itemEnvelopeSchema(v.looseObject({})), JSON.parse(out)).item : undefined
   return { code, ran, result, stderr: streams.stderr.join("\n") }
@@ -100,6 +108,15 @@ describe("wa upgrade and a running server", () => {
     expect(result).toMatchObject({ updated: true, restarted: ["work"] })
   })
 
+  it("restarts no server when the new version's engine did not install, and says what to do", async () => {
+    serving("work")
+    const { ran, result, stderr } = await update([], { engine: false })
+
+    expect(ran.some((command) => command.includes("restart"))).toBe(false)
+    expect(result).toMatchObject({ updated: true, restarted: [] })
+    expect(stderr).toContain("did not install, so no serve was restarted")
+  })
+
   it("names a server it could not restart, and still reports the update", async () => {
     serving("work")
     const { code, result, stderr } = await update([], { restartExit: 2 })
@@ -116,5 +133,22 @@ describe("wa upgrade and a running server", () => {
     expect(ran).toHaveLength(2)
     expect(result?.restarted).toEqual(["work"])
     expect(JSON.stringify(ran)).not.toContain("bad&name")
+  })
+})
+
+describe("the engine check after an upgrade", () => {
+  it("finds the engine beside the version the script's link now points at", () => {
+    const root = mkdtempSync(join(tmpdir(), "wa-upgrade-"))
+    const cli = join(root, "v2", "node_modules", "@wirecat", "whatsapp-cli")
+    mkdirSync(join(cli, "dist", "bin"), { recursive: true })
+    writeFileSync(join(cli, "dist", "bin", "wa.js"), "")
+    symlinkSync(join(root, "v2"), join(root, "current"))
+    const script = join(root, "current", "node_modules", "@wirecat", "whatsapp-cli", "dist", "bin", "wa.js")
+    expect(engineInstalled(script)).toBe(false)
+
+    const engine = join(root, "v2", "node_modules", ...enginePackage().split("/"))
+    mkdirSync(engine, { recursive: true })
+    writeFileSync(join(engine, "package.json"), JSON.stringify({ name: enginePackage() }))
+    expect(engineInstalled(script)).toBe(true)
   })
 })
