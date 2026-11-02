@@ -3,6 +3,22 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **The first run of a new version refreshes the agent instructions an older one installed.** A stale
+  `SKILL.md` copy (Claude Code, `~/.agents/skills`, Hermes) is rewritten once, with one line on stderr; a missing,
+  unversioned or symlinked copy is left alone. `WA_NO_SKILL_REFRESH=1` turns it off. (cli-core 0.544.0)
+
+### Security
+
+- **An agent can no longer loosen permissions from its own shell.** `wa <profile> config set|unset permissions…`
+  run by an agent (Hermes, OpenClaw, Claude Code and others that mark their shell) may only tighten a level, never
+  loosen it, and `mcp.authority` and `bot.api` stay the owner's. So the read-only the desktop app sets holds, even
+  when a chat message talks the agent into running `config set`. Change permissions in a terminal outside the agent.
+  (cli-core 0.544.0)
+
 ## 0.24.0 — 02.11.2026
 
 ### Changed — may break callers
