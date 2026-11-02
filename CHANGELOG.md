@@ -3,6 +3,15 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Fixed
+
+- **`wa upgrade` no longer restarts `serve` into a version without its engine.** Right after a release the package
+  manager can install the CLI and skip the engine package without a word; the restarted `serve` then stopped with
+  "the WhatsApp engine is not installed". It now checks the engine first, restarts nothing when it is missing, and says
+  to run `wa upgrade` again.
+
 ## 0.25.0 — 02.11.2026
 
 ### Added
