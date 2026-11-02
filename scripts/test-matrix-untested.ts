@@ -144,6 +144,9 @@ export const UNTESTED: Untested[] = [
   })),
   ...cliCore("src/services/account-list.test.ts", [["account list"]]),
   ...cliCore("src/cli/messenger/attachments.test.ts", [["messages download", "--attachment"]]),
+  ...cliCore("src/services/history-limits.test.ts and src/cli/messenger/stored.test.ts", [
+    ["messages sync", "--full-history"],
+  ]),
   ...cliCore("src/cli/messenger/chats-documents.test.ts", [
     ["chats documents list"],
     ["chats documents list", "--limit"],

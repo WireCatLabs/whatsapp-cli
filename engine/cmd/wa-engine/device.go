@@ -77,16 +77,16 @@ func openDevice(ctx context.Context, storePath string, linking bool, logger waLo
 	}
 }
 
-// fullSyncDays is how far back the phone's full sync reaches. Without it the phone sends one year; mautrix-whatsapp
-// observes about three years as the phone's own cap and that a larger value does no harm.
-const fullSyncDays = 3650
+// defaultHistoryDays is how far back the phone's full sync reaches unless the CLI says otherwise: three years, the
+// owner's longest history setting and about the phone's own cap (mautrix-whatsapp). Without it the phone sends one.
+const defaultHistoryDays = 1095
 
 // lookLikeABrowser sets what WhatsApp sees at pairing: a desktop browser on the host system, never this tool.
 // Desktop with full sync asks the phone for its history, not the last three months.
-func lookLikeABrowser() {
+func lookLikeABrowser(historyDays uint32) {
 	store.DeviceProps.PlatformType = waCompanionReg.DeviceProps_DESKTOP.Enum()
 	store.DeviceProps.RequireFullSync = proto.Bool(true)
-	store.DeviceProps.HistorySyncConfig.FullSyncDaysLimit = proto.Uint32(fullSyncDays)
+	store.DeviceProps.HistorySyncConfig.FullSyncDaysLimit = proto.Uint32(historyDays)
 	store.SetOSInfo(osName(), [3]uint32{0, 1, 0})
 }
 

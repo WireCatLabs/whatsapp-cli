@@ -3,6 +3,26 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **History limits by chat kind** (cli-core 0.545.0). The history the phone pushes is kept for 3 years in one-to-one
+  chats (`history_dialog_days`), 1 year in groups of more than 2 people (`history_group_days`), and not at all in a
+  group above 50 people (`history_group_members_max`). What was left out is recorded per chat: `store status` lists
+  it, and `search messages`, `search all` and `messages list --offline` answer `meta.complete: false` with a
+  `history_limits` entry and the step that fetches it. `messages sync <chat> --full-history` keeps one chat whole.
+  Live messages and what is already stored are never dropped.
+
+### Changed — may break callers
+
+- **Linking asks the phone for the longest history setting, 3 years by default**, instead of 10.
+
+### Fixed
+
+- **A link counts only what reached the store**: "History: N chats, M messages kept" no longer counts messages a
+  store that could not write never kept.
+
 ## 0.24.0 — 02.11.2026
 
 ### Changed — may break callers

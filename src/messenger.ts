@@ -85,6 +85,10 @@ export const openEngine = async (
   return engine
 }
 
+// The phone's full sync is one number for the account; the per-chat limits act when cli-core saves the push.
+const historyDaysOf = (settings: { historyLimits?: { dialogDays: number; groupDays: number } }): number =>
+  Math.max(settings.historyLimits?.dialogDays ?? 1095, settings.historyLimits?.groupDays ?? 365)
+
 // whatsmeow's warnings always reach cli-core's provider log, which doctor counts; WA_ENGINE_LOG only moves them.
 const withProviderLog = (env: NodeJS.ProcessEnv, profile: string): NodeJS.ProcessEnv => {
   if (env.WA_ENGINE_LOG) return env
@@ -110,6 +114,7 @@ const startEngine = async (
     return await startGoEngine({
       ...request,
       env: withProviderLog(base.env, profile),
+      ...(request.link ? { historyDays: historyDaysOf(base.settings) } : {}),
       warn: base.renderer.warn,
       observe: engineWire,
       ...(engineCommand ? { command: engineCommand } : {}),
