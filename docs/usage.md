@@ -6,6 +6,7 @@ Use this page to learn how a `wa` command line is built and where its answers co
 wa <profile> <resource> <verb> [arguments] [options]
 wa personal chats list
 wa personal messages list "Book club" --limit 20
+wa personal messages list "Book club" 'date>=2026-10-01 date<2026-10-20'   # a window, oldest first
 wa personal search messages "dinner"
 ```
 
