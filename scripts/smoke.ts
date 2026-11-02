@@ -38,6 +38,7 @@ check("--version exits cleanly", version.status === 0)
 check("--version prints a version on stdout", /^\d+\.\d+\.\d+$/.test(version.stdout.trim()))
 check("--version says nothing on stderr", version.stderr === "")
 
+check("--wcat-describe names the command", JSON.parse(wa("--wcat-describe").stdout || "{}").name === "wa")
 check("--help names the command", wa("--help").stdout.includes("Usage: wa"))
 
 const bad = wa("--nonsense")

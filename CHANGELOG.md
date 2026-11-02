@@ -3,6 +3,13 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`wcat wa` runs the tool, and `wcat --help` lists it.** The package installs `wcat-wa` beside `wa`, and
+  `wcat-wa --wcat-describe` prints the tool's name, version and description for `wcat`.
+
 ## 0.27.0 — 02.11.2026
 
 ### Added

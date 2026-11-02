@@ -15,7 +15,8 @@
   },
   "packageManager": "pnpm@11.28.8",
   "bin": {
-    "wa": "dist/bin/wa.js"
+    "wa": "dist/bin/wa.js",
+    "wcat-wa": "dist/bin/wa.js"
   },
   "files": [
     "dist",
