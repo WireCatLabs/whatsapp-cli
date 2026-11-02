@@ -3,24 +3,54 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
-## Unreleased
+## 0.27.0 — 02.11.2026
 
 ### Added
 
 - **`messages sync` keeps to the history limits too** (cli-core 0.551.0): a one-to-one chat is asked back at most
   `history_dialog_days`, a group `history_group_days`, and a group above `history_group_members_max` people is not
   asked; `--full-history` lifts it for one chat, and the answer says what it left out (`limited`).
-- **`--compact`: one line per item** in the text view (cli-base 0.75.0).
+- **`--compact`: one line per item** for an agent, from the same answer `--json` prints: `#<id> · time · sender ·
+  text`, with paging and next steps as `#` lines; about half the bytes of the JSON (cli-core 0.550.0).
 - **`server install` enables the service**, so `serve` starts at every login and after a reboot. A service an older
   `wa` installed is not enabled until you run `wa <profile> server install` again; `server status` says
   `starts_at_login` (cli-core 0.552.0).
+- **`messages list` reads a window with a start and an end**: `'date>=2026-10-01 date<2026-10-20'`. A start reads
+  forward, oldest first, and stops at the end; an end alone reads back from it, as before (cli-core 0.547.0).
 
 ### Changed — may break callers
 
 - **whatsapp-cli requires cli-base 0.75.0** (cli-core 0.551.0).
-- **A search that runs out of time fails with `timeout` and reason `query.time-limit`**, in about 2 s, instead of
-  `validation_error` / `query.too-large` after running far past the limit (cli-core 0.552.0). The query was valid;
-  add `chat:` or `date:` to search less of the store.
+- **A search that runs out of time stops at its time limit and says it was the time, not the query.** It fails with
+  `timeout` and reason `query.time-limit` in about 2 s. On a large store it used to run past 90 s, past `--timeout`, or
+  fail with `validation_error` / `query.too-large`, as if the query were wrong. The query was valid: add `chat:` or
+  `date:` to search less of the store. A script that changed the query on `query.too-large` should treat
+  `query.time-limit` as "narrow it", not "fix it" (cli-core 0.552.0).
+- **`server install` fails where the service manager does not answer** (`systemctl --user`, or `launchctl` on
+  macOS), after it wrote the unit. On macOS, `server stop` only unloads the agent: it starts again at the next login;
+  `server uninstall` stops that (cli-core 0.552.0).
+- **Since 0.26.0, a chat given as `<kind>:<text>` is read as a reference** (cli-core 0.546.0, noted here after the
+  release): `chat:whatsapp/…` and `msg:whatsapp/…`, as other WireCat tools print them, work wherever a chat or a
+  message is named. A chat whose title looks like `note:plan` is no longer found by that title; give its id or a part
+  of the title. A reference to another account or messenger is refused and names the profile or the tool that opens
+  it.
+- **Since 0.26.0, an option after `--` is read as the option** (cli-core 0.546.0, noted here after the release):
+  `messages sync -- <chat> --json` answers in JSON. Commands that take free text, such as `messages send` and
+  `messages edit`, keep every word after `--` as text.
+
+### Fixed
+
+- **`messages delete` with no message id refuses with `validation_error`** before it connects. An empty id used to
+  reach WhatsApp as a deletion of nothing and answer success (cli-core 0.551.0).
+- **A sync whose reader goes away finishes its work.** When the program reading its output (the desktop app, a
+  pipe) closed early, a long `messages sync` ended with `write EPIPE`; it now finishes and its run record says how
+  (cli-core 0.552.0).
+- **`--brief` now shortens a `search messages` hit** to its reference, chat, time, sender, excerpt and score
+  (cli-core 0.550.0).
+- **`messages list`**: a start such as `date>=2026-10-01` keeps a message sent at exactly that moment, and the
+  `page.next` command of an answer runs as written (cli-core 0.547.0).
+- **An MCP call whose answer names a step only you can take** no longer fails as a bug; the step is kept
+  (cli-core 0.551.0).
 
 ### Security
 
