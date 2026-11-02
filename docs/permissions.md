@@ -96,7 +96,9 @@ approvals and may allow a call without asking again. Use `deny` or `readonly` to
 
 ## Limits and detailed rules
 
-An agent that can edit configuration files or run unrestricted terminal commands may be able to change these
-settings. Pin it to one profile with `WA_PROFILE_LOCK` ([profiles in linking](sessions.md#profiles)), and read
+Since 0.25.0 an agent can only tighten these settings with `config set`: run over MCP or in its own shell (where
+`AI_AGENT`, `CLAUDECODE` or `OPENCLAW_SHELL=exec` is set), it may only lower a level, and removing a permission accepts
+only `deny`. You loosen them in your own terminal, outside the agent. An agent that can edit configuration files
+directly or run unrestricted terminal commands may still be able to change them. Pin it to one profile with `WA_PROFILE_LOCK` ([profiles in linking](sessions.md#profiles)), and read
 [security](security.md) before giving that access. Every setting is in the
 [configuration reference](configuration-reference.md).

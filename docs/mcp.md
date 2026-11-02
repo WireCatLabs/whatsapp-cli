@@ -48,7 +48,9 @@ ending other sessions and removing contacts, are hidden. A command that WhatsApp
 runs, with exit code `2` and a message that says so.
 
 Commands that change future permissions or automation require `permissions.mcp.authority` set to `allow`; raw
-Cloud API calls require `permissions.bot.api` set to `allow`. Both keys default to `deny` over MCP. Other writes
+Cloud API calls require `permissions.bot.api` set to `allow`. Both keys default to `deny` over MCP. Set them from your
+own terminal, outside the agent: since 0.25.0 a `config set` run over MCP or in an agent's shell may only tighten a
+permission, and these two keys stay the owner's. Other writes
 remain subject to their command permissions, recipient lists and send limits.
 
 ## Connecting
