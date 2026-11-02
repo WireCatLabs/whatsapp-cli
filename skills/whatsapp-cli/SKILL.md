@@ -91,8 +91,10 @@ the store does not hold yet needs its `…@g.us` id.
   chats 3 years (`history_dialog_days`), groups of more than 2 people 1 year (`history_group_days`), and nothing of
   a group above 50 people (`history_group_members_max`). An answer that read a chat with skipped history says so:
   `meta.complete: false`, `missing` with `field: "history_limits"`, and a `next` step. Say that to the owner
-  instead of "no messages"; `wa <profile> store status` lists the chats. Fetch a chat in full only when the owner
-  asks: `wa <profile> messages sync <chat> --full-history`.
+  instead of "no messages"; `wa <profile> store status` lists the chats. When the owner asks for a chat in full,
+  `wa <profile> messages sync <chat> --full-history` keeps it whole from then on and fetches what the phone still
+  answers — only recent messages: the phone answers older history only once, when a device is linked. What the limits
+  skipped before comes back with the next link (`wa <profile> session end`, then `session start`), not by asking.
 - **One connection per linked device.** WhatsApp drops the older of two connections. **While `serve` runs, every
   command for that profile that connects runs inside `serve`**, on its connection: sends, edits, deletions,
   reactions, mark-read, downloads, group and people commands, `watch`, `doctor --online` and `wa <profile> mcp serve`.
