@@ -38,6 +38,7 @@ without one.
 | `--max-output-bytes <bytes>` | maximum machine output bytes (default: 4194304; 0 disables). |
 | `--brief` | found messages as reference, title, time, sender and excerpt only. |
 | `--full` | found messages with their whole text and every provider field. |
+| `--compact` | one line per item for an agent: reference first, text last, paging and next steps as # lines. |
 | `--dry-run` | preview parsed arguments and permissions before running the action. |
 | `--yes` | go ahead without the question an ask level puts before a write. |
 | `--record` | keep this run even where the config says record false; record_input false leaves the typed words out. |
@@ -1289,7 +1290,7 @@ wa messages list <chat> [query] [options]
 | Argument | | What it is |
 |---|---|---|
 | `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `query` | optional | where to start: id<42, date>2026-10-01; starred:true keeps the ones you starred. |
+| `query` | optional | where to start or which window: id<42, date>=2026-10-01 date<2026-10-20; starred:true keeps the ones you starred. |
 
 | Option | What it does |
 |---|---|
@@ -1600,7 +1601,7 @@ wa messages sync [chat] [options]
 | `--catch-up-chunks <n>` | at most this many local vector chunks. |
 | `--catch-up-messages <n>` | skip a graph rebuild larger than this many messages. |
 | `--catch-up-time <duration>` | local preparation time budget, 30s by default. |
-| `--full-history` | keep this chat's pushed history in full from now on, past the history limits (history_* settings). |
+| `--full-history` | read and keep this chat's history in full from now on, past the history limits (history_* settings). |
 | `--background` | run as a job that outlives this command; `store jobs show` follows it. |
 | `--dry-run` | only estimate how many messages, requests and minutes a full fetch would still take — from the store, no request. |
 

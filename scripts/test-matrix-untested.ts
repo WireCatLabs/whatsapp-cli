@@ -322,6 +322,7 @@ export const UNTESTED: Untested[] = [
       ["--max-output-bytes", "src/cli/agent-contract.test.ts"],
       ["--brief", "src/output-detail.test.ts"],
       ["--full", "src/output-detail.test.ts"],
+      ["--compact", "src/cli/compact.test.ts"],
       ["--yes", "src/cli/messenger/admin-commands.test.ts"],
       ["--no-record", "src/cli/json-fields.test.ts"],
       ["--help-all", "src/cli/help/first-screen.test.ts"],
