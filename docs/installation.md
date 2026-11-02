@@ -27,8 +27,7 @@ Only a running `serve` saves the parts that come after `setup` or `session start
 WhatsApp open on the phone and install `serve` as a service:
 
 ```sh
-wa personal server install                               # writes the unit; starts nothing
-systemctl --user enable wa-serve-personal.service        # Linux: start at login; use the name install prints
+wa personal server install                               # writes the unit and enables it at login; starts nothing
 wa personal server start
 ```
 

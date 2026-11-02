@@ -161,7 +161,7 @@ To keep it running across logins, install it as a user service: a systemd user u
 macOS.
 
 ```sh
-wa personal server install  # writes the unit for this profile; starts nothing
+wa personal server install  # writes the unit for this profile and enables it; starts nothing
 ```
 
 ```sh
@@ -169,12 +169,12 @@ wa personal server start  # starts it — through the unit, now that there is on
 ```
 
 ```sh
-wa personal server status
+wa personal server status  # starts_at_login says whether it starts at the next login
 ```
 
-On Linux, `server install` does not make the unit start at login. `systemctl --user enable wa-serve-personal.service`
-does (`server install` prints the unit's name). On macOS the agent goes into
-`~/Library/LaunchAgents/`.
+`server install` enables the unit, so it starts at every login and after a reboot. A unit an older `wa` installed is
+not enabled until you run `server install` again; a unit installed from a development checkout (with its own
+`WA_*_DIR` folders) is written but not enabled. On macOS the agent goes into `~/Library/LaunchAgents/`.
 
 - The unit runs the `node` and the `wa` that installed it. Install it again after moving either, for example after
   changing Node versions.
