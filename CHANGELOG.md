@@ -11,10 +11,16 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `history_dialog_days`, a group `history_group_days`, and a group above `history_group_members_max` people is not
   asked; `--full-history` lifts it for one chat, and the answer says what it left out (`limited`).
 - **`--compact`: one line per item** in the text view (cli-base 0.75.0).
+- **`server install` enables the service**, so `serve` starts at every login and after a reboot. A service an older
+  `wa` installed is not enabled until you run `wa <profile> server install` again; `server status` says
+  `starts_at_login` (cli-core 0.552.0).
 
 ### Changed — may break callers
 
 - **whatsapp-cli requires cli-base 0.75.0** (cli-core 0.551.0).
+- **A search that runs out of time fails with `timeout` and reason `query.time-limit`**, in about 2 s, instead of
+  `validation_error` / `query.too-large` after running far past the limit (cli-core 0.552.0). The query was valid;
+  add `chat:` or `date:` to search less of the store.
 
 ### Security
 

@@ -153,8 +153,9 @@ case-sensitive; to find it anywhere use `body:/.*pay.*/`. This is Lucene's regul
 JavaScript lookaround, backreferences, anchors or flags.
 
 On a large store a short prefix such as `a*` can expand to more than 10,000 words and is refused; lengthen it. Long
-queries, deep nesting, large patterns and slow scans are refused with `validation_error`, reason `query.too-large`, not cut short: narrow the chat,
-the dates or the pattern.
+queries, deep nesting and large patterns are refused with `validation_error`, reason `query.too-large`, not cut short.
+A search that runs past its 2-second limit stops with `timeout`, reason `query.time-limit`: the query is valid, so
+narrow the chat, the dates or the pattern.
 
 ## The answer
 

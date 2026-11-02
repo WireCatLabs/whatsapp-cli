@@ -1920,7 +1920,7 @@ wa server logs [options]
 
 ### `wa server install`
 
-write a systemd user unit or a launchd agent for this profile; starts nothing
+write a systemd user unit or a launchd agent for this profile and have it start at every login; starts nothing now
 
 **Changes something on this computer only.**
 
@@ -1930,7 +1930,7 @@ wa server install
 
 ### `wa server uninstall`
 
-remove this profile's unit; stop it first
+remove this profile's unit, so it no longer starts at login; stop it first
 
 **Changes something on this computer only.**
 
