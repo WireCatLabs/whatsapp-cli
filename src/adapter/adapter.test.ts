@@ -228,7 +228,7 @@ describe("whatsAppAdapter", () => {
     const engine = fakeEngine(seed)
     const controller = new AbortController()
     const batches: HistoryBatch[] = []
-    const feeding = whatsAppAdapter(engine).feed((batch) => batches.push(batch), controller.signal)
+    const feeding = whatsAppAdapter(engine).feed((batch) => void batches.push(batch), controller.signal)
     const rekey = { from: "70000000009@s.whatsapp.net", to: "100000000000001@lid" }
     engine.push({ event: "rekey", ...rekey })
     engine.push({
@@ -445,7 +445,7 @@ describe("whatsAppAdapter", () => {
     }
     const controller = new AbortController()
     const batches: HistoryBatch[] = []
-    const listened = whatsAppAdapter(engine).listenHistory?.((batch) => batches.push(batch), controller.signal)
+    const listened = whatsAppAdapter(engine).listenHistory?.((batch) => void batches.push(batch), controller.signal)
     engine.push({ event: "rekey", from: "70000000001@s.whatsapp.net", to: seed.person })
     const notice = { jid: seed.busy, kind: "group" as const, parent: null }
     engine.push({
