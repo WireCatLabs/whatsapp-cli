@@ -7,6 +7,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
 
 ### Fixed
 
+- **A link's "History: … kept" counts only what reached the store** (cli-core 0.546.0). 0.25.0 already counted that
+  way; the cli-core that tells it which batches were saved is now in.
 - **`wa upgrade` no longer restarts `serve` into a version without its engine.** Right after a release the package
   manager can install the CLI and skip the engine package without a word; the restarted `serve` then stopped with
   "the WhatsApp engine is not installed". It now checks the engine first, restarts nothing when it is missing, and says
