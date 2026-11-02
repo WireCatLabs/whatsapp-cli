@@ -42,6 +42,11 @@ a request to the phone: "send me the 50 messages of this chat before this one". 
 message of the chat the store already holds, so a chat the store has nothing of cannot be asked about. Such a chat
 fills from its next message: once `serve` has saved one, `messages sync` counts back from it.
 
+**The phone answers only recent history.** Asked for the messages before one, it sends what it keeps close at hand:
+in a test on 2026-11-02 it answered with the days before the newest message of a chat and nothing from a year earlier,
+although the history pushed at linking had those messages. Older history arrives once, in the history push when the
+device is linked. So what the history limits left out comes back by linking again, not by `messages sync`.
+
 **Open WhatsApp on your phone first.** The phone answers while the app is open; in the background it keeps the request
 and answers when you next open it. A request it does not answer within 25 seconds fails with `timeout`; the late answer
 still arrives, and a running `serve` saves it, so nothing is lost. An empty answer means the chat starts there.
