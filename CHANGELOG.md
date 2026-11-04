@@ -3,6 +3,18 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`wa config migrate` writes each setting the file lacks into `defaults` at its default, and every write wa makes
+  to the file adds them too.** You then find and edit `limit`, `sends_per_hour`, `record` and the rest in
+  `config.json` without the docs. Your values, their order and keys wa does not know stay; `config unset` does not
+  put back what it removed, and a plain read never rewrites the file. `wa config show` gives each setting's default
+  and what it does (cli-core 0.563.0).
+- **From cli-core 0.563.0:** `config repair` mends the settings file's JSON syntax; `stats messages responses` and
+  `stats messages waiting`; `tasks status`, `tasks review` and `tasks acknowledge`; `tasks add --open-new`.
+
 ## 0.28.0 — 03.11.2026
 
 ### Added

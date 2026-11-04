@@ -3139,6 +3139,42 @@ wa stats messages discussion [query] [options]
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
 | `--limit <n>` | report rows, 1–100; 20 if not given. |
 
+#### `wa stats messages responses`
+
+how long the owner took to answer (--who me), or the other side took to answer the owner (--who others), in one-to-one chats — the local store only. Several messages in a row followed by one answer count as one reply, timed from the first unanswered message; the day of a row is the day of the reply
+
+```sh
+wa stats messages responses [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | date:, chat: and kind: terms, AND-ed — date>=30d, date:[60d TO 30d]; none reads all time. |
+
+| Option | What it does |
+|---|---|
+| `--who <side>` | whose replies: the owner's or the other side's. One of: `me`, `others`. |
+| `--by <group>` | one row per calendar day of the reply, or none. One of: `day`, `total`. |
+| `--timezone <zone>` | the IANA timezone for calendar days and date: bounds. |
+| `--source <accounts>` | every account of this messenger held in the store; personal, bots or all. |
+
+#### `wa stats messages waiting`
+
+how many chats wait on the owner — the local store only: a one-to-one chat whose newest message is a question, or a group whose newest message mentions the owner or replies to them. Muted or archived one-to-one chats are left out, as inbox leaves them out; date: bounds the newest message's time
+
+```sh
+wa stats messages waiting [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | date:, chat: and kind: terms, AND-ed — date>=30d, date:[60d TO 30d]; none reads all time. |
+
+| Option | What it does |
+|---|---|
+| `--timezone <zone>` | the IANA timezone for date: bounds. |
+| `--source <accounts>` | every account of this messenger held in the store; personal, bots or all. |
+
 #### `wa stats messages top`
 
 rank stored messages by a measure or explainable score; counters are snapshots with per-field observation freshness
@@ -3390,6 +3426,7 @@ wa tasks add <message> [options]
 | `--category <name>` | what it is about, from the list tasks categories prints: money, documents, meeting, …. |
 | `--into <id>` | when tasks add listed tasks that may be the same job: link the message to this one instead of opening a task. |
 | `--new` | when tasks add listed tasks that may be the same job: open the task anyway. |
+| `--open-new` | open a task from a message the chat's task point already passed (a read again with tasks review --since-time); without it such a read only updates and closes tasks. |
 | `--title <title>` | one line: the action and its object — send Alex the API token. |
 | `--description <text>` | the detail, in Markdown: who owes whom, done when, next step, keywords. |
 | `--due <time>` | when it must be done: an ISO 8601 time or 2h, 3d from now; none clears it. |
@@ -3596,6 +3633,54 @@ wa tasks scan <chat> [options]
 | Option | What it does |
 |---|---|
 | `--last <n>` | read the newest n stored messages of each chat (default 50, at most 1000). |
+
+### `wa tasks status`
+
+every chat that can hold your tasks — not a channel or Saved Messages — with the point its messages were read for tasks through, who read them, how many stored messages wait after it, and how many arrived late inside the stretch already read (history fetched afterwards). Its own point: reading a chat, marking it read, inbox --new and review --new never move it; tasks acknowledge does. Reads only the local store
+
+```sh
+wa tasks status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many chats. |
+
+### `wa tasks review`
+
+the stored messages after the chat's task point, oldest first, and the chat's open tasks, so one read can open new tasks and update or close the old ones. A chat never read starts 14 days back. Moves nothing: when done, tasks acknowledge <chat> <through> records it. Reads only the local store; messages sync or backfill fetch what it lacks
+
+```sh
+wa tasks review <chat> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many messages (default 100, 1000 with --since-time; at most 1000). |
+| `--since-time <time>` | read again from this ISO 8601 time, or 30d ago, whatever the point says; what the point already passed only updates and closes tasks, unless tasks add is given --open-new. |
+
+### `wa tasks acknowledge`
+
+moves the chat's task point to this message once its tasks are opened, updated or closed; it never moves back. With --since-time, the read started there: a read again from the start of the stretch clears what arrived late inside it
+
+**Changes something on this computer only.**
+
+```sh
+wa tasks acknowledge <chat> <message> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
+| `message` | required | the id of the last message read, as tasks review shows it. |
+
+| Option | What it does |
+|---|---|
+| `--since-time <time>` | where the read started, when tasks review was given --since-time. |
 
 ### `wa tasks claim`
 
@@ -4085,6 +4170,30 @@ wa config unset <setting> [options]
 | `--defaults` | change what every profile gets, rather than this profile. |
 | `--personal` | only for personal accounts — the personal section of the file. |
 | `--bot` | only for bots — the bot section of the file. |
+
+### `wa config migrate`
+
+write each setting the file lacks at its default, keeping yours
+
+**Changes something on this computer only.**
+
+```sh
+wa config migrate
+```
+
+### `wa config repair`
+
+fix broken JSON syntax in the settings file — comments, a missing or extra comma, unquoted keys, single quotes, missing closing brackets at the end — keeping every value, with a backup beside it; refuses anything with more than one reading and changes nothing then
+
+**Changes something on this computer only.**
+
+```sh
+wa config repair [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--dry-run` | say what it would fix, and change nothing. |
 
 ## `wa doctor`
 

@@ -26,5 +26,26 @@
     "reason": "cli-core 0.477.0 opt-in that leaves the phone out; the vocabulary has no role for it yet (tg-cli baselines it the same way)",
     "owner": "@leemour",
     "review_after": "2027-01-29"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "stats messages waiting",
+    "reason": "cli-core 0.563.0 names it before the cli-base vocabulary has it (https://github.com/WireCatLabs/cli-base/issues/468); tg-cli and max-cli baseline it",
+    "owner": "@leemour",
+    "review_after": "2027-02-05"
+  },
+  {
+    "rule": "option-role",
+    "target": "stats messages responses --who",
+    "reason": "cli-core 0.563.0 names it before the cli-base vocabulary has it (https://github.com/WireCatLabs/cli-base/issues/468); tg-cli and max-cli baseline it",
+    "owner": "@leemour",
+    "review_after": "2027-02-05"
+  },
+  {
+    "rule": "option-role",
+    "target": "tasks add --open-new",
+    "reason": "cli-core 0.563.0 names it before the cli-base vocabulary has it (https://github.com/WireCatLabs/cli-base/issues/468); tg-cli and max-cli baseline it",
+    "owner": "@leemour",
+    "review_after": "2027-02-05"
   }
 ]
