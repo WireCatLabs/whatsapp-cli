@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**277 ✅ · 840 ⛔ · 0 ❌** — 365 commands, 752 options.
+**277 ✅ · 859 ⛔ · 0 ❌** — 372 commands, 764 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -513,6 +513,14 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `stats messages discussion` | `--saved` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats messages discussion` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats messages discussion` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages responses` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages responses` | `--who` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages responses` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages responses` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages responses` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages waiting` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages waiting` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
+| `stats messages waiting` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats messages top` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats messages top` | `--measure` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats messages top` | `--score` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
@@ -581,6 +589,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `tasks add` | `--category` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks add` | `--into` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks add` | `--new` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks add` | `--open-new` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks add` | `--title` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks add` | `--description` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks add` | `--due` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
@@ -617,6 +626,13 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `tasks categories` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks scan` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks scan` | `--last` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks status` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks review` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks review` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks review` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks acknowledge` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
+| `tasks acknowledge` | `--since-time` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks claim` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks claim` | `--lease` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
 | `tasks claim` | `--holder` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/tasks.test.ts) |
@@ -720,6 +736,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `config unset` | `--defaults` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
 | `config unset` | `--personal` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
 | `config unset` | `--bot` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
+| `config migrate` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
+| `config repair` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
+| `config repair` | `--dry-run` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
 | `doctor` |  | ✅ |  |
 | `doctor` | `--online` | ✅ |  |
 | `doctor reports show` |  | ✅ |  |
