@@ -93,7 +93,7 @@ the logged-in account
 
 ### `wa account list`
 
-every profile on this computer, and the account each is logged in as; asks the messenger nothing
+every account profile on this computer, and the account each is logged in as; a name that is only a bot is left out (`bot list` has it), one that is a bot too says `bot: true`; asks the messenger nothing
 
 ```sh
 wa account list [query]

@@ -62,6 +62,12 @@ export const UNTESTED: Untested[] = [
     command,
     reason: `shared cli-core bot command mounted unchanged; tested in cli-core (${tests}), wa's adapter in src/commands/bot.test.ts`,
   })),
+  {
+    command: "bot list",
+    option: "--check",
+    reason:
+      "asks Meta's Graph API who each bot is; cli-core src/cli/bot/command.test.ts drives --check over a fake platform",
+  },
   ...["--md", "--html", "--photo", "--as-file", "--voice", "--allow-any-file"].map((option) => ({
     command: "bot messages send",
     option,

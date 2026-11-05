@@ -14,18 +14,28 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   and what it does (cli-core 0.563.0).
 - **From cli-core 0.563.0:** `config repair` mends the settings file's JSON syntax; `stats messages responses` and
   `stats messages waiting`; `tasks status`, `tasks review` and `tasks acknowledge`; `tasks add --open-new`.
-- **From cli-core 0.564.0–0.566.0:** `store chats status` counts the chats the archive holds back to the first
+- **From cli-core 0.564.0–0.567.0:** `store chats status` counts the chats the archive holds back to the first
   message, in part, or not at all; `stats tasks show` takes a query and counts the tasks opened and closed
   in a period (`-- created>=30d`); `has:transcript` finds voice messages that have a transcription.
+- **`wa bot list` needs no profile word** (`wa <profile> bot list` still works; cli-core 0.567.0).
 
 ### Changed — may break callers
 
 - **A new error code, `conflict` (exit 15), is in `wa commands --json` and the MCP tools' error schema**
-  (cli-base 0.77.1). It means a write was refused because what it changes moved on since it was read; no `wa`
-  command returns it yet.
+  (cli-base 0.77.1). It means a write was refused because what it changes moved on since it was read. A change to a
+  task that someone else changed since you read it now fails with it, not `configuration_error`, exit 3; the reason
+  stays `task.stale` (cli-core 0.567.0).
 - **`search all` ranks every source as one list, searches mail by meaning too, and finds records for a question
   typed as a sentence** (cli-core 0.564.0). Before, each source's hits took turns, and a question found only records
   that held every one of its words.
+
+### Fixed
+
+- **`wa account list` no longer shows a bot as a personal account that is not signed in.** A name that only the bot
+  side uses (`config set --bot …`, `bot auth set`) is left out; a name that is your account and a bot too says
+  `bot: true`. `wa mcp serve --profiles all` leaves bots out the same way (cli-core 0.567.0).
+- **`wa <profile> config set --bot phone_number_id 100000000000001` works as `docs/bot.md` shows.** The id was read
+  as a number and refused; it is now kept as the digits typed (cli-core 0.567.0).
 
 ## 0.28.0 — 03.11.2026
 

@@ -360,3 +360,34 @@ describe("wa <profile> bot", () => {
     expect(seen).toEqual([])
   })
 })
+
+describe("a bot profile beside the accounts", () => {
+  it("**keeps Meta's id as typed**, unquoted, as the digits and never a rounded number", async () => {
+    const long = "1000000000000000001"
+    const set = await wa(["cloudtest", "config", "set", "--bot", "phone_number_id", long, "--json"])
+
+    expect(set.code).toBe(0)
+    expect(JSON.parse(set.stdout).item.value).toBe(long)
+    expect(
+      JSON.parse(readFileSync(join(tmpdir(), "config", "config.json"), "utf8")).bot.profiles.cloudtest,
+    ).toMatchObject({ phone_number_id: long })
+  })
+
+  it("**is no account in `account list`**, and `bot list` names it with no profile word", async () => {
+    const sandboxProfile = process.env.WA_PROFILE
+    delete process.env.WA_PROFILE
+    const unnamed = async () => {
+      try {
+        return { accounts: await wa(["account", "list", "--json"]), bots: await wa(["bot", "list", "--json"]) }
+      } finally {
+        process.env.WA_PROFILE = sandboxProfile
+      }
+    }
+    const { accounts, bots } = await unnamed()
+
+    expect(JSON.parse(accounts.stdout).items).toEqual([])
+    expect(bots.code).toBe(0)
+    expect(JSON.parse(bots.stdout).items).toEqual([{ name: "cloudtest", token: "keyring" }])
+    expect(seen).toEqual([])
+  })
+})

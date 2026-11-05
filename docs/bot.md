@@ -23,6 +23,10 @@ no WhatsApp account.
 | `bot media download <id> --output <file>` | Save a file someone sent, by the media id `bot watch --jsonl` printed. |
 | `bot api <operation>` | Every Cloud API operation `wa` keeps, generated from Meta's OpenAPI file. |
 | `bot mcp serve` | The bot's commands as MCP tools for an agent. |
+| `bot list` | Every bot profile on this computer that has a token; `--check` asks Meta which number each is. Needs no profile word. |
+
+A bot profile is not one of your accounts: `wa account list` leaves out a name that only a bot uses, and marks a
+name that is your account and a bot too with `bot: true`.
 
 A chat is the person's phone number in digits, such as `70000000001`. Meta names some people only by a
 business-scoped user id; `bot watch` shows that chat as `user:<id>`, and you send to it the same way.
@@ -63,7 +67,7 @@ You do these steps once, in Meta's App Dashboard. `wa` cannot do them for you.
 6. Open a tunnel and start the receiver ([receive messages](#receive-messages)). Then, in WhatsApp → Configuration,
    enter the tunnel's address as the Callback URL with the same verify token, and subscribe to the `messages` field.
 
-Check it: `wa cloudtest bot me` names the test number, and
+Check it: `wa bot list` names `cloudtest`, `wa cloudtest bot me` names the test number, and
 `wa cloudtest bot templates send <your verified number> hello_world` arrives on your phone.
 
 ## Receive messages
