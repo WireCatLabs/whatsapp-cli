@@ -1954,6 +1954,18 @@ wa store status [chat]
 |---|---|---|
 | `chat` | optional | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 
+### `wa store chats`
+
+the account's chats as the store holds them
+
+#### `wa store chats status`
+
+over this account's searchable chats of every kind, channels included: fetched (back to the first message, up to date, no gaps), partial, never (no fetch recorded and no message held), and the oldest message held; reads the store only
+
+```sh
+wa store chats status
+```
+
 ### `wa store gaps`
 
 inspect recorded interior coverage gaps and explicitly fetch them
@@ -3353,16 +3365,22 @@ task statistics
 
 #### `wa stats tasks show`
 
-per chat: how many tasks are open, the oldest open one, the median time to close
+tasks per chat, meeting or project: open now, and opened and closed in the period (created: in the query), with the median time to close and the mean age of the open ones
 
 ```sh
-wa stats tasks show [options]
+wa stats tasks show [query] [options]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
+| `--by <group>` | chat (default) or meeting: this account's tasks; project: the owner's project tasks, every project. |
 | `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--type <type>` | only this type: question, request, mention or promise. |
+| `--timezone <zone>` | the IANA timezone for calendar days in the period, such as created>=today. |
 
 ### `wa stats charts`
 
@@ -6175,6 +6193,7 @@ Branch on the code, not on the text: the text can change, the code does not.
 | `12` | `provider_unavailable` |
 | `13` | `invalid_response` |
 | `14` | `outcome_unknown` |
+| `15` | `conflict` |
 | `130` | `cancelled` |
 | `1` | anything else |
 
