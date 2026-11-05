@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**277 ✅ · 862 ⛔ · 0 ❌** — 373 commands, 766 options.
+**280 ✅ · 859 ⛔ · 0 ❌** — 373 commands, 766 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -16,7 +16,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `setup` |  | ✅ |  |
 | `setup` | `--agent` | ✅ |  |
 | `setup` | `--method` | ✅ |  |
-| `account list` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/account-list.test.ts |
+| `account list` |  | ✅ |  |
 | `account show` |  | ✅ |  |
 | `account show` | `--hide-phone` | ✅ |  |
 | `account update` |  | ✅ |  |
@@ -734,7 +734,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `config set` |  | ✅ |  |
 | `config set` | `--defaults` | ⛔ | cli-core's shared config command, over the config file only, tested in cli-core (src/cli/config-command.test.ts drives --defaults; --personal and --bot not yet); src/groups.test.ts uses `config set` only to deny a permission |
 | `config set` | `--personal` | ⛔ | cli-core's shared config command, over the config file only, tested in cli-core (src/cli/config-command.test.ts drives --defaults; --personal and --bot not yet); src/groups.test.ts uses `config set` only to deny a permission |
-| `config set` | `--bot` | ⛔ | cli-core's shared config command, over the config file only, tested in cli-core (src/cli/config-command.test.ts drives --defaults; --personal and --bot not yet); src/groups.test.ts uses `config set` only to deny a permission |
+| `config set` | `--bot` | ✅ |  |
 | `config unset` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
 | `config unset` | `--defaults` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
 | `config unset` | `--personal` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/config-command.test.ts) |
@@ -782,8 +782,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot auth set` | `--secret` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)), wa's adapter in src/commands/bot.test.ts |
 | `bot auth show` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)), wa's adapter in src/commands/bot.test.ts |
 | `bot auth remove` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts and webhook-receiver.test.ts («bot auth set --secret»)), wa's adapter in src/commands/bot.test.ts |
-| `bot list` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts), wa's adapter in src/commands/bot.test.ts |
-| `bot list` | `--check` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/command.test.ts), wa's adapter in src/commands/bot.test.ts |
+| `bot list` |  | ✅ |  |
+| `bot list` | `--check` | ⛔ | asks Meta's Graph API who each bot is; cli-core src/cli/bot/command.test.ts drives --check over a fake platform |
 | `bot chats list` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/admins, moderation and people tests; the Cloud API has no chat list, so wa refuses them), wa's adapter in src/commands/bot.test.ts |
 | `bot chats show` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/admins, moderation and people tests; the Cloud API has no chat list, so wa refuses them), wa's adapter in src/commands/bot.test.ts |
 | `bot chats leave` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/admins, moderation and people tests; the Cloud API has no chat list, so wa refuses them), wa's adapter in src/commands/bot.test.ts |
