@@ -82,6 +82,7 @@ output too.
 | `12` | `provider_unavailable` | another `wa` command holds the device's one connection (`device.in-use`) or took it over (`device.replaced`), the engine stopped (`engine.stopped`), WhatsApp no longer accepts this version of `wa` (`client.outdated`), or has not sent this device the keys a settings change needs yet (`settings.keys-missing`: keep `serve` running a few minutes) |
 | `13` | `invalid_response` | WhatsApp answered something `wa` does not understand |
 | `14` | `outcome_unknown` | a write may or may not have happened, also when the engine stopped during it (`engine.stopped-mid-write`) ([below](#previews-and-safe-retries)) |
+| `15` | `conflict` | a write refused because what it would change moved on since it was read; no `wa` command returns it yet |
 | `130` | `cancelled` | Ctrl-C |
 
 `wa commands --json` gives the same table under `exit_codes`. Branch on the code and the `reason` in brackets, never
