@@ -2183,7 +2183,7 @@ wa store backup <file> [options]
 
 ### `wa store restore`
 
-put a backup in place of the store; the store it replaces is kept beside it, never deleted
+put a backup in place of the store; the store it replaces is kept beside it, never deleted. Given a rollback copy (backups/<store>-rollback-schema-<version>-<time>.db, kept for a day before an upgrade older tools cannot open), put its tables back in the store and return it to that version instead
 
 **Changes something on this computer only.**
 
@@ -2193,7 +2193,7 @@ wa store restore <file>
 
 | Argument | | What it is |
 |---|---|---|
-| `file` | required | a file `store backup` wrote; one written with --encrypt asks for its password. |
+| `file` | required | a file `store backup` wrote, or a rollback copy; one written with --encrypt asks for its password. |
 
 ### `wa store decrypt`
 
@@ -2275,6 +2275,20 @@ wa store tables list [query]
 | Argument | | What it is |
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+### `wa store recover`
+
+check every page and search index of the store, say what is damaged, what it means and the commands that recover it; changes nothing
+
+#### `wa store recover run`
+
+copy every readable row into a new file with the sqlite3 program, rebuild the search indexes, mentions and vector index, check it, and put it in place of the store; the damaged file is kept beside it. Refuses while a WireCat timer or process has the store
+
+**Changes something on this computer only.**
+
+```sh
+wa store recover run
+```
 
 ## `wa conversations`
 
