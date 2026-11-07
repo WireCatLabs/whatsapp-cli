@@ -28,27 +28,6 @@
     "review_after": "2027-01-29"
   },
   {
-    "rule": "unknown-verb",
-    "target": "stats messages waiting",
-    "reason": "cli-core 0.563.0 names it before the cli-base vocabulary has it (https://github.com/WireCatLabs/cli-base/issues/468); tg-cli and max-cli baseline it",
-    "owner": "@leemour",
-    "review_after": "2027-02-05"
-  },
-  {
-    "rule": "option-role",
-    "target": "stats messages responses --who",
-    "reason": "cli-core 0.563.0 names it before the cli-base vocabulary has it (https://github.com/WireCatLabs/cli-base/issues/468); tg-cli and max-cli baseline it",
-    "owner": "@leemour",
-    "review_after": "2027-02-05"
-  },
-  {
-    "rule": "option-role",
-    "target": "tasks add --open-new",
-    "reason": "cli-core 0.563.0 names it before the cli-base vocabulary has it (https://github.com/WireCatLabs/cli-base/issues/468); tg-cli and max-cli baseline it",
-    "owner": "@leemour",
-    "review_after": "2027-02-05"
-  },
-  {
     "rule": "filter-flag",
     "target": "stats tasks show --chat",
     "reason": "cli-core 0.564.0 gave stats tasks show a query and keeps --chat until tg and max move to -- chat:<chat>; cli-core overrides it the same way",
