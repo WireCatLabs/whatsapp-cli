@@ -3,6 +3,27 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`wa session start phone --json --answer-stdin` asks for the phone number on stdin.** It prints the question as
+  a `{"event":"needs","field":"phone",…}` line on stderr and reads the answer, one line, from stdin, so an app such as
+  WireCat Desktop can link by pairing code in its own window. Without the flag, a phone link still needs a terminal.
+- **Each QR code's `{"event":"qr"}` line says when it expires** (`expires_at`, an ISO time), so a window can count
+  down and wait for the next code. It used to be `null`.
+
+### Changed — may break callers
+
+- **With `--json`, `session start` and `setup` tell the pairing code and the history wait as JSON lines.** The pairing code is
+  `{"event":"pairing_code",…}` instead of the `pairing code: …` note, and the wait for the phone's history is
+  `{"event":"progress","step":"history"}`, then `"step":"waiting"` when it is slow, instead of the two notes. A
+  caller that read those notes reads the events instead; the terminal output without `--json` is unchanged.
+
+### Fixed
+
+- Updated cli-core to 0.604.0.
+
 ## 0.30.0 — 07.11.2026
 
 ### Fixed

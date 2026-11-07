@@ -55,12 +55,16 @@ link by QR code (default) or a pairing code, then keep the pushed history
 **Changes something in WhatsApp.**
 
 ```sh
-wa session start [method]
+wa session start [method] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `method` | optional | how to link. One of: `qr`, `phone`. Default: `qr`. |
+
+| Option | What it does |
+|---|---|
+| `--answer-stdin` | with --json and no terminal: print each question as a `needs` line on stderr and read its answer, one line, from stdin. |
 
 ### `wa session end`
 

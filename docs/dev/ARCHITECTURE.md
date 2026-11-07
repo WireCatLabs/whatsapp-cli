@@ -135,9 +135,9 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   interface without the adapter noticing.
 - **The wire.** The engine's first line is `{"hello": …}` (protocol, the linked account) or `{"refused": …}`. Then
   requests `{"id", "op", …}` get `{"id", "ok"}` or `{"id", "error": {code, message}}`; events are the contract's
-  `engineEvent`; a login shows `{"login": "qr"|"pair", "code"}`. The phone number for a pairing code travels on stdin,
-  never as an argument (`ps` shows arguments). When stdin closes the engine disconnects and exits, so it never
-  outlives the CLI; it ignores Ctrl+C and lets the CLI decide.
+  `engineEvent`; a login shows `{"login": "qr"|"pair", "code", "expires"}` (`expires` for a QR code only, protocol
+  47). The phone number for a pairing code travels on stdin, never as an argument (`ps` shows arguments). When stdin
+  closes the engine disconnects and exits, so it never outlives the CLI; it ignores Ctrl+C and lets the CLI decide.
 - **The requests**: `connect`, `link`, `me`, `directory`, `chat`, `send`, `logout` and `close`. In
   `engine/cmd/wa-engine/`, `engine.go` reads and dispatches them and holds `connect` and `send`; `link.go` holds
   `link` and `me`, `directory.go` `directory` and `chat`; `events.go` turns whatsmeow's events into the contract's, and

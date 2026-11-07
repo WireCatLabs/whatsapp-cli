@@ -39,9 +39,9 @@ func (e *engine) link(method, phone string) (*waAccount, error) {
 				return nil, pairingFailure(err)
 			}
 			requested = true
-			e.out.loginCode("pair", code)
+			e.out.loginCode("pair", code, time.Time{})
 		case item.Event == whatsmeow.QRChannelEventCode:
-			e.out.loginCode("qr", item.Code)
+			e.out.loginCode("qr", item.Code, time.Now().Add(item.Timeout))
 		case item == whatsmeow.QRChannelSuccess:
 			late := "linked, but could not reconnect to WhatsApp in time"
 			retry := &loginRetry{connected: e.client.IsConnected, after: retryAfter,
