@@ -20,7 +20,7 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `{"event":"progress","step":"history"}`, then `"step":"waiting"` when it is slow, instead of the two notes. A
   caller that read those notes reads the events instead; the terminal output without `--json` is unchanged.
 
-### Changed
+### Fixed
 
 - Updated cli-core to 0.604.0.
 
