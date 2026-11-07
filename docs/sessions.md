@@ -67,9 +67,18 @@ wa personal session start qr
 
 The agent runs the command in the background, since it waits for your scan. WhatsApp sends a new code after 60
 seconds and then every 20 seconds; the agent pastes each new one and says the old one expired. With `--json`, each
-code is also one line on stderr: `{"event":"qr","qr":{"text":…,"expires_at":null,"scan":…}}`. The text is about 73
-columns wide. Linking is not offered over MCP: an app that only has MCP asks you to run the command. A pairing
-code is for you to run in your own terminal: an agent never asks you for your phone number or a code in the chat.
+code is also one line on stderr: `{"event":"qr","qr":{"text":…,"expires_at":…,"scan":…}}`, where `expires_at` is
+when WhatsApp replaces that code. The text is about 73 columns wide. Linking is not offered over MCP: an app that only
+has MCP asks you to run the command. A pairing code is for you to run in your own terminal: an agent never asks you
+for your phone number or a code in the chat.
+
+### When a window runs the link
+
+An app that draws the link in its own window, such as WireCat Desktop, runs
+`wa personal session start phone --json --answer-stdin`. `wa` asks for the number as a line on stderr,
+`{"event":"needs","field":"phone",…}`, and reads the answer, one line, from stdin. The pairing code follows as
+`{"event":"pairing_code","code":…,"where":…,"expires_at":null}`. With `--json`, the wait for the phone's history is
+told as `{"event":"progress","step":"history",…}` and, when it is slow, `"step":"waiting"`.
 
 ## Check and unlink
 

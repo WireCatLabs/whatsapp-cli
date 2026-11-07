@@ -33,5 +33,12 @@
     "reason": "cli-core 0.564.0 gave stats tasks show a query and keeps --chat until tg and max move to -- chat:<chat>; cli-core overrides it the same way",
     "owner": "@leemour",
     "review_after": "2026-12-01"
+  },
+  {
+    "rule": "option-role",
+    "target": "session start --answer-stdin",
+    "reason": "cli-core's signInSteps flag for a window that answers sign-in questions on stdin; the vocabulary has no role for it yet (tg-cli and max-cli baseline it the same way)",
+    "owner": "@leemour",
+    "review_after": "2027-02-07"
   }
 ]
