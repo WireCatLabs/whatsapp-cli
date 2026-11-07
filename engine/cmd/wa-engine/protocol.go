@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"sync"
+	"time"
 )
 
 // protocol must equal PROTOCOL in src/engine/contract.ts; the adapter refuses any other.
-const protocol = 46
+const protocol = 47
 
 type hello struct {
 	Protocol int     `json:"protocol"`
@@ -189,7 +190,15 @@ func (w *wire) connection(state, until string) {
 	}
 	w.send(line)
 }
-func (w *wire) loginCode(kind, code string) { w.send(map[string]any{"login": kind, "code": code}) }
+
+// loginCode sends a code to show; `expires` is left out when WhatsApp gives the code no lifetime (a pairing code).
+func (w *wire) loginCode(kind, code string, expires time.Time) {
+	line := map[string]any{"login": kind, "code": code}
+	if !expires.IsZero() {
+		line["expires"] = iso(expires)
+	}
+	w.send(line)
+}
 func (w *wire) deleted(chat, id string) {
 	w.send(map[string]any{"event": "delete", "chat": chat, "id": id})
 }

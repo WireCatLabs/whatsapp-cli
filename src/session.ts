@@ -8,6 +8,7 @@ import {
   type MessengerAdapter,
   type MessengerContext,
   secretInputOf,
+  signInSteps,
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { type Environment, linkDevice } from "./messenger.js"
@@ -23,6 +24,9 @@ export const BAN_WARNING = [
   "wa writes only when a command asks, sends at most 30 messages an hour by default, and holds every",
   "write when WhatsApp says to slow down or restricts the account. Never send in bulk or to strangers.",
 ].join("\n")
+
+const PAIR_WHERE =
+  "WhatsApp on the phone: tap its notification, or Settings → Linked devices → Link a device → Link with phone number instead"
 
 /** The phone pushes its history right after linking, once; how long to keep receiving it. */
 export const HISTORY_WAIT: HistoryWait = { firstMs: 120_000, quietMs: 45_000, slowMs: 20_000 }
@@ -91,6 +95,8 @@ export interface StartSessionOptions {
   signal?: AbortSignal
   /** How far the questions and the QR code sit right, to line up under a setup step. */
   indent?: number
+  /** `--answer-stdin`: the phone number is a `needs` line, answered on stdin by the window that started the link. */
+  answers?: boolean
   /**
    * Ctrl+C, a cancel or --timeout ends the history wait alone, and the command answers with what was kept. A command
    * with steps after the wait calls `endUntilStopped()` when it returns, so those steps get a deadline again.
@@ -110,16 +116,30 @@ export interface Session {
 export const startSession = async (
   command: Command,
   context: MessengerContext,
-  { method, command: typed = "wa session start", signal, indent: pad = 0, stopEndsWait = false }: StartSessionOptions,
+  {
+    method,
+    command: typed = "wa session start",
+    signal,
+    indent: pad = 0,
+    stopEndsWait = false,
+    answers = false,
+  }: StartSessionOptions,
 ): Promise<Session> => {
   const input = context.stdin
   const terminal = atTerminal(input)
+  const steps = signInSteps({
+    diagnostic: context.streams.diagnostic,
+    json: context.format !== "pretty",
+    answers,
+    input,
+  })
+  const noAnswers = !terminal && !answers
   const unanswerable = () =>
     new CliError("validation_error", `${typed} asks questions — run it in a terminal`, {
       reason: "input.required",
     })
   // A device that is linked already asks nothing, so only a profile without one is refused before the engine starts.
-  if (!terminal && method === "phone" && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
+  if (noAnswers && method === "phone" && !existsSync(privateStore(context.profile, context.env))) throw unanswerable()
   const qr = loginQr({
     diagnostic: context.streams.diagnostic,
     note: context.renderer.note,
@@ -128,24 +148,37 @@ export const startSession = async (
     json: context.format !== "pretty",
   })
   const environment = environmentOf<Environment>(command)
+  const typedNumber = () => {
+    if (!terminal)
+      throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`, {
+        reason: "input.required",
+      })
+    return readSecret(`${" ".repeat(pad)}phone number, international format: `, {
+      ...secretInputOf(command),
+      echo: true,
+      ...(signal === undefined ? {} : { signal }),
+    })
+  }
 
   const linked = await linkDevice(command, context, {
     method,
     beforeLink: () => {
       signal?.throwIfAborted()
-      if (!terminal && method === "phone") throw unanswerable()
+      if (noAnswers && method === "phone") throw unanswerable()
       context.streams.diagnostic(indent(BAN_WARNING, pad))
     },
     phone: async () => {
-      if (!terminal)
-        throw new CliError("validation_error", `${typed} phone needs a terminal to ask for the number`, {
-          reason: "input.required",
-        })
-      const number = await readSecret(`${" ".repeat(pad)}phone number, international format: `, {
-        ...secretInputOf(command),
-        echo: true,
-        ...(signal === undefined ? {} : { signal }),
-      })
+      const number = answers
+        ? await steps.ask(
+            {
+              field: "phone",
+              secret: false,
+              prompt: "phone number, international format",
+              hint: "with + and the country code, such as +34",
+            },
+            signal,
+          )
+        : await typedNumber()
       // WhatsApp reads the leading digits as the country code, so a number typed without one pairs someone else's.
       if (!number.trim().startsWith("+"))
         throw new CliError("validation_error", "write the phone number with + and the country code, such as +34", {
@@ -154,23 +187,32 @@ export const startSession = async (
         })
       return number
     },
-    onCode: ({ login, code }) => {
+    onCode: ({ login, code, expires }) => {
       if (login === "pair") {
-        context.renderer.note(
-          `pairing code: ${code}\n` +
-            "On the phone: tap the WhatsApp notification, or Settings > Linked devices > Link a device >\n" +
-            "Link with phone number instead, and type the code. It expires in about two minutes.",
-        )
+        if (steps.json) steps.pairingCode(code, PAIR_WHERE)
+        else
+          context.renderer.note(
+            `pairing code: ${code}\n` +
+              "On the phone: tap the WhatsApp notification, or Settings > Linked devices > Link a device >\n" +
+              "Link with phone number instead, and type the code. It expires in about two minutes.",
+          )
         return
       }
-      qr.show(code, "scan in WhatsApp → Settings → Linked devices → Link a device")
+      qr.show(
+        code,
+        "scan in WhatsApp → Settings → Linked devices → Link a device",
+        expires === undefined ? undefined : new Date(expires),
+      )
     },
   })
   signal?.throwIfAborted()
 
   const session: Session = { profile: context.profile, account: linked.account, alreadyLinked: linked.alreadyLinked }
   if (!linked.alreadyLinked) {
-    context.renderer.note(
+    const say = (step: "history" | "waiting", message: string) =>
+      steps.json ? steps.progress(step, message) : context.renderer.note(message)
+    say(
+      "history",
       "receiving history from the phone; keep WhatsApp open on it. Ctrl+C stops — `serve` picks up the rest.",
     )
     const stop = stopEndsWait ? environment.untilStopped?.() : environment.signal
@@ -181,7 +223,8 @@ export const startSession = async (
           adapter,
           environment.historyWait ?? HISTORY_WAIT,
           () =>
-            context.renderer.note(
+            say(
+              "waiting",
               "still waiting for the phone's history — keep WhatsApp open on the phone; it can take a minute",
             ),
           ended,

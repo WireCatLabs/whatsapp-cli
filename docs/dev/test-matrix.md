@@ -7,11 +7,12 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**280 ✅ · 861 ⛔ · 0 ❌** — 375 commands, 766 options.
+**281 ✅ · 861 ⛔ · 0 ❌** — 375 commands, 767 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
 | `session start` |  | ✅ |  |
+| `session start` | `--answer-stdin` | ✅ |  |
 | `session end` |  | ✅ |  |
 | `setup` |  | ✅ |  |
 | `setup` | `--agent` | ✅ |  |

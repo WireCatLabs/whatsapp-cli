@@ -24,7 +24,7 @@ if (mode === "refuse") {
   process.exit(1)
 }
 say({
-  hello: { protocol: mode === "old" ? 1 : 46, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
+  hello: { protocol: mode === "old" ? 1 : 47, engine: "stub", version: "0", self: mode === "unlinked" ? null : self },
 })
 process.stderr.write("stub engine diagnostic\n")
 
@@ -184,7 +184,8 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       say({ id, ok: fields.chat === "reuploaded@stub" ? { directPath: "/v/stub-reuploaded" } : null })
       break
     case "link":
-      say({ login: "pair", code: "ABCD-EFGH" })
+      if (fields.method === "qr") say({ login: "qr", code: "2@stub", expires: "2026-11-07T12:01:00.000Z" })
+      else say({ login: "pair", code: "ABCD-EFGH" })
       say({ id, ok: { jid: self, name: "Owner" } })
       break
     case "chat":

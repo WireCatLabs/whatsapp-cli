@@ -261,6 +261,14 @@ describe("startGoEngine", () => {
     await engine.close()
   })
 
+  it("passes on when a QR code expires", async () => {
+    const engine = await stub("unlinked")
+    const codes: LoginCode[] = []
+    await engine.link({ method: "qr" }, (code) => codes.push(code))
+    expect(codes).toEqual([{ login: "qr", code: "2@stub", expires: "2026-11-07T12:01:00.000Z" }])
+    await engine.close()
+  })
+
   it("skips an event that breaks the contract, with a warning, and goes on", async () => {
     const warnings: string[] = []
     const engine = await stub("ok", warnings)

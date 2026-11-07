@@ -15,7 +15,7 @@ import type { SettingsEngine } from "./settings.js"
  * emits a chat (cli-private plans/2026-10-16-whatsapp-foundation.md, decision 3). Names are what the address book or the
  * person set; a phone number is never a name.
  */
-export const PROTOCOL = 46
+export const PROTOCOL = 47
 
 /**
  * Every request the engine answers. A write changes something on WhatsApp or sends something: cut by a dropped
@@ -425,8 +425,13 @@ export const waChatCard = v.strictObject({ chat: waChat, members: v.nullable(v.a
 /**
  * A code to show while linking: `qr` is the text of a QR code to draw, `pair` the eight characters to type on the
  * phone. Either one links the account for as long as it is valid, so it is shown and never stored or logged.
+ * `expires` is when WhatsApp replaces a QR code (protocol 47); a pairing code has none.
  */
-export const loginCode = v.strictObject({ login: v.picklist(["qr", "pair"]), code: v.pipe(v.string(), v.nonEmpty()) })
+export const loginCode = v.strictObject({
+  login: v.picklist(["qr", "pair"]),
+  code: v.pipe(v.string(), v.nonEmpty()),
+  expires: v.optional(time),
+})
 
 export type WaChat = v.InferOutput<typeof waChat>
 export type WaContact = v.InferOutput<typeof waContact>

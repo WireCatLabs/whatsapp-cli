@@ -2,6 +2,7 @@ import { singleLine } from "@wirecat/cli-base"
 import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import {
   answerEntity,
+  answerStdinOption,
   asFirstWord,
   commandWords,
   logsInOrOut,
@@ -58,12 +59,14 @@ const sessionCommandDefinition = (): Command => {
   )
     .description("link by QR code (default) or a pairing code, then keep the pushed history")
     .addArgument(new Argument("[method]", "how to link").choices(["qr", "phone"]).default("qr"))
+    .addOption(answerStdinOption())
     .addHelpText(
       "after",
       "\nFirst time? Use `wa personal setup` for linking, a check of five chats and an agent skill.\n" +
         "\nqr: scan the code in WhatsApp > Settings > Linked devices > Link a device.\n" +
         "phone: type your number here with + and the country code, then type the code WhatsApp shows here into\n" +
-        "the phone.\n" +
+        "the phone. With --json --answer-stdin (WireCat Desktop) the number is asked as a `needs` line and\n" +
+        "read from stdin.\n" +
         "\nRight after linking, the phone pushes your history once; this command keeps it in the local store\n" +
         "until the phone goes quiet. Then run `wa <profile> server install` to keep receiving.\n" +
         `\n${AGENTS_LINK_BY_QR}`,
@@ -71,10 +74,12 @@ const sessionCommandDefinition = (): Command => {
     .action(async function (this: Command, method: "qr" | "phone") {
       const context = messengerContext(this, WHATSAPP)
       refuseCommandName(context.profile, commandWords(rootOf(this)), "wa")
+      const { answerStdin } = this.opts<{ answerStdin?: boolean }>()
       const session = await startSession(this, context, {
         command: `wa ${asFirstWord(context.profile)}session start`,
         method,
         stopEndsWait: true,
+        answers: answerStdin === true,
       })
       if (context.format === "pretty")
         context.streams.data(linkedText(context.profile, session.account, session.received))

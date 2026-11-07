@@ -65,6 +65,8 @@ const loginHint = (profile: string) =>
 export interface LinkCode {
   login: "qr" | "pair"
   code: string
+  /** When WhatsApp replaces a QR code, as an ISO time; a pairing code has none. */
+  expires?: string | undefined
 }
 
 /**

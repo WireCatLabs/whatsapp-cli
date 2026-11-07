@@ -29,7 +29,7 @@ const QUICK = { firstMs: 5_000, quietMs: 0 }
 const wa = async (argv: string[], engine?: (request: EngineRequest) => FakeEngine, more: Environment = {}) => {
   const streams = captureStreams()
   const code = await run(argv, { streams, tty: false, historyWait: QUICK, ...(engine ? { engine } : {}), ...more })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join(""), lines: streams.stderr }
 }
 
 const never = () => {
@@ -171,6 +171,93 @@ describe("wa session start", () => {
     const result = await wa(["late", "session", "start", "--timeout", "50ms", "--json"], () => engine)
     expect(result.code).toBe(9)
     expect(engine.closed).toBe(true)
+  })
+
+  const events = (lines: string[]) =>
+    lines.filter((line) => line.startsWith('{"event"')).map((line) => JSON.parse(line))
+
+  it("asks a window for the number on stdin and tells it the pairing code and the history wait as events", async () => {
+    const stdin = new PassThrough()
+    stdin.write("+7 000 000 00 01\n")
+    let phone: string | undefined
+    const result = await wa(
+      ["windowed", "session", "start", "phone", "--json", "--answer-stdin"],
+      () => {
+        const engine = fakeEngine(seed, { linked: false })
+        const link = engine.link
+        engine.link = (request, onCode) => {
+          phone = request.phone
+          return link(request, onCode)
+        }
+        return engine
+      },
+      { stdin },
+    )
+    expect(result.code, result.stderr).toBe(0)
+    expect(phone).toBe("+7 000 000 00 01")
+    expect(events(result.lines)).toEqual([
+      {
+        event: "needs",
+        field: "phone",
+        secret: false,
+        prompt: "phone number, international format",
+        hint: expect.stringContaining("country code"),
+      },
+      { event: "pairing_code", code: "FAKECODE", where: expect.stringContaining("Linked devices"), expires_at: null },
+      { event: "progress", step: "history", message: expect.stringContaining("receiving history") },
+    ])
+    expect(result.stderr).not.toContain("pairing code:")
+    expect(JSON.parse(result.stdout).item.received.messages).toBe(seed.messages.length)
+  })
+
+  it("refuses an answered number without the country code", async () => {
+    const stdin = new PassThrough()
+    stdin.write("000 000 00 01\n")
+    const result = await wa(
+      ["windowedbad", "session", "start", "phone", "--json", "--answer-stdin"],
+      () => fakeEngine(seed, { linked: false }),
+      { stdin },
+    )
+    expect(result.code).toBe(2)
+    expect(result.stderr).toContain("write the phone number with + and the country code")
+  })
+
+  it("refuses --answer-stdin without --json", async () => {
+    const result = await wa(
+      ["plain", "session", "start", "phone", "--answer-stdin"],
+      () => fakeEngine(seed, { linked: false }),
+      { tty: true, env: { ...process.env, CI: "" } },
+    )
+    expect(result.code).toBe(2)
+    expect(result.stderr).toContain("--answer-stdin needs --json")
+  })
+
+  it("says when each QR code expires and that the history wait goes on", async () => {
+    const engine = fakeEngine(seed, { linked: false })
+    const link = engine.link
+    engine.link = (request, onCode) => link(request, (code) => onCode({ ...code, expires: "2026-11-07T12:01:00.000Z" }))
+    const listen = engine.listen
+    engine.listen = (kinds, onEvent) => {
+      if (!kinds.includes("history")) return listen(kinds, onEvent)
+      let unlisten = () => {}
+      const late = setTimeout(() => {
+        unlisten = listen(kinds, onEvent)
+      }, 50)
+      return () => {
+        clearTimeout(late)
+        unlisten()
+      }
+    }
+    const result = await wa(["timed", "session", "start", "--json"], () => engine, {
+      historyWait: { firstMs: 5_000, quietMs: 0, slowMs: 1 },
+    })
+    expect(result.code, result.stderr).toBe(0)
+    expect(events(result.lines)).toEqual([
+      { event: "qr", qr: expect.objectContaining({ expires_at: "2026-11-07T12:01:00.000Z" }) },
+      { event: "progress", step: "history", message: expect.any(String) },
+      { event: "progress", step: "waiting", message: expect.stringContaining("still waiting") },
+    ])
+    expect(result.lines.filter((line) => line.startsWith("receiving history"))).toEqual([])
   })
 
   it("refuses to link under WA_READ_ONLY", async () => {
