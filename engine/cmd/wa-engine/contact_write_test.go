@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"go.mau.fi/whatsmeow"
@@ -119,5 +120,41 @@ func TestOwnNumberAnswersAMatchAndOnlyTheLastFourDigits(t *testing.T) {
 	}
 	if _, err := ownNumber(&own, "+7 000"); !isFailure(err, "validation_error") {
 		t.Fatalf("formatted number accepted: %v", err)
+	}
+}
+
+func TestOwnContactPatchNamesTheDevicesOwnIDsOnly(t *testing.T) {
+	ownDevice := types.NewADJID(annPN.User, 0, 7)
+	pn, patch, err := ownContactPatch(&ownDevice, annLID, " Own Name ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	action := patch.Mutations[0].Value.GetContactAction()
+	if pn != annPN || patch.Mutations[0].Index[1] != annPN.String() || action.GetPnJID() != annPN.String() ||
+		action.GetLidJID() != annLID.String() || action.GetFullName() != "Own Name" || action.GetSaveOnPrimaryAddressbook() {
+		t.Fatalf("own contact patch is not keyed to the own ids: %v %+v", patch.Mutations[0].Index, action)
+	}
+	if _, _, err := ownContactPatch(nil, annLID, "Own Name"); !isFailure(err, "authentication_error") {
+		t.Fatalf("own contact written without the own phone id: %v", err)
+	}
+	if _, _, err := ownContactPatch(&ownDevice, types.JID{}, "Own Name"); !isFailure(err, "authentication_error") {
+		t.Fatalf("own contact written without the own LID: %v", err)
+	}
+	if _, _, err := ownContactPatch(&ownDevice, annLID, " "); !isFailure(err, "validation_error") {
+		t.Fatalf("empty own contact name accepted: %v", err)
+	}
+}
+
+func TestSaveContactStillRefusesTheOwnNumberWhateverElseTheRequestCarries(t *testing.T) {
+	ownDevice := types.NewADJID(annPN.User, 0, 7)
+	e := &engine{ctx: context.Background(), conv: testConverter(), client: &whatsmeow.Client{Store: &store.Device{
+		ID: &ownDevice, LID: annLID, LIDs: oneLID{pn: annPN, lid: annLID},
+	}}}
+	var req request
+	if err := json.Unmarshal([]byte(`{"op":"saveContact","jid":"`+annPN.String()+`","contactName":"Own Name","allowOwn":true,"own":true}`), &req); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.saveContact(req); !isFailure(err, "validation_error") {
+		t.Fatalf("saveContact named the account's own number: %v", err)
 	}
 }
