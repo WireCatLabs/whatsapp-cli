@@ -17,7 +17,8 @@ import { Argument, Command } from "commander"
 import { WA } from "../app.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { WHATSAPP } from "../messenger.js"
-import { endSession, type Received, startSession } from "../session.js"
+import { type Received, startSession } from "../session.js"
+import { endSession } from "../session-end.js"
 import { sessionSchema } from "./session-contracts.js"
 
 const linkedText = (profile: string, account: { name: string | null }, got: Received | undefined) => {

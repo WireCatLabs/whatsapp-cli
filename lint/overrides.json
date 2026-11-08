@@ -40,5 +40,19 @@
     "reason": "cli-core's signInSteps flag for a window that answers sign-in questions on stdin; the vocabulary has no role for it yet (tg-cli and max-cli baseline it the same way)",
     "owner": "@leemour",
     "review_after": "2027-02-07"
+  },
+  {
+    "rule": "option-role",
+    "target": "account remove --keep-data",
+    "reason": "cli-core 0.614.0 shared account remove; cli-base's vocabulary has no role for it yet (tg-cli and max-cli baseline it the same way)",
+    "owner": "@leemour",
+    "review_after": "2027-02-08"
+  },
+  {
+    "rule": "option-role",
+    "target": "account remove --delete-data",
+    "reason": "cli-core 0.614.0 shared account remove; cli-base's vocabulary has no role for it yet (tg-cli and max-cli baseline it the same way)",
+    "owner": "@leemour",
+    "review_after": "2027-02-08"
   }
 ]

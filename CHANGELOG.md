@@ -3,6 +3,17 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`wa account remove --keep-data|--delete-data` unlinks a profile and forgets it on this computer.** It removes the
+  device on WhatsApp's side, then deletes the profile's device keys and folder and what cli-core keeps for it.
+  `--keep-data` leaves the messages in the store, still searchable; `--delete-data` deletes them. Other profiles stay.
+  A profile whose device WhatsApp already dropped is forgotten all the same. A bot profile's Business API token stays:
+  it is a separate account. While `wa serve` holds the profile the command refuses, like `session end`.
+  A run with moved folders only deletes its own keys and does not unlink anything.
+
 ## 0.34.0 — 08.11.2026
 
 ### Added
