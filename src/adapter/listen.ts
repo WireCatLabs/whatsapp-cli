@@ -2,6 +2,7 @@ import { CliError } from "@wirecat/cli-base"
 import { bareCheck, type Message, type MessageEvent, type MessageHit } from "@wirecat/cli-core"
 import type { LiveUpdates, MessengerCore, PassiveUpdates, PushedHistory, StoredMessages } from "@wirecat/cli-core/cli"
 import { type ConnectionState, EngineError, type EngineEvent, type WhatsAppEngine } from "../engine/contract.js"
+import { tagPhoneSync } from "../phone-sync.js"
 import type { Words } from "./checks.js"
 import { fromEngine } from "./errors.js"
 import { sameFile, toChatEvent, toChatUpdate, toMember, toMessage, toPersonReaction } from "./map.js"
@@ -270,7 +271,14 @@ export const listenAdapter = ({
         stars: (stars ?? []).map((one) => ({ chatId: one.chat, messageId: one.message, starred: one.starred })),
         deletions: (deletions ?? []).map((one) => ({ chatId: one.chat, messageId: one.message })),
       }
-      const saved: unknown = await onBatch(batch)
+      const saved: unknown = await onBatch(
+        tagPhoneSync(
+          batch,
+          event.history.progress === undefined
+            ? undefined
+            : { kind: event.history.kind, progress: event.history.progress },
+        ),
+      )
       // The phone pushes this once: the engine keeps it until the store has it. A handler that stores nothing says
       // nothing, and the push counts as stored.
       if (event.history.push) await engine.historySaved(event.history.push, saved !== false).catch(() => {})

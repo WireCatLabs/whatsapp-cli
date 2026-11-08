@@ -13,6 +13,7 @@ import {
 import type { Command } from "commander"
 import { type Environment, linkDevice } from "./messenger.js"
 import { privateStore } from "./paths.js"
+import { phoneSyncDone } from "./phone-sync.js"
 
 /**
  * Shown once, before the code that links the device. It ignores `--quiet` the way the QR code does: it belongs to
@@ -28,8 +29,13 @@ export const BAN_WARNING = [
 const PAIR_WHERE =
   "WhatsApp on the phone: tap its notification, or Settings → Linked devices → Link a device → Link with phone number instead"
 
-/** The phone pushes its history right after linking, once; how long to keep receiving it. */
-export const HISTORY_WAIT: HistoryWait = { firstMs: 120_000, quietMs: 45_000, slowMs: 20_000 }
+/**
+ * The phone pushes its history right after linking, once, and says when it is done (its sync progress reaches 100).
+ * `firstMs` and `quietMs` only matter when it never says so, and a big account can pause for minutes between chunks
+ * while the phone prepares the next: 45 s cut such a link short, and the phone then reported the link as failed. Five
+ * minutes is a guess, about seven times the old limit; it only has to end the command when the phone has gone away.
+ */
+export const HISTORY_WAIT: HistoryWait = { firstMs: 300_000, quietMs: 300_000, slowMs: 20_000 }
 
 /** `slowMs`: with nothing pushed by then, say once that the wait goes on, so the silence does not read as a hang. */
 export interface HistoryWait {
@@ -45,20 +51,28 @@ export interface Received {
 }
 
 /**
- * Saves what the phone pushes until it goes quiet or `signal` aborts. Live messages that arrive meanwhile are saved
- * too, through the same connection.
+ * Saves what the phone pushes until it says its history is complete, or goes quiet for `wait.quietMs`, or `signal`
+ * aborts. `onUnconfirmed` runs when the wait ended on the quiet timer: the phone may not be finished. Live messages
+ * that arrive meanwhile are saved too, through the same connection.
  */
 export const receiveHistory = async (
   adapter: MessengerAdapter,
   wait: HistoryWait,
   onSlow: () => void,
   signal?: AbortSignal,
+  onUnconfirmed: () => void = () => {},
 ): Promise<Received> => {
   const received: Received = { chats: 0, messages: 0, people: 0 }
   const writes: Promise<void>[] = []
   const stop = new AbortController()
+  let confirmed = false
+  let timedOut = false
   const end = () => stop.abort()
-  let timer = setTimeout(end, wait.firstMs)
+  const giveUp = () => {
+    timedOut = true
+    end()
+  }
+  let timer = setTimeout(giveUp, wait.firstMs)
   const slow = wait.slowMs === undefined ? undefined : setTimeout(onSlow, wait.slowMs)
   signal?.addEventListener("abort", end, { once: true })
   try {
@@ -75,7 +89,10 @@ export const receiveHistory = async (
         else count(true)
         clearTimeout(slow)
         clearTimeout(timer)
-        timer = setTimeout(end, wait.quietMs)
+        if (phoneSyncDone(batch)) {
+          confirmed = true
+          end()
+        } else timer = setTimeout(giveUp, wait.quietMs)
       }, stop.signal),
       adapter.watch?.(() => {}, stop.signal),
     ])
@@ -85,6 +102,7 @@ export const receiveHistory = async (
     signal?.removeEventListener("abort", end)
   }
   await Promise.all(writes)
+  if (timedOut && !confirmed) onUnconfirmed()
   return received
 }
 
@@ -228,6 +246,12 @@ export const startSession = async (
               "still waiting for the phone's history — keep WhatsApp open on the phone; it can take a minute",
             ),
           ended,
+          () =>
+            say(
+              "waiting",
+              "the phone did not say its history is complete; wa stopped waiting. Keep WhatsApp open on the phone " +
+                "until it finishes linking — `serve` picks up whatever it sends later.",
+            ),
         ),
       { listen: true },
     )

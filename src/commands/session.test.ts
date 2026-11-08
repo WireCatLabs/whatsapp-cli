@@ -11,6 +11,7 @@ import { whatsAppAdapter } from "../adapter/adapter.js"
 import { EngineError } from "../engine/contract.js"
 import type { EngineRequest, Environment } from "../messenger.js"
 import { privateStore } from "../paths.js"
+import { tagPhoneSync } from "../phone-sync.js"
 import { run } from "../program.js"
 import { BAN_WARNING, receiveHistory } from "../session.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "../testing/fake-engine.js"
@@ -124,6 +125,67 @@ describe("wa session start", () => {
     const quick = { firstMs: 5_000, quietMs: 0 }
     expect((await receiveHistory(adapter(true), quick, () => {})).messages).toBe(2)
     expect(await receiveHistory(adapter(false), quick, () => {})).toEqual({ chats: 0, messages: 0, people: 0 })
+  })
+
+  it("ends the wait when the phone reports its sync at 100, without the quiet timer", async () => {
+    const result = await wa(["done", "session", "start", "--json"], () => fakeEngine(seed, { linked: false }), {
+      historyWait: { firstMs: 60_000, quietMs: 60_000 },
+    })
+    expect(result.code, result.stderr).toBe(0)
+    expect(JSON.parse(result.stdout).item.received.messages).toBe(seed.messages.length)
+    expect(result.stderr).not.toContain("did not say")
+  })
+
+  it("stops at the phone's 100 well before the quiet limit, and gives up on the quiet limit when it never comes", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    try {
+      const phone = (progress: number[], gap: number) => {
+        const adapter = {
+          feed: (onBatch: (batch: unknown) => void, signal: AbortSignal) =>
+            new Promise<void>((resolve) => {
+              signal.addEventListener("abort", () => resolve(), { once: true })
+              for (const [position, one] of progress.entries()) {
+                const batch = tagPhoneSync({ messages: [] }, { kind: "full", progress: one })
+                setTimeout(() => onBatch(batch), gap * position)
+              }
+            }),
+        }
+        return adapter as unknown as MessengerAdapter
+      }
+      const wait = { firstMs: 10_000, quietMs: 10_000 }
+
+      const finished = vi.fn()
+      const done = receiveHistory(phone([40, 100], 5_000), wait, () => {}, undefined, finished)
+      await vi.advanceTimersByTimeAsync(5_001)
+      await done
+      expect(finished).not.toHaveBeenCalled()
+
+      const cut = vi.fn()
+      const stalled = receiveHistory(phone([40], 5_000), wait, () => {}, undefined, cut)
+      await vi.advanceTimersByTimeAsync(5_001)
+      expect(cut).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(10_000)
+      await stalled
+      expect(cut).toHaveBeenCalledOnce()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("says so, as a waiting step, when the wait ends on the quiet timer and not on the phone's word", async () => {
+    const result = await wa(["unsure", "session", "start", "--json"], () =>
+      fakeEngine(seed, { linked: false, progress: null }),
+    )
+    expect(result.code, result.stderr).toBe(0)
+    const waiting = result.lines
+      .filter((line) => line.startsWith('{"event"'))
+      .map((line) => JSON.parse(line))
+      .find((one) => one.step === "waiting")
+    expect(waiting).toMatchObject({
+      event: "progress",
+      step: "waiting",
+      message: expect.stringContaining("Keep WhatsApp open"),
+    })
   })
 
   it("asks nothing and counts nothing when the profile is already linked", async () => {
