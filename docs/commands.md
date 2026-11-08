@@ -1822,6 +1822,38 @@ wa models download <model> [options]
 |---|---|
 | `--accept-terms` | accept the model's licence terms, for a model that has its own. |
 
+### `wa models set`
+
+make a downloaded text model the one every embed and every search by meaning uses, in every WireCat CLI. Each model keeps its own vectors: the next syncs embed what the new one lacks, and switching back is instant
+
+**Changes something on this computer only.**
+
+```sh
+wa models set <model>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `model` | required | a downloaded text model id from models list. |
+
+### `wa models add`
+
+add an ONNX embedding model from Hugging Face, pinned and checked by sha256
+
+**Reads from an outside service.**
+
+```sh
+wa models add <id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the id to give it: a-z, 0-9, . _ -. |
+
+| Option | What it does |
+|---|---|
+| `--payload <json>` | where the model is and how to run it, as JSON (below). |
+
 ## `wa inbox`
 
 other people's unread messages in every chat; --new for what arrived since the last check
@@ -4194,7 +4226,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
 | `value` | required | a number, true or false; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -4215,7 +4247,7 @@ wa config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
 
 | Option | What it does |
 |---|---|

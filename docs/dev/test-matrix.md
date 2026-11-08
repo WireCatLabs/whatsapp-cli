@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**281 ✅ · 861 ⛔ · 0 ❌** — 375 commands, 767 options.
+**286 ✅ · 863 ⛔ · 0 ❌** — 378 commands, 771 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -29,6 +29,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `account sessions list` |  | ✅ |  |
 | `account sessions end` |  | ✅ |  |
 | `account sessions end` | `--others` | ✅ |  |
+| `account remove` |  | ✅ |  |
+| `account remove` | `--keep-data` | ✅ |  |
+| `account remove` | `--delete-data` | ✅ |  |
+| `account remove` | `--dry-run` | ✅ |  |
 | `account privacy show` |  | ✅ |  |
 | `account privacy set` |  | ✅ |  |
 | `account privacy set` | `--last-seen` | ✅ |  |
@@ -249,6 +253,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models list` |  | ✅ |  |
 | `models download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `models download` | `--accept-terms` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models add` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models add` | `--payload` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `inbox` |  | ✅ |  |
 | `inbox` | `--new` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/media.test.ts --transcribe, the options that reach the engine |
 | `inbox` | `--limit` | ⛔ | a store read of cli-core's shared command, tested in cli-core (src/cli/messenger/inbox.test.ts; the paging in src/cli/list-query.test.ts); src/media.test.ts --transcribe, the options that reach the engine |
@@ -1149,7 +1156,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--full` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/output-detail.test.ts |
 | *global* | `--compact` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/compact.test.ts |
 | *global* | `--dry-run` | ✅ |  |
-| *global* | `--yes` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/messenger/admin-commands.test.ts |
+| *global* | `--yes` | ✅ |  |
 | *global* | `--record` | ✅ |  |
 | *global* | `--no-record` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/json-fields.test.ts |
 | *global* | `--help-all` | ⛔ | a global option of cli-core's shared program, which wa adds nothing to; in cli-core: src/cli/help/first-screen.test.ts |
