@@ -75,6 +75,18 @@ describe("account remove", () => {
     expect(existsSync(dirname(store))).toBe(false)
   })
 
+  it("**--dry-run changes nothing** and starts no engine", async () => {
+    const store = linkedProfile("previewing")
+
+    const { code } = await waCli(["previewing", "account", "remove", "--keep-data", "--dry-run", "--json"], () =>
+      fakeEngine(seed),
+    )
+
+    expect(code).toBe(0)
+    expect(started.engines).toEqual([])
+    expect(existsSync(store)).toBe(true)
+  })
+
   it("**succeeds when WhatsApp had already dropped the device**", async () => {
     const store = linkedProfile("dropped")
     const engine = fakeEngine(seed)
