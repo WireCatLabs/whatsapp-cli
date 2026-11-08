@@ -88,8 +88,12 @@ createInterface({ input: process.stdin }).on("line", (line) => {
       say({ id, ok: { matches: fields.phone === "70000000001", ends: "0001" } })
       break
     case "saveOwnContact":
-      if (Object.keys(fields).join() === "contactName" && fields.contactName === "Synthetic Own")
-        say({ id, ok: { readBack: true } })
+      if (
+        Object.keys(fields).join() === "key,contactName" &&
+        ["pn", "lid", "lid_contact"].includes(fields.key) &&
+        fields.contactName === "Synthetic Own"
+      )
+        say({ id, ok: { readBack: fields.key === "lid_contact" ? "unchecked" : "yes" } })
       else say({ id, error: { code: "validation_error", message: "wrong synthetic own contact fields" } })
       break
     case "saveContact":
