@@ -54,8 +54,10 @@ account; the engine now does (`refuseOwnContact`, `contact_write.go`), failing c
 its own ids. `bin/live-contact-write` no longer trusts a typed `spare`: it has the owner type the spare phone's number, which the engine compares with the linked
 account's (`ownNumber`, answering a match and the last four digits only), and needs "own profile name changed: no"
 for a pass. It does not compare account records across profiles: several test profiles may share the one spare
-account. whatsmeow's patch encoder sends only `SET` mutations, so `wa` cannot remove the stray self contact; the
-owner fixes it on the main phone.
+account. whatsmeow's patch encoder sends only `SET` mutations, so `wa` cannot remove the stray self contact, and the
+phone offers no way to edit it. `bin/fix-own-contact-name` sets it again, to the account's own profile name: it links
+a throwaway profile to the main account, writes through the engine's `saveOwnContact` (the own ids only, no target;
+no command calls it), and unlinks the device at the end.
 
 **Live run of 2026-11-08, about 19:30** (profile `spare`, linked from the spare phone, engine with #354 and #355): the
 engine confirmed the spare's number, then `write: ok`, `read back: yes`; after a full restart of WhatsApp on the

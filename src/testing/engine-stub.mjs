@@ -87,6 +87,11 @@ createInterface({ input: process.stdin }).on("line", (line) => {
     case "ownNumber":
       say({ id, ok: { matches: fields.phone === "70000000001", ends: "0001" } })
       break
+    case "saveOwnContact":
+      if (Object.keys(fields).join() === "contactName" && fields.contactName === "Synthetic Own")
+        say({ id, ok: { readBack: true } })
+      else say({ id, error: { code: "validation_error", message: "wrong synthetic own contact fields" } })
+      break
     case "saveContact":
       if (fields.contactName === "crash before the answer") process.exit(3)
       if (

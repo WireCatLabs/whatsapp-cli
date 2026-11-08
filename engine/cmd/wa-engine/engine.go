@@ -194,6 +194,8 @@ func (e *engine) dispatch(req request) (any, error) {
 		return nil, e.saveContact(req)
 	case "ownNumber":
 		return e.ownNumber(req)
+	case "saveOwnContact":
+		return e.saveOwnContact(req)
 	case "folders":
 		return e.folders()
 	case "commentGroup":

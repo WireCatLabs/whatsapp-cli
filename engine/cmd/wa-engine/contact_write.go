@@ -95,6 +95,36 @@ func (e *engine) ownNumber(req request) (*waOwnNumber, error) {
 	return ownNumber(e.client.Store.ID, req.Phone)
 }
 
+type waOwnContact struct {
+	ReadBack bool `json:"readBack"`
+}
+
+// ownContactPatch names the account's own contact entry, keyed like any contact by its phone id, so it replaces a name
+// written there before. It takes the device's own ids, not a target: nobody else can be named through it.
+func ownContactPatch(own *types.JID, ownLID types.JID, name string) (types.JID, appstate.PatchInfo, error) {
+	if own == nil || own.IsEmpty() || ownLID.IsEmpty() {
+		return types.JID{}, appstate.PatchInfo{}, &failure{"authentication_error", "this device does not know its own account yet; nothing was saved"}
+	}
+	pn := own.ToNonAD()
+	patch, err := buildContact(pn, ownLID.ToNonAD(), name, "", false)
+	return pn, patch, err
+}
+
+// saveOwnContact is for bin/fix-own-contact-name alone, which undoes a contact name a live check wrote for the account's
+// own number. saveContact keeps refusing that number.
+func (e *engine) saveOwnContact(req request) (*waOwnContact, error) {
+	pn, patch, err := ownContactPatch(e.client.Store.ID, e.client.Store.LID, req.ContactName)
+	if err != nil {
+		return nil, err
+	}
+	if err := e.sendAppState(patch); err != nil {
+		return nil, err
+	}
+	// The write went out, so a failed read answers "not read back", not an error that reads as "not saved".
+	contact, err := e.client.Store.Contacts.GetContact(e.ctx, pn)
+	return &waOwnContact{ReadBack: err == nil && contact.FullName == strings.TrimSpace(req.ContactName)}, nil
+}
+
 func (e *engine) saveContact(req request) error {
 	jid, err := personJID(req.JID)
 	if err != nil {

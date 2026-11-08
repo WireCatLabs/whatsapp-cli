@@ -1,0 +1,201 @@
+#!/usr/bin/env sh
+# One-off repair, run once by the owner from a terminal; an agent never runs it. On 2026-11-08 bin/live-contact-write
+# ran on the owner's MAIN account and gave the account's own number the WhatsApp contact name "WA check <digits>", so
+# the chat with himself shows that name. The phone cannot edit that entry, and a linked device can only set a contact
+# name, not delete one. So this sets it again, to the account's own profile name:
+#
+#   1. links a throwaway profile, fix-own, as a second device of the main account (QR code, main phone)
+#   2. checks the number: you type it, the engine compares it and shows only its last four digits
+#   3. reads the profile name WhatsApp gave the device, shows it and what will be written, asks
+#   4. writes that name as the contact for the own number, reads it back, asks you to check the phone
+#   5. always, even after a failure or Ctrl-C: unlinks the device (session end), deletes its keys and its records
+#
+#   bin/fix-own-contact-name
+#
+# It sends no message. The history the phone pushes on linking goes to a throwaway store, removed at the end; the
+# shared WireCat store is not touched. No number is printed beyond its last four digits. The exit code is 0 only when
+# the name was written, read back and seen on the phone.
+# shellcheck disable=SC2016 # node -e takes JavaScript, whose ${} is its own
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+[ $# -eq 0 ] || die "usage: $(basename -- "$0") — it takes no arguments"
+profile=fix-own
+state="$main/.wa/state"
+engine_bin="$main/engine/bin/wa-engine"
+grep -q saveOwnContact "$main/dist/engine/discovery.js" 2>/dev/null && grep -qa saveOwnContact "$engine_bin" 2>/dev/null ||
+  die "the build in $main is older than this script — run git pull, pnpm build and pnpm engine:build there first"
+[ ! -e "$state/accounts/$profile.json" ] && [ ! -e "$state/profiles/$profile" ] ||
+  die "profile $profile is left from an earlier run — unlink it: $wa $profile session end, then remove $state/accounts/$profile.json and $state/profiles/$profile"
+
+cat <<EOF
+
+This repairs the name in the chat with yourself on your MAIN WhatsApp account:
+  1. it links a SECOND device to the main account, as the throwaway profile $profile: scan the QR code with the MAIN phone
+  2. you type the main number; the engine checks it and shows its last four digits
+  3. it shows your profile name and asks before it writes it as the contact name of your own number
+  4. you check the chat with yourself on the main phone
+  5. it unlinks the device and deletes its keys, whatever happened
+Nothing is sent to anyone. Your serve and its device are not touched.
+EOF
+printf '\nType yes to link it: '
+read -r answer || exit 130
+[ "$answer" = yes ] || die "nothing linked"
+
+store=$(mktemp -d "${TMPDIR:-/tmp}/wa-fix-own.XXXXXX")
+
+# Not bin/wa: in the main checkout it opens the shared store. WA_ENGINE: an engine package installed beside the CLI
+# would win over the engine just built, and only the new one answers saveOwnContact.
+fresh() {
+  WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$state" WA_CACHE_DIR="$main/.wa/cache" WA_ENGINE="$engine_bin" \
+    MESSAGING_STORE="$store/messages.db" node "$main/dist/bin/wa.js" "$@"
+}
+
+fresh_doctor() {
+  fresh "$profile" doctor --json --no-input --timeout 30s 2>/dev/null | json "$1" 2>/dev/null
+}
+
+unlinked=no
+cleanup() {
+  status=$?
+  hold_signals
+  echo
+  tries=0
+  while [ "$(fresh_doctor 'd.item.whatsapp.lock.running')" = true ] && [ "$tries" -lt 20 ]; do
+    tries=$((tries + 1))
+    sleep 1
+  done
+  if [ "$(fresh_doctor 'd.item.whatsapp.device.exists')" = true ]; then
+    if fresh "$profile" session end --json --no-input --timeout 60s >/dev/null 2>&1; then
+      unlinked=yes
+    else
+      unlinked=failed
+    fi
+  else
+    unlinked="not linked"
+  fi
+  # The keys stay if WhatsApp did not answer; they go anyway, and the phone can still remove the device.
+  rm -f -- "$state/profiles/$profile/private.db" "$state/profiles/$profile/private.db-wal" \
+    "$state/profiles/$profile/private.db-shm" "$state/profiles/$profile/private.db.lock"
+  rmdir -- "$state/profiles/$profile" 2>/dev/null || true
+  # session end leaves the account record, which holds the main account's id and keeps fix-own in `account list`.
+  rm -f -- "$state/accounts/$profile.json"
+  rm -rf -- "$store"
+  echo "device unlinked: $unlinked"
+  [ "$unlinked" != failed ] ||
+    echo "WhatsApp did not confirm the unlink; its keys are deleted here. Remove it on the main phone: Settings > Linked devices, the newest entry."
+  [ ! -e "$state/profiles/$profile" ] && [ ! -e "$state/accounts/$profile.json" ] ||
+    echo "remove what is left of the profile yourself: $state/profiles/$profile and $state/accounts/$profile.json"
+  exit "$status"
+}
+trap cleanup EXIT
+on_signals
+
+cat <<EOF
+
+wa draws the QR code below. On the MAIN phone: WhatsApp > Settings > Linked devices > Link a device, scan it.
+Keep WhatsApp open on the phone and let wa end the wait by itself: the profile name and the keys this repair needs
+come with the sync. Ctrl+C only if nothing moves for several minutes.
+Paste only the result block at the end: the lines above it name your account.
+EOF
+# Ctrl+C is wa's to handle here; a trap that does nothing, unlike an ignored signal, is not passed on to node.
+trap ':' INT
+set +e
+fresh "$profile" session start qr --timeout 10m
+set -e
+on_signals
+[ "$(fresh_doctor 'd.item.whatsapp.device.exists')" = true ] || die "the device was not linked; nothing written"
+
+printf '\nYour MAIN phone number, with the country code (checked against the linked account, not shown): '
+read -r typed || exit 130
+digits=$(printf '%s' "$typed" | tr -cd '0-9')
+[ "${#digits}" -ge 8 ] || die "that is not a phone number with its country code; nothing written"
+
+# One engine run per step, so the questions in between are asked with the device closed. The profile name goes to a
+# file in the throwaway folder, not through the output, which holds fixed words, four digits and error codes only.
+engine_run() {
+  WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$state" WA_CACHE_DIR="$main/.wa/cache" WA_ENGINE="$engine_bin" \
+    MESSAGING_STORE="$store/messages.db" FIX_STEP="$1" FIX_DIGITS="$digits" FIX_STORE="$store" \
+    node --input-type=module -e '
+      const { FIX_STEP: step, FIX_DIGITS: digits, FIX_STORE: store } = process.env
+      const [main, profile] = process.argv.slice(1)
+      const { readFileSync, writeFileSync } = await import("node:fs")
+      const { startGoEngine } = await import(`${main}/dist/engine/go-engine.js`)
+      const { privateStore } = await import(`${main}/dist/paths.js`)
+      const failed = (what, error) => {
+        console.log(`${what}: ${error?.code ?? "failed"}${error?.reason ? ` (${error.reason})` : ""}`)
+        process.exitCode = 1
+      }
+      const engine = await startGoEngine({ storePath: privateStore(profile), holder: "fix-own-contact-name" }).catch(
+        (error) => failed("engine", error),
+      )
+      if (engine) {
+        try {
+          if (step === "read") {
+            const own = await engine.ownNumber(digits).catch((error) => failed("own number", error))
+            if (own) console.log(`ends ${own.ends}\nmatches ${own.matches ? "yes" : "no"}`)
+            const me = await engine.me().catch((error) => failed("profile name", error))
+            if (me?.name?.trim()) writeFileSync(`${store}/name`, me.name, { mode: 0o600 })
+            else if (me) console.log("profile name: missing")
+          } else {
+            const name = readFileSync(`${store}/name`, "utf8")
+            const saved = await engine.saveOwnContact(name).catch((error) => failed("write", error))
+            if (saved) console.log(`write: ok\nread back: ${saved.readBack ? "yes" : "no"}`)
+          }
+        } finally {
+          await engine.close()
+        }
+      }
+    ' "$main" "$profile" 2>/dev/null
+}
+
+set +e
+read_out=$(engine_run read)
+set -e
+ends=$(printf '%s\n' "$read_out" | sed -n 's/^ends //p')
+matches=$(printf '%s\n' "$read_out" | sed -n 's/^matches //p')
+problems=$(printf '%s\n' "$read_out" | grep -v '^ends \|^matches ' || true)
+unsynced="the device had not finished syncing. Run this again and let the link finish by itself"
+[ "$problems" != "profile name: missing" ] || die "$problems: $unsynced; nothing written"
+[ -z "$problems" ] || die "$problems — nothing written"
+[ -n "$ends" ] || die "the engine did not answer (is $main built, engine included?); nothing written"
+[ "$matches" = yes ] ||
+  die "the linked account's number ends in $ends, not the number you typed; nothing written. Was the QR scanned with the main phone?"
+[ -s "$store/name" ] || die "no profile name came; nothing written"
+name=$(cat -- "$store/name")
+
+echo
+main_ok=$(phone "The linked account's number ends in $ends. Is that your MAIN number?")
+[ "$main_ok" = yes ] || die "nothing written"
+confirm "This writes ONE contact name in the main account: your own number (ends in $ends) gets the name \"$name\".
+Your profile name and your phone's Contacts app are left alone."
+
+set +e
+write_out=$(engine_run write)
+set -e
+[ -n "$write_out" ] || write_out="engine: did not answer"
+printf '%s\n' "$write_out"
+! printf '%s\n' "$write_out" | grep -q 'keys-missing' || echo "Nothing was written: $unsynced."
+
+seen=skipped
+profile_same=skipped
+if printf '%s\n' "$write_out" | grep -qx "write: ok"; then
+  echo
+  echo "On the MAIN phone, close WhatsApp fully (swipe it away from the recent apps), wait a minute, open it."
+  seen=$(phone "Does the chat with yourself now show \"$name\" (not \"WA check …\")?")
+  profile_same=$(phone "Is your profile name (Settings, your name at the top) still \"$name\"?")
+fi
+
+verdict=FAIL
+printf '%s\n' "$write_out" | grep -qx "read back: yes" && [ "$seen" = yes ] && [ "$profile_same" = yes ] && verdict=FIXED
+cat <<EOF
+
+── result ──
+$write_out
+chat with yourself shows the name   $seen
+profile name unchanged               $profile_same
+own contact name: $verdict (fixed needs write ok, read back yes and both answers yes)
+EOF
+[ "$verdict" = FIXED ]
