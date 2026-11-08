@@ -52,10 +52,10 @@ the number. The mutation itself is a contact action, not the push-name setting: 
 whatsmeow writes a push name only through `BuildSettingPushName`, `PushNameSetting` in `critical_block`
 (`appstate/encode.go`). The defects were in the checks. Neither wacli nor whatsmeow refuses a contact for the own
 account; the engine now does (`refuseOwnContact`, `contact_write.go`), failing closed when the device does not know
-its own ids. `bin/live-contact-write` no longer trusts a typed `spare`: it refuses a profile whose account record
-equals another profile's, has the owner type the spare phone's number, which the engine compares with the linked
+its own ids. `bin/live-contact-write` no longer trusts a typed `spare`: it has the owner type the spare phone's number, which the engine compares with the linked
 account's (`ownNumber`, answering a match and the last four digits only), and needs "own profile name changed: no"
-for a pass. whatsmeow's patch encoder sends only `SET` mutations, so `wa` cannot remove the stray self contact; the
+for a pass. It does not compare account records across profiles: several test profiles may share the one spare
+account. whatsmeow's patch encoder sends only `SET` mutations, so `wa` cannot remove the stray self contact; the
 owner fixes it on the main phone.
 
 ## WA-4 · Album: does the phone group a photo and a video

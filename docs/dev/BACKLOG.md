@@ -25,8 +25,8 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   them. Reopened 2026-11-08: the 18:26 run's PASS was wrong. The owner had linked profile `spar` with his main phone,
   so the number typed was the main account's own, and the name landed in the main account's contact for itself (the
   chat with himself); his public profile name did not change, and the person on the spare phone still shows only the
-  number. The engine now refuses a contact for the account's own number or LID, and `bin/live-contact-write` refuses
-  a profile linked to the same account as another profile and has the engine confirm the spare phone's number before
+  number. The engine now refuses a contact for the account's own number or LID, and `bin/live-contact-write` has the
+  engine confirm the spare phone's number before
   the write. Re-run on a profile linked from the spare phone. List writes remain in WA-56; bulk contact import needs a
   bounded write policy. Until validated, their adapter methods stay in `lacks`; unsupported session termination and
   contact removal stay in `never`. [Notes](BACKLOG-NOTES.md#wa-1--contact-writes-on-a-spare-account)

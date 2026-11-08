@@ -262,9 +262,8 @@ preview answer is reported on its own line, for WA-41. The exit code is 0 only o
 owner's own: a bad contact change can stall contact names on every device of the account. Link the spare with
 `bin/live-fresh-link <spare-profile>`, scanning with the spare phone: its history goes to the throwaway store, not
 the owner's, and the device keys and account record stay. That run's `WA-5` line counts only if the spare has chats. It refuses a profile
-whose lock is held, since it connects the device itself, and a profile whose account record is the same as another
-profile's: on 2026-11-08 `spar` had been linked from the main phone, and the name landed on the main account's
-contact for itself. A typed word cannot tell a spare from the main account, so the owner types the spare phone's
+whose lock is held, since it connects the device itself. On 2026-11-08 `spar` had been linked from the main phone,
+and the name landed on the main account's contact for itself. A typed word cannot tell a spare from the main account, so the owner types the spare phone's
 number, never printed, and the engine compares it with the linked account's, showing only its last four digits;
 a mismatch writes nothing. The
 owner types the phone number of one person the spare has a chat with but who is not saved in the spare phone's
