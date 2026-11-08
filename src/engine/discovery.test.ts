@@ -92,6 +92,7 @@ describe("discovery over the engine transport", () => {
     const naming = readdirSync(src, { recursive: true, encoding: "utf8" })
       .filter((file) => /\.(ts|mjs)$/.test(file) && !/\.test\.ts$/.test(file))
       .filter((file) => readFileSync(join(src, file), "utf8").includes("saveOwnContact"))
+      .map((file) => file.replaceAll("\\", "/"))
       .sort()
     expect(naming).toEqual([
       "engine/contract.ts",
