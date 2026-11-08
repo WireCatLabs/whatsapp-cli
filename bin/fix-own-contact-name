@@ -3,20 +3,21 @@
 # ran on the owner's MAIN account and gave the account's own number the WhatsApp contact name "WA check <digits>", so
 # the chat with himself shows that name. The phone cannot edit that entry, and a linked device can only set a contact
 # name, not delete one. An earlier run set the entry keyed by the own phone number to the profile name, and the phone
-# kept showing "WA check …"; so this sets the entries keyed by the account's LID (WhatsApp's internal id for it):
+# kept showing "WA check …", WhatsApp Web too; so this sets the LID-only entry, [lid_contact, own LID], the one WhatsApp
+# Web writes itself (LID: WhatsApp's internal id for the account). [contact, own LID] is not written: Web ignores it
+# and treats sending one as an error:
 #
 #   1. links a throwaway profile, fix-own, as a second device of the main account (QR code, main phone)
 #   2. checks the number: you type it, the engine compares it and shows only its last four digits
 #   3. reads the profile name WhatsApp gave the device, shows it and what will be written, asks
-#   4. writes that name as [contact, own LID] and asks you to check the phone; if the phone does not show it, writes
-#      it as [lid_contact, own LID] and asks again. It stops at the first yes
+#   4. writes that name as [lid_contact, own LID] and asks you to check the phone
 #   5. always, even after a failure or Ctrl-C: unlinks the device (session end), deletes its keys and its records
 #
 #   bin/fix-own-contact-name
 #
 # It sends no message. The history the phone pushes on linking goes to a throwaway store, removed at the end; the
 # shared WireCat store is not touched. No number is printed beyond its last four digits. The exit code is 0 only when
-# the phone shows the name after one of the writes.
+# the phone shows the name after the write.
 # shellcheck disable=SC2016 # node -e takes JavaScript, whose ${} is its own
 set -eu
 
@@ -202,13 +203,11 @@ echo
 main_ok=$(phone "The linked account's number ends in $ends. Is that your MAIN number?")
 [ "$main_ok" = yes ] || die "nothing written"
 echo
-echo "It writes \"$name\" as a contact name of your own account (number ends in $ends), one step at a time:"
-echo "  lid          the contact entry keyed by your account's LID"
-echo "  lid_contact  the LID-only contact entry, only if the chat with yourself still shows \"WA check …\" after lid"
+echo "It writes \"$name\" as the LID-only contact entry (lid_contact) of your own account (number ends in $ends)."
 echo "Your profile name and your phone's Contacts app are left alone."
 
-# The order the owner chose; the loop stops at the first yes from the phone.
-steps="lid lid_contact"
+# The owner's choice: only the entry WhatsApp Web writes itself.
+steps="lid_contact"
 results=""
 fixed_by=""
 wrote=no
