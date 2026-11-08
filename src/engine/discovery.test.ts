@@ -66,6 +66,16 @@ describe("discovery over the engine transport", () => {
     }
   })
 
+  it("answers whether a number is the linked account's with its last four digits only", async () => {
+    const engine = await stub()
+    try {
+      await expect(engine.ownNumber("70000000001")).resolves.toEqual({ matches: true, ends: "0001" })
+      await expect(engine.ownNumber("34600000001")).resolves.toEqual({ matches: false, ends: "0001" })
+    } finally {
+      await engine.close()
+    }
+  })
+
   it("preserves explicit contact fields, leaves omitted options unset, and treats an interrupted save as uncertain", async () => {
     const engine = await stub()
     try {

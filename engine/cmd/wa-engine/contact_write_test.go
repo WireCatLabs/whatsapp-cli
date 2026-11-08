@@ -29,8 +29,6 @@ func (s oneLID) GetPNForLID(_ context.Context, lid types.JID) (types.JID, error)
 	return types.JID{}, nil
 }
 
-// The 2026-11-08 WA-1 run: profile spar was linked to the owner's main phone, and the number typed was that
-// phone's, so the "contact" was the account itself.
 func TestSaveContactRefusesTheLinkedAccountsOwnNumberBeforeAnySync(t *testing.T) {
 	ownDevice := types.NewADJID(annPN.User, 0, 7)
 	for _, target := range []string{annPN.String(), annLID.String()} {
@@ -105,5 +103,21 @@ func TestContactWriteRefusesTheAccountsOwnNumberOrLID(t *testing.T) {
 	other := types.NewJID("70000000009", types.DefaultUserServer)
 	if err := refuseOwnContact(annPN, annLID, other, types.NewJID("100000000000009", types.HiddenUserServer)); err != nil {
 		t.Fatalf("another person's contact refused: %v", err)
+	}
+}
+
+func TestOwnNumberAnswersAMatchAndOnlyTheLastFourDigits(t *testing.T) {
+	own := types.NewADJID(annPN.User, 0, 7)
+	if got, err := ownNumber(&own, annPN.User); err != nil || !got.Matches || got.Ends != "0002" {
+		t.Fatalf("own number not recognised: %+v %v", got, err)
+	}
+	if got, err := ownNumber(&own, "34600000001"); err != nil || got.Matches || got.Ends != "0002" {
+		t.Fatalf("another number matched: %+v %v", got, err)
+	}
+	if _, err := ownNumber(nil, annPN.User); !isFailure(err, "authentication_error") {
+		t.Fatalf("unlinked device answered: %v", err)
+	}
+	if _, err := ownNumber(&own, "+7 000"); !isFailure(err, "validation_error") {
+		t.Fatalf("formatted number accepted: %v", err)
 	}
 }

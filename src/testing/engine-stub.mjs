@@ -84,6 +84,9 @@ createInterface({ input: process.stdin }).on("line", (line) => {
         say({ id, error: { code: "validation_error", message: "not a synthetic announcement group" } })
       else say({ id, ok: mode === "malformed-discovery" ? "true" : true })
       break
+    case "ownNumber":
+      say({ id, ok: { matches: fields.phone === "70000000001", ends: "0001" } })
+      break
     case "saveContact":
       if (fields.contactName === "crash before the answer") process.exit(3)
       if (

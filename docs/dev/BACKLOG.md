@@ -22,19 +22,21 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 ## Launch blockers (P1)
 
 - **WA-1** · P1 · core · 🚧 `fix/wa-1-own-contact` · Validate contact writes on a spare account before exposing
-  them. Reopened 2026-11-08: the 18:26 run's PASS was wrong. Profile `spar` was linked to the owner's main account,
-  not a spare, so the number typed was the account's own and the name landed on the main account itself (its own
-  profile and chat with itself); the person on the spare phone still shows only the number. The engine now refuses a
-  contact for the account's own number or LID, and `bin/live-contact-write` refuses a profile linked to the same
-  account as another profile and asks whether the account's own name changed. Re-run it on a profile linked from the
-  spare phone, after `bin/live-fresh-link`. List writes remain in WA-56; bulk contact import needs a bounded write
-  policy. Until validated, their adapter methods stay in `lacks`; unsupported session termination and contact
-  removal stay in `never`. [Notes](BACKLOG-NOTES.md#wa-1--contact-writes-on-a-spare-account)
-- **WA-4** · P1 · live · Closed 2026-11-08: `bin/live-album` on the spare showed a captioned photo and video in the own
-  chat as one album, both files opening. Still unverified: an album without a caption (WA-68).
-  [Notes](BACKLOG-NOTES.md#wa-4--album-does-the-phone-group-a-photo-and-a-video)
-- **WA-5** · P1 · live · Closed 2026-11-08: `bin/live-fresh-link spar` linked the spare with its history push kept
-  and the own id recorded, `WA-5: PASS`. [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
+  them. Reopened 2026-11-08: the 18:26 run's PASS was wrong. The owner had linked profile `spar` with his main phone,
+  so the number typed was the main account's own, and the name landed in the main account's contact for itself (the
+  chat with himself); his public profile name did not change, and the person on the spare phone still shows only the
+  number. The engine now refuses a contact for the account's own number or LID, and `bin/live-contact-write` refuses
+  a profile linked to the same account as another profile and has the engine confirm the spare phone's number before
+  the write. Re-run on a profile linked from the spare phone. List writes remain in WA-56; bulk contact import needs a
+  bounded write policy. Until validated, their adapter methods stay in `lacks`; unsupported session termination and
+  contact removal stay in `never`. [Notes](BACKLOG-NOTES.md#wa-1--contact-writes-on-a-spare-account)
+- **WA-4** · P1 · live · Closed 2026-11-08: `bin/live-album` showed a captioned photo and video in the own chat as
+  one album, both files opening. It ran on the main account (profile `spar` was its second device), not a spare; the
+  result stands, since grouping depends on the message, not on which account sent it. Still unverified: an album
+  without a caption (WA-68). [Notes](BACKLOG-NOTES.md#wa-4--album-does-the-phone-group-a-photo-and-a-video)
+- **WA-5** · P1 · live · Closed 2026-11-08: `bin/live-fresh-link spar` linked a second device with its history push
+  kept and the own id recorded, `WA-5: PASS`. It ran on the main account, which is what the script is for: it links
+  a second device of the owner's account. That device is unlinked again. [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
 
 ## Next (P2)
 

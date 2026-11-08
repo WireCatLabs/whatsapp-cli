@@ -41,19 +41,22 @@ before that pull request merged and against wacli's guide. The script now asks f
 address book, refuses a saved one, has the owner close and reopen WhatsApp before answering, and asks about the chat
 list and the contact info screen separately.
 
-**Live run of 2026-11-08, 18:26** (profile `spar`): the script printed `WA-1: PASS`, and it was wrong. Afterwards
-the owner saw the person's chat on the spare phone still showing only the number, and the name `WA check …` on the
-owner's main account itself: its profile name and its chat with itself. The local account records of profiles `spar`
-and `live` hold the same account id (compared by hash, not printed), so `spar` had been linked from the main phone
-and the number typed was that account's own. The mutation itself is a contact action, not the push-name setting:
-field by field the same as wacli's `BuildSaveContact`
+**Live run of 2026-11-08, 18:26** (profile `spar`): the script printed `WA-1: PASS`, and it was wrong. The owner had
+scanned the QR code for `spar` with his main phone, so `spar` was a second device of the main account; the local
+account records of `spar` and `live` hold the same id (compared by hash, not printed). The number typed was the
+main account's own, and `WA check …` landed in the main account's contact for itself: the chat with himself shows it
+on the main phone. His public profile name did not change, and the person's chat on the spare phone still shows only
+the number. The mutation itself is a contact action, not the push-name setting: field by field the same as wacli's
+`BuildSaveContact`
 ([`internal/wa/contact_save.go` at 5b42b63](https://github.com/openclaw/wacli/blob/5b42b63bba4711c51c26f4259b87e34d4d2b7e50/internal/wa/contact_save.go));
 whatsmeow writes a push name only through `BuildSettingPushName`, `PushNameSetting` in `critical_block`
-(`appstate/encode.go`). Neither wacli nor whatsmeow refuses a contact for the own account. The engine now does
-(`refuseOwnContact`, `contact_write.go`), failing closed when the device does not know its own ids, and
-`bin/live-contact-write` refuses a profile whose account record equals another profile's, asks that the number is
-not the linked phone's own, and needs "own profile name changed: no" for a pass. That the phone shows a contact
-saved for the own number as the account's name is inferred from this one run.
+(`appstate/encode.go`). The defects were in the checks. Neither wacli nor whatsmeow refuses a contact for the own
+account; the engine now does (`refuseOwnContact`, `contact_write.go`), failing closed when the device does not know
+its own ids. `bin/live-contact-write` no longer trusts a typed `spare`: it refuses a profile whose account record
+equals another profile's, has the owner type the spare phone's number, which the engine compares with the linked
+account's (`ownNumber`, answering a match and the last four digits only), and needs "own profile name changed: no"
+for a pass. whatsmeow's patch encoder sends only `SET` mutations, so `wa` cannot remove the stray self contact; the
+owner fixes it on the main phone.
 
 ## WA-4 · Album: does the phone group a photo and a video
 
