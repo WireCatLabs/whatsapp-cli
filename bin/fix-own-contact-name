@@ -96,7 +96,9 @@ on_signals
 cat <<EOF
 
 wa draws the QR code below. On the MAIN phone: WhatsApp > Settings > Linked devices > Link a device, scan it.
-Once wa says the device is linked and the history is coming, Ctrl+C ends the wait; the history is not needed.
+Keep WhatsApp open on the phone and let wa end the wait by itself: the profile name and the keys this repair needs
+come with the sync. Ctrl+C only if nothing moves for several minutes.
+Paste only the result block at the end: the lines above it name your account.
 EOF
 # Ctrl+C is wa's to handle here; a trap that does nothing, unlike an ignored signal, is not passed on to node.
 trap ':' INT
@@ -155,6 +157,8 @@ set -e
 ends=$(printf '%s\n' "$read_out" | sed -n 's/^ends //p')
 matches=$(printf '%s\n' "$read_out" | sed -n 's/^matches //p')
 problems=$(printf '%s\n' "$read_out" | grep -v '^ends \|^matches ' || true)
+unsynced="the device had not finished syncing. Run this again and let the link finish by itself"
+[ "$problems" != "profile name: missing" ] || die "$problems: $unsynced; nothing written"
 [ -z "$problems" ] || die "$problems — nothing written"
 [ -n "$ends" ] || die "the engine did not answer (is $main built, engine included?); nothing written"
 [ "$matches" = yes ] ||
@@ -173,6 +177,7 @@ write_out=$(engine_run write)
 set -e
 [ -n "$write_out" ] || write_out="engine: did not answer"
 printf '%s\n' "$write_out"
+! printf '%s\n' "$write_out" | grep -q 'keys-missing' || echo "Nothing was written: $unsynced."
 
 seen=skipped
 profile_same=skipped
