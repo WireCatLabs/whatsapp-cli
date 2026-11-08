@@ -8,14 +8,38 @@ new findings come in; delete it with its item once the item ships.
 ## WA-1 · Contact writes on a spare account
 
 `saveContact` in the engine (`engine/cmd/wa-engine/contact_write.go`) builds one `ContactAction` mutation in
-`critical_unblock_low`, index `contact` and the phone id, version 2: the shape wacli ships on the same library
-([wacli `contact_save.go`](https://github.com/openclaw/wacli/blob/main/internal/wa/contact_save.go)), field for field.
+`critical_unblock_low`, index `contact` and the phone id, version 2, with `saveOnPrimaryAddressbook` false unless
+`phonebook` is asked for: the shape wacli ships on the same library
+([wacli `contact_save.go`](https://github.com/openclaw/wacli/blob/main/internal/wa/contact_save.go)). Until
+2026-11-08 the engine sent the patch without `lidJID` when the store had no LID for the number, since whatsmeow's
+`GetLIDForPN` answers an empty id and no error then; wacli refuses that case
+([`internal/app/contact_save.go`](https://github.com/openclaw/wacli/blob/main/internal/app/contact_save.go)), and
+its [contacts guide](https://github.com/openclaw/wacli/blob/main/docs/contacts.md) says current clients show only
+the number for a contact saved without its LID. The engine now refuses it too, with `not_found`.
 whatsmeow fills the patch's time and, after the send, fetches the collection back and writes the name to its contact
-store, so a name read back from there is one WhatsApp accepted. `contacts add` and `contacts rename` stay in `lacks`,
-which cli-core refuses before anything connects, so `bin/live-contact-write` calls the engine directly. It needs a
-spare WhatsApp account linked as a profile in the main checkout: a bad change to a `critical_*` collection can stall
-contact names on every device of the account. Not built: the adapter's `addContact` and `renameContact`, which come
-with the unlock.
+store (`appstate.go`, `IndexContact`), so a name read back from there is one WhatsApp's server accepted, not one the
+phone applied. `contacts add` and `contacts rename` stay in `lacks`, which cli-core refuses before anything connects,
+so `bin/live-contact-write` calls the engine directly. It needs a spare WhatsApp account linked as a profile in the
+main checkout: a bad change to a `critical_*` collection can stall contact names on every device of the account. Not
+built: the adapter's `addContact` and `renameContact`, which come with the unlock.
+
+**Live run of 2026-11-08** (spare, profile `spar`): `write: ok`, `read back: yes`, phone shows the new name `no`,
+other names unchanged `yes`. The person was one already in the spare's contacts, as the script then asked. Two
+causes fit, and that run cannot tell them apart:
+
+- The person was saved in the phone's address book. The phone shows the address-book name for such a person, and a
+  write with `saveOnPrimaryAddressbook` false leaves the address book alone. WhatsApp's own
+  [announcement](https://blog.whatsapp.com/making-it-easier-to-add-and-manage-contacts) (2024-10-22) added contacts
+  saved only in WhatsApp; that a saved address-book name wins on the phone is reported by secondary sources only
+  ([Green API FAQ](https://green-api.com/en/docs/faq/how-to-manage-the-phone-book-contact-list/): WhatsApp's own
+  contact manager "is not linked to the primary device's phonebook by default"), not by WhatsApp's help centre.
+- The write went without the person's LID, if the spare's fresh store had no mapping for that number.
+
+Evidence for a WhatsApp limit is weak: one comment on
+[Baileys #1172](https://github.com/WhiskeySockets/Baileys/pull/1172) says WhatsApp "removed this function", written
+before that pull request merged and against wacli's guide. The script now asks for a person not in the phone's
+address book, refuses a saved one, has the owner close and reopen WhatsApp before answering, and asks about the chat
+list and the contact info screen separately.
 
 ## WA-4 · Album: does the phone group a photo and a video
 
@@ -25,7 +49,8 @@ before wa #176, which put a message secret and a reporting token on every messag
 2026-10-21 showed a captioned photo and video, sent from a second linked number to the main number, as one album
 bubble (cli-private `journal/2026-10-20-wa-status.md`, BUG-339). The send path has not changed since.
 
-Not checked: the own chat, which `bin/live-album` sends to, and an album without a caption. WhatsApp Web's defaults
+The owner's run of `bin/live-album` on 2026-11-08 (spare account, own chat) showed a captioned photo and video as
+one album, both files opening: `WA-4: PASS`. Not checked: an album without a caption (WA-68). WhatsApp Web's defaults
 send an album of fewer than four files only with a caption (`album_v2_min_items_to_send_as_album_enabled` 4,
 `album_v2_min_items_to_send_album_with_caption` 2), so the docs say a captionless album may show as two messages.
 The shape matches Baileys (`albumParentKey`, WhiskeySockets/Baileys#2058): each file is a plain photo or video whose
@@ -39,7 +64,8 @@ since the plain shape is the one seen to group.
 A fresh `session start` must keep the history push, and `self()` must be set right after pairing: the engine's
 `link` answers with `me()`, which fails while WhatsApp has not given the account its LID, so a `session start` that
 exits 0 has one. `bin/live-fresh-link` links a new profile, counts what the push left in a throwaway store and
-checks that `account list` recorded the own id in LID form; its last line is `WA-5: PASS` or `FAIL`.
+checks that `account list` recorded the own id in LID form; its last line is `WA-5: PASS` or `FAIL`. The owner's run
+of 2026-11-08 linking a spare account (profile `spar`) ended `WA-5: PASS`.
 
 ## WA-11 · How long a rate limit and a ban hold writes
 

@@ -21,20 +21,24 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Launch blockers (P1)
 
-- **WA-1** · P1 · core · 🚧 `fix/launch-blockers` · Validate contact writes on a spare account before exposing them:
-  `bin/live-contact-write <spare-profile>`, which needs a spare account the owner has not supplied yet. List writes
-  remain in WA-56; bulk contact import needs a bounded write policy. Until validated, their adapter methods stay in
-  `lacks`; unsupported session termination and contact removal stay in `never`.
+- **WA-1** · P1 · core · 🚧 `fix/wa-1-result` · Validate contact writes on a spare account before exposing them. The
+  2026-11-08 run on the spare (profile `spar`) failed: WhatsApp accepted the write and returned it on read-back, but
+  the phone kept the old name. Undecided between two causes, neither a WhatsApp limit so far: the person was saved in
+  the phone's address book, whose name the phone shows, or the write went without the person's LID (now refused).
+  Re-run `bin/live-contact-write spar` with a person not in the phone's address book. List writes remain in WA-56;
+  bulk contact import needs a bounded write policy. Until validated, their adapter methods stay in `lacks`;
+  unsupported session termination and contact removal stay in `never`.
   [Notes](BACKLOG-NOTES.md#wa-1--contact-writes-on-a-spare-account)
-- **WA-4** · P1 · live · 🚧 `fix/launch-blockers` · An album groups on the phone for a captioned photo and video sent to
-  another number; the own chat is not checked: run `bin/live-album`.
+- **WA-4** · P1 · live · Closed 2026-11-08: `bin/live-album` on the spare showed a captioned photo and video in the own
+  chat as one album, both files opening. Still unverified: an album without a caption (WA-68).
   [Notes](BACKLOG-NOTES.md#wa-4--album-does-the-phone-group-a-photo-and-a-video)
-- **WA-5** · P1 · live · 🚧 `fix/launch-blockers` · A fresh `session start` keeps the history push and records the own
-  id — `bin/live-fresh-link`. [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
+- **WA-5** · P1 · live · Closed 2026-11-08: `bin/live-fresh-link spar` linked the spare with its history push kept
+  and the own id recorded, `WA-5: PASS`. [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
 
 ## Next (P2)
 
-
+- **WA-68** · P2 · live · Does a photo and a video sent without text group as one album on the phone? The guide
+  says they may show as two messages until a phone shows otherwise.
 - **WA-63** · P2 · core · Store a "could not be decrypted" placeholder for an undecryptable message, replaced when
   the phone's resend arrives with the same id (the resend itself is on: `AutomaticMessageRerequestFromPhone`). Needs
   a cli-core decision on how a placeholder looks in the shared store (a flag, not searchable text) —
@@ -67,5 +71,5 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   (NEED-1608 = A) — plan: cli-private `plans/2026-10-22-wa-business-app/handoff.md`.
 - **WA-21** · P2 · engine · Channels: save a post's file, and what following and reading left open —
   `engine/cmd/wa-engine/`. [Notes](BACKLOG-NOTES.md#wa-21--channels-post-files-and-what-following-left-open)
-- **WA-50** · P2 · engine · 🟡 `feat/wa-launch-reads` · Contact patch code and unit tests are ready;
-  `contacts add|rename` stay disabled until a spare-account check confirms the app-state write and sync on other devices.
+- **WA-50** · P2 · engine · 🟡 `feat/wa-launch-reads` · Contact patch code and unit tests are ready, and the patch
+  needs the person's LID; `contacts add|rename` stay disabled until WA-1's spare-account check passes.
