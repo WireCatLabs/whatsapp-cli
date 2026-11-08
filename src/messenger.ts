@@ -1,7 +1,9 @@
 import { existsSync } from "node:fs"
+import { dirname } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { checkWords } from "@wirecat/cli-core"
 import {
+  type AccountRemoval,
   asFirstWord,
   type BaseContext,
   type BaseEnvironment,
@@ -25,6 +27,7 @@ import { diagnoseWhatsApp } from "./diagnose.js"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { type EngineCallEnd, startGoEngine } from "./engine/go-engine.js"
 import { privateStore } from "./paths.js"
+import { endSession } from "./session-end.js"
 
 export interface EngineRequest {
   storePath: string
@@ -103,10 +106,17 @@ const withProviderLog = (env: NodeJS.ProcessEnv, profile: string): NodeJS.Proces
   }
 }
 
+/** What starting an engine reads of a command: `account remove` has no command, only a profile and the environment. */
+interface EngineBase {
+  settings: { profile: string; historyLimits?: { dialogDays: number; groupDays: number } }
+  env: NodeJS.ProcessEnv
+  renderer: Pick<BaseContext["renderer"], "warn">
+}
+
 const startEngine = async (
   request: EngineRequest,
-  base: Pick<BaseContext, "settings" | "env" | "renderer">,
-  engineCommand: Environment["engineCommand"],
+  base: EngineBase,
+  engineCommand?: Environment["engineCommand"],
 ): Promise<WhatsAppEngine> => {
   const { profile } = base.settings
   if (!request.link && !existsSync(request.storePath))
@@ -179,6 +189,38 @@ export const linkDevice = async (
   }
 }
 
+/** `account remove`: unlinks the device as `session end` does, then the profile's folder goes. */
+const WHATSAPP_REMOVAL: AccountRemoval = {
+  signOut: async (profile, { env, mayRevoke }) => {
+    if (!existsSync(privateStore(profile, env))) return { revoked: null, removed: [] }
+    // Unlinking from a moved run is the owner's call to make from the owner's own folders; here the keys just go.
+    if (!mayRevoke) return { revoked: false, removed: ["the linked-device keys"] }
+    const quiet = { warn: () => {} }
+    const { ended } = await endSession({
+      profile,
+      env,
+      withMessenger: async (use) => {
+        const engine = await startEngine(
+          { storePath: privateStore(profile, env), holder: "wa account remove", listen: false, link: false },
+          { settings: { profile }, env, renderer: quiet },
+        )
+        if (engine.self() === null) {
+          await engine.close()
+          throw new CliError("authentication_error", `profile "${profile}" is not linked to WhatsApp`)
+        }
+        const adapter = whatsAppAdapter(engine, undefined, wordsFor(profile), quiet.warn)
+        try {
+          return await use(adapter)
+        } finally {
+          await adapter.close()
+        }
+      },
+    })
+    return ended ? { revoked: true, removed: ["the linked device"] } : { revoked: null, removed: [] }
+  },
+  stateFiles: (profile, { env }) => [dirname(privateStore(profile, env))],
+}
+
 export const SKILL = new URL("../skills/whatsapp-cli/SKILL.md", import.meta.url)
 
 export const WHATSAPP: Messenger = {
@@ -203,6 +245,7 @@ export const WHATSAPP: Messenger = {
   savedChatId: (account) => account.account,
   partnerOf: (chat) => (chat.kind === "dialog" ? chat.id : undefined),
   skill: SKILL,
+  accountRemoval: WHATSAPP_REMOVAL,
   diagnose: async (command, base) => {
     const found = diagnoseWhatsApp(base.settings.profile, base.env, environmentOf<Environment>(command).update)
     if (found.phone.warning) base.renderer.warn(found.phone.warning)

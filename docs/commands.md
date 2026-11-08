@@ -153,6 +153,22 @@ wa account sessions list [query]
 |---|---|---|
 | `query` | optional | field:value terms; this list filters by none yet. |
 
+### `wa account remove`
+
+sign the profile out, then forget it on this computer: its settings, its saved sign-in and its files; --keep-data leaves its messages in the store, where search still finds them, --delete-data deletes them; asks first, or --yes
+
+**Changes something in WhatsApp.**
+
+```sh
+wa account remove [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--keep-data` | leave what the store holds of this account, still searchable. |
+| `--delete-data` | delete what the store and the tool's own files hold of this account. |
+| `--dry-run` | list what it would remove and keep, and change nothing. |
+
 ### `wa account privacy`
 
 who may find, call or add the account

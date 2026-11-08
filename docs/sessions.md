@@ -111,6 +111,10 @@ photo; if a later one fails, the error says which changed. Removing the photo is
 devices. It leaves the local store as it is. While `serve` runs for the profile, it refuses (exit code `12`): stop
 `serve` first with `wa personal server stop`, or Ctrl+C where it runs.
 
+To forget a profile altogether, use `wa personal account remove --keep-data` or `--delete-data`. It unlinks the device
+the same way, then deletes the profile's device keys and what cli-core keeps for it. `--keep-data` leaves its messages
+searchable in the store; `--delete-data` deletes them.
+
 ## One connection per device
 
 WhatsApp allows one connection for each linked device; a second one makes WhatsApp drop the first. So one `wa`
