@@ -23,16 +23,8 @@ need_profile "$profile"
 ! lock_held "$profile" ||
   die "something holds profile $profile's device, serve perhaps — stop it first: this script connects the device itself"
 
-# A word typed at a prompt cannot tell a spare from the main account: the 2026-11-08 run wrote to the main one. So the
-# profile's account must differ from every other profile's (compared without printing either), and the engine must
-# confirm the spare phone's number before the write.
-accounts="$main/.wa/state/accounts"
-[ -f "$accounts/$profile.json" ] || die "profile $profile has no recorded account — link it again with bin/live-fresh-link"
-for other in "$accounts"/*.json; do
-  [ "$other" = "$accounts/$profile.json" ] && continue
-  ! cmp -s -- "$other" "$accounts/$profile.json" ||
-    die "profile $profile is linked to the same WhatsApp account as profile $(basename -- "$other" .json), so it is not a spare; nothing written"
-done
+# A word typed at a prompt cannot tell a spare from the main account (the 2026-11-08 run wrote to the main one), so
+# the engine confirms the spare phone's number before the write. Several test profiles may share one spare account.
 
 cat <<EOF
 
