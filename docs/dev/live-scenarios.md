@@ -88,9 +88,9 @@ These checks are scripts in `bin/`; most need a person at the phone. Only the ow
 an agent never does (`WC-TEST-18`). Each takes the profile as its first argument and never picks one: without it, or
 with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
-(`WC-LIFE-5`). Some calls differ: the restarted `serve` runs without a timeout, and `live-fresh-link` runs
+(`WC-LIFE-5`). Some calls differ: the restarted `serve` runs without a timeout, `live-fresh-link` runs
 `session start` through `node` with a throwaway store, in human mode on the terminal so that wa draws the QR code
-there (below). Scripts ask before each step; automatic one-shot mode asks once for its complete two-send plan. They pass `--yes` only after confirmation. It prints exit
+there, and `live-contact-write` starts the engine itself from the main checkout's build (below). Scripts ask before each step; automatic one-shot mode asks once for its complete two-send plan. They pass `--yes` only after confirmation. It prints exit
 codes, counts and yes or no: never a message's text, an id or a phone number (`WC-SECR-1`). A failed `wa` call
 shows only its command words, exit code and error code, since cli-core's JSON error names the chat and message it
 was about (`WC-SECR-6`); `session start` is the exception, as it runs on the terminal for the owner to scan. A
@@ -259,7 +259,9 @@ phone. The result block ends with `WA-4: PASS` only when the album shows as one 
 preview answer is reported on its own line, for WA-41. The exit code is 0 only on a pass.
 
 **`live-contact-write`** is for a spare WhatsApp account linked as a profile in the main checkout, never the
-owner's own: a bad contact change can stall contact names on every device of the account. It refuses a profile
+owner's own: a bad contact change can stall contact names on every device of the account. Link the spare with
+`bin/live-fresh-link <spare-profile>`, scanning with the spare phone: its history goes to the throwaway store, not
+the owner's, and the device keys and account record stay. That run's `WA-5` line counts only if the spare has chats. It refuses a profile
 whose lock is held, since it connects the device itself, and goes on only after the owner types `spare`. The
 owner types the phone number of one person already in that account's contacts; it is never printed. Because
 `contacts add` and `rename` stay refused in `wa` until this passes, the script starts the engine from the main

@@ -67,9 +67,8 @@ engine=$(WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACH
           )
           if (written) {
             console.log("write: ok")
-            const back = (await engine.directory()).some((chat) => chat.name === marker)
+            const back = (await engine.contacts()).some((contact) => contact.name === marker)
             console.log(`read back: ${back ? "yes" : "no"}`)
-            if (!back) process.exitCode = 1
           }
         }
       } finally {
@@ -77,13 +76,14 @@ engine=$(WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACH
       }
     }
   ' "$main" "$profile" "$digits" "$marker" 2>/dev/null)
-code=$?
 set -e
+[ -n "$engine" ] || engine="engine: did not start (is $main built, engine included?)"
 printf '%s\n' "$engine"
 
+# Once the write went out, the phone is asked even when the read-back missed: the name may have changed anyway.
 shown=skipped
 intact=skipped
-if [ "$code" = 0 ]; then
+if printf '%s\n' "$engine" | grep -qx "write: ok"; then
   echo
   echo "Step 3: on the spare phone, open WhatsApp and find the chat or contact of that person."
   shown=$(phone "Does that person now show as \"$marker\"?")
@@ -91,7 +91,7 @@ if [ "$code" = 0 ]; then
 fi
 
 verdict=FAIL
-[ "$code" = 0 ] && [ "$shown" = yes ] && [ "$intact" = yes ] && verdict=PASS
+printf '%s\n' "$engine" | grep -qx "read back: yes" && [ "$shown" = yes ] && [ "$intact" = yes ] && verdict=PASS
 cat <<EOF
 
 ── result ──

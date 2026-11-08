@@ -120,7 +120,7 @@ kept=$(fresh "$profile" doctor --json --no-input --timeout 30s 2>/dev/null |
 chats=${kept%% *}
 messages=${kept##* }
 # The id itself names the account, so only whether it was recorded, in LID form, leaves this script.
-self=$(fresh "$profile" account list --json --no-input --timeout 30s 2>/dev/null |
+self=$(fresh account list --json --no-input --timeout 30s 2>/dev/null |
   json 'd.items.find((one) => one.profile === a)?.account?.endsWith("@lid") ? "yes" : "no"' "$profile") || self="no"
 
 verdict=FAIL
