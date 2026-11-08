@@ -137,6 +137,8 @@ type waHistory struct {
 	Stars     []waStar     `json:"stars,omitempty"`
 	Deletions []waDeletion `json:"deletions,omitempty"`
 	Kind      string       `json:"kind"`
+	// The phone's own sync progress, 0 to 100, as it sent it with this push.
+	Progress  uint32       `json:"progress,omitempty"`
 	Chats     []waChat     `json:"chats"`
 	Contacts  []waContact  `json:"contacts"`
 	Messages  []waMessage  `json:"messages"`

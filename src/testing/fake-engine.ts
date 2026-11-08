@@ -159,6 +159,7 @@ export const fakeEngine = (
   seed: Seed,
   {
     linked = true,
+    progress = 100,
     phone,
     privacy,
     settingsKeys = true,
@@ -167,6 +168,8 @@ export const fakeEngine = (
     lids = {},
   }: {
     linked?: boolean
+    /** The sync progress the phone's push carries; 100 is its last chunk, `null` an engine that reports none. */
+    progress?: number | null
     phone?: WaMessage[]
     privacy?: WaPrivacy
     settingsKeys?: boolean
@@ -191,6 +194,7 @@ export const fakeEngine = (
       event: "history",
       history: {
         kind: "bootstrap",
+        ...(progress === null ? {} : { progress }),
         chats,
         contacts: seed.people.map((person) => ({ jid: person.id, name: person.name })),
         messages,

@@ -78,7 +78,9 @@ An app that draws the link in its own window, such as WireCat Desktop, runs
 `wa personal session start phone --json --answer-stdin`. `wa` asks for the number as a line on stderr,
 `{"event":"needs","field":"phone",…}`, and reads the answer, one line, from stdin. The pairing code follows as
 `{"event":"pairing_code","code":…,"where":…,"expires_at":null}`. With `--json`, the wait for the phone's history is
-told as `{"event":"progress","step":"history",…}` and, when it is slow, `"step":"waiting"`.
+told as `{"event":"progress","step":"history",…}` and, when it is slow, `"step":"waiting"`. `wa` stops waiting when
+the phone reports its history sync as complete. If the phone never does, `wa` gives up after five minutes without
+news and says so in one more `"step":"waiting"` line: keep WhatsApp open on the phone until it finishes linking.
 
 ## Check and unlink
 

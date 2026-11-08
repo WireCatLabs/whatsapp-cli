@@ -3,6 +3,16 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Fixed
+
+- **`session start` waits until the phone says its history sync is done.** It used to stop after 45 seconds without a
+  push, so a large account that paused longer was cut off while the phone was still linking, and the phone ended with
+  "couldn't link device" although wa had reported success. wa now ends the wait on the phone's own completion signal.
+  Only when the phone never sends it, wa gives up after five minutes of quiet, says so in a `waiting` progress line and
+  asks you to keep WhatsApp open on the phone until it finishes.
+
 ## 0.32.0 — 08.11.2026
 
 ### Changed — may break callers

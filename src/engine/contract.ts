@@ -323,6 +323,8 @@ export const waHistory = v.strictObject({
   deletions: v.optional(v.array(v.strictObject({ chat: jid, message: v.string() }))),
   rekeys: v.optional(v.array(waRekey)),
   events: v.optional(v.array(waChatEvent)),
+  /** The phone's own sync progress, 0 to 100, as it sent it with this push; 100 on the last chunk of the link-time sync. */
+  progress: v.optional(v.number()),
   /** The kept push this is: the CLI answers `historySaved` for it once it is stored, or not. */
   push: v.optional(v.string()),
 })

@@ -269,3 +269,16 @@ func TestEmittedTimesDoNotDependOnTheComputerZone(t *testing.T) {
 		t.Fatalf("times differ by zone: %v", got)
 	}
 }
+
+func TestHistoryCarriesThePhonesSyncProgress(t *testing.T) {
+	data := &waHistorySync.HistorySync{
+		SyncType: waHistorySync.HistorySync_FULL.Enum(),
+		Progress: proto.Uint32(100),
+	}
+	history := testConverter().history(data, func(types.JID, *waWeb.WebMessageInfo) (*events.Message, error) {
+		return nil, nil
+	})
+	if history.Kind != "full" || history.Progress != 100 {
+		t.Errorf("kind=%q progress=%d, want full and 100", history.Kind, history.Progress)
+	}
+}
