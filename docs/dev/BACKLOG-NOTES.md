@@ -18,10 +18,9 @@ its [contacts guide](https://github.com/openclaw/wacli/blob/main/docs/contacts.m
 the number for a contact saved without its LID. The engine now refuses it too, with `not_found`.
 whatsmeow fills the patch's time and, after the send, fetches the collection back and writes the name to its contact
 store (`appstate.go`, `IndexContact`), so a name read back from there is one WhatsApp's server accepted, not one the
-phone applied. `contacts add` and `contacts rename` stay in `lacks`, which cli-core refuses before anything connects,
-so `bin/live-contact-write` calls the engine directly. It needs a spare WhatsApp account linked as a profile in the
-main checkout: a bad change to a `critical_*` collection can stall contact names on every device of the account. Not
-built: the adapter's `addContact` and `renameContact`, which come with the unlock.
+phone applied. `bin/live-contact-write` calls the engine directly, so it does not depend on the commands being on. It needs a spare WhatsApp account linked as a profile in the
+main checkout: a bad change to a `critical_*` collection can stall contact names on every device of the account. The adapter's
+`addContact` (under the name `profile` gives) and `renameContact` call it with `phonebook` false.
 
 **Live run of 2026-11-08** (spare, profile `spar`): `write: ok`, `read back: yes`, phone shows the new name `no`,
 other names unchanged `yes`. The person was one already in the spare's contacts, as the script then asked. Two
@@ -57,6 +56,13 @@ account's (`ownNumber`, answering a match and the last four digits only), and ne
 for a pass. It does not compare account records across profiles: several test profiles may share the one spare
 account. whatsmeow's patch encoder sends only `SET` mutations, so `wa` cannot remove the stray self contact; the
 owner fixes it on the main phone.
+
+**Live run of 2026-11-08, about 19:30** (profile `spare`, linked from the spare phone, engine with #354 and #355): the
+engine confirmed the spare's number, then `write: ok`, `read back: yes`; after a full restart of WhatsApp on the
+spare phone the chat list and the contact info showed `WA check …`, the other contacts kept their names, and the
+own profile names did not change. The script ended before printing its verdict, because its input closed after the
+third answer (an `n` fed by mistake, which the owner corrected: the other names did not change); the result is
+recorded from his answers. WA-1 passed, and `contacts add|rename` are on.
 
 ## WA-4 · Album: does the phone group a photo and a video
 

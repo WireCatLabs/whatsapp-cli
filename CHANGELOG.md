@@ -3,6 +3,15 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Added
+
+- **`contacts add` and `contacts rename` save a person in your WhatsApp contacts.** `add` uses the name WhatsApp
+  shows for them, `rename` the name you give. It is a WhatsApp contact name: it shows on every device of the account,
+  and nothing is sent to the person. For someone saved in the phone's Contacts app, the phone keeps showing that
+  app's name. wa refuses the account's own number. `contacts remove` and `import` stay refused.
+
 ## 0.33.0 — 08.11.2026
 
 ### Fixed

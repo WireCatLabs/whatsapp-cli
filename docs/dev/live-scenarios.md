@@ -268,7 +268,7 @@ number, never printed, and the engine compares it with the linked account's, sho
 a mismatch writes nothing. The
 owner types the phone number of one person the spare has a chat with but who is not saved in the spare phone's
 Contacts app; it is never printed. A saved person is refused: the phone shows the Contacts app name for them, and this
-write leaves that app alone. Because `contacts add` and `rename` stay refused in `wa` until this passes, the script
+write leaves that app alone. The script
 starts the engine from the main checkout's build and calls `saveContact` with the name `WA check <run number>`, then
 looks for that name in the contact store, which whatsmeow fills from the patch WhatsApp returns. The engine refuses
 a number whose LID it does not know, and the account's own number or LID. The owner closes WhatsApp on the phone fully and opens it again, then answers

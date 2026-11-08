@@ -277,9 +277,7 @@ describe("commands WhatsApp has no counterpart for", () => {
     ["chats", "folders", "create", "Work"],
     ["chats", "folders", "update", "Work", "--title", "Play"],
     ["chats", "folders", "delete", "Work"],
-    ["contacts", "add", seed.person],
     ["contacts", "remove", seed.person],
-    ["contacts", "rename", seed.person, "Synthetic"],
     ["contacts", "import", card],
   ])("refuses `%s %s` before starting the engine", async (...argv) => {
     const result = await wa(["unsupported", ...argv, "--json"], () => {
