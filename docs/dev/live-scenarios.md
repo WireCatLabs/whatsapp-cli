@@ -262,15 +262,18 @@ preview answer is reported on its own line, for WA-41. The exit code is 0 only o
 owner's own: a bad contact change can stall contact names on every device of the account. Link the spare with
 `bin/live-fresh-link <spare-profile>`, scanning with the spare phone: its history goes to the throwaway store, not
 the owner's, and the device keys and account record stay. That run's `WA-5` line counts only if the spare has chats. It refuses a profile
-whose lock is held, since it connects the device itself, and goes on only after the owner types `spare`. The
+whose lock is held, since it connects the device itself, and a profile whose account record is the same as another
+profile's: on 2026-11-08 `spar` had been linked from the main phone, and the name landed on the main account itself.
+It goes on only after the owner types `spare` and says the number is not the linked phone's own. The
 owner types the phone number of one person the spare has a chat with but who is not saved in the spare phone's
 Contacts app; it is never printed. A saved person is refused: the phone shows the Contacts app name for them, and this
 write leaves that app alone. Because `contacts add` and `rename` stay refused in `wa` until this passes, the script
 starts the engine from the main checkout's build and calls `saveContact` with the name `WA check <run number>`, then
 looks for that name in the contact store, which whatsmeow fills from the patch WhatsApp returns. The engine refuses
-a number whose LID it does not know. The owner closes WhatsApp on the phone fully and opens it again, then answers
+a number whose LID it does not know, and the account's own number or LID. The owner closes WhatsApp on the phone fully and opens it again, then answers
 whether the chat list shows the new name, whether the contact info screen does, and whether the other contacts kept
-theirs. `WA-1: PASS` needs the write, the read-back, the chat list answer and the other names.
+theirs, and whether the account's own profile name changed. `WA-1: PASS` needs the write, the read-back, the chat
+list answer, the other names, and the own name unchanged.
 
 **`live-expired-file`** needs `serve` running, since the phone's answer reaches the connected engine. It downloads
 one file of the own chat into a throwaway folder: the message id given as the second argument, or else the oldest

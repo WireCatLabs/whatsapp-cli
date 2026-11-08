@@ -23,6 +23,16 @@ need_profile "$profile"
 ! lock_held "$profile" ||
   die "something holds profile $profile's device, serve perhaps — stop it first: this script connects the device itself"
 
+# The 2026-11-08 run had spar linked to the owner's main phone: the "person" was the account itself, and its own
+# name changed. A spare's account must differ from every other profile's, compared here without printing either.
+accounts="$main/.wa/state/accounts"
+[ -f "$accounts/$profile.json" ] || die "profile $profile has no recorded account — link it again with bin/live-fresh-link"
+for other in "$accounts"/*.json; do
+  [ "$other" = "$accounts/$profile.json" ] && continue
+  ! cmp -s -- "$other" "$accounts/$profile.json" ||
+    die "profile $profile is linked to the same WhatsApp account as profile $(basename -- "$other" .json), so it is not a spare; nothing written"
+done
+
 cat <<EOF
 
 This writes ONE contact name in the address book of the WhatsApp account linked as profile $profile:
@@ -42,6 +52,8 @@ printf 'Phone number of the person, with the country code (digits only are kept,
 read -r number || exit 130
 digits=$(printf '%s' "$number" | tr -cd '0-9')
 [ "${#digits}" -ge 8 ] || die "that is not a phone number with its country code"
+own=$(phone "Is that number the spare phone's own number, or the number of the phone whose QR scan linked profile $profile?")
+[ "$own" = no ] || die "the person must be someone else: a contact for the account itself renames the account; nothing written"
 saved=$(phone "Is that person saved in the spare phone's Contacts app (their chat shows a name without ~)?")
 [ "$saved" = no ] || die "pick a person not in the phone's Contacts app: it shows that app's name for them; nothing written"
 
@@ -92,16 +104,19 @@ printf '%s\n' "$engine"
 shown=skipped
 info=skipped
 intact=skipped
+self_name=skipped
 if printf '%s\n' "$engine" | grep -qx "write: ok"; then
   echo
   echo "Step 3: on the spare phone, close WhatsApp fully (swipe it away from the recent apps), wait a minute, open it."
   shown=$(phone "Does that person's chat in the chat list now show as \"$marker\"?")
   info=$(phone "Tap the chat's name at the top: does their contact info show \"$marker\"?")
   intact=$(phone "Do your other contacts on the spare phone still show their usual names?")
+  self_name=$(phone "Did the profile name of any of your own accounts change (Settings, your name at the top; the chat with yourself)?")
 fi
 
 verdict=FAIL
-printf '%s\n' "$engine" | grep -qx "read back: yes" && [ "$shown" = yes ] && [ "$intact" = yes ] && verdict=PASS
+printf '%s\n' "$engine" | grep -qx "read back: yes" && [ "$shown" = yes ] && [ "$intact" = yes ] && [ "$self_name" = no ] &&
+  verdict=PASS
 cat <<EOF
 
 ── result ──
@@ -109,8 +124,9 @@ $engine
 chat list shows the name   $shown
 contact info shows it      $info
 other names unchanged      $intact
+own profile name changed   $self_name
 WA-1: $verdict — one WhatsApp contact name written from a linked device for a person not in the phone's address book
-(a pass needs write ok, read back yes, the chat list showing the name and the other names unchanged)
+(a pass needs write ok, read back yes, the chat list showing the name, the other names and the own name unchanged)
 
 Paste only this block. Remove the contact in WhatsApp on the spare phone.
 EOF

@@ -61,6 +61,18 @@ func buildContact(pn, lid types.JID, full, first string, phonebook bool) (appsta
 	}}}, nil
 }
 
+// refuseOwnContact fails closed: a contact keyed to the account's own number renames the account on all its devices,
+// and a profile linked to the wrong phone makes "a person's number" the own one (WA-1, 2026-11-08).
+func refuseOwnContact(pn, lid, ownPN, ownLID types.JID) error {
+	if ownPN.IsEmpty() && ownLID.IsEmpty() {
+		return &failure{"authentication_error", "this device does not know its own account yet; nothing was saved"}
+	}
+	if (!ownPN.IsEmpty() && pn.ToNonAD().User == ownPN.User) || (!ownLID.IsEmpty() && lid.ToNonAD().User == ownLID.User) {
+		return &failure{"validation_error", "that number is this account's own; a contact is for another person — nothing was saved"}
+	}
+	return nil
+}
+
 func (e *engine) saveContact(req request) error {
 	jid, err := personJID(req.JID)
 	if err != nil {
@@ -78,6 +90,10 @@ func (e *engine) saveContact(req request) error {
 		if err != nil {
 			return err
 		}
+	}
+	e.refreshSelf()
+	if err := refuseOwnContact(pn, lid, e.conv.selfPN, e.conv.self); err != nil {
+		return err
 	}
 	patch, err := buildContact(pn, lid, req.ContactName, req.FirstName, req.Phonebook)
 	if err != nil {

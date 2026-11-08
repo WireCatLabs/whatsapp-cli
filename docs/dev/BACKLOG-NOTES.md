@@ -41,6 +41,20 @@ before that pull request merged and against wacli's guide. The script now asks f
 address book, refuses a saved one, has the owner close and reopen WhatsApp before answering, and asks about the chat
 list and the contact info screen separately.
 
+**Live run of 2026-11-08, 18:26** (profile `spar`): the script printed `WA-1: PASS`, and it was wrong. Afterwards
+the owner saw the person's chat on the spare phone still showing only the number, and the name `WA check …` on the
+owner's main account itself: its profile name and its chat with itself. The local account records of profiles `spar`
+and `live` hold the same account id (compared by hash, not printed), so `spar` had been linked from the main phone
+and the number typed was that account's own. The mutation itself is a contact action, not the push-name setting:
+field by field the same as wacli's `BuildSaveContact`
+([`internal/wa/contact_save.go` at 5b42b63](https://github.com/openclaw/wacli/blob/5b42b63bba4711c51c26f4259b87e34d4d2b7e50/internal/wa/contact_save.go));
+whatsmeow writes a push name only through `BuildSettingPushName`, `PushNameSetting` in `critical_block`
+(`appstate/encode.go`). Neither wacli nor whatsmeow refuses a contact for the own account. The engine now does
+(`refuseOwnContact`, `contact_write.go`), failing closed when the device does not know its own ids, and
+`bin/live-contact-write` refuses a profile whose account record equals another profile's, asks that the number is
+not the linked phone's own, and needs "own profile name changed: no" for a pass. That the phone shows a contact
+saved for the own number as the account's name is inferred from this one run.
+
 ## WA-4 · Album: does the phone group a photo and a video
 
 WhatsApp accepts an album from `wa` and the phone shows both files. Two messages instead of one album was the result
