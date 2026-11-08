@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-# Live check of an album and a photo's preview (BACKLOG item 5, "Live check of an album" and "No preview on a sent
-# video"): one `messages send` with a made-up photo and a short video to the own chat, then questions to the owner
-# at the phone. The owner runs it from a terminal; an agent never does.
+# Live check of an album (WA-4) and a sent photo's preview (WA-41): one `messages send` with a made-up photo and a
+# short video to the own chat, then questions to the owner at the phone. The owner runs it from a terminal; an agent
+# never does. The result block ends with the verdict for WA-4, and the exit code is 0 only on a pass.
 #
 #   bin/live-album <profile> [--video <file.mp4>]
 #
@@ -110,7 +110,7 @@ if [ "$rc" = 0 ]; then
 else
   echo "messages send: exit $rc, error $(error_code)"
   [ "$rc" != 2 ] || sent=no
-  die "the send failed"
+  die "WA-4: FAIL — the send failed"
 fi
 
 echo
@@ -119,12 +119,17 @@ grouped=$(phone "Do the photo and the video show as one album (one bubble with t
 preview=$(phone "Before you tap it, does the photo show a small coloured picture of itself (not a grey box)?")
 plays=$(phone "Now tap both: does the photo open, and does the video play?")
 
+verdict=FAIL
+[ "$grouped" = yes ] && [ "$plays" = yes ] && verdict=PASS
 cat <<EOF
 
-Question                 Phone    BACKLOG item 5 line it settles
-one album, two items     $(printf '%-8s' "$grouped") "Live check of an album": WhatsApp groups the files
-photo preview            $(printf '%-8s' "$preview") "No preview on a sent video": the photo half
-photo opens, video plays $(printf '%-8s' "$plays") "Live check of an album": both files reach the phone whole
+── result ──
+messages send            exit 0
+one album, two items     $grouped
+photo opens, video plays $plays
+photo preview (WA-41)    $preview
+WA-4: $verdict — one album in the own chat, with a caption (a pass needs both answers above it yes)
 
-A yes settles that part of the line; a no is a bug to file. Delete the album from the phone now.
+Paste only this block. Delete the album from the phone now.
 EOF
+[ "$verdict" = PASS ]

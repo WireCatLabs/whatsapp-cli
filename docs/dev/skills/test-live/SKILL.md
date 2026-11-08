@@ -53,9 +53,9 @@ with the owner’s explicit confirmation that both different accounts are theirs
 exactly two probes from sender to receiver. It checks only the receiver’s account and the sender’s chat; it
 changes no permissions or recipient lists. Keep other reads small (`--limit 3`).
 
-Nine checks are scripts the owner runs, never the agent: `bin/live-oneshot-drop`, `bin/live-poll-vote`,
+Ten checks are scripts the owner runs, never the agent: `bin/live-oneshot-drop`, `bin/live-poll-vote`,
 `bin/live-older-history`, `bin/live-fresh-link`, `bin/live-chat-state`, `bin/live-album`, `bin/live-expired-file`,
-`bin/live-forward-card` and `bin/live-chat-events`
+`bin/live-forward-card`, `bin/live-chat-events` and `bin/live-contact-write`
 ([live-scenarios.md, "Scripts the owner runs"](../../live-scenarios.md#scripts-the-owner-runs)).
 When a change touches what one covers, name the script and its profile argument to the owner, and record the lines
 it prints.

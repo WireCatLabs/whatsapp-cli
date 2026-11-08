@@ -5,30 +5,41 @@ The research behind backlog items, moved here word for word from the numbered ba
 "was item N" is its number in the old backlog, which the `bin/live-*` scripts still cite. Add to an entry when
 new findings come in; delete it with its item once the item ships.
 
+## WA-1 · Contact writes on a spare account
+
+`saveContact` in the engine (`engine/cmd/wa-engine/contact_write.go`) builds one `ContactAction` mutation in
+`critical_unblock_low`, index `contact` and the phone id, version 2: the shape wacli ships on the same library
+([wacli `contact_save.go`](https://github.com/openclaw/wacli/blob/main/internal/wa/contact_save.go)), field for field.
+whatsmeow fills the patch's time and, after the send, fetches the collection back and writes the name to its contact
+store, so a name read back from there is one WhatsApp accepted. `contacts add` and `contacts rename` stay in `lacks`,
+which cli-core refuses before anything connects, so `bin/live-contact-write` calls the engine directly. It needs a
+spare WhatsApp account linked as a profile in the main checkout: a bad change to a `critical_*` collection can stall
+contact names on every device of the account. Not built: the adapter's `addContact` and `renameContact`, which come
+with the unlock.
+
 ## WA-4 · Album: does the phone group a photo and a video
 
-Was item 5, "Live check of an album":
+WhatsApp accepts an album from `wa` and the phone shows both files. Two messages instead of one album was the result
+before wa #176, which put a message secret and a reporting token on every message (whatsmeow's
+`SendReportingTokens`) and keyed the album by the chat the announcement went to. After it, the owner's live check of
+2026-10-21 showed a captioned photo and video, sent from a second linked number to the main number, as one album
+bubble (cli-private `journal/2026-10-20-wa-status.md`, BUG-339). The send path has not changed since.
 
-   - **Live check of an album**: WhatsApp accepts the album and the phone shows both files, but as two messages, not one
-     album (2026-10-20, before the message secret and the LID parent key). Whether the phone groups them now is not
-     checked; `bin/live-album` sends with a caption, which matters: WhatsApp Web's defaults send an album of fewer than
-     four files only with a caption (`album_v2_min_items_to_send_as_album_enabled` 4,
-     `album_v2_min_items_to_send_album_with_caption` 2). If it still shows two messages, the next difference is the
-     wrapper: WhatsApp Web can wrap each file in `associatedChildMessage` (behind its flag
-     `wa_web_wrap_associated_child_message_enabled`, off by default), which whatsmeow does not unwrap. The shape matches
-     Baileys 7.0.0-rc14, the one open-source sender found (`lib/Utils/messages.js`, `album` and `albumParentKey`): each
-     file is a plain photo or video whose `messageContextInfo.messageAssociation` is `MEDIA_ALBUM` with the parent key
-     `{remoteJid, fromMe: true, id}`. Baileys, like whatsmeow, sends the `AlbumMessage` with stanza type `text`, and
-     puts a message secret and a reporting token on every message, as wa now does. whatsmeow and mautrix-whatsapp only
-     read albums. The owner runs `bin/live-album` for it, in the own chat; it also asks whether a sent photo shows its
-     preview.
+Not checked: the own chat, which `bin/live-album` sends to, and an album without a caption. WhatsApp Web's defaults
+send an album of fewer than four files only with a caption (`album_v2_min_items_to_send_as_album_enabled` 4,
+`album_v2_min_items_to_send_album_with_caption` 2), so the docs say a captionless album may show as two messages.
+The shape matches Baileys (`albumParentKey`, WhiskeySockets/Baileys#2058): each file is a plain photo or video whose
+`messageContextInfo.messageAssociation` is `MEDIA_ALBUM` with the parent key `{remoteJid, fromMe: true, id}`, and the
+`AlbumMessage` goes with stanza type `text`. WhatsApp Web can wrap each file in `associatedChildMessage` (behind
+`wa_web_wrap_associated_child_message_enabled`, off by default; whatsapp-rust `wrap_as_album_child`); not adopted,
+since the plain shape is the one seen to group.
 
 ## WA-5 · Linking: live checks
 
-Was item 1:
-
-1. **Linking: live checks** (NEED-1387, own chat only). A fresh `session start` must keep the history push
-   (the owner runs `bin/live-fresh-link`), and `self()` must be set immediately after pairing.
+A fresh `session start` must keep the history push, and `self()` must be set right after pairing: the engine's
+`link` answers with `me()`, which fails while WhatsApp has not given the account its LID, so a `session start` that
+exits 0 has one. `bin/live-fresh-link` links a new profile, counts what the push left in a throwaway store and
+checks that `account list` recorded the own id in LID form; its last line is `WA-5: PASS` or `FAIL`.
 
 ## WA-11 · How long a rate limit and a ban hold writes
 

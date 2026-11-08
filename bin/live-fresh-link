@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-# Live check for BACKLOG item 1, "a fresh session start keeping the history push": links a NEW profile as a
-# second linked device of the owner's account and counts what the phone pushes. The owner runs it from a
-# terminal; an agent never does.
+# Live check for WA-5, "a fresh session start keeps the history push and sets the account's own id": links a NEW
+# profile as a second linked device of the owner's account and counts what the phone pushes. The owner runs it from
+# a terminal; an agent never does. The result block ends with the verdict, and the exit code is 0 only on a pass.
 #
 #   bin/live-fresh-link <new-profile>
 #   bin/live-fresh-link <profile> --finish
@@ -114,15 +114,32 @@ EOF
   ran="session start"
 fi
 
+# doctor reports a store that was never created without counts: nothing was kept.
+kept=$(fresh "$profile" doctor --json --no-input --timeout 30s 2>/dev/null |
+  json 'd.item.store.exists ? `${d.item.store.chats ?? 0} ${d.item.store.messages ?? 0}` : "0 0"') || kept="? ?"
+chats=${kept%% *}
+messages=${kept##* }
+# The id itself names the account, so only whether it was recorded, in LID form, leaves this script.
+self=$(fresh "$profile" account list --json --no-input --timeout 30s 2>/dev/null |
+  json 'd.items.find((one) => one.profile === a)?.account?.endsWith("@lid") ? "yes" : "no"' "$profile") || self="no"
+
+verdict=FAIL
+case "$chats $messages" in
+  *[!0-9\ ]* | "0 "* | *" 0") ;;
+  *) [ "$self" = yes ] && { [ "$mode" = --finish ] || [ "$code" -eq 0 ]; } && verdict=PASS ;;
+esac
+
 echo
 echo "── result ──"
 echo "$ran exited $code"
-# doctor reports a store that was never created without counts: nothing was kept, which "?" used to hide.
-fresh "$profile" doctor --json --no-input --timeout 30s 2>/dev/null |
-  json 'd.item.store.exists
-    ? `history kept: ${d.item.store.chats ?? "?"} chats, ${d.item.store.messages ?? "?"} messages`
-    : "history kept: nothing, the throwaway store was never written"' ||
-  echo "doctor could not read the throwaway store"
+echo "own id recorded (LID form): $self"
+echo "history kept: $chats chats, $messages messages"
+if [ "$mode" = --finish ]; then
+  echo "WA-5: $verdict — the history owed to the device arrived (a pass needs the own id and both counts above 0)"
+else
+  echo "WA-5: $verdict — a fresh link keeps the history push (a pass needs exit 0, the own id and both counts above 0)"
+fi
 if [ "$code" -ne 0 ] && [ "$mode" != --finish ] && [ "$(has_device 2>/dev/null)" = true ]; then
   echo "the device is linked; to collect the history owed to it: bin/live-fresh-link $profile --finish"
 fi
+[ "$verdict" = PASS ]

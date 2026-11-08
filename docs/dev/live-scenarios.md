@@ -101,12 +101,13 @@ closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The sha
 | `bin/live-oneshot-drop <receiver-profile> [--sender-profile <sender-profile>]` | one-shot queued-message persistence regression | stops receiver `serve`; two messages from the phone to Own, or automatically from Owned peer | starts `serve` again on every exit path; the owner deletes the two messages from the phone |
 | `bin/live-poll-vote <profile>` | BACKLOG item 5, a vote cast by `wa`; W-style, own chat only | a poll and a vote in the own chat, through the running `serve` | the poll is deleted for everyone at the end; if the script stops early, it says to delete it from the phone |
 | `bin/live-older-history <profile>` | H1: one 50-message page as one `ON_DEMAND` notification or several, and whether it names the request by its id | restarts `serve` with the engine's log on; one history request from this device to the own phone | starts `serve` again as it was on every exit path; deletes the log |
-| `bin/live-fresh-link <new-profile>`, or `<profile> --finish` | BACKLOG item 1, a fresh `session start` keeping the history push | links a second device to the owner's account, after the owner types `yes`; `--finish` connects that device once more | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
+| `bin/live-fresh-link <new-profile>`, or `<profile> --finish` | WA-5, a fresh `session start` keeping the history push and recording the own id | links a second device to the owner's account, after the owner types `yes`; `--finish` connects that device once more | not undone by the script: `bin/wa <new-profile> session end`, or the phone's Linked devices screen |
 | `bin/live-chat-state <profile> [--sticker <file.webp>]` | BACKLOG item 5, the chat-state writes: privacy read back, mute, message pin, star (W7), chat pin, archive, mark-unread and mark-read, delete for the owner alone (W6), and a sticker from the owner's `.webp` file; own chat only | a 1-hour mute of the own chat, a marker message pinned for 24 hours and starred, the own chat pinned, archived and marked unread, and with `--sticker` one sticker, through the running `serve` | each undone in the script; the marker and the sticker deleted for the owner (the marker for everyone where that is not built); if it stops early, it says what to undo from the phone |
-| `bin/live-album <profile> [--video <file.mp4>]` | BACKLOG item 5, an album and a photo's preview; own chat only | one album of a test photo and a short video in the own chat, through the running `serve` | not undone by the script, which keeps only the photo's message: the owner deletes the album from the phone |
+| `bin/live-album <profile> [--video <file.mp4>]` | WA-4, an album in the own chat, and WA-41, a sent photo's preview; own chat only | one album of a test photo and a short video in the own chat, through the running `serve` | not undone by the script, which keeps only the photo's message: the owner deletes the album from the phone |
 | `bin/live-expired-file <profile> [<message-id>]` | BACKLOG item 5, a download of a file WhatsApp no longer keeps, through the phone's new upload; own chat only | one download into a throwaway folder, and a second one after the phone's new upload; if the file is gone from WhatsApp, a receipt from this device to the own phone | the folder is deleted at the end |
 | `bin/live-chat-events <profile> <group>` | BACKLOG item 5, `chats events`: does the phone's history push carry a group's service messages, with their people, so the store lists them? | one history request from this device to the own phone, through the running `serve`; nothing anyone else sees | nothing to put back: the store keeps the page and its changes |
 | `bin/live-forward-card <profile>` | BACKLOG item 5, forwarding a place and a contact card; own chat only | a place and a card the owner sends from the phone, and `wa`'s forward of each, all in the own chat, through the running `serve` | not undone by the script: the owner deletes the four messages from the phone |
+| `bin/live-contact-write <spare-profile>` | WA-1, a contact name written from a linked device; a spare account only | one contact name in the spare account's address book, after the owner types `spare`; no message to anyone | not undone by the script: the owner renames the contact back on the spare phone |
 
 **`live-oneshot-drop`** checks whether a one-shot connection saves a queued message before `serve` restarts.
 Use two linked profiles for different accounts you control to send and check automatically:
@@ -186,7 +187,9 @@ ends the history wait, not the script. That run's own lines name the account, so
 The device keys go to the main checkout's `.wa/state`, like any profile there. The pushed history goes to a throwaway
 store, removed at the end, because the store keys an account by its WhatsApp id and not by its profile: the push would
 otherwise land in the owner's store. The result block holds `session start`'s exit code and the chats and messages in
-that store, read afterwards with `doctor --json`: distinct rows, which can be fewer than the pushed batches held. On
+that store, read afterwards with `doctor --json`: distinct rows, which can be fewer than the pushed batches held, and
+whether `account list` recorded the profile's own id in LID form (the id itself is not printed). The last line is
+`WA-5: PASS` only for exit 0, the own id and more than 0 chats and messages; the exit code follows it. On
 every exit, Ctrl-C included, it removes the throwaway store and, while the new profile has device keys, says how to
 unlink it. A store that was never created reads "nothing", not a count.
 
@@ -252,8 +255,18 @@ carries a fresh run number. The owner turns off photo auto-download on the phone
 undownloaded when its preview is judged. Then it asks three questions: one album with two items; a preview on the
 photo before it is opened; the photo opens and the video plays. A video with no preview is expected (BACKLOG item 5,
 "No preview on a sent video"). The store keeps only the photo's message, so the owner deletes the album from the
-phone. The table at the end names the BACKLOG item 5 line each yes settles: "Live check of an album" and the photo
-half of "No preview on a sent video".
+phone. The result block ends with `WA-4: PASS` only when the album shows as one bubble and both files open; the
+preview answer is reported on its own line, for WA-41. The exit code is 0 only on a pass.
+
+**`live-contact-write`** is for a spare WhatsApp account linked as a profile in the main checkout, never the
+owner's own: a bad contact change can stall contact names on every device of the account. It refuses a profile
+whose lock is held, since it connects the device itself, and goes on only after the owner types `spare`. The
+owner types the phone number of one person already in that account's contacts; it is never printed. Because
+`contacts add` and `rename` stay refused in `wa` until this passes, the script starts the engine from the main
+checkout's build and calls `saveContact` with the name `WA check <run number>`, then looks for that name in the
+contact store, which whatsmeow fills from the patch WhatsApp returns. Then it asks whether the spare phone shows
+the new name and whether the other contacts kept theirs. `WA-1: PASS` needs the write, the read-back and both
+answers.
 
 **`live-expired-file`** needs `serve` running, since the phone's answer reaches the connected engine. It downloads
 one file of the own chat into a throwaway folder: the message id given as the second argument, or else the oldest
