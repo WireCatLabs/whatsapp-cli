@@ -3,6 +3,20 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## Unreleased
+
+### Changed — may break callers
+
+- **`--offline` on a command that needs the network is refused with `offline.refused`, exit code 5**, before the
+  command runs. `upgrade`, `topics`, `chats inspect` and `chats send-as` used to answer `validation_error`, exit code 2.
+- **`contacts context` reads only accounts of the asked account's scope.** A personal account no longer shows a
+  linked person's messages from work accounts, and a work account none from personal ones.
+
+### Fixed
+
+- **wa opens the store again after another WireCat CLI upgraded it.** A CLI on a newer cli-core moves the shared
+  store to version 56 or later, which a wa from before this version refuses. Updated cli-core to 0.608.0.
+
 ## 0.31.0 — 08.11.2026
 
 ### Added
