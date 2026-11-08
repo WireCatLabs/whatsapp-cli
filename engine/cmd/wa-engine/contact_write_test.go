@@ -23,9 +23,15 @@ func TestContactPatchUsesOneCriticalContactMutationWithExplicitPhonebookChoice(t
 	if action.GetFullName() != "Synthetic Person" || action.GetFirstName() != "Synthetic" || action.GetPnJID() != annPN.String() || action.GetLidJID() != annLID.String() || action.SaveOnPrimaryAddressbook == nil || action.GetSaveOnPrimaryAddressbook() {
 		t.Fatal("contact fields changed")
 	}
-	patch, err = buildContact(annPN, types.JID{}, "Synthetic Person", "Person", true)
+	patch, err = buildContact(annPN, annLID, "Synthetic Person", "Person", true)
 	if err != nil || !patch.Mutations[0].Value.GetContactAction().GetSaveOnPrimaryAddressbook() {
 		t.Fatal("explicit phonebook choice lost")
+	}
+}
+
+func TestContactPatchRefusesANumberWithoutItsLID(t *testing.T) {
+	if _, err := buildContact(annPN, types.JID{}, "Synthetic Person", "", false); !isFailure(err, "not_found") {
+		t.Fatalf("contact without a LID accepted: %v", err)
 	}
 }
 

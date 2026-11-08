@@ -44,14 +44,16 @@ func buildContact(pn, lid types.JID, full, first string, phonebook bool) (appsta
 	}
 	first = strings.TrimSpace(first)
 	target := pn.ToNonAD().String()
-	action := &waSyncAction.ContactAction{
-		FullName: &full, FirstName: &first, PnJID: &target, SaveOnPrimaryAddressbook: &phonebook,
+	// Current clients key a contact by its LID and show only the number for one saved without it (wacli refuses too).
+	if lid.IsEmpty() {
+		return appstate.PatchInfo{}, &failure{"not_found", "WhatsApp has not given this number's LID yet; nothing was saved"}
 	}
-	if !lid.IsEmpty() {
-		if lid.Server != types.HiddenUserServer || !contactDigits.MatchString(lid.User) {
-			return appstate.PatchInfo{}, &failure{"validation_error", "not a contact LID"}
-		}
-		action.LidJID = proto.String(lid.ToNonAD().String())
+	if lid.Server != types.HiddenUserServer || !contactDigits.MatchString(lid.User) {
+		return appstate.PatchInfo{}, &failure{"validation_error", "not a contact LID"}
+	}
+	action := &waSyncAction.ContactAction{
+		FullName: &full, FirstName: &first, PnJID: &target, LidJID: proto.String(lid.ToNonAD().String()),
+		SaveOnPrimaryAddressbook: &phonebook,
 	}
 	return appstate.PatchInfo{Type: appstate.WAPatchCriticalUnblockLow, Mutations: []appstate.MutationInfo{{
 		Index: []string{appstate.IndexContact, target}, Version: 2,
