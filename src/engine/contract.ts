@@ -67,6 +67,7 @@ export const ENGINE_OPS = {
   // A cut pairing is abandoned: a retry asks WhatsApp for a new code, and nobody else sees either.
   link: "read",
   me: "read",
+  ownNumber: "read",
   inspect: "read",
   devices: "read",
   folders: "read",

@@ -23,6 +23,17 @@ need_profile "$profile"
 ! lock_held "$profile" ||
   die "something holds profile $profile's device, serve perhaps — stop it first: this script connects the device itself"
 
+# A word typed at a prompt cannot tell a spare from the main account: the 2026-11-08 run wrote to the main one. So the
+# profile's account must differ from every other profile's (compared without printing either), and the engine must
+# confirm the spare phone's number before the write.
+accounts="$main/.wa/state/accounts"
+[ -f "$accounts/$profile.json" ] || die "profile $profile has no recorded account — link it again with bin/live-fresh-link"
+for other in "$accounts"/*.json; do
+  [ "$other" = "$accounts/$profile.json" ] && continue
+  ! cmp -s -- "$other" "$accounts/$profile.json" ||
+    die "profile $profile is linked to the same WhatsApp account as profile $(basename -- "$other" .json), so it is not a spare; nothing written"
+done
+
 cat <<EOF
 
 This writes ONE contact name in the address book of the WhatsApp account linked as profile $profile:
@@ -35,13 +46,15 @@ This writes ONE contact name in the address book of the WhatsApp account linked 
   4. you remove the contact in WhatsApp on the spare phone
 Use a SPARE account only, never your own: a bad contact change can stall contact names on all its devices.
 EOF
-printf '\nType spare if profile %s is a separate spare WhatsApp account, not your own number: ' "$profile"
-read -r answer || exit 130
-[ "$answer" = spare ] || die "nothing written"
+printf '\nThe SPARE phone'"'"'s own number, with the country code (checked against profile %s, not shown): ' "$profile"
+read -r spare_number || exit 130
+spare=$(printf '%s' "$spare_number" | tr -cd '0-9')
+[ "${#spare}" -ge 8 ] || die "that is not a phone number with its country code"
 printf 'Phone number of the person, with the country code (digits only are kept, nothing is shown): '
 read -r number || exit 130
 digits=$(printf '%s' "$number" | tr -cd '0-9')
 [ "${#digits}" -ge 8 ] || die "that is not a phone number with its country code"
+[ "$digits" != "$spare" ] || die "that is the spare's own number; the person must be someone else — nothing written"
 saved=$(phone "Is that person saved in the spare phone's Contacts app (their chat shows a name without ~)?")
 [ "$saved" = no ] || die "pick a person not in the phone's Contacts app: it shows that app's name for them; nothing written"
 
@@ -55,7 +68,7 @@ on_signals
 set +e
 engine=$(WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACHE_DIR="$main/.wa/cache" \
   node --input-type=module -e '
-    const [main, profile, digits, marker] = process.argv.slice(1)
+    const [main, profile, digits, marker, spare] = process.argv.slice(1)
     const { startGoEngine } = await import(`${main}/dist/engine/go-engine.js`)
     const { privateStore } = await import(`${main}/dist/paths.js`)
     const failed = (step, error) => {
@@ -67,8 +80,16 @@ engine=$(WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACH
     )
     if (engine) {
       try {
-        if (engine.self() === null) failed("own id", { code: "missing" })
-        else {
+        const own =
+          engine.self() === null
+            ? failed("own id", { code: "missing" })
+            : await engine.ownNumber(spare).catch((error) => failed("own number", error))
+        if (own) {
+          console.log(`ends ${own.ends}`)
+          console.log(`spare number matches: ${own.matches ? "yes" : "no"}`)
+          if (!own.matches) process.exitCode = 1
+        }
+        if (own?.matches) {
           const written = await engine.saveContact(`${digits}@s.whatsapp.net`, marker).then(
             () => true,
             (error) => failed("write", error),
@@ -83,8 +104,13 @@ engine=$(WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACH
         await engine.close()
       }
     }
-  ' "$main" "$profile" "$digits" "$marker" 2>/dev/null)
+  ' "$main" "$profile" "$digits" "$marker" "$spare" 2>/dev/null)
 set -e
+ends=$(printf '%s\n' "$engine" | sed -n 's/^ends //p')
+engine=$(printf '%s\n' "$engine" | grep -v '^ends ' || true)
+[ -z "$ends" ] || echo "Profile $profile is linked to the WhatsApp account whose number ends in $ends."
+printf '%s\n' "$engine" | grep -qx "spare number matches: no" &&
+  echo "That is not the spare number you typed, so nothing was written. Link the spare with bin/live-fresh-link, scanning with the spare phone."
 [ -n "$engine" ] || engine="engine: did not start (is $main built, engine included?)"
 printf '%s\n' "$engine"
 
@@ -92,16 +118,19 @@ printf '%s\n' "$engine"
 shown=skipped
 info=skipped
 intact=skipped
+self_name=skipped
 if printf '%s\n' "$engine" | grep -qx "write: ok"; then
   echo
   echo "Step 3: on the spare phone, close WhatsApp fully (swipe it away from the recent apps), wait a minute, open it."
   shown=$(phone "Does that person's chat in the chat list now show as \"$marker\"?")
   info=$(phone "Tap the chat's name at the top: does their contact info show \"$marker\"?")
   intact=$(phone "Do your other contacts on the spare phone still show their usual names?")
+  self_name=$(phone "Did the profile name of any of your own accounts change (Settings, your name at the top; the chat with yourself)?")
 fi
 
 verdict=FAIL
-printf '%s\n' "$engine" | grep -qx "read back: yes" && [ "$shown" = yes ] && [ "$intact" = yes ] && verdict=PASS
+printf '%s\n' "$engine" | grep -qx "read back: yes" && [ "$shown" = yes ] && [ "$intact" = yes ] && [ "$self_name" = no ] &&
+  verdict=PASS
 cat <<EOF
 
 ── result ──
@@ -109,8 +138,9 @@ $engine
 chat list shows the name   $shown
 contact info shows it      $info
 other names unchanged      $intact
+own profile name changed   $self_name
 WA-1: $verdict — one WhatsApp contact name written from a linked device for a person not in the phone's address book
-(a pass needs write ok, read back yes, the chat list showing the name and the other names unchanged)
+(a pass needs write ok, read back yes, the chat list showing the name, the other names and the own name unchanged)
 
 Paste only this block. Remove the contact in WhatsApp on the spare phone.
 EOF

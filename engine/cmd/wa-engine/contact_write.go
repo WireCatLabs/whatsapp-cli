@@ -61,6 +61,40 @@ func buildContact(pn, lid types.JID, full, first string, phonebook bool) (appsta
 	}}}, nil
 }
 
+// A contact keyed to the account's own number shows as the account's name on its own devices. Without the own ids
+// the check cannot hold, so it refuses.
+func refuseOwnContact(pn, lid, ownPN, ownLID types.JID) error {
+	if ownPN.IsEmpty() && ownLID.IsEmpty() {
+		return &failure{"authentication_error", "this device does not know its own account yet; nothing was saved"}
+	}
+	if (!ownPN.IsEmpty() && pn.ToNonAD().User == ownPN.User) || (!ownLID.IsEmpty() && lid.ToNonAD().User == ownLID.User) {
+		return &failure{"validation_error", "that number is this account's own; a contact is for another person — nothing was saved"}
+	}
+	return nil
+}
+
+type waOwnNumber struct {
+	Matches bool   `json:"matches"`
+	Ends    string `json:"ends"`
+}
+
+// ownNumber answers whether the typed number is the linked account's, and only the last four digits of the account's,
+// so a live check can tell a spare from the owner's main account without the number leaving the engine.
+func ownNumber(own *types.JID, typed string) (*waOwnNumber, error) {
+	if own == nil || own.User == "" {
+		return nil, &failure{"authentication_error", "this device is not linked"}
+	}
+	if !contactDigits.MatchString(typed) {
+		return nil, &failure{"validation_error", "a phone number is digits only, with the country code"}
+	}
+	user := own.ToNonAD().User
+	return &waOwnNumber{Matches: user == typed, Ends: user[max(0, len(user)-4):]}, nil
+}
+
+func (e *engine) ownNumber(req request) (*waOwnNumber, error) {
+	return ownNumber(e.client.Store.ID, req.Phone)
+}
+
 func (e *engine) saveContact(req request) error {
 	jid, err := personJID(req.JID)
 	if err != nil {
@@ -78,6 +112,13 @@ func (e *engine) saveContact(req request) error {
 		if err != nil {
 			return err
 		}
+	}
+	ownPN := types.JID{}
+	if e.client.Store.ID != nil {
+		ownPN = e.client.Store.ID.ToNonAD()
+	}
+	if err := refuseOwnContact(pn, lid, ownPN, e.client.Store.LID.ToNonAD()); err != nil {
+		return err
 	}
 	patch, err := buildContact(pn, lid, req.ContactName, req.FirstName, req.Phonebook)
 	if err != nil {
