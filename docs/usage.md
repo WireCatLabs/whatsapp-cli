@@ -225,7 +225,7 @@ wa personal messages forward "Book club" 3EB0A1B2C3D4E5F6A7B8 --to "Ann Lee"
 
 A message carries one file; the text becomes its caption, except on a voice note, which goes alone. A `.mp4`, `.m4v`
 or `.mov` goes as a video unless `--as-file`. A `--photo` and a video `--file` together go as one album, the text as
-the photo's caption. `--sticker-file` sends a `.webp` of at most 500 KiB as a sticker, alone, with no text: WhatsApp
+the photo's caption; without text, a phone may show them as two messages. `--sticker-file` sends a `.webp` of at most 500 KiB as a sticker, alone, with no text: WhatsApp
 has no sticker sets to pick one from by id, so there is no `--sticker`. Photos, videos, voice notes, files and stickers that reach the local store
 can be saved and forwarded later, since the store keeps what WhatsApp needs to fetch them again; WhatsApp keeps a file
 for a limited time, and a download of one it no longer keeps asks your phone to upload it again, which does not

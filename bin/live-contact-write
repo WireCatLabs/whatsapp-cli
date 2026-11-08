@@ -1,0 +1,105 @@
+#!/usr/bin/env sh
+# Live check for WA-1, contact writes: names one person in the address book of a SPARE WhatsApp account through the
+# engine's `saveContact`, reads the name back from what WhatsApp returned, then asks the owner at the spare phone.
+# The owner runs it from a terminal; an agent never does. Never on the owner's own account: a bad contact change can
+# stall contact names on every device of the account until a full re-sync.
+#
+#   bin/live-contact-write <spare-profile>
+#
+# `contacts add` and `contacts rename` stay refused in wa until this passes, so the script calls the engine directly,
+# as `wa` would. It sends no message to anyone. The phone number is typed at a prompt and never printed; the result
+# block holds yes/no and error codes only. The exit code is 0 only on a pass.
+set -eu
+
+# shellcheck source-path=SCRIPTDIR source=lib/live.sh
+. "$(dirname -- "$0")/lib/live.sh"
+
+profile=${1:-}
+need_profile "$profile"
+[ $# -le 1 ] || die "usage: $(basename -- "$0") <spare-profile>"
+! lock_held "$profile" ||
+  die "something holds profile $profile's device, serve perhaps — stop it first: this script connects the device itself"
+
+cat <<EOF
+
+This writes ONE contact name in the address book of the WhatsApp account linked as profile $profile:
+  1. you name one person already in that account's contacts, by phone number (the owner's own number is fine)
+  2. wa gives them the name "WA check <number>" on every device of that account; nothing is sent to them
+  3. you look at the spare phone and answer two questions
+  4. you rename the contact back on the spare phone
+Use a SPARE account only, never your own: a bad contact change can stall contact names on all its devices.
+EOF
+printf '\nType spare if profile %s is a separate spare WhatsApp account, not your own number: ' "$profile"
+read -r answer || exit 130
+[ "$answer" = spare ] || die "nothing written"
+printf 'Phone number of the person, with the country code (digits only are kept, nothing is shown): '
+read -r number || exit 130
+digits=$(printf '%s' "$number" | tr -cd '0-9')
+[ "${#digits}" -ge 8 ] || die "that is not a phone number with its country code"
+
+run=$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')
+marker="WA check $run"
+confirm "Step 2 names that person \"$marker\" in the spare account's contacts."
+on_signals
+
+# One engine run: the write, then the read-back from the contact store whatsmeow fills from the patch WhatsApp
+# returned. Only fixed words and error codes are printed.
+set +e
+engine=$(WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$main/.wa/state" WA_CACHE_DIR="$main/.wa/cache" \
+  node --input-type=module -e '
+    const [main, profile, digits, marker] = process.argv.slice(1)
+    const { startGoEngine } = await import(`${main}/dist/engine/go-engine.js`)
+    const { privateStore } = await import(`${main}/dist/paths.js`)
+    const failed = (step, error) => {
+      console.log(`${step}: ${error?.code ?? "failed"}${error?.reason ? ` (${error.reason})` : ""}`)
+      process.exitCode = 1
+    }
+    const engine = await startGoEngine({ storePath: privateStore(profile), holder: "live-contact-write" }).catch(
+      (error) => failed("engine", error),
+    )
+    if (engine) {
+      try {
+        if (engine.self() === null) failed("own id", { code: "missing" })
+        else {
+          const written = await engine.saveContact(`${digits}@s.whatsapp.net`, marker).then(
+            () => true,
+            (error) => failed("write", error),
+          )
+          if (written) {
+            console.log("write: ok")
+            const back = (await engine.contacts()).some((contact) => contact.name === marker)
+            console.log(`read back: ${back ? "yes" : "no"}`)
+          }
+        }
+      } finally {
+        await engine.close()
+      }
+    }
+  ' "$main" "$profile" "$digits" "$marker" 2>/dev/null)
+set -e
+[ -n "$engine" ] || engine="engine: did not start (is $main built, engine included?)"
+printf '%s\n' "$engine"
+
+# Once the write went out, the phone is asked even when the read-back missed: the name may have changed anyway.
+shown=skipped
+intact=skipped
+if printf '%s\n' "$engine" | grep -qx "write: ok"; then
+  echo
+  echo "Step 3: on the spare phone, open WhatsApp and find the chat or contact of that person."
+  shown=$(phone "Does that person now show as \"$marker\"?")
+  intact=$(phone "Do your other contacts on the spare phone still show their usual names?")
+fi
+
+verdict=FAIL
+printf '%s\n' "$engine" | grep -qx "read back: yes" && [ "$shown" = yes ] && [ "$intact" = yes ] && verdict=PASS
+cat <<EOF
+
+── result ──
+$engine
+phone shows the new name   $shown
+other names unchanged      $intact
+WA-1: $verdict — one contact name written from a linked device (a pass needs write ok, read back yes and both answers yes)
+
+Paste only this block. Rename the contact back on the spare phone.
+EOF
+[ "$verdict" = PASS ]

@@ -12,6 +12,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   "couldn't link device" although wa had reported success. wa now ends the wait on the phone's own completion signal.
   Only when the phone never sends it, wa gives up after five minutes of quiet, says so in a `waiting` progress line and
   asks you to keep WhatsApp open on the phone until it finishes.
+- **The guide says a photo and a video group as one album only with text.** Without a caption, a phone may show them
+  as two messages; with one, they were seen as one album on a phone.
 
 ## 0.32.0 — 08.11.2026
 

@@ -21,15 +21,16 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Launch blockers (P1)
 
-- **WA-1** · P1 · core · 🟡 `feat/wa-launch-reads` · Validate contact writes on a spare account before
-  exposing them; the shared-store comment and snapshot ports are adopted.
-  List writes remain in WA-56; bulk contact import needs a bounded write policy. Until validated, their adapter
-  methods stay in `lacks`; unsupported session termination and contact removal stay in `never`.
-- **WA-4** · P1 · live · A photo and a video "go as one album" (`docs/roadmap.md:8`, `docs/usage.md:224`), but the
-  last live run showed two messages: run `bin/live-album`, then fix the docs or the send.
+- **WA-1** · P1 · core · 🚧 `fix/launch-blockers` · Validate contact writes on a spare account before exposing them:
+  `bin/live-contact-write <spare-profile>`, which needs a spare account the owner has not supplied yet. List writes
+  remain in WA-56; bulk contact import needs a bounded write policy. Until validated, their adapter methods stay in
+  `lacks`; unsupported session termination and contact removal stay in `never`.
+  [Notes](BACKLOG-NOTES.md#wa-1--contact-writes-on-a-spare-account)
+- **WA-4** · P1 · live · 🚧 `fix/launch-blockers` · An album groups on the phone for a captioned photo and video sent to
+  another number; the own chat is not checked: run `bin/live-album`.
   [Notes](BACKLOG-NOTES.md#wa-4--album-does-the-phone-group-a-photo-and-a-video)
-- **WA-5** · P1 · live · A fresh `session start` keeps the history push and sets `self()` — `bin/live-fresh-link`.
-  [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
+- **WA-5** · P1 · live · 🚧 `fix/launch-blockers` · A fresh `session start` keeps the history push and records the own
+  id — `bin/live-fresh-link`. [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
 
 ## Next (P2)
 
