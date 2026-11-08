@@ -78,10 +78,12 @@ describe("discovery over the engine transport", () => {
     }
   })
 
-  it("names the account's own contact with only the name, for bin/fix-own-contact-name", async () => {
+  it("names the account's own contact entry by the chosen key and the name only, for bin/fix-own-contact-name", async () => {
     const engine = await stub()
     try {
-      await expect(engine.saveOwnContact("Synthetic Own")).resolves.toEqual({ readBack: true })
+      await expect(engine.saveOwnContact("pn", "Synthetic Own")).resolves.toEqual({ readBack: "yes" })
+      await expect(engine.saveOwnContact("lid", "Synthetic Own")).resolves.toEqual({ readBack: "yes" })
+      await expect(engine.saveOwnContact("lid_contact", "Synthetic Own")).resolves.toEqual({ readBack: "unchecked" })
     } finally {
       await engine.close()
     }

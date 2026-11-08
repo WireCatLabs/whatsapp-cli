@@ -2,19 +2,21 @@
 # One-off repair, run once by the owner from a terminal; an agent never runs it. On 2026-11-08 bin/live-contact-write
 # ran on the owner's MAIN account and gave the account's own number the WhatsApp contact name "WA check <digits>", so
 # the chat with himself shows that name. The phone cannot edit that entry, and a linked device can only set a contact
-# name, not delete one. So this sets it again, to the account's own profile name:
+# name, not delete one. An earlier run set the entry keyed by the own phone number to the profile name, and the phone
+# kept showing "WA check …"; so this sets the entries keyed by the account's LID (WhatsApp's internal id for it):
 #
 #   1. links a throwaway profile, fix-own, as a second device of the main account (QR code, main phone)
 #   2. checks the number: you type it, the engine compares it and shows only its last four digits
 #   3. reads the profile name WhatsApp gave the device, shows it and what will be written, asks
-#   4. writes that name as the contact for the own number, reads it back, asks you to check the phone
+#   4. writes that name as [contact, own LID] and asks you to check the phone; if the phone does not show it, writes
+#      it as [lid_contact, own LID] and asks again. It stops at the first yes
 #   5. always, even after a failure or Ctrl-C: unlinks the device (session end), deletes its keys and its records
 #
 #   bin/fix-own-contact-name
 #
 # It sends no message. The history the phone pushes on linking goes to a throwaway store, removed at the end; the
 # shared WireCat store is not touched. No number is printed beyond its last four digits. The exit code is 0 only when
-# the name was written, read back and seen on the phone.
+# the phone shows the name after one of the writes.
 # shellcheck disable=SC2016 # node -e takes JavaScript, whose ${} is its own
 set -eu
 
@@ -25,7 +27,8 @@ set -eu
 profile=fix-own
 state="$main/.wa/state"
 engine_bin="$main/engine/bin/wa-engine"
-grep -q saveOwnContact "$main/dist/engine/discovery.js" 2>/dev/null && grep -qa saveOwnContact "$engine_bin" 2>/dev/null ||
+# Only a build whose saveOwnContact takes a key names lid_contact; an older one would take the key for the name.
+{ grep -q lid_contact "$main/dist/engine/discovery.js" 2>/dev/null && grep -qa lid_contact "$engine_bin" 2>/dev/null; } ||
   die "the build in $main is older than this script — run git pull, pnpm build and pnpm engine:build there first"
 [ ! -e "$state/accounts/$profile.json" ] && [ ! -e "$state/profiles/$profile" ] ||
   die "profile $profile is left from an earlier run — unlink it: $wa $profile session end, then remove $state/accounts/$profile.json and $state/profiles/$profile"
@@ -35,8 +38,9 @@ cat <<EOF
 This repairs the name in the chat with yourself on your MAIN WhatsApp account:
   1. it links a SECOND device to the main account, as the throwaway profile $profile: scan the QR code with the MAIN phone
   2. you type the main number; the engine checks it and shows its last four digits
-  3. it shows your profile name and asks before it writes it as the contact name of your own number
-  4. you check the chat with yourself on the main phone
+  3. it shows your profile name and asks before each write of it as a contact name of your own account
+  4. it writes it in up to two places, one at a time; after each you check the chat with yourself on the main
+     phone, and it stops at the first yes
   5. it unlinks the device and deletes its keys, whatever happened
 Nothing is sent to anyone. Your serve and its device are not touched.
 EOF
@@ -145,9 +149,9 @@ done
 # file in the throwaway folder, not through the output, which holds fixed words, four digits and error codes only.
 engine_run() {
   WA_CONFIG_DIR="$main/.wa/config" WA_STATE_DIR="$state" WA_CACHE_DIR="$main/.wa/cache" WA_ENGINE="$engine_bin" \
-    MESSAGING_STORE="$store/messages.db" FIX_STEP="$1" FIX_DIGITS="$digits" FIX_STORE="$store" \
+    MESSAGING_STORE="$store/messages.db" FIX_STEP="$1" FIX_KEY="${2:-}" FIX_DIGITS="$digits" FIX_STORE="$store" \
     node --input-type=module -e '
-      const { FIX_STEP: step, FIX_DIGITS: digits, FIX_STORE: store } = process.env
+      const { FIX_STEP: step, FIX_KEY: key, FIX_DIGITS: digits, FIX_STORE: store } = process.env
       const [main, profile] = process.argv.slice(1)
       const { readFileSync, writeFileSync } = await import("node:fs")
       const { startGoEngine } = await import(`${main}/dist/engine/go-engine.js`)
@@ -169,8 +173,8 @@ engine_run() {
             else if (me) console.log("profile name: missing")
           } else {
             const name = readFileSync(`${store}/name`, "utf8")
-            const saved = await engine.saveOwnContact(name).catch((error) => failed("write", error))
-            if (saved) console.log(`write: ok\nread back: ${saved.readBack ? "yes" : "no"}`)
+            const saved = await engine.saveOwnContact(key, name).catch((error) => failed("write", error))
+            if (saved) console.log(`write: ok\nread back: ${saved.readBack}`)
           }
         } finally {
           await engine.close()
@@ -197,33 +201,51 @@ name=$(cat -- "$store/name")
 echo
 main_ok=$(phone "The linked account's number ends in $ends. Is that your MAIN number?")
 [ "$main_ok" = yes ] || die "nothing written"
-confirm "This writes ONE contact name in the main account: your own number (ends in $ends) gets the name \"$name\".
-Your profile name and your phone's Contacts app are left alone."
+echo
+echo "It writes \"$name\" as a contact name of your own account (number ends in $ends), one step at a time:"
+echo "  lid          the contact entry keyed by your account's LID"
+echo "  lid_contact  the LID-only contact entry, only if the chat with yourself still shows \"WA check …\" after lid"
+echo "Your profile name and your phone's Contacts app are left alone."
 
-set +e
-write_out=$(engine_run write)
-set -e
-[ -n "$write_out" ] || write_out="engine: did not answer"
-printf '%s\n' "$write_out"
-! printf '%s\n' "$write_out" | grep -q 'keys-missing' || echo "Nothing was written: $unsynced."
-
-seen=skipped
-profile_same=skipped
-if printf '%s\n' "$write_out" | grep -qx "write: ok"; then
+# The order the owner chose; the loop stops at the first yes from the phone.
+steps="lid lid_contact"
+results=""
+fixed_by=""
+wrote=no
+for key in $steps; do
+  confirm "Step $key: this writes ONE contact name in the main account, \"$name\", under $key."
+  set +e
+  out=$(engine_run write "$key")
+  set -e
+  [ -n "$out" ] || out="engine: did not answer"
+  printf '%s\n' "$out"
+  results="$results$(printf '%s\n' "$out" | sed "s/^/$key  /")
+"
+  if ! printf '%s\n' "$out" | grep -qx "write: ok"; then
+    ! printf '%s\n' "$out" | grep -q 'keys-missing' || echo "Nothing was written: $unsynced."
+    break
+  fi
+  wrote=yes
   echo
   echo "On the MAIN phone, close WhatsApp fully (swipe it away from the recent apps), wait a minute, open it."
   seen=$(phone "Does the chat with yourself now show \"$name\" (not \"WA check …\")?")
-  profile_same=$(phone "Is your profile name (Settings, your name at the top) still \"$name\"?")
-fi
+  results="${results}$key  chat with yourself shows the name: $seen
+"
+  if [ "$seen" = yes ]; then
+    fixed_by=$key
+    break
+  fi
+done
+
+profile_same=skipped
+[ "$wrote" = no ] || profile_same=$(phone "Is your profile name (Settings, your name at the top) still \"$name\"?")
 
 verdict=FAIL
-printf '%s\n' "$write_out" | grep -qx "read back: yes" && [ "$seen" = yes ] && [ "$profile_same" = yes ] && verdict=FIXED
+[ -n "$fixed_by" ] && [ "$profile_same" = yes ] && verdict="FIXED by step $fixed_by"
 cat <<EOF
 
 ── result ──
-$write_out
-chat with yourself shows the name   $seen
-profile name unchanged               $profile_same
-own contact name: $verdict (fixed needs write ok, read back yes and both answers yes)
+${results}profile name unchanged  $profile_same
+own contact name: $verdict (fixed needs write ok, then the phone's yes, and the profile name unchanged)
 EOF
-[ "$verdict" = FIXED ]
+[ "$verdict" != FAIL ]

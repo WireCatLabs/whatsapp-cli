@@ -57,7 +57,11 @@ for a pass. It does not compare account records across profiles: several test pr
 account. whatsmeow's patch encoder sends only `SET` mutations, so `wa` cannot remove the stray self contact, and the
 phone offers no way to edit it. `bin/fix-own-contact-name` sets it again, to the account's own profile name: it links
 a throwaway profile to the main account, writes through the engine's `saveOwnContact` (the own ids only, no target;
-no command calls it), and unlinks the device at the end.
+no command calls it), and unlinks the device at the end. Rewriting `[contact, <own PN>]` read back but left the phone
+showing `WA check …`, so the script now writes `[contact, <own LID>]` and then `[lid_contact, <own LID>]` (version 1,
+as WhatsApp Web's `WAWebLidContactSync` writes it), asking the phone after each. WhatsApp Web skips a `contact`
+mutation keyed by a LID and logs an error when it would send one; whatsmeow does not apply `lid_contact` to its store,
+so that step answers `readBack: "unchecked"`.
 
 **Live run of 2026-11-08, about 19:30** (profile `spare`, linked from the spare phone, engine with #354 and #355): the
 engine confirmed the spare's number, then `write: ok`, `read back: yes`; after a full restart of WhatsApp on the

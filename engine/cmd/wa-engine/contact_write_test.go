@@ -123,25 +123,60 @@ func TestOwnNumberAnswersAMatchAndOnlyTheLastFourDigits(t *testing.T) {
 	}
 }
 
-func TestOwnContactPatchNamesTheDevicesOwnIDsOnly(t *testing.T) {
+func TestOwnContactPatchNamesTheDevicesOwnIDsUnderTheChosenKey(t *testing.T) {
 	ownDevice := types.NewADJID(annPN.User, 0, 7)
-	pn, patch, err := ownContactPatch(&ownDevice, annLID, " Own Name ")
-	if err != nil {
-		t.Fatal(err)
+	for _, test := range []struct {
+		key, index, target string
+		version            int32
+		stored             types.JID
+	}{
+		{"pn", appstate.IndexContact, annPN.String(), 2, annPN},
+		{"lid", appstate.IndexContact, annLID.String(), 2, annLID},
+		{"lid_contact", appstate.IndexLIDContact, annLID.String(), 1, types.JID{}},
+	} {
+		stored, patch, err := ownContactPatch(&ownDevice, annLID, test.key, " Own Name ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		mutation := patch.Mutations[0]
+		if stored != test.stored || patch.Type != appstate.WAPatchCriticalUnblockLow || len(patch.Mutations) != 1 ||
+			mutation.Version != test.version || len(mutation.Index) != 2 || mutation.Index[0] != test.index ||
+			mutation.Index[1] != test.target {
+			t.Fatalf("%s: bad patch: %v %+v", test.key, stored, mutation)
+		}
+		if test.key == "lid_contact" {
+			action := mutation.Value.GetLidContactAction()
+			if mutation.Value.GetContactAction() != nil || action.GetFullName() != "Own Name" ||
+				action.GetFirstName() != "Own" || action.Username != nil || action.Birthday != nil {
+				t.Fatalf("lid_contact: bad value: %+v", mutation.Value)
+			}
+			continue
+		}
+		action := mutation.Value.GetContactAction()
+		if action.GetFullName() != "Own Name" || action.GetFirstName() != "Own" || action.GetPnJID() != annPN.String() ||
+			action.GetLidJID() != annLID.String() || (test.key == "lid") != (action.SaveOnPrimaryAddressbook == nil) {
+			t.Fatalf("%s: bad value: %+v", test.key, action)
+		}
 	}
-	action := patch.Mutations[0].Value.GetContactAction()
-	if pn != annPN || patch.Mutations[0].Index[1] != annPN.String() || action.GetPnJID() != annPN.String() ||
-		action.GetLidJID() != annLID.String() || action.GetFullName() != "Own Name" || action.GetSaveOnPrimaryAddressbook() {
-		t.Fatalf("own contact patch is not keyed to the own ids: %v %+v", patch.Mutations[0].Index, action)
+}
+
+func TestOwnContactPatchRefusesAnUnknownKeyMissingOwnIDsAndAnEmptyName(t *testing.T) {
+	ownDevice := types.NewADJID(annPN.User, 0, 7)
+	for _, key := range []string{"", "phone", "LID"} {
+		if _, _, err := ownContactPatch(&ownDevice, annLID, key, "Own Name"); !isFailure(err, "validation_error") {
+			t.Fatalf("own contact written under key %q: %v", key, err)
+		}
 	}
-	if _, _, err := ownContactPatch(nil, annLID, "Own Name"); !isFailure(err, "authentication_error") {
-		t.Fatalf("own contact written without the own phone id: %v", err)
-	}
-	if _, _, err := ownContactPatch(&ownDevice, types.JID{}, "Own Name"); !isFailure(err, "authentication_error") {
-		t.Fatalf("own contact written without the own LID: %v", err)
-	}
-	if _, _, err := ownContactPatch(&ownDevice, annLID, " "); !isFailure(err, "validation_error") {
-		t.Fatalf("empty own contact name accepted: %v", err)
+	for _, key := range []string{"pn", "lid", "lid_contact"} {
+		if _, _, err := ownContactPatch(nil, annLID, key, "Own Name"); !isFailure(err, "authentication_error") {
+			t.Fatalf("%s: own contact written without the own phone id: %v", key, err)
+		}
+		if _, _, err := ownContactPatch(&ownDevice, types.JID{}, key, "Own Name"); !isFailure(err, "authentication_error") {
+			t.Fatalf("%s: own contact written without the own LID: %v", key, err)
+		}
+		if _, _, err := ownContactPatch(&ownDevice, annLID, key, " "); !isFailure(err, "validation_error") {
+			t.Fatalf("%s: empty own contact name accepted: %v", key, err)
+		}
 	}
 }
 

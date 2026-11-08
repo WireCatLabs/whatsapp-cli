@@ -15,6 +15,8 @@ type contactFields struct {
 	ContactName string `json:"contactName,omitempty"`
 	FirstName   string `json:"firstName,omitempty"`
 	Phonebook   bool   `json:"phonebook,omitempty"`
+	// saveOwnContact: which of the account's own entries.
+	OwnKey string `json:"key,omitempty"`
 }
 
 var contactDigits = regexp.MustCompile(`^\d+$`)
@@ -96,33 +98,63 @@ func (e *engine) ownNumber(req request) (*waOwnNumber, error) {
 }
 
 type waOwnContact struct {
-	ReadBack bool `json:"readBack"`
+	// "unchecked" for lid_contact: whatsmeow does not apply that index to its store, so a "yes" would be made up.
+	ReadBack string `json:"readBack"`
 }
 
-// ownContactPatch names the account's own contact entry, keyed like any contact by its phone id, so it replaces a name
-// written there before. It takes the device's own ids, not a target: nobody else can be named through it.
-func ownContactPatch(own *types.JID, ownLID types.JID, name string) (types.JID, appstate.PatchInfo, error) {
+// ownContactPatch names one of the account's own contact entries: "pn" is [contact, own PN], "lid" [contact, own LID],
+// "lid_contact" [lid_contact, own LID], the index WhatsApp Web writes as version 1 (WAWebLidContactSync). It takes the
+// device's own ids, not a target: nobody else can be named through it. It returns the store entry to read back, empty
+// when there is none.
+func ownContactPatch(own *types.JID, ownLID types.JID, key, name string) (types.JID, appstate.PatchInfo, error) {
+	if key != "pn" && key != "lid" && key != "lid_contact" {
+		return types.JID{}, appstate.PatchInfo{}, &failure{"validation_error", "key is pn, lid or lid_contact; nothing was saved"}
+	}
 	if own == nil || own.IsEmpty() || ownLID.IsEmpty() {
 		return types.JID{}, appstate.PatchInfo{}, &failure{"authentication_error", "this device does not know its own account yet; nothing was saved"}
 	}
-	pn := own.ToNonAD()
-	patch, err := buildContact(pn, ownLID.ToNonAD(), name, "", false)
-	return pn, patch, err
+	pn, lid := own.ToNonAD(), ownLID.ToNonAD()
+	patch, err := buildContact(pn, lid, name, "", false)
+	if err != nil {
+		return types.JID{}, appstate.PatchInfo{}, err
+	}
+	mutation := &patch.Mutations[0]
+	action := mutation.Value.GetContactAction()
+	switch key {
+	case "lid":
+		mutation.Index[1] = lid.String()
+		action.SaveOnPrimaryAddressbook = nil
+		return lid, patch, nil
+	case "lid_contact":
+		mutation.Index = []string{appstate.IndexLIDContact, lid.String()}
+		mutation.Version = 1
+		mutation.Value = &waSyncAction.SyncActionValue{LidContactAction: &waSyncAction.LidContactAction{
+			FullName: action.FullName, FirstName: action.FirstName,
+		}}
+		return types.JID{}, patch, nil
+	}
+	return pn, patch, nil
 }
 
 // saveOwnContact is for bin/fix-own-contact-name alone, which undoes a contact name a live check wrote for the account's
 // own number. saveContact keeps refusing that number.
 func (e *engine) saveOwnContact(req request) (*waOwnContact, error) {
-	pn, patch, err := ownContactPatch(e.client.Store.ID, e.client.Store.LID, req.ContactName)
+	stored, patch, err := ownContactPatch(e.client.Store.ID, e.client.Store.LID, req.OwnKey, req.ContactName)
 	if err != nil {
 		return nil, err
 	}
 	if err := e.sendAppState(patch); err != nil {
 		return nil, err
 	}
+	if stored.IsEmpty() {
+		return &waOwnContact{ReadBack: "unchecked"}, nil
+	}
 	// The write went out, so a failed read answers "not read back", not an error that reads as "not saved".
-	contact, err := e.client.Store.Contacts.GetContact(e.ctx, pn)
-	return &waOwnContact{ReadBack: err == nil && contact.FullName == strings.TrimSpace(req.ContactName)}, nil
+	contact, err := e.client.Store.Contacts.GetContact(e.ctx, stored)
+	if err == nil && contact.FullName == strings.TrimSpace(req.ContactName) {
+		return &waOwnContact{ReadBack: "yes"}, nil
+	}
+	return &waOwnContact{ReadBack: "no"}, nil
 }
 
 func (e *engine) saveContact(req request) error {
