@@ -21,15 +21,13 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 
 ## Launch blockers (P1)
 
-- **WA-1** · P1 · core · 🚧 `fix/wa-1-own-contact` · Validate contact writes on a spare account before exposing
-  them. Reopened 2026-11-08: the 18:26 run's PASS was wrong. The owner had linked profile `spar` with his main phone,
-  so the number typed was the main account's own, and the name landed in the main account's contact for itself (the
-  chat with himself); his public profile name did not change, and the person on the spare phone still shows only the
-  number. The engine now refuses a contact for the account's own number or LID, and `bin/live-contact-write` has the
-  engine confirm the spare phone's number before
-  the write. Re-run on a profile linked from the spare phone. List writes remain in WA-56; bulk contact import needs a
-  bounded write policy. Until validated, their adapter methods stay in `lacks`; unsupported session termination and
-  contact removal stay in `never`. [Notes](BACKLOG-NOTES.md#wa-1--contact-writes-on-a-spare-account)
+- **WA-1** · P1 · core · Closed 2026-11-08: on the spare (profile `spare`, engine with #354 and #355, about 19:30)
+  `bin/live-contact-write` confirmed the spare's number (last four digits matched), wrote `WA check …`, and read it
+  back; after a full restart of WhatsApp on the spare phone, the chat list and the contact info showed it, the other
+  contacts kept their names, and the account's own profile names did not change. The script ended before its verdict
+  line, since its input closed after the third answer; the owner gave the last two answers in chat. `contacts
+  add|rename` are on. Still off: list writes (WA-56), bulk import (needs a bounded write policy), and in `never`
+  session termination and contact removal. [Notes](BACKLOG-NOTES.md#wa-1--contact-writes-on-a-spare-account)
 - **WA-4** · P1 · live · Closed 2026-11-08: `bin/live-album` showed a captioned photo and video in the own chat as
   one album, both files opening. It ran on the main account (profile `spar` was its second device), not a spare; the
   result stands, since grouping depends on the message, not on which account sent it. Still unverified: an album
@@ -74,5 +72,3 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
   (NEED-1608 = A) — plan: cli-private `plans/2026-10-22-wa-business-app/handoff.md`.
 - **WA-21** · P2 · engine · Channels: save a post's file, and what following and reading left open —
   `engine/cmd/wa-engine/`. [Notes](BACKLOG-NOTES.md#wa-21--channels-post-files-and-what-following-left-open)
-- **WA-50** · P2 · engine · 🟡 `feat/wa-launch-reads` · Contact patch code and unit tests are ready, and the patch
-  needs the person's LID; `contacts add|rename` stay disabled until WA-1's spare-account check passes.

@@ -55,6 +55,11 @@ import { updateNotice } from "./update.js"
  */
 export const NO_RESTART_ON = [exitCodeFor("authentication_error"), exitCodeFor("permission_error")]
 
+export const CONTACT_NAME_LIMIT =
+  "The name is a WhatsApp contact name, on every device of the account; nothing is sent to the person.\n" +
+  "For a person saved in the phone's Contacts app, the phone keeps showing that app's name.\n" +
+  "The account's own number is refused."
+
 const definition: ProgramDefinition = {
   app: WA,
   configuration: CONFIG,
@@ -70,6 +75,9 @@ const definition: ProgramDefinition = {
         "  wa skill show                   Read the bundled instructions before using WhatsApp\n" +
         "  wa commands --json              Discover commands, arguments and flags\n",
     )
+    const contacts = program.commands.find((command) => command.name() === "contacts")
+    for (const name of ["add", "rename"])
+      contacts?.commands.find((command) => command.name() === name)?.addHelpText("after", `\n${CONTACT_NAME_LIMIT}\n`)
     program.commands
       .find((command) => command.name() === "skill")
       ?.addHelpText(

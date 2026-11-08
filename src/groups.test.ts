@@ -658,10 +658,44 @@ describe("wa contacts", () => {
     ])
   })
 
-  it("refuses adding a contact, which WhatsApp keeps on the phone only", async () => {
-    const result = await acting("contacts", "add", seed.person)
+  it("adds a contact under the name WhatsApp shows, leaving the phone's address book alone", async () => {
+    let engine: FakeEngine | undefined
+    const result = await wa([PROFILE, "contacts", "add", seed.person, "--yes", "--json"], () => {
+      engine = fakeEngine(seed)
+      return engine
+    })
+    expect(result.code, result.stderr).toBe(0)
+    expect(engine?.contactWrites).toEqual([{ jid: seed.person, contactName: expect.any(String), phonebook: false }])
+    expect(JSON.parse(result.stdout).item.person).toMatchObject({ id: seed.person })
+  })
+
+  it.each(["add", "rename"])("says in `contacts %s --help` what the name is and where it shows", async (name) => {
+    const result = await wa([PROFILE, "contacts", name, "--help"])
+    expect(result.stdout).toContain("WhatsApp contact name, on every device of the account; nothing is sent")
+    expect(result.stdout).toContain("the phone keeps showing that app's name")
+  })
+
+  it("renames a contact with a first and a last name", async () => {
+    let engine: FakeEngine | undefined
+    const result = await wa(
+      [PROFILE, "contacts", "rename", seed.person, "Synthetic", "Person", "--yes", "--json"],
+      () => {
+        engine = fakeEngine(seed)
+        return engine
+      },
+    )
+    expect(result.code, result.stderr).toBe(0)
+    expect(engine?.contactWrites).toEqual([
+      { jid: seed.person, contactName: "Synthetic Person", firstName: "Synthetic", phonebook: false },
+    ])
+    expect(JSON.parse(result.stdout).item.person).toMatchObject({ id: seed.person, name: "Synthetic Person" })
+  })
+
+  it("refuses removing a contact, which WhatsApp's linked devices cannot do, before starting the engine", async () => {
+    const result = await wa([PROFILE, "contacts", "remove", seed.person, "--json"], () => {
+      throw new Error("a command WhatsApp lacks must never start the engine")
+    })
     expect(result.code).toBe(2)
-    expect(result.done).toEqual([])
   })
 
   it("keeps the address book the phone shares", async () => {
