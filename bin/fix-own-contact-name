@@ -57,6 +57,15 @@ fresh_doctor() {
   fresh "$profile" doctor --json --no-input --timeout 30s 2>/dev/null | json "$1" 2>/dev/null
 }
 
+linked() {
+  [ -e "$state/accounts/$profile.json" ]
+}
+
+drop_keys() {
+  rm -f -- "$state/profiles/$profile/private.db" "$state/profiles/$profile/private.db-wal" \
+    "$state/profiles/$profile/private.db-shm" "$state/profiles/$profile/private.db.lock"
+}
+
 unlinked=no
 cleanup() {
   status=$?
@@ -67,7 +76,8 @@ cleanup() {
     tries=$((tries + 1))
     sleep 1
   done
-  if [ "$(fresh_doctor 'd.item.whatsapp.device.exists')" = true ]; then
+  # A link that never finished leaves a store file but no account record: nothing to unlink on WhatsApp's side.
+  if linked; then
     if fresh "$profile" session end --json --no-input --timeout 60s >/dev/null 2>&1; then
       unlinked=yes
     else
@@ -77,8 +87,7 @@ cleanup() {
     unlinked="not linked"
   fi
   # The keys stay if WhatsApp did not answer; they go anyway, and the phone can still remove the device.
-  rm -f -- "$state/profiles/$profile/private.db" "$state/profiles/$profile/private.db-wal" \
-    "$state/profiles/$profile/private.db-shm" "$state/profiles/$profile/private.db.lock"
+  drop_keys
   rmdir -- "$state/profiles/$profile" 2>/dev/null || true
   # session end leaves the account record, which holds the main account's id and keeps fix-own in `account list`.
   rm -f -- "$state/accounts/$profile.json"
@@ -100,18 +109,37 @@ Keep WhatsApp open on the phone and let wa end the wait by itself: the profile n
 come with the sync. Ctrl+C only if nothing moves for several minutes.
 Paste only the result block at the end: the lines above it name your account.
 EOF
-# Ctrl+C is wa's to handle here; a trap that does nothing, unlike an ignored signal, is not passed on to node.
-trap ':' INT
-set +e
-fresh "$profile" session start qr --timeout 10m
-set -e
-on_signals
-[ "$(fresh_doctor 'd.item.whatsapp.device.exists')" = true ] || die "the device was not linked; nothing written"
+# whatsmeow shows six QR codes, the first for 60 seconds and each next one for 20 (qrchan.go), then the link ends.
+attempt=1
+while :; do
+  # Ctrl+C is wa's to handle here; a trap that does nothing, unlike an ignored signal, is not passed on to node.
+  trap ':' INT
+  set +e
+  fresh "$profile" session start qr --timeout 10m
+  set -e
+  on_signals
+  linked && break
+  # A link that did not finish leaves a store file behind, which the next try must not find.
+  drop_keys
+  [ "$attempt" -lt 3 ] ||
+    die "The device was not linked after 3 tries; nothing written. Run this again when the main phone is at hand."
+  echo
+  again=$(phone "The device was not linked: the QR codes ran out (about 2 minutes 40 seconds) or WhatsApp refused it. Show a new QR code?")
+  [ "$again" = yes ] || die "nothing linked, nothing written"
+  attempt=$((attempt + 1))
+done
 
-printf '\nYour MAIN phone number, with the country code (checked against the linked account, not shown): '
-read -r typed || exit 130
-digits=$(printf '%s' "$typed" | tr -cd '0-9')
-[ "${#digits}" -ge 8 ] || die "that is not a phone number with its country code; nothing written"
+while :; do
+  printf '\nYour MAIN phone number, with the country code (checked against the linked account, not shown): '
+  read -r typed || exit 130
+  digits=$(printf '%s' "$typed" | tr -cd '0-9')
+  if [ "${#digits}" -lt 8 ]; then
+    echo "That is not a phone number with its country code."
+    continue
+  fi
+  right=$(phone "You typed ${#digits} digits ending in ${digits#"${digits%????}"}. Is that right?")
+  [ "$right" = no ] || break
+done
 
 # One engine run per step, so the questions in between are asked with the device closed. The profile name goes to a
 # file in the throwaway folder, not through the output, which holds fixed words, four digits and error codes only.
