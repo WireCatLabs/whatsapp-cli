@@ -26,6 +26,7 @@ export const PROTOCOL = 47
 export const ENGINE_OPS = {
   send: "write",
   saveContact: "write",
+  saveOwnContact: "write",
   sendMedia: "write",
   sendAlbum: "write",
   forward: "write",

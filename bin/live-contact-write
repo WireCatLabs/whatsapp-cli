@@ -9,8 +9,7 @@
 #
 #   bin/live-contact-write <spare-profile>
 #
-# `contacts add` and `contacts rename` stay refused in wa until this passes, so the script calls the engine directly,
-# as `wa` would. It sends no message to anyone. The phone number is typed at a prompt and never printed; the result
+# The script calls the engine directly, as `wa contacts rename` does. It sends no message to anyone. The phone number is typed at a prompt and never printed; the result
 # block holds yes/no and error codes only. The exit code is 0 only on a pass.
 set -eu
 

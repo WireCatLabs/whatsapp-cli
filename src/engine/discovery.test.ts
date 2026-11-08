@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from "node:fs"
+import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 import { startGoEngine } from "./go-engine.js"
@@ -74,6 +76,32 @@ describe("discovery over the engine transport", () => {
     } finally {
       await engine.close()
     }
+  })
+
+  it("names the account's own contact entry by the chosen key and the name only, for bin/fix-own-contact-name", async () => {
+    const engine = await stub()
+    try {
+      await expect(engine.saveOwnContact("pn", "Synthetic Own")).resolves.toEqual({ readBack: "yes" })
+      await expect(engine.saveOwnContact("lid", "Synthetic Own")).resolves.toEqual({ readBack: "yes" })
+      await expect(engine.saveOwnContact("lid_contact", "Synthetic Own")).resolves.toEqual({ readBack: "unchecked" })
+    } finally {
+      await engine.close()
+    }
+  })
+
+  it("leaves the own-contact write out of every command: only the engine bindings and fakes name it", () => {
+    const src = fileURLToPath(new URL("..", import.meta.url))
+    const naming = readdirSync(src, { recursive: true, encoding: "utf8" })
+      .filter((file) => /\.(ts|mjs)$/.test(file) && !/\.test\.ts$/.test(file))
+      .filter((file) => readFileSync(join(src, file), "utf8").includes("saveOwnContact"))
+      .map((file) => file.replaceAll("\\", "/"))
+      .sort()
+    expect(naming).toEqual([
+      "engine/contract.ts",
+      "engine/discovery.ts",
+      "testing/engine-stub.mjs",
+      "testing/fake-engine.ts",
+    ])
   })
 
   it("preserves explicit contact fields, leaves omitted options unset, and treats an interrupted save as uncertain", async () => {

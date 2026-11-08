@@ -44,15 +44,16 @@ account, older history of one chat (`messages sync`), sending text (with `--repl
 `tags rebuild`), group admin
 (`chats create|join|leave|update`, a group photo by `chats update --photo` (a square JPEG of 190 to 720 pixels a
 side) or `--remove-photo`, `chats links show|reset`, `chats members list|fetch|add|remove`,
-`chats admins add|remove`, `chats requests list|confirm|reject`), `contacts show|block|unblock|lookup|sync`, `account privacy show|set`,
+`chats admins add|remove`, `chats requests list|confirm|reject`), `contacts show|block|unblock|lookup|sync|add|rename`, `account privacy show|set`,
 `doctor --online`, `serve` and `watch`. Everything that reads the local store works.
 `account privacy set` has WhatsApp's settings only (last seen, online, photo, about, read receipts, groups, calls);
 `--read-receipts off` also stops the owner seeing others' receipts, and `contacts_except` is shown, never set.
 Not built yet:
 `chats inspect`, more files in one message than a photo and a video, listing a community's groups or linking one, `account sessions`, `chats create --channel`. WhatsApp has no
 `chats folders`, no `messages comments`, no second invite link, no partial admin rights and no account age (a
-`newAccount` rule in `chats rules set` is refused), and keeps the address book on the phone, so
-`contacts add|remove|rename|import` are refused. `chats show` answers from the store;
+`newAccount` rule in `chats rules set` is refused), and `contacts remove|import` are refused. `contacts add|rename`
+write a WhatsApp contact name, on every device of the account, with nothing sent to the person; for someone saved in
+the phone's Contacts app the phone keeps that app's name, and the account's own number is refused. `chats show` answers from the store;
 `chats members list` asks WhatsApp, and with `--offline` shows the stored members. `chats events` answers from the
 store: the joins, leaves, adds, removals, admin changes and titles the phone pushed and `serve` saw, which
 `stats chats show` counts in `members`; one from before the link the phone did not push is missing. `chats members

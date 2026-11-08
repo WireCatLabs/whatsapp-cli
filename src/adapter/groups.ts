@@ -29,6 +29,8 @@ export type GroupAdapter = Required<
     | "profile"
     | "block"
     | "unblock"
+    | "addContact"
+    | "renameContact"
     | "lookup"
     | "addressBook"
     | "health"
@@ -313,6 +315,20 @@ export const groupAdapter = ({ engine, resolve, translated, wroteTo, onDisk }: G
 
     unblock: async (person) => {
       await translated(engine.block(person, false))
+    },
+
+    // A WhatsApp contact name, on every device of the account; the phone's own address book is left alone.
+    addContact: async (person) => {
+      const { name } = await translated(engine.profile(person))
+      if (!name) throw new CliError("validation_error", "WhatsApp shows no name for this person — use contacts rename")
+      await translated(engine.saveContact(person, name, { phonebook: false }))
+      return { id: person, name, username: null }
+    },
+
+    renameContact: async (person, firstName, lastName) => {
+      const name = lastName ? `${firstName} ${lastName}` : firstName
+      await translated(engine.saveContact(person, name, { firstName, phonebook: false }))
+      return { id: person, name, username: null }
     },
 
     lookup: async (phone) => toMember(await translated(engine.lookup(phone))),

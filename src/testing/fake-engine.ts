@@ -263,6 +263,7 @@ export const fakeEngine = (
       engine.contactWrites.push({ jid, contactName, ...options })
     },
     ownNumber: async (phone) => ({ matches: phone === "70000000001", ends: "0001" }),
+    saveOwnContact: async (key) => ({ readBack: key === "lid_contact" ? "unchecked" : "yes" }),
     folders: async () => [],
     devices: async () => [
       { id: 0, current: false },

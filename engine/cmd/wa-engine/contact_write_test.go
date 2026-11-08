@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"go.mau.fi/whatsmeow"
@@ -119,5 +120,76 @@ func TestOwnNumberAnswersAMatchAndOnlyTheLastFourDigits(t *testing.T) {
 	}
 	if _, err := ownNumber(&own, "+7 000"); !isFailure(err, "validation_error") {
 		t.Fatalf("formatted number accepted: %v", err)
+	}
+}
+
+func TestOwnContactPatchNamesTheDevicesOwnIDsUnderTheChosenKey(t *testing.T) {
+	ownDevice := types.NewADJID(annPN.User, 0, 7)
+	for _, test := range []struct {
+		key, index, target string
+		version            int32
+		stored             types.JID
+	}{
+		{"pn", appstate.IndexContact, annPN.String(), 2, annPN},
+		{"lid", appstate.IndexContact, annLID.String(), 2, annLID},
+		{"lid_contact", appstate.IndexLIDContact, annLID.String(), 1, types.JID{}},
+	} {
+		stored, patch, err := ownContactPatch(&ownDevice, annLID, test.key, " Own Name ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		mutation := patch.Mutations[0]
+		if stored != test.stored || patch.Type != appstate.WAPatchCriticalUnblockLow || len(patch.Mutations) != 1 ||
+			mutation.Version != test.version || len(mutation.Index) != 2 || mutation.Index[0] != test.index ||
+			mutation.Index[1] != test.target {
+			t.Fatalf("%s: bad patch: %v %+v", test.key, stored, mutation)
+		}
+		if test.key == "lid_contact" {
+			action := mutation.Value.GetLidContactAction()
+			if mutation.Value.GetContactAction() != nil || action.GetFullName() != "Own Name" ||
+				action.GetFirstName() != "Own" || action.Username != nil || action.Birthday != nil {
+				t.Fatalf("lid_contact: bad value: %+v", mutation.Value)
+			}
+			continue
+		}
+		action := mutation.Value.GetContactAction()
+		if action.GetFullName() != "Own Name" || action.GetFirstName() != "Own" || action.GetPnJID() != annPN.String() ||
+			action.GetLidJID() != annLID.String() || (test.key == "lid") != (action.SaveOnPrimaryAddressbook == nil) {
+			t.Fatalf("%s: bad value: %+v", test.key, action)
+		}
+	}
+}
+
+func TestOwnContactPatchRefusesAnUnknownKeyMissingOwnIDsAndAnEmptyName(t *testing.T) {
+	ownDevice := types.NewADJID(annPN.User, 0, 7)
+	for _, key := range []string{"", "phone", "LID"} {
+		if _, _, err := ownContactPatch(&ownDevice, annLID, key, "Own Name"); !isFailure(err, "validation_error") {
+			t.Fatalf("own contact written under key %q: %v", key, err)
+		}
+	}
+	for _, key := range []string{"pn", "lid", "lid_contact"} {
+		if _, _, err := ownContactPatch(nil, annLID, key, "Own Name"); !isFailure(err, "authentication_error") {
+			t.Fatalf("%s: own contact written without the own phone id: %v", key, err)
+		}
+		if _, _, err := ownContactPatch(&ownDevice, types.JID{}, key, "Own Name"); !isFailure(err, "authentication_error") {
+			t.Fatalf("%s: own contact written without the own LID: %v", key, err)
+		}
+		if _, _, err := ownContactPatch(&ownDevice, annLID, key, " "); !isFailure(err, "validation_error") {
+			t.Fatalf("%s: empty own contact name accepted: %v", key, err)
+		}
+	}
+}
+
+func TestSaveContactStillRefusesTheOwnNumberWhateverElseTheRequestCarries(t *testing.T) {
+	ownDevice := types.NewADJID(annPN.User, 0, 7)
+	e := &engine{ctx: context.Background(), conv: testConverter(), client: &whatsmeow.Client{Store: &store.Device{
+		ID: &ownDevice, LID: annLID, LIDs: oneLID{pn: annPN, lid: annLID},
+	}}}
+	var req request
+	if err := json.Unmarshal([]byte(`{"op":"saveContact","jid":"`+annPN.String()+`","contactName":"Own Name","allowOwn":true,"own":true}`), &req); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.saveContact(req); !isFailure(err, "validation_error") {
+		t.Fatalf("saveContact named the account's own number: %v", err)
 	}
 }

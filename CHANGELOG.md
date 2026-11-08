@@ -14,6 +14,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   it is a separate account. While `wa serve` holds the profile the command refuses, like `session end`.
   A run with moved folders only deletes its own keys and does not unlink anything.
 
+## 0.34.0 — 08.11.2026
+
+### Added
+
+- **`contacts add` and `contacts rename` save a person in your WhatsApp contacts.** `add` uses the name WhatsApp
+  shows for them, `rename` the name you give. It is a WhatsApp contact name: it shows on every device of the account,
+  and nothing is sent to the person. For someone saved in the phone's Contacts app, the phone keeps showing that
+  app's name. wa refuses the account's own number. `contacts remove` and `import` stay refused.
+
 ## 0.33.0 — 08.11.2026
 
 ### Fixed

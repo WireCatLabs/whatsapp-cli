@@ -108,6 +108,7 @@ closed terminal, Ctrl-C or Ctrl-\ ends a script through its `EXIT` trap. The sha
 | `bin/live-chat-events <profile> <group>` | BACKLOG item 5, `chats events`: does the phone's history push carry a group's service messages, with their people, so the store lists them? | one history request from this device to the own phone, through the running `serve`; nothing anyone else sees | nothing to put back: the store keeps the page and its changes |
 | `bin/live-forward-card <profile>` | BACKLOG item 5, forwarding a place and a contact card; own chat only | a place and a card the owner sends from the phone, and `wa`'s forward of each, all in the own chat, through the running `serve` | not undone by the script: the owner deletes the four messages from the phone |
 | `bin/live-contact-write <spare-profile>` | WA-1, a contact name written from a linked device; a spare account only | one contact name in the spare account's address book, after the engine confirms the spare phone's number; no message to anyone | not undone by the script: the owner renames the contact back on the spare phone |
+| `bin/fix-own-contact-name` | one-off repair of the 2026-11-08 WA-1 run: the main account's contact for its own number named `WA check …` | links the throwaway profile `fix-own` to the main account, after the engine confirms the typed main number; the account's own profile name as its own contact name, first under `[contact, <own LID>]`, then, if the phone still shows `WA check …`, under `[lid_contact, <own LID>]`; it stops at the phone's yes; no message to anyone | the device is unlinked and its keys and records deleted at the end, whatever happened; the throwaway history store too |
 
 **`live-oneshot-drop`** checks whether a one-shot connection saves a queued message before `serve` restarts.
 Use two linked profiles for different accounts you control to send and check automatically:
@@ -268,7 +269,7 @@ number, never printed, and the engine compares it with the linked account's, sho
 a mismatch writes nothing. The
 owner types the phone number of one person the spare has a chat with but who is not saved in the spare phone's
 Contacts app; it is never printed. A saved person is refused: the phone shows the Contacts app name for them, and this
-write leaves that app alone. Because `contacts add` and `rename` stay refused in `wa` until this passes, the script
+write leaves that app alone. The script
 starts the engine from the main checkout's build and calls `saveContact` with the name `WA check <run number>`, then
 looks for that name in the contact store, which whatsmeow fills from the patch WhatsApp returns. The engine refuses
 a number whose LID it does not know, and the account's own number or LID. The owner closes WhatsApp on the phone fully and opens it again, then answers
