@@ -31,6 +31,7 @@ it. Without either, a command that uses an account stops with exit code `2` and 
 | `history_dialog_days` | `1095` | how many days back the phone's history of a one-to-one chat is kept, 1 to 1095; linking asks the phone for the longer of this and `history_group_days` | `messages sync <chat> --full-history` |
 | `history_group_days` | `365` | how many days back the history of a group of more than 2 people is kept, 1 to 1095 | `messages sync <chat> --full-history` |
 | `history_group_members_max` | `50` | a group with more people keeps none of its pushed history; `store status` lists what was left out | `messages sync <chat> --full-history` |
+| `history_muted` | `false` | `messages sync --all` also reads the chats you muted. Without it they are left out and counted in `limited.muted`; a chat you name is read either way | `messages sync --all --with-muted` |
 | `search_catch_up` | `false` | prepare newly stored chats for local search: their graph and, where installed, their vectors | `--catch-up`, `--no-catch-up` |
 | `picture_search` | `false` | search stored pictures by what they show, once the model is downloaded | none |
 | `search_reranker` | `mmarco` | the model that reranks the first 50 hits of `search messages --discover`: `mmarco` (136 MB), `bge-reranker-v2-m3` (588 MB) or `off`. A reranker that is not downloaded is skipped, and discovery says so; `wa models download mmarco` downloads it | none |
@@ -38,6 +39,7 @@ it. Without either, a command that uses an account stops with exit code `2` and 
 | `record_input` | `true` | keep a run's command line as typed, secrets hidden; `failed` keeps it only in a run that failed; `false` writes `[redacted]` for every typed value that may be text ([diagnostics](diagnostics.md#what-you-typed)) | none |
 | `keep_runs_for_days` | `30` | failed runs older than this are removed when the next run is kept | none |
 | `keep_successful_runs_for_days` | `7` | runs that worked, older than this, are removed when the next run is kept | none |
+| `keep_store_runs_for_days` | `3` | runs that worked and wrote to the store are kept this many days, even with `record` off | none |
 | `runs_size_limit_mb` | `200` | the runs folder's size limit; past it, the oldest runs that worked are removed first | none |
 | `permissions` | everything allowed, except deleting and a few other changes ask | what the profile may do, per command | none; `--yes` only answers `ask`, it never lifts `deny` |
 | `sends_per_hour` | `30` | the most sends in any hour | none |

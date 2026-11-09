@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**286 ✅ · 863 ⛔ · 0 ❌** — 378 commands, 771 options.
+**286 ✅ · 867 ⛔ · 0 ❌** — 378 commands, 775 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -144,6 +144,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `contacts check` |  | ✅ |  |
 | `contacts check` | `--no-registries` | ✅ |  |
 | `contacts link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts link` | `--reason` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts unlink` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts lookup` |  | ✅ |  |
 | `contacts sync` |  | ✅ |  |
@@ -232,6 +233,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `messages sync` | `--catch-up-messages` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--catch-up-time` | ⛔ | local search preparation after the sync, over the store; tested in cli-core (src/services/search-catchup.test.ts); src/older-history.test.ts drives the sync itself |
 | `messages sync` | `--full-history` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/history-limits.test.ts and src/cli/messenger/stored.test.ts |
+| `messages sync` | `--with-muted` | ⛔ | cli-core src/cli/messenger/backfill.test.ts reads muted chats for one run with --with-muted |
 | `messages sync` | `--background` | ✅ |  |
 | `messages sync` | `--dry-run` | ✅ |  |
 | `reactions list` |  | ✅ |  |
@@ -661,7 +663,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `search all` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search all` | `--only` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search all` | `--source` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
-| `search all` | `--max-meetings` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search all` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search all` | `--page` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
 | `search all` | `--exact` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/search-envelope.test.ts and src/services/messages-search-everywhere.test.ts) |
@@ -819,6 +820,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot messages send` | `--silent` | ✅ |  |
 | `bot messages send` | `--md` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
 | `bot messages send` | `--html` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
+| `bot messages send` | `--button` | ⛔ | cli-core src/cli/bot/messages.test.ts sends a message's inline buttons through the shared bot commands |
 | `bot messages send` | `--file` | ✅ |  |
 | `bot messages send` | `--photo` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
 | `bot messages send` | `--as-file` | ⛔ | cli-core's shared option, parsed in cli-core (src/cli/bot/messages.test.ts); wa refuses --md and --html as it refuses --silent, and uploads any file the way --file does, both tested in src/commands/bot.test.ts |
@@ -830,6 +832,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `bot messages edit` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot messages edit` | `--md` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot messages edit` | `--html` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
+| `bot messages edit` | `--button` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
+| `bot messages edit` | `--no-buttons` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot messages delete` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot messages delete` | `--allow-dangerous` | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
 | `bot messages pin` |  | ⛔ | shared cli-core bot command mounted unchanged; tested in cli-core (src/cli/bot/messages.test.ts), wa's adapter in src/commands/bot.test.ts |
