@@ -2892,8 +2892,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================================
 
-modernc.org/sqlite v1.61.0
-Source: https://gitlab.com/cznic/sqlite at commit 4df1ebea0f1cf0cd6ec3245b26f5fec4234ce738, and https://proxy.golang.org/modernc.org/sqlite/@v/v1.61.0.zip
+modernc.org/sqlite v1.61.1
+Source: https://gitlab.com/cznic/sqlite at commit 014351f110f66c8f485cff948fea608d7dcfafb1, and https://proxy.golang.org/modernc.org/sqlite/@v/v1.61.1.zip
 
 --- LICENSE
 
