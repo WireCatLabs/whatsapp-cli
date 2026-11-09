@@ -64,8 +64,8 @@
     "engine:packages": "node scripts/engine-packages.mjs build"
   },
   "dependencies": {
-    "@wirecat/cli-base": "0.80.7",
-    "@wirecat/cli-core": "0.618.0",
+    "@wirecat/cli-base": "0.93.0",
+    "@wirecat/cli-core": "0.623.0",
     "commander": "15.0.0",
     "valibot": "1.5.0"
   },

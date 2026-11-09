@@ -1011,7 +1011,7 @@ wa contacts prepare <person> [options]
 
 ### `wa contacts events`
 
-everything one person took part in, in every messenger linked to them — messages they wrote or were mentioned in, chats, mail, meetings, tasks — newest first, from the store; never connects
+everything one person took part in, in every messenger linked to them — messages they wrote or were mentioned in, chats, mail, meetings, tasks — newest first, from the store; only in this account's scope, personal or work, and scope: of the other one is refused; never connects
 
 ```sh
 wa contacts events <person> [query] [options]
@@ -1050,13 +1050,17 @@ record that two people in the store are one person — the same name is never en
 **Changes something on this computer only.**
 
 ```sh
-wa contacts link <person> <other>
+wa contacts link <person> <other> [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `person` | required | their id, @username, or part of their name. |
 | `other` | required | the same in another messenger of the store, as <messenger>:<person> — max:Ana; me: it is you, as zoom:<id> me. |
+
+| Option | What it does |
+|---|---|
+| `--reason <text>` | why they are one person; an agent's link is a proposal and needs it. |
 
 ### `wa contacts unlink`
 
@@ -1610,7 +1614,7 @@ wa messages sync [chat] [options]
 
 | Option | What it does |
 |---|---|
-| `--all` | every chat, most recently active first — what search needs; the last 90d unless --since-time or --last. |
+| `--all` | every chat, most recently active first — what search needs; the last 90d unless --since-time or --last; muted chats only with --with-muted or history_muted true. |
 | `--limit <n>` | at most this many messages in this run, per chat with --all; 1000 if not given. |
 | `--page-size <n>` | how many messages one request asks for; 50 if not given. |
 | `--pause <duration>` | the least pause between pages, to stay under the provider's limits; each is up to twice that. Default: `2s`. |
@@ -1622,6 +1626,7 @@ wa messages sync [chat] [options]
 | `--catch-up-messages <n>` | skip a graph rebuild larger than this many messages. |
 | `--catch-up-time <duration>` | local preparation time budget, 30s by default. |
 | `--full-history` | read and keep this chat's history in full from now on, past the history limits (history_* settings). |
+| `--with-muted` | with --all: also read the chats the owner muted, as history_muted true does. |
 | `--background` | run as a job that outlives this command; `store jobs show` follows it. |
 | `--dry-run` | only estimate how many messages, requests and minutes a full fetch would still take — from the store, no request. |
 
@@ -1820,7 +1825,7 @@ wa models download <model> [options]
 
 | Option | What it does |
 |---|---|
-| `--accept-terms` | accept the model's licence terms, for a model that has its own. |
+| `--accept-terms` | no longer needed; kept so older scripts still run. |
 
 ### `wa models set`
 
@@ -2392,7 +2397,7 @@ wa conversations related <chat> <message> [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many. |
-| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: embeddinggemma); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -2408,7 +2413,7 @@ wa conversations status [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: embeddinggemma); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -2512,7 +2517,7 @@ wa conversations embeddings status [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: embeddinggemma); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -2530,7 +2535,7 @@ wa conversations embeddings clear [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: embeddinggemma); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -2595,7 +2600,7 @@ wa conversations embed [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: embeddinggemma); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -3848,7 +3853,7 @@ find things by text: one resource when you know it (messages, notes), or search 
 
 ### `wa search all`
 
-search messenger messages and notes in the local store, calendar events when the store holds a calendar, and a meeting account's transcripts when --source names one — best match first; not mail (the separate memo CLI searches it: memo search mail), tasks, people, memories or projects. Use it when you do not know where something was written; search messages or notes reads one kind with all its fields
+search messenger messages and notes in the local store, calendar events when the store holds a calendar, and meeting transcripts, chat and summaries when it holds a meeting account — best match first; not mail (the separate memo CLI searches it: memo search mail), tasks, people, memories or projects. Use it when you do not know where something was written; search messages or notes reads one kind with all its fields
 
 ```sh
 wa search all <query> [options]
@@ -3860,9 +3865,8 @@ wa search all <query> [options]
 
 | Option | What it does |
 |---|---|
-| `--only <resources>` | only these resources, separated by commas: messages, notes, events; meetings when --source names a meeting account. |
-| `--source <accounts>` | only these accounts, separated by commas: provider:account as a hit shows it, a provider, a kind or group:<name>; each resource reads the ones of its kind, and meetings only when it names one. |
-| `--max-meetings <n>` | how many of the meeting account's meetings to look through, newest first, or all for every one (default 100). |
+| `--only <resources>` | only these resources, separated by commas: messages, notes, events, meetings. |
+| `--source <accounts>` | only these accounts, separated by commas: provider:account as a hit shows it, a provider, a kind or group:<name>; each resource reads the ones of its kind. |
 | `--limit <n>` | how many. |
 | `--page <n>` | which page, starting at 1. |
 | `--exact` | bare words and quotes match their exact form only, as exact:word does. |
@@ -3934,7 +3938,7 @@ wa search conversations <query> [options]
 
 | Option | What it does |
 |---|---|
-| `--model <model>` | local: a model id from `models list` (default: e5-small); remote: the provider's model. |
+| `--model <model>` | local: a model id from `models list` (default: embeddinggemma); remote: the provider's model. |
 | `--embedding-provider <provider>` | embedding provider: local or openai; flags override profile settings. |
 | `--base-url <url>` | a server with OpenAI's /v1/embeddings: Gemini, Jina, or Ollama and LM Studio on this machine. |
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
@@ -4226,7 +4230,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, history_muted, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self. |
 | `value` | required | a number, true or false; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -4247,7 +4251,7 @@ wa config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, history_muted, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self. |
 
 | Option | What it does |
 |---|---|
@@ -4769,6 +4773,7 @@ wa bot messages send <chat> [text] [options]
 | `--silent` | deliver without a notification. |
 | `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
 | `--html` | the text is HTML: <b>, <i>, <a href>, <code>. |
+| `--button <text=data>` | an inline button, as <text>=<data>; repeat for more in one row; the data (1 to 64 bytes) goes back to the bot. |
 | `--file <file>` | attach a file; the text becomes its caption. |
 | `--photo <file>` | attach a .jpg, .png or .webp as a photo; the text becomes its caption. |
 | `--as-file` | send the --file as a file to download, a video included. |
@@ -4807,7 +4812,7 @@ wa bot messages show <chat> <message>
 
 #### `wa bot messages edit`
 
-replace the text of a message the bot sent
+replace the text of a message the bot sent; --button replaces its buttons, --no-buttons takes them off
 
 **Changes something in WhatsApp.**
 
@@ -4825,6 +4830,8 @@ wa bot messages edit <chat> <message> <text> [options]
 |---|---|
 | `--md` | read this messenger's Markdown; see its formatting guide for supported syntax. |
 | `--html` | the text is HTML: <b>, <i>, <a href>, <code>. |
+| `--button <text=data>` | a button under the message, as <text>=<data>; replaces its buttons; repeat for more in one row. |
+| `--no-buttons` | take the buttons off the message. |
 
 #### `wa bot messages delete`
 
