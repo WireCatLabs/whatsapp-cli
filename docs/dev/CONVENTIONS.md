@@ -50,6 +50,11 @@ from developer pages (`WC-DOC-1`), current facts only (`WC-DOC-2`, `WC-DOC-3`), 
   [WC-DOC-17](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-17--each-entry-says-what-changed-for-the-caller-why-and-what-to-watch-for)
   and [WC-DOC-18](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-18--the-changelog-has-no-internal-ids).
   `pnpm docs:check` refuses any other heading and any internal id.
+- A pull request adds its entries as a changelog fragment: a new file `changes/<branch>.md` (lower case, `/` as `-`)
+  with one or more of those headings and the entries under them, written as they will read in `CHANGELOG.md`, with
+  links relative to `changes/` (`../docs/…`). Do not edit `## Unreleased`: every open pull request edits the same
+  lines there and conflicts at each merge. `pnpm docs:check` checks the fragments; `bin/release` collects them into
+  the version's section and deletes them in its pull request.
 
 
 ## Releases
