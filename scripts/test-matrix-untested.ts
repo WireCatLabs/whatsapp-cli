@@ -58,6 +58,16 @@ const SHARED_BOT: Record<string, string> = {
 }
 
 export const UNTESTED: Untested[] = [
+  {
+    command: "messages sync",
+    option: "--with-muted",
+    reason: "cli-core src/cli/messenger/backfill.test.ts reads muted chats for one run with --with-muted",
+  },
+  {
+    command: "bot messages send",
+    option: "--button",
+    reason: "cli-core src/cli/bot/messages.test.ts sends a message's inline buttons through the shared bot commands",
+  },
   ...Object.entries(SHARED_BOT).map(([command, tests]) => ({
     command,
     reason: `shared cli-core bot command mounted unchanged; tested in cli-core (${tests}), wa's adapter in src/commands/bot.test.ts`,
