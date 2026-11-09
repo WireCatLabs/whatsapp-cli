@@ -2,7 +2,7 @@ name: PR validation
 
 # The whole Linux validation main.yml runs, on every pull request, so a change that breaks the coverage floor or a
 # check fails here and never reaches main. Stricter than cli-base WC-CI-5, by the owner's ruling of 2026-10-18.
-# A pull request that changes only CHANGELOG.md and the version against a main whose checks are proven green
+# A pull request that changes only the changelog (CHANGELOG.md, changes/) and the version against a main whose checks are proven green
 # (bin/release's version pull requests) runs the version and docs checks instead (scripts/ci-unchanged.sh).
 on:
   pull_request:
@@ -71,9 +71,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           REQUIRED_PREFIX: "validation / "
-          TITLE: Not run — only CHANGELOG.md and the version changed
+          TITLE: Not run — only the changelog and the version changed
           SUMMARY: >-
-            Apart from CHANGELOG.md and the version in package.json and src/version.ts, this pull request's tree is
+            Apart from CHANGELOG.md, the changes/ fragments and the version in package.json and src/version.ts, this pull request's tree is
             ${{ needs.version-only.outputs.fingerprint }}, the same as main at ${{ needs.version-only.outputs.base }},
             whose pull request #${{ needs.version-only.outputs.pr }} passed every required check on that tree.
             version:check and docs:check ran here; main.yml runs the full validation again after the merge.

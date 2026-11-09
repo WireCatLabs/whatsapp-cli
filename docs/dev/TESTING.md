@@ -56,8 +56,8 @@ and again on each merge to `main`: stricter than the handbook's `WC-CI-5`, which
 
 ## A version pull request skips the full validation
 
-A pull request that changes only `CHANGELOG.md` and the version in `package.json` (with the engine packages that
-carry it) and `src/version.ts`, against a
+A pull request that changes only `CHANGELOG.md`, the `changes/` fragments and the version in `package.json` (with
+the engine packages that carry it) and `src/version.ts`, against a
 `main` whose pull request passed every required check on the same tree (bin/release's version pull requests), runs
 `pnpm version:check` and `pnpm docs:check` instead, and reports the other required `validation / …` checks as
 passed, saying why ([`scripts/ci-unchanged.sh`](../../scripts/ci-unchanged.sh),
