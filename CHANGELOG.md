@@ -3,6 +3,25 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## 0.37.0 — 10.11.2026
+
+### Added
+
+- **`muted:` in search and stats, from `@wirecat/cli-core` 0.633.0.** `muted:false` leaves out the chats you muted, so
+  `stats messages show -- 'date>=30d muted:false'` counts only what the sync still reads. `stats messages responses`
+  and `stats messages waiting` take it too.
+- **`store import`, from `@wirecat/cli-core` 0.633.0.** Loads made-up chats, people and messages from a file marked synthetic into a test store, such as Desktop's sandbox; it refuses the owner's real store.
+
+### Changed — may break callers
+
+- **Built on cli-core 0.624.0** (was 0.618.0). The store moves to version 61 on first open (people ties, additive).
+  What changed in between is in [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+- **`search messages --timeout 30s` may search for up to about 29 seconds.** It stopped at 2 seconds whatever time the
+  run was given, so a valid query over a large store failed in WireCat Desktop. Without `--timeout` it stays 2 seconds,
+  for agents and MCP too.
+- **`schedule pause <name>` and `schedule resume <name>`** take a schedule off its timer and keep it; `schedule run`
+  still runs it. `--at` repeats: `--at 08:30 --at 18:00` runs twice a day.
+
 ## 0.36.0 — 09.11.2026
 
 ### Added
