@@ -3232,7 +3232,7 @@ wa stats messages responses [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `query` | optional | date:, chat: and kind: terms, AND-ed — date>=30d, date:[60d TO 30d]; none reads all time. |
+| `query` | optional | date:, chat:, kind: and muted: terms, AND-ed — date>=30d, date:[60d TO 30d], muted:false; none reads all time. |
 
 | Option | What it does |
 |---|---|
@@ -3251,7 +3251,7 @@ wa stats messages waiting [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `query` | optional | date:, chat: and kind: terms, AND-ed — date>=30d, date:[60d TO 30d]; none reads all time. |
+| `query` | optional | date:, chat:, kind: and muted: terms, AND-ed — date>=30d, date:[60d TO 30d], muted:false; none reads all time. |
 
 | Option | What it does |
 |---|---|
