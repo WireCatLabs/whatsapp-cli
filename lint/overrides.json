@@ -54,5 +54,12 @@
     "reason": "cli-core 0.614.0 shared account remove; cli-base's vocabulary has no role for it yet (tg-cli and max-cli baseline it the same way)",
     "owner": "@leemour",
     "review_after": "2027-02-08"
+  },
+  {
+    "rule": "option-role",
+    "target": "contacts unlink --from",
+    "reason": "cli-core 0.638.0 makes contacts unlink name the person the account leaves (--from person:<uid>|person:me); the vocabulary has no role for it yet (max-cli baselines it the same way)",
+    "owner": "@leemour",
+    "review_after": "2027-02-11"
   }
 ]
