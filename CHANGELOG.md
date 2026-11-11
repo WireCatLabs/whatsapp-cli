@@ -28,15 +28,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   in [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
 - **`contacts unlink` needs `--from person:<uid>` or `--from person:me`**, the person the account leaves. Without it
   the command is refused, and the error names who holds the account and the `--from` to run it again with.
+- **`--pause` of `messages download --all`, `attachments download` and `store gaps repair` is 5 seconds by default**
+  (was 2), the same pause as `messages sync`, so these commands take about twice as long.
 - **`*part*` in message text matches as typed, apart from case and ё/е.** It no longer finds «café» for `*cafe*`.
   Write the letter as the text has it, or search the whole word, which still ignores accents.
 
 ### Fixed
 
 - **Older history comes from the phone more slowly.** `messages sync <chat>` asks for a page 5 to 10 seconds apart
-  instead of 2 to 4, as WhatsApp may ban a number that reads fast ([limits](docs/limits.md#no-bulk-reads)). The
-  `--pause` of `messages download --all`, `attachments download` and `store gaps repair` is 5 seconds by default
-  too (was 2).
+  instead of 2 to 4, as WhatsApp may ban a number that reads fast ([limits](docs/limits.md#no-bulk-reads)).
 - **A clock set back no longer stops `wa` for hours.** A computer that started with its clock ahead refused every
   request to WhatsApp until the corrected clock caught up; the wait is now corrected by the size of the step.
 

@@ -69,8 +69,8 @@ refused with an error, not ignored. Typos are not corrected: to catch several en
 | `text` | words of the message (the default field) | `text:invoice` |
 | `exact` | the exact word or phrase form | `exact:piso`, `exact:"invoice paid"` |
 | `body` | the whole original text, case-sensitive | `body:/.*invoice.*/` |
-| `from` | the sender, by name or id; `me` is you; `*` and `?` match part of a name | `from:"Alice Synthetic"`, `from:Ali*` |
-| `chat` | the chat, by name or id; `*` and `?` match part of a name | `chat:"Book club"`, `chat:*club*` |
+| `from` | the sender, by name or id; `me` is you; `*` and `?` match part of a name | `from:"Alice Synthetic"`, `from:"100000000000001@lid"`, `from:Ali*` |
+| `chat` | the chat, by name or id; `*` and `?` match part of a name | `chat:"Book club"`, `chat:120363000000000001@g.us`, `chat:*club*` |
 | `participants_count` | chats of this many people, as WhatsApp last reported the size | `participants_count<10` |
 | `date` | when it was sent | `date:today`, `date:7d`, `date:[2026-01-01 TO 2026-02-01}` |
 | `kind` | the kind of chat: `private`, `group`, `channel`, `saved` and the shared rest | `kind:private` |
