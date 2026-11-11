@@ -171,7 +171,7 @@ process. Why Go and why whatsmeow: [the protocol decision](https://github.com/Wi
   Other chats and push names in the same batch go out as a `history` event (saved only where a `feed` listens, as
   under `serve`). When the phone sent fewer messages than asked, or only messages the contract skips, the engine asks
   again from the oldest one it sent, one second apart, at most three asks and 25 s in all; what arrived before a
-  timeout is answered, not dropped. cli-core pages above this, 50 at a time and 2 s apart: a page is one `older`.
+  timeout is answered, not dropped. cli-core pages above this, 50 at a time and 5–10 s apart: a page is one `older`.
   The engine's log (`WA_ENGINE_LOG`) gets a line per `ON_DEMAND` batch with only counts and yes/no: how it was
   matched, how many messages, the chunk and progress, and whether the notification names the request's id.
 - **Group and people requests** (`engine/cmd/wa-engine/groups.go`, `people.go`; the contract in

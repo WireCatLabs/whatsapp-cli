@@ -1408,7 +1408,7 @@ wa messages download <chat> [message] [options]
 | `--output-dir <dir>` | where to save them; created if missing. Default: `.`. |
 | `--attachment <n>` | which file of the message, from 1; needed when it has more than one. |
 | `--all` | every file of the chat, newest first; run it again to continue where it stopped. |
-| `--pause <duration>` | with --all, a pause between pages, to stay under the provider's limits. Default: `2s`. |
+| `--pause <duration>` | with --all, a pause between pages, to stay under the provider's limits. Default: `5s`. |
 | `--extract` | read text layers from the files this download maps into the local content index. |
 
 ### `wa messages transcribe`
@@ -1617,7 +1617,7 @@ wa messages sync [chat] [options]
 | `--all` | every chat, most recently active first — what search needs; the last 90d unless --since-time or --last; muted chats only with --with-muted or history_muted true. |
 | `--limit <n>` | at most this many messages in this run, per chat with --all; 1000 if not given. |
 | `--page-size <n>` | how many messages one request asks for; 50 if not given. |
-| `--pause <duration>` | the least pause between pages, to stay under the provider's limits; each is up to twice that. Default: `2s`. |
+| `--pause <duration>` | the least pause between pages, to stay under the provider's limits; each is up to twice that. Default: `5s`. |
 | `--since-time <time>` | stop once it reaches messages older than this: ISO 8601, or 2h / 1d ago. |
 | `--last <n>` | stop once the newest n messages are held. |
 | `--catch-up` | prepare local search after this run; overrides search_catch_up. |
@@ -2059,7 +2059,7 @@ wa store gaps repair <chat> [options]
 | `--max-gaps <n>` | at most this many gaps, 5 by default. |
 | `--repair-time <duration>` | time budget for the repair, 30s by default. Default: `30s`. |
 | `--page-size <n>` | messages per provider page. |
-| `--pause <duration>` | provider pause between pages. Default: `2s`. |
+| `--pause <duration>` | provider pause between pages. Default: `5s`. |
 | `--fingerprint <hash>` | refuse if this previously inspected coverage plan changed. |
 | `--catch-up` | prepare local search after repair; overrides search_catch_up. |
 | `--no-catch-up` | skip local search preparation after repair. |
@@ -2726,7 +2726,7 @@ wa attachments download <dir> [options]
 |---|---|
 | `--chat <chat>` | only this chat; repeat for more; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). Default: ``. |
 | `--since-time <time>` | include messages from this ISO timestamp with a time zone. |
-| `--pause <duration>` | pause between history pages. Default: `2s`. |
+| `--pause <duration>` | pause between history pages. Default: `5s`. |
 
 ### `wa attachments check`
 
