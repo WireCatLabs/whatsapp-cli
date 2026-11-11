@@ -1069,12 +1069,16 @@ undo contacts link for one identity: it is a person of its own again
 **Changes something on this computer only.**
 
 ```sh
-wa contacts unlink <person>
+wa contacts unlink <person> [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `person` | required | their id, @username, or part of their name; <messenger>:<person> for another messenger. |
+
+| Option | What it does |
+|---|---|
+| `--from <person>` | the person it leaves, person:<uid> or person:me; refused when it sits on another. |
 
 ### `wa contacts lookup`
 
@@ -1408,7 +1412,7 @@ wa messages download <chat> [message] [options]
 | `--output-dir <dir>` | where to save them; created if missing. Default: `.`. |
 | `--attachment <n>` | which file of the message, from 1; needed when it has more than one. |
 | `--all` | every file of the chat, newest first; run it again to continue where it stopped. |
-| `--pause <duration>` | with --all, a pause between pages, to stay under the provider's limits. Default: `2s`. |
+| `--pause <duration>` | with --all, a pause between pages, to stay under the provider's limits. Default: `5s`. |
 | `--extract` | read text layers from the files this download maps into the local content index. |
 
 ### `wa messages transcribe`
@@ -1617,7 +1621,7 @@ wa messages sync [chat] [options]
 | `--all` | every chat, most recently active first — what search needs; the last 90d unless --since-time or --last; muted chats only with --with-muted or history_muted true. |
 | `--limit <n>` | at most this many messages in this run, per chat with --all; 1000 if not given. |
 | `--page-size <n>` | how many messages one request asks for; 50 if not given. |
-| `--pause <duration>` | the least pause between pages, to stay under the provider's limits; each is up to twice that. Default: `2s`. |
+| `--pause <duration>` | the least pause between pages, to stay under the provider's limits; each is up to twice that. Default: `5s`. |
 | `--since-time <time>` | stop once it reaches messages older than this: ISO 8601, or 2h / 1d ago. |
 | `--last <n>` | stop once the newest n messages are held. |
 | `--catch-up` | prepare local search after this run; overrides search_catch_up. |
@@ -2059,7 +2063,7 @@ wa store gaps repair <chat> [options]
 | `--max-gaps <n>` | at most this many gaps, 5 by default. |
 | `--repair-time <duration>` | time budget for the repair, 30s by default. Default: `30s`. |
 | `--page-size <n>` | messages per provider page. |
-| `--pause <duration>` | provider pause between pages. Default: `2s`. |
+| `--pause <duration>` | provider pause between pages. Default: `5s`. |
 | `--fingerprint <hash>` | refuse if this previously inspected coverage plan changed. |
 | `--catch-up` | prepare local search after repair; overrides search_catch_up. |
 | `--no-catch-up` | skip local search preparation after repair. |
@@ -2726,7 +2730,7 @@ wa attachments download <dir> [options]
 |---|---|
 | `--chat <chat>` | only this chat; repeat for more; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). Default: ``. |
 | `--since-time <time>` | include messages from this ISO timestamp with a time zone. |
-| `--pause <duration>` | pause between history pages. Default: `2s`. |
+| `--pause <duration>` | pause between history pages. Default: `5s`. |
 
 ### `wa attachments check`
 
@@ -4244,7 +4248,7 @@ wa config set <setting> <value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, history_muted, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, history_muted, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks. |
 | `value` | required | a number, true or false; for a group tg:work,max:Alice,email:me@x. |
 
 | Option | What it does |
@@ -4265,7 +4269,7 @@ wa config unset <setting> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, history_muted, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self. |
+| `setting` | required | one of: limit, timeout_ms, color, sender_colors, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, keep_store_runs_for_days, runs_size_limit_mb, permissions, sends_per_hour, requests_per_minute, transcribe_with, speech_model, search_catch_up, history_dialog_days, history_group_days, history_group_members_max, history_muted, picture_search, search_reranker, embedding_provider, embedding_model, embedding_base_url, embedding_dims, models, phone_number_id, waba_id, graph_version, read_other_bots, update_check, skill_hint, search_stemmers.cyrillic, search_stemmers.latin, owner_languages, phone_countries, task_categories.<name>, task_agent_close, task_agent_close_min, task_first_pass_per_chat, account_groups.<name>, crm.<provider>:<account>.links, crm.<provider>:<account>.company-types, crm.<provider>:<account>.scope, crm.<provider>:<account>.unassigned, crm.<provider>:<account>.self, crm.<provider>:<account>.stage-tasks. |
 
 | Option | What it does |
 |---|---|
@@ -4941,7 +4945,7 @@ wa bot search messages [query] [options]
 | `--limit <n>` | how many. |
 | `--page <n>` | which page, starting at 1. |
 | `--newest` | newest first instead of best first. |
-| `--from <who>` | only what this person wrote — an id, @username or part of a name; repeat it for any of several. |
+| `--from <person>` | only what this person wrote — an id, @username or part of a name; repeat it for any of several. |
 
 ### `wa bot recipients`
 

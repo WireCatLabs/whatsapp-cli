@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**286 ✅ · 868 ⛔ · 0 ❌** — 379 commands, 775 options.
+**286 ✅ · 869 ⛔ · 0 ❌** — 379 commands, 776 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -146,6 +146,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `contacts link` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts link` | `--reason` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts unlink` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
+| `contacts unlink` | `--from` | ⛔ | cli-core's shared command over the local store, tested in cli-core src/cli/messenger/messenger.test.ts and src/services/person-context.test.ts |
 | `contacts lookup` |  | ✅ |  |
 | `contacts sync` |  | ✅ |  |
 | `contacts aliases set` |  | ⛔ | cli-core's shared command over the local store, tested in cli-core src/services/private-people.test.ts and person-aliases.test.ts |

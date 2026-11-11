@@ -237,8 +237,10 @@ export const WHATSAPP: Messenger = {
   // WhatsApp drops the older of two connections, so while serve holds the device every command runs through it.
   connection: "exclusive",
   // Ids are WhatsApp's own strings, so held stretches are keyed by time. A page is one request to the phone for older
-  // messages (the adapter's `history`), and WhatsApp's own clients ask 50 at a time.
-  fetching: { page: 50, maxPageSize: 50, pause: "2s", jitter: true, maxPages: 20, orderBy: "time" },
+  // messages (the adapter's `history`), and WhatsApp's own clients ask 50 at a time. A ban costs the number, not
+  // hours, so pages come as a person scrolls them, 5–10 s apart, and no faster than MAX's (owner, 2026-11-11).
+  fetching: { page: 50, maxPageSize: 50, pause: "5s", jitter: true, maxPages: 20, orderBy: "time" },
+  pace: { perMinute: 20, burst: 10 },
   chatArgument: "a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter)",
   inviteLinks: /chat\.whatsapp\.com\/[A-Za-z0-9]+/i,
   // The chat with yourself has your own id.
