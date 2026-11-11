@@ -69,8 +69,9 @@ refused with an error, not ignored. Typos are not corrected: to catch several en
 | `text` | words of the message (the default field) | `text:invoice` |
 | `exact` | the exact word or phrase form | `exact:piso`, `exact:"invoice paid"` |
 | `body` | the whole original text, case-sensitive | `body:/.*invoice.*/` |
-| `from` | the sender, by name or id; `me` is you | `from:"Alice Synthetic"`, `from:"100000000000001@lid"` |
-| `chat` | the chat, by name or id | `chat:"Book club"`, `chat:120363000000000001@g.us` |
+| `from` | the sender, by name or id; `me` is you; `*` and `?` match part of a name | `from:"Alice Synthetic"`, `from:Ali*` |
+| `chat` | the chat, by name or id; `*` and `?` match part of a name | `chat:"Book club"`, `chat:*club*` |
+| `participants_count` | chats of this many people, as WhatsApp last reported the size | `participants_count<10` |
 | `date` | when it was sent | `date:today`, `date:7d`, `date:[2026-01-01 TO 2026-02-01}` |
 | `kind` | the kind of chat: `private`, `group`, `channel`, `saved` and the shared rest | `kind:private` |
 | `has` | `link`, and the file kinds of the shared language | `has:link` |
@@ -146,7 +147,16 @@ time is quoted, with seconds and an offset: `date>="2026-01-01T10:00:00+02:00"`.
 ## Words, wildcards and regular expressions
 
 Text is folded before it is indexed and searched: lower case, without accents. A side effect: some different words
-become the same, such as `año` and `ano`. `text:` regular expressions and wildcards are folded the same way.
+become the same, such as `año` and `ano`. `text:` regular expressions and wildcards at the end of a word (`invo*`) are
+folded the same way.
+
+`*part*` finds a part inside a word: `*contract*` finds «Contract» and «subcontractor». The part needs three letters
+in a row. It matches as typed, apart from case and ё/е, so `*cafe*` does not find «café»: write the letter as the
+text has it, or search the whole word.
+
+In `from:` and `chat:`, an unquoted value with `*` or `?` is a pattern over names: `from:Ali*` finds «Alice» and
+«Alice Synthetic». A pattern that fits nobody fails with the nearest names; one that fits more than 50 is refused as
+`query.too-large`.
 
 `text:/pay/` matches the whole word pay, not payment. `body:/pay/` matches only a message whose entire text is pay,
 case-sensitive; to find it anywhere use `body:/.*pay.*/`. This is Lucene's regular-expression syntax, without

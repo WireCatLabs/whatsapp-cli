@@ -65,12 +65,18 @@ account in another messenger are the same person, record it:
 
 ```sh
 wa personal contacts link 100000000000001@lid max:"Example User"
-wa personal contacts unlink 100000000000001@lid
 ```
 
 After that, `contacts context` without `--chat` gathers both accounts. `contacts context --chat` still shows only the
 account you named. The link is only ever what you record: the same name in two messengers is never taken as the same
 person.
+
+To undo a link, name the account and the person it leaves. Without `--from` the command is refused, and the error
+names the person who holds the account:
+
+```sh
+wa personal contacts unlink 100000000000001@lid --from person:12
+```
 
 ## Your own names and notes: `contacts aliases`, `contacts notes`
 
