@@ -3055,6 +3055,25 @@ wa images embed [options]
 | `--chat <chat>` | only this chat; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--limit <n>` | at most this many pictures in one run; 100 if not given. |
 
+### `wa images read`
+
+give one picture of a message to the coding agent chosen in `models picture-reading` (Claude Code or Codex) and keep the text it read, so search finds it; the picture goes to that agent's provider. Refused while picture reading is never; the saved copy is used when there is one, else the messenger's download
+
+**Changes something on this computer only.**
+
+```sh
+wa images read <chat> [message] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `chat` | required | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter); or a msg: locator, with no message id after it. |
+| `message` | optional | the message id. |
+
+| Option | What it does |
+|---|---|
+| `--attachment <n>` | which file of the message, from 1; needed when it has more than one. |
+
 ### `wa images models`
 
 models that read pictures, for `images embed` and picture search
