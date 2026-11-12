@@ -39,6 +39,8 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   instead of 2 to 4, as WhatsApp may ban a number that reads fast ([limits](docs/limits.md#no-bulk-reads)).
 - **A clock set back no longer stops `wa` for hours.** A computer that started with its clock ahead refused every
   request to WhatsApp until the corrected clock caught up; the wait is now corrected by the size of the step.
+- **The engine is built with Go 1.26.11**, which fixes GO-2026-6859 in Go's `net/http`. The engine reaches it through
+  whatsmeow's connection and media requests. Nothing changes in how `wa` behaves.
 
 ## 0.37.0 — 10.11.2026
 
