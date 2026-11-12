@@ -1,6 +1,6 @@
 module github.com/WireCatLabs/whatsapp-cli/engine
 
-go 1.26.10
+go 1.26.11
 
 require (
 	github.com/rs/zerolog v1.35.1
