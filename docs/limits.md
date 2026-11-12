@@ -33,8 +33,9 @@ local store and never connect, so they work beside it
 ## The pace
 
 Every request `wa` makes for a profile — from a command, `wa personal mcp serve` or `wa personal serve` — takes a turn in
-one pace for that profile. The turns are kept under the state folder, so two terminals line up behind each other
-instead of each going at full speed. Different profiles have their own pace each.
+one pace for that profile: 20 requests a minute, of which 10 may go at once. The turns are kept under the state
+folder, so two terminals line up behind each other instead of each going at full speed. Different profiles have their
+own pace each.
 
 A command that has to wait more than 5 seconds for its turn says so on stderr. A turn more than 5 minutes away is
 refused at once with exit code `8` (`rate_limited`).
@@ -74,5 +75,5 @@ WA_REQUESTS_PER_MINUTE=30 wa personal messages send 100000000000001@lid "on my w
 WhatsApp keeps no history on its servers, so `wa` has no history download to pace. The phone pushes your recent
 history once, right after linking, and `serve` keeps receiving after that ([the local store](archive.md)). Every read
 and search answers from the local store and sends WhatsApp nothing. Older messages can only be asked of the phone, 50
-at a time, 5 to 10 seconds apart and no more than 20 requests a minute, by `messages sync <chat>`
+at a time and 5 to 10 seconds apart, by `messages sync <chat>`, within [the pace](#the-pace)
 ([how](archive.md#older-history-from-your-phone)).

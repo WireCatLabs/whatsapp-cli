@@ -3,6 +3,43 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## 0.38.0 — 11.11.2026
+
+### Added
+
+- **Part of a name in `from:` and `chat:`, from `@wirecat/cli-core` 0.640.0.** An unquoted value with `*` or `?` is a
+  pattern over names: `from:Ana*` finds «Ana» and «Ana Lopez», `chat:*club*` every chat with it in the name. A
+  pattern that fits nobody fails with the nearest names; one that fits more than 50 is refused as `query.too-large`.
+- **A part inside a word in message text, from `@wirecat/cli-core` 0.641.0.** `*contract*` finds «Contract»,
+  «contracts» and «subcontractor», also on a large store, and inside `AND`, `OR` and `NOT`. The part needs three
+  letters in a row.
+- **`participants_count` in queries, from `@wirecat/cli-core` 0.638.0.** `participants_count<10` matches messages in
+  chats of fewer than ten people, as WhatsApp last reported the size.
+- **A run's log keeps the progress of `messages sync`** as `sync.progress` events, so `runs show` tells how far it got
+  and when.
+
+### Changed — may break callers
+
+- **`wa` asks WhatsApp at most 20 times a minute per profile, 10 at once** (was 60 a minute, 20 at once). Every request
+  counts, across every process of the profile and `serve`: sends, edits, reactions, contact syncs and requests for
+  older history. A script that sends more than 10 messages in a row now waits about 3 seconds before each of the
+  rest. `requests_per_minute` or `WA_REQUESTS_PER_MINUTE` changes it ([the pace](docs/limits.md#the-pace)).
+- **Built on cli-core 0.641.0** (was 0.633.0). The store moves to version 66 on first open. What changed in between is
+  in [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+- **`contacts unlink` needs `--from person:<uid>` or `--from person:me`**, the person the account leaves. Without it
+  the command is refused, and the error names who holds the account and the `--from` to run it again with.
+- **`--pause` of `messages download --all`, `attachments download` and `store gaps repair` is 5 seconds by default**
+  (was 2), the same pause as `messages sync`, so these commands take about twice as long.
+- **`*part*` in message text matches as typed, apart from case and ё/е.** It no longer finds «café» for `*cafe*`.
+  Write the letter as the text has it, or search the whole word, which still ignores accents.
+
+### Fixed
+
+- **Older history comes from the phone more slowly.** `messages sync <chat>` asks for a page 5 to 10 seconds apart
+  instead of 2 to 4, as WhatsApp may ban a number that reads fast ([limits](docs/limits.md#no-bulk-reads)).
+- **A clock set back no longer stops `wa` for hours.** A computer that started with its clock ahead refused every
+  request to WhatsApp until the corrected clock caught up; the wait is now corrected by the size of the step.
+
 ## 0.37.0 — 10.11.2026
 
 ### Added
