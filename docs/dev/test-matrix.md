@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**286 ✅ · 869 ⛔ · 0 ❌** — 379 commands, 776 options.
+**286 ✅ · 870 ⛔ · 0 ❌** — 380 commands, 776 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -481,6 +481,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `images embed` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
 | `images embed` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
 | `images embed` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `images read` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
+| `images read` | `--attachment` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
 | `images models list` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
 | `images models download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/images-command.test.ts) |
 | `metadata show` |  | ✅ |  |
@@ -590,7 +592,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `stats chats retention` | `--limit` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats tasks show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats tasks show` | `--by` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
-| `stats tasks show` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats tasks show` | `--type` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats tasks show` | `--timezone` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
 | `stats charts` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/stats-command.test.ts and src/services/counters.test.ts) |
