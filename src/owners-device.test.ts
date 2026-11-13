@@ -18,8 +18,17 @@ owner.home = mkdtempSync(join(tmpdir(), "owner-"))
 
 /** Only the config folder moved: the state folder, and the device in it, is the owner's. */
 const configOnlyMoved = (): NodeJS.ProcessEnv => {
-  const env: NodeJS.ProcessEnv = { ...process.env, HOME: owner.home }
-  for (const name of ["WA_STATE_DIR", "XDG_DATA_HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME"]) delete env[name]
+  const env: NodeJS.ProcessEnv = { ...process.env, HOME: owner.home, USERPROFILE: owner.home }
+  for (const name of [
+    "WA_STATE_DIR",
+    "XDG_DATA_HOME",
+    "XDG_CONFIG_HOME",
+    "XDG_CACHE_HOME",
+    "APPDATA",
+    "LOCALAPPDATA",
+  ]) {
+    delete env[name]
+  }
   return env
 }
 
