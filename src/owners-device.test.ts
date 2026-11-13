@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
@@ -70,5 +70,27 @@ describe("a run with moved folders and the owner's linked device (WC-SECR-24)", 
     expect(JSON.parse(streams.stderr.join("")).error).toMatchObject({ reason: "device.owners" })
     expect(existsSync(store)).toBe(true)
     expect(existsSync(account)).toBe(true)
+  })
+
+  // cli-core 0.651.0 also skips the sign-out here; wa's own refusal comes first, so the two never disagree.
+  it("**account remove --delete-data refuses before cli-core signs out or forgets the profile**", async () => {
+    const env = configOnlyMoved()
+    const store = ownersDevice("other", env)
+    const config = join(env.WA_CONFIG_DIR ?? "", "config.json")
+    mkdirSync(dirname(config), { recursive: true })
+    writeFileSync(config, JSON.stringify({ profiles: { other: {} } }))
+    const streams = captureStreams()
+
+    const code = await run(["other", "account", "remove", "--delete-data", "--yes", "--json"], {
+      streams,
+      tty: false,
+      env,
+    })
+
+    expect(code).not.toBe(0)
+    expect(JSON.parse(streams.stderr.join("")).error).toMatchObject({ reason: "device.owners" })
+    expect(streams.stdout.join("")).toBe("")
+    expect(existsSync(store)).toBe(true)
+    expect(JSON.parse(readFileSync(config, "utf8"))).toEqual({ profiles: { other: {} } })
   })
 })

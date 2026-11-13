@@ -5442,7 +5442,13 @@
   "network": {
     "hosts": [
       "web.whatsapp.com",
-      "graph.facebook.com"
+      "graph.facebook.com",
+      "registry.npmjs.org",
+      "huggingface.co",
+      "*.huggingface.co",
+      "*.hf.co",
+      "github.com",
+      "*.githubusercontent.com"
     ]
   },
   "desktop": {
