@@ -3,6 +3,43 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## 0.40.0 — 13.11.2026
+
+### Added
+
+- **The first screen lists `pbx`**, the Asterisk tool, under "Works with" (cli-core 0.651.0).
+- **`contracts/wirecat.json` lists the hosts cli-core reaches in any tool**: npm for `upgrade`, the model downloads
+  and the hosts they redirect to (cli-base 0.99.0). WireCat Desktop shows them beside wa's own.
+- **`wa guide`**: short scenarios (catch up, find what was said, an agent that cannot send), and a "What you can do"
+  block on the first help screen, as tg and max have. The repeated "Getting started" and "For agents" sections are
+  gone.
+
+### Changed — may break callers
+
+- **Built on cli-core 0.656.0** (was 0.651.0). See the
+  [cli-core changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+
+### Fixed
+
+- **The pages said linking stops after 45 seconds of quiet.** It stops when the phone says its history is complete,
+  or after 5 minutes with nothing new ([sessions](docs/sessions.md)).
+- **A shared config that cannot be read no longer makes this tool read-only.** A WireCat config
+  (`~/.config/WireCat/config.json`) with a byte-order mark, broken JSON, a folder in its place or an older `setup`
+  shape capped every profile at read-only, and an MCP server hid `messages sync`. Now only the owner's own "read only"
+  answer limits a tool, and even then `messages sync` is offered over MCP: it only reads the messenger into the local
+  store (cli-core 0.656.0).
+
+### Security
+
+- **A run with moved folders never unlinks a device at WhatsApp.** `session end` there deletes only the run's own
+  device keys and says to remove the device on the phone. With only `WA_CONFIG_DIR` or `WA_CACHE_DIR` set (or
+  another `HOME` beside your own state folder), the run reads your real linked device: `session end` then answers
+  `ended: false` and says why, and `account remove` refuses (`device.owners`) and deletes nothing
+  ([sessions](docs/sessions.md)).
+- **A Cloud API media download reaches only the host Meta named for it**, redirects included. 0.39.0 held it to
+  `graph.facebook.com`, so a media address on any other host was refused. A fetch handed in passes the host check too.
+  `contracts/wirecat.json` lists wa's hosts for WireCat Desktop, and the package ships it.
+
 ## 0.39.0 — 13.11.2026
 
 ### Changed — may break callers
