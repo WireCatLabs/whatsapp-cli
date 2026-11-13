@@ -1,4 +1,5 @@
 import { CliError, type CliErrorDetails } from "@wirecat/cli-base"
+import { hostFetch } from "@wirecat/cli-base/http"
 import type { EventSink } from "@wirecat/cli-core/cli"
 
 const GRAPH = "https://graph.facebook.com"
@@ -59,7 +60,8 @@ export class GraphTransport {
 
   constructor(options: GraphOptions) {
     this.#options = options
-    this.#fetch = options.fetch ?? fetch
+    this.#fetch =
+      options.fetch ?? hostFetch({ hosts: [new URL(GRAPH).host], timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS })
   }
 
   async call(call: GraphCall): Promise<unknown> {

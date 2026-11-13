@@ -1,3 +1,6 @@
+import { existsSync, readdirSync } from "node:fs"
+import { join } from "node:path"
+import { resolvePaths } from "@wirecat/cli-base"
 import { type Configuration, settingsFor } from "@wirecat/cli-core/cli"
 import * as v from "valibot"
 import { WA } from "./identity.js"
@@ -16,7 +19,15 @@ export interface BotSettings {
 
 const metaId = v.pipe(v.string("has to be Meta's id, in quotes"), v.regex(/^\d+$/, "has to be digits only"))
 
+// A linked device is a profile here even when no config section names it, so a failed sign-in is not called a typo.
+const linkedProfiles = (env: NodeJS.ProcessEnv): string[] => {
+  const dir = join(resolvePaths({ appName: WA.appName, prefix: WA.envPrefix, env }).state, "profiles")
+  if (!existsSync(dir)) return []
+  return readdirSync(dir).filter((name) => existsSync(join(dir, name, "private.db")))
+}
+
 export const CONFIG: Configuration = settingsFor<BotSettings>(WA, {
+  profiles: linkedProfiles,
   profile: {
     phone_number_id: v.optional(metaId),
     waba_id: v.optional(metaId),
