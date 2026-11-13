@@ -11,7 +11,8 @@
       "!.worktrees",
       "!.claude",
       "!config/wirecat",
-      "!lint/baseline"
+      "!lint/baseline",
+      "!contracts/wirecat.json"
     ]
   },
   "overrides": [

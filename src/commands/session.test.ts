@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { PassThrough } from "node:stream"
 import { fileURLToPath } from "node:url"
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import { PASTE_QR, plainQr } from "@wirecat/cli-core"
 import type { MessengerAdapter } from "@wirecat/cli-core/cli"
 import { contractSeed } from "@wirecat/cli-core/testing"
@@ -29,7 +29,15 @@ const QUICK = { firstMs: 5_000, quietMs: 0 }
 
 const wa = async (argv: string[], engine?: (request: EngineRequest) => FakeEngine, more: Environment = {}) => {
   const streams = captureStreams()
-  const code = await run(argv, { streams, tty: false, historyWait: QUICK, ...(engine ? { engine } : {}), ...more })
+  // A keyring handed in is the test's own, so a run with the sandbox's folders may still log out (cli-core mayRevoke).
+  const code = await run(argv, {
+    streams,
+    tty: false,
+    historyWait: QUICK,
+    keyring: memoryKeyring(),
+    ...(engine ? { engine } : {}),
+    ...more,
+  })
   return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join(""), lines: streams.stderr }
 }
 
@@ -475,6 +483,18 @@ describe("wa session end", () => {
     expect(result.code).toBe(0)
     expect(JSON.parse(result.stdout).item).toEqual({ profile: "ending", ended: true })
     expect(engine?.loggedOut).toBe(true)
+    expect(existsSync(store)).toBe(false)
+  })
+
+  it("**in a run with moved folders, deletes the run's own keys and never logs out at WhatsApp** (WC-SECR-24)", async () => {
+    const store = linkedProfile("moved")
+    const engine = fakeEngine(seed)
+    const streams = captureStreams()
+    const code = await run(["moved", "session", "end", "--json"], { streams, tty: false, engine: () => engine })
+    expect(code).toBe(0)
+    expect(JSON.parse(streams.stdout.join("")).item).toEqual({ profile: "moved", ended: true })
+    expect(streams.stderr.join("")).toContain("WhatsApp was not told")
+    expect(engine.loggedOut).toBe(false)
     expect(existsSync(store)).toBe(false)
   })
 

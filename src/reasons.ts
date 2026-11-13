@@ -7,6 +7,7 @@ export const REASONS: ErrorReason[] = defineReasons(
       ["device.in-use", "provider_unavailable", "another wa process holds this WhatsApp login"],
       ["device.replaced", "provider_unavailable", "another connection took over this WhatsApp login"],
       ["device.logged-out", "authentication_error", "WhatsApp logged this device out"],
+      ["device.owners", "permission_error", "a run with moved folders may not remove the owner's own linked device"],
       ["client.outdated", "provider_unavailable", "WhatsApp no longer accepts this version of wa"],
       ["account.banned", "permission_error", "WhatsApp has banned or restricted this account"],
       ["account.rate-limited", "rate_limited", "WhatsApp asked this account to slow down"],

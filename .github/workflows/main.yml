@@ -6,9 +6,10 @@ on:
   push:
     branches: [main]
 
+# Never cancelled: each commit on main gets its own result (WC-CI-7).
 concurrency:
   group: main-validation-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read

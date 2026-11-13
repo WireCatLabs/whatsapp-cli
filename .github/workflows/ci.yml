@@ -38,6 +38,7 @@ jobs:
         pnpm bot:generate:check
         pnpm exec cli-dev test-matrix --program dist/program.js --untested scripts/test-matrix-untested.ts --name wa --check
         node --experimental-strip-types scripts/commands.ts
+        pnpm exec cli-dev manifest --program dist/program.js --identity dist/wcat.js
         git diff --exit-code
         pnpm check:agent-docs
         pnpm docs:check

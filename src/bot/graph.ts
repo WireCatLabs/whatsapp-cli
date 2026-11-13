@@ -2,8 +2,11 @@ import { CliError, type CliErrorDetails } from "@wirecat/cli-base"
 import { hostFetch } from "@wirecat/cli-base/http"
 import type { EventSink } from "@wirecat/cli-core/cli"
 
-const GRAPH = "https://graph.facebook.com"
+const GRAPH_HOST = "graph.facebook.com"
+const GRAPH = `https://${GRAPH_HOST}`
 const DEFAULT_TIMEOUT_MS = 30_000
+// hostFetch's own deadline stays behind the call's, so the call's timer is the one that fires and names the timeout.
+const GUARD_MARGIN_MS = 5_000
 
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>
 
@@ -56,12 +59,23 @@ const NUMBER = /\+?\d[\d\s-]{6,}\d/g
  */
 export class GraphTransport {
   readonly #options: GraphOptions
-  readonly #fetch: FetchLike
+  readonly #send: FetchLike
 
   constructor(options: GraphOptions) {
     this.#options = options
-    this.#fetch =
-      options.fetch ?? hostFetch({ hosts: [new URL(GRAPH).host], timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS })
+    this.#send = this.#guarded([GRAPH_HOST])
+  }
+
+  #guarded(hosts: readonly string[]): FetchLike {
+    const send = this.#options.fetch
+    const guarded = hostFetch({
+      hosts,
+      timeoutMs: (this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS) + GUARD_MARGIN_MS,
+      ...(send
+        ? { fetch: (input, init) => send(input instanceof Request ? input.url : String(input), init ?? {}) }
+        : {}),
+    })
+    return (url, init) => guarded(url, init)
   }
 
   async call(call: GraphCall): Promise<unknown> {
@@ -76,7 +90,8 @@ export class GraphTransport {
     }
     events?.({ event: "request", operation: call.operation, ...http })
     const started = performance.now()
-    const signals = [AbortSignal.timeout(timeoutMs), ...(this.#options.signal ? [this.#options.signal] : [])]
+    const deadline = AbortSignal.timeout(timeoutMs)
+    const signals = [deadline, ...(this.#options.signal ? [this.#options.signal] : [])]
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.#options.token}`,
       Accept: "application/json",
@@ -85,15 +100,15 @@ export class GraphTransport {
     let response: Response
     let text: string
     try {
-      response = await this.#fetch(url.toString(), {
+      response = await this.#send(url.toString(), {
         method: call.method,
         headers,
         ...(call.json !== undefined ? { body: call.json } : call.form ? { body: call.form } : {}),
         signal: AbortSignal.any(signals),
       })
       text = await response.text()
-    } catch (error) {
-      const failure = this.#unanswered(call, error, timeoutMs)
+    } catch {
+      const failure = this.#unanswered(call, deadline, timeoutMs)
       events?.({
         event: "response",
         operation: call.operation,
@@ -143,18 +158,18 @@ export class GraphTransport {
     events?.({ event: "request", operation, ...http })
     const started = performance.now()
     const durationMs = () => Math.round(performance.now() - started)
+    const timeoutMs = this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS
+    const deadline = AbortSignal.timeout(timeoutMs)
     let response: Response
     try {
-      response = await this.#fetch(url.toString(), {
+      // Meta picks the media host in its signed answer, so the download may reach that one host and nothing else.
+      response = await this.#guarded([url.hostname])(url.toString(), {
         method: "GET",
         headers: { Authorization: `Bearer ${this.#options.token}` },
-        signal: AbortSignal.any([
-          AbortSignal.timeout(this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS),
-          ...(this.#options.signal ? [this.#options.signal] : []),
-        ]),
+        signal: AbortSignal.any([deadline, ...(this.#options.signal ? [this.#options.signal] : [])]),
       })
-    } catch (error) {
-      const failure = this.#unanswered({ operation, reads: true }, error, this.#options.timeoutMs ?? DEFAULT_TIMEOUT_MS)
+    } catch {
+      const failure = this.#unanswered({ operation, reads: true }, deadline, timeoutMs)
       events?.({
         event: "response",
         operation,
@@ -195,7 +210,7 @@ export class GraphTransport {
     return { bytes, type: response.headers.get("content-type") }
   }
 
-  #unanswered(call: Pick<GraphCall, "operation" | "reads">, error: unknown, timeoutMs: number): CliError {
+  #unanswered(call: Pick<GraphCall, "operation" | "reads">, deadline: AbortSignal, timeoutMs: number): CliError {
     const { signal } = this.#options
     if (signal?.aborted && (signal.reason as { name?: string })?.name !== "TimeoutError")
       return new CliError("cancelled", `${call.operation} was cancelled`, { operation: call.operation })
@@ -205,7 +220,7 @@ export class GraphTransport {
         `${call.operation} got no answer; Meta may or may not have carried it out — check before repeating it`,
         { operation: call.operation, retryable: false },
       )
-    const timedOut = (error as { name?: string })?.name === "TimeoutError"
+    const timedOut = deadline.aborted
     return new CliError(
       timedOut ? "timeout" : "network_error",
       timedOut ? `${call.operation} got no answer within ${timeoutMs} ms` : `${call.operation} could not reach Meta`,

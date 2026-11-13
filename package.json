@@ -21,6 +21,8 @@
   "files": [
     "dist",
     "skills",
+    "scenarios",
+    "contracts/wirecat.json",
     "install",
     "README.md",
     "LICENSE"
@@ -39,7 +41,7 @@
     "bot:spec:sync": "node --experimental-strip-types scripts/bot/sync-spec.ts",
     "bot:generate": "node --experimental-strip-types scripts/bot/generate.ts",
     "bot:generate:check": "node --experimental-strip-types scripts/bot/generate.ts --check",
-    "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts",
+    "generate": "pnpm build && node --experimental-strip-types scripts/commands.ts && cli-dev manifest --program dist/program.js --identity dist/wcat.js",
     "smoke:bun": "bun run scripts/smoke.ts",
     "smoke:node": "node --experimental-strip-types scripts/smoke.ts",
     "release:check": "pnpm build && node --experimental-strip-types scripts/release-check.ts",
@@ -84,7 +86,7 @@
     "@cspell/dict-ru_ru": "2.3.4",
     "@types/node": "^22.20.5",
     "@vitest/coverage-v8": "^5.0.5",
-    "@wirecat/cli-testing": "0.5.3",
+    "@wirecat/cli-testing": "0.7.0",
     "cspell": "10.4.0",
     "esbuild": "0.28.2",
     "lefthook": "2.2.2",

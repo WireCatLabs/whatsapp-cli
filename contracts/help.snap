@@ -1,31 +1,31 @@
-wa — A personal WhatsApp account from the command line, as a linked device, for agents and scripts
+wa — your personal WhatsApp for agents and scripts, as a linked device. What it reads stays on your
+computer; search, review and tasks work offline.
 
 Usage: wa <profile> <command> [options]
 Account commands start with your profile, a name you choose; none is ever assumed.
 
+What you can do:
+  review 'date>1d'          what changed in every chat since yesterday
+  tasks agenda              tasks due, replies you owe, replies you wait for
+  inbox --transcribe        unread in every chat, voice as text; marks nothing read by default
+  search all "invoice"      messages, notes, file text and voice transcripts at once
+  mcp serve --permission …  your account in any agent, with messages.send=deny
+  bot messages send <chat>  your business number, through Meta's official Cloud API
+  WA_READ_ONLY=1 wa …       a run that can read and sync but never send, edit or delete
+
 Works with:
-  tg                      Telegram in the same local store: search, review and tasks offline
-  max                     MAX in the same local store: search, review and tasks offline
-  zm                      Zoom meetings: transcripts and summaries, searchable with your other WireCat data
-  drive                   Google Drive and Docs as local text, searchable with your other WireCat data
-  gcal                    Google Calendar events, searchable with your other WireCat data
-  memo context <person>   one person across messengers, mail, notes and meetings
-  mail                    IMAP mail in the same local store: search your mailbox offline, next to your other WireCat data
-  b24                     Bitrix24 CRM: deals, leads and pipelines, searchable with your other WireCat data
+  tg                        Telegram in the same local store: search, review and tasks offline
+  max                       MAX in the same local store: search, review and tasks offline
+  zm                        Zoom meetings: transcripts and summaries, searchable with your other WireCat data
+  drive                     Google Drive and Docs as local text, searchable with your other WireCat data
+  gcal                      Google Calendar events, searchable with your other WireCat data
+  memo context <person>     one person across messengers, mail, notes and meetings
+  mail                      IMAP mail in the same local store: search your mailbox offline, next to your other WireCat data
+  b24                       Bitrix24 CRM: deals, leads and pipelines, searchable with your other WireCat data
 
 Start here:   wa personal setup  (any profile name works)
               wa account list    your profiles and their logged-in accounts
 Next:         wa commands        every command, by section
+              wa guide           scenarios: command sequences for common tasks
               wa help options    output, offline, timeouts, dry run
 For agents:   wa skill show      rules and the discovery loop
-
-Getting started after installation:
-  wa personal setup               Guided first run as profile personal; about 5 minutes
-  wa personal setup --agent codex Link and install your agent's skill
-  wa setup --help                 Linking choices and examples
-Every account command names its profile first: `wa personal chats list`.
-
-For agents:
-  wa skill show                   Read the bundled instructions before using WhatsApp
-  wa commands --json              Discover commands, arguments and flags
-

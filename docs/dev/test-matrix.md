@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**286 ✅ · 870 ⛔ · 0 ❌** — 380 commands, 776 options.
+**287 ✅ · 870 ⛔ · 0 ❌** — 381 commands, 776 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1146,6 +1146,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `skill install` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | `skill install` | `--for` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
 | `skill status` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/skill-command.test.ts) |
+| `guide` |  | ✅ |  |
 | `help` |  | ✅ |  |
 | *global* | `--version` | ✅ |  |
 | *global* | `--verbose` | ✅ |  |

@@ -485,7 +485,8 @@ Source: `src/session.ts:101`, `src/messenger.ts:58`.
 `wa <profile> session start [qr|phone]` starts the engine with `--link`, the only run allowed on a profile with no
 device. The phone pushes its history once, seconds after linking, and never again. So the command keeps the same
 engine open and hands it to cli-core's own connection (`withMessenger`, which saves through `feed`), and keeps
-receiving until the phone has been quiet for 45 seconds, or Ctrl+C. Nothing here saves to the store itself.
+receiving until the phone's sync progress reaches 100, or 5 minutes pass with nothing new (`HISTORY_WAIT`), or
+Ctrl+C. Nothing here saves to the store itself.
 
 `session start` and `setup` share this as `startSession` (`src/commands/session.ts`), as tg's two commands do. A
 linked device asks nothing, so only a profile that would have to ask for a phone number is refused without a

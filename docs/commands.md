@@ -6282,6 +6282,18 @@ for each place `wa skill install` writes to, and for the copy Hermes reads: the 
 wa skill status
 ```
 
+## `wa guide`
+
+scenarios: the commands for a common task, in order, and why each
+
+```sh
+wa guide [name]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `name` | optional | one scenario; without it, the list. |
+
 ## Exit codes
 
 Branch on the code, not on the text: the text can change, the code does not.

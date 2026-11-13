@@ -5,7 +5,9 @@ import {
   answerStdinOption,
   asFirstWord,
   commandWords,
+  environmentOf,
   logsInOrOut,
+  mayRevoke,
   messengerContext,
   printItem,
   REMOTE_WRITE,
@@ -16,7 +18,7 @@ import {
 import { Argument, Command } from "commander"
 import { WA } from "../app.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
-import { WHATSAPP } from "../messenger.js"
+import { type Environment, WHATSAPP } from "../messenger.js"
 import { type Received, startSession } from "../session.js"
 import { endSession } from "../session-end.js"
 import { sessionSchema } from "./session-contracts.js"
@@ -105,8 +107,19 @@ const sessionCommandDefinition = (): Command => {
     .description("unlink this device on WhatsApp's side and delete its keys here")
     .action(async function (this: Command) {
       const context = messengerContext(this, WHATSAPP)
-      const { alreadyDropped, ...answer } = await endSession(context)
+      const revoke = mayRevoke(WA, context.env, environmentOf<Environment>(this).keyring)
+      const { alreadyDropped, ownersDevice, keptLinked, ...answer } = await endSession(context, revoke)
       if (alreadyDropped) context.renderer.note("WhatsApp had already dropped this device; deleted its keys here")
+      if (ownersDevice)
+        context.renderer.note(
+          `kept "${context.profile}" linked: this run's folders are moved, and its device keys are the owner's, ` +
+            "which only a run with the owner's own folders can unlink",
+        )
+      if (keptLinked)
+        context.renderer.note(
+          "deleted this run's device keys; its folders are moved, so WhatsApp was not told — remove the device on " +
+            "the phone, under Settings → Linked devices",
+        )
       printItem(context, answer)
     })
 
