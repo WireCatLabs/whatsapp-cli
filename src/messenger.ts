@@ -26,7 +26,7 @@ import type { FetchLike } from "./bot/graph.js"
 import { diagnoseWhatsApp } from "./diagnose.js"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
 import { type EngineCallEnd, startGoEngine } from "./engine/go-engine.js"
-import { privateStore } from "./paths.js"
+import { privateStore, usesOwnersDevice } from "./paths.js"
 import { endSession } from "./session-end.js"
 
 export interface EngineRequest {
@@ -218,7 +218,17 @@ const WHATSAPP_REMOVAL: AccountRemoval = {
     })
     return ended ? { revoked: true, removed: ["the linked device"] } : { revoked: null, removed: [] }
   },
-  stateFiles: (profile, { env }) => [dirname(privateStore(profile, env))],
+  stateFiles: (profile, { env }) => {
+    // cli-core removes the profile's files from the state folder, which here is the owner's own.
+    if (usesOwnersDevice(profile, env))
+      throw new CliError(
+        "permission_error",
+        `profile "${profile}" is your own linked device, and this run's folders are moved — remove it from a run ` +
+          "with your own folders; nothing was removed",
+        { reason: "device.owners" },
+      )
+    return [dirname(privateStore(profile, env))]
+  },
 }
 
 export const SKILL = new URL("../skills/whatsapp-cli/SKILL.md", import.meta.url)

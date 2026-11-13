@@ -72,10 +72,9 @@ describe("the Graph transport", () => {
       code: "network_error",
       details: { retryable: true },
     })
-    const slow: FetchLike = async () => {
-      throw Object.assign(new Error("slow"), { name: "TimeoutError" })
-    }
-    await expect(transport(slow).graph.call(read)).rejects.toMatchObject({ code: "timeout" })
+    const slow: FetchLike = (_url, init) =>
+      new Promise((_answer, fail) => init.signal?.addEventListener("abort", () => fail(init.signal?.reason)))
+    await expect(transport(slow, { timeoutMs: 20 }).graph.call(read)).rejects.toMatchObject({ code: "timeout" })
   })
 
   it("says a stopped command was cancelled", async () => {
@@ -149,6 +148,18 @@ describe("the Graph transport", () => {
     await expect(broken.graph.download("https://lookaside.example/ok", "downloadMedia")).rejects.toMatchObject({
       code: "invalid_response",
     })
+  })
+})
+
+describe("the Graph transport's hosts (WC-CMD-32)", () => {
+  it("follows a media download's redirect only on the host Meta named", async () => {
+    const seen: string[] = []
+    const { graph } = transport(async (url) => {
+      seen.push(url)
+      return new Response("", { status: 302, headers: { location: "https://elsewhere.example/stolen" } })
+    })
+    await expect(graph.download("https://lookaside.example/ok", "downloadMedia")).rejects.toThrow()
+    expect(seen).toEqual(["https://lookaside.example/ok"])
   })
 })
 

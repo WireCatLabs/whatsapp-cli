@@ -21,8 +21,9 @@ Terms used on this page:
 WhatsApp has no request for "chats". Three things fill the store, and nothing else:
 
 - **The history push** after linking. `wa <profile> session start` and `setup` keep the connection open and save
-  it, until the phone has been quiet for 45 seconds. The phone can send more parts later; `serve` saves them, and a
-  part another command heard first waits in the device file until `serve` connects. The phone decides how much it
+  it, until the phone says its history is complete, or after 5 minutes with nothing new. The phone can send more
+  parts later; `serve` saves them, and a part another command heard first waits in the device file until `serve`
+  connects. The phone decides how much it
   sends: usually every chat with its latest messages, and recent months in full.
 - **`serve`**, while it runs: new messages, edits, deletions and reactions, and the messages you send. An edit
   keeps the message's own time, reply and reactions; only an edit of a message the store lacks is saved with the

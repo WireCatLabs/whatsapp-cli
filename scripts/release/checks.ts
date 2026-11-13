@@ -15,9 +15,20 @@ export const CHANGELOG: ChangelogRules = {
   ids: IDS,
 }
 
-// The agent skill ships because `wa skill show` reads it from the package.
-export const PACKED = ["dist/", "install/", "package.json", "README.md", "LICENSE", "skills/whatsapp-cli/SKILL.md"]
-export const PACKED_SAID = "dist/, the Windows installer, package.json, README.md, LICENSE and the agent skill"
+// The agent skill and the scenarios ship because `wa skill show` and `wa guide` read them from the package; WireCat
+// Desktop reads contracts/wirecat.json from it.
+export const PACKED = [
+  "dist/",
+  "install/",
+  "package.json",
+  "README.md",
+  "LICENSE",
+  "skills/whatsapp-cli/SKILL.md",
+  "scenarios/",
+  "contracts/wirecat.json",
+]
+export const PACKED_SAID =
+  "dist/, the Windows installer, package.json, README.md, LICENSE, the agent skill, the guide's scenarios and the manifest"
 
 // PACKED lets all of dist/ through, so this names what must never be in the CLI package, wherever it lands: the
 // engine is GPL-3.0 and ships only in @wirecat/whatsapp-engine-*, which the CLI runs as a child process.

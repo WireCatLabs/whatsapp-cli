@@ -45,11 +45,12 @@ number goes to the engine on its input, never as an argument, so other programs 
 the list of processes.
 
 Right after either, the phone pushes your history. `session start` keeps the same connection open, saves what
-arrives into the local store, and stops when the phone has been quiet for 45 seconds, or at Ctrl+C. Ctrl+C there,
-or `--timeout`, ends only this wait: the device stays linked, what arrived is kept and counted, and the command ends
-with exit code `0`. `wa personal setup` waits the same way, then goes on to its remaining steps under the
-command's usual time limit, started afresh. Then keep receiving with `wa personal server install`
-([the local store](archive.md)).
+arrives into the local store, and stops when the phone says its history is complete. If the phone never says so, it
+stops after 5 minutes with nothing new, and says the phone did not confirm. After 20 seconds with nothing yet, it says
+it is still waiting. Ctrl+C there, or `--timeout`, ends only this wait: the device stays linked, what arrived is kept
+and counted, and the command ends with exit code `0`. `wa personal setup` waits the same way, then goes on to its
+remaining steps under the command's usual time limit, started afresh. Then keep receiving with
+`wa personal server install` ([the local store](archive.md)).
 
 Keep WhatsApp open on the phone until `serve` runs: the phone can send more parts after `session start` stops. A part
 that arrives while some other command is connected, a send for example, is kept in the device file and not saved.
@@ -109,7 +110,9 @@ photo; if a later one fails, the error says which changed. Removing the photo is
 
 `wa personal session end` removes the device **on WhatsApp's side too**: it disappears from the phone's list of linked
 devices. It leaves the local store as it is. While `serve` runs for the profile, it refuses (exit code `12`): stop
-`serve` first with `wa personal server stop`, or Ctrl+C where it runs.
+`serve` first with `wa personal server stop`, or Ctrl+C where it runs. A run with moved folders (a `WA_*_DIR` set, or
+another `HOME`) never unlinks at WhatsApp: it deletes only its own device keys, and you remove the device on the phone.
+If its state folder is still your own, the device is yours: it then deletes nothing, and `account remove` refuses.
 
 To forget a profile altogether, use `wa personal account remove --keep-data` or `--delete-data`. It unlinks the device
 the same way, then deletes the profile's device keys and what cli-core keeps for it. `--keep-data` leaves its messages

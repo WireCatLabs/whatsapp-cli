@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url"
 import { exitCodeFor, processStreams } from "@wirecat/cli-base"
 import {
   accountCommand,
@@ -12,8 +13,10 @@ import {
   createProgram as create,
   doctorCommand,
   floodCommand,
+  guideCommand,
   imagesCommand,
   inboxCommand,
+  MEMO_SCENARIOS,
   mcpCommand,
   mentionsCommand,
   messagesCommand,
@@ -63,18 +66,21 @@ export const CONTACT_NAME_LIMIT =
 const definition: ProgramDefinition = {
   app: WA,
   configuration: CONFIG,
+  firstScreen: {
+    pitch:
+      "your personal WhatsApp for agents and scripts, as a linked device. What it reads stays on your computer; " +
+      "search, review and tasks work offline.",
+    can: [
+      { command: "review 'date>1d'", does: "what changed in every chat since yesterday" },
+      { command: "tasks agenda", does: "tasks due, replies you owe, replies you wait for" },
+      { command: "inbox --transcribe", does: "unread in every chat, voice as text; marks nothing read by default" },
+      { command: 'search all "invoice"', does: "messages, notes, file text and voice transcripts at once" },
+      { command: "mcp serve --permission …", does: "your account in any agent, with messages.send=deny" },
+      { command: "bot messages send <chat>", does: "your business number, through Meta's official Cloud API" },
+      { command: "WA_READ_ONLY=1 wa …", does: "a run that can read and sync but never send, edit or delete" },
+    ],
+  },
   configure: (program) => {
-    program.addHelpText(
-      "after",
-      "\nGetting started after installation:\n" +
-        "  wa personal setup               Guided first run as profile personal; about 5 minutes\n" +
-        "  wa personal setup --agent codex Link and install your agent's skill\n" +
-        "  wa setup --help                 Linking choices and examples\n" +
-        "Every account command names its profile first: `wa personal chats list`.\n" +
-        "\nFor agents:\n" +
-        "  wa skill show                   Read the bundled instructions before using WhatsApp\n" +
-        "  wa commands --json              Discover commands, arguments and flags\n",
-    )
     const contacts = program.commands.find((command) => command.name() === "contacts")
     for (const name of ["add", "rename"])
       contacts?.commands.find((command) => command.name() === name)?.addHelpText("after", `\n${CONTACT_NAME_LIMIT}\n`)
@@ -128,6 +134,10 @@ const definition: ProgramDefinition = {
       .addCommand(botTemplatesCommand())
       .addCommand(botMediaCommand()),
     skillCommand(WA, SKILL),
+    guideCommand(WA, {
+      directory: fileURLToPath(new URL("../scenarios", import.meta.url)),
+      worksWith: [MEMO_SCENARIOS.personBrief],
+    }),
   ],
 }
 

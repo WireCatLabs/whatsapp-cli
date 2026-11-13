@@ -2,12 +2,14 @@ import { mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
-import { contractSeed, mcpOverStdio } from "@wirecat/cli-core/testing"
+import { checkGuide } from "@wirecat/cli-core/cli"
+import { contractSeed, mcpOverStdio, ownCatalogue } from "@wirecat/cli-core/testing"
 import { afterAll, describe, expect, it, vi } from "vitest"
 import { EngineError, type WhatsAppEngine } from "./engine/contract.js"
-import { run } from "./program.js"
+import { createProgram, run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { VERSION } from "./version.js"
+import { WCAT } from "./wcat.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 
@@ -102,6 +104,35 @@ describe("wa", () => {
     expect(result.code).toBe(6)
     expect(JSON.parse(result.stderr).error.reason).toBe("profile.unknown")
     expect(JSON.parse(result.stderr).error.message).toContain("wa unlinked setup")
+  })
+})
+
+describe("wa's own MCP tools (IDEA-288)", () => {
+  it("pins only the commands wa adds or changes; cli-core pins the ones it mounts", async () => {
+    const catalogue = `${JSON.stringify(ownCatalogue(createProgram(), { includeUnavailable: true }), null, 2)}\n`
+    await expect(catalogue).toMatchFileSnapshot("../contracts/mcp-catalogue.json")
+  })
+})
+
+describe("wa's manifest identity (WC-CMD-32)", () => {
+  it("lists the hosts wa reaches and gives a send its permission key", () => {
+    expect(WCAT.hosts).toEqual(["web.whatsapp.com", "graph.facebook.com"])
+    expect(WCAT.permissionOf?.(["messages", "send"])).toBe("messages.send")
+    expect(WCAT.permissionOf?.(["chats", "list"])).toBe("chats.list")
+  })
+})
+
+describe("wa guide", () => {
+  it("every scenario step is a wa command whose options and arguments parse, and the scenarios ship", async () => {
+    expect(await checkGuide(createProgram, { packageRoot: process.cwd() })).toEqual([])
+  })
+
+  it("lists the scenarios and memo's person-brief", async () => {
+    const { code, stdout } = await wa(["guide"])
+
+    expect(code).toBe(0)
+    expect(stdout).toContain("catch-up")
+    expect(stdout).toContain("memo guide person-brief")
   })
 })
 

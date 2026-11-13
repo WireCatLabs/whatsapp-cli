@@ -1,0 +1,5 @@
+{
+  "bot templates list": "read",
+  "bot templates send": "write",
+  "bot media download": "write"
+}
