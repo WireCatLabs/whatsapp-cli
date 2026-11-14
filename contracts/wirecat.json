@@ -1393,6 +1393,32 @@
     {
       "path": [
         "models",
+        "chats",
+        "show"
+      ],
+      "summary": "whether chat text may go to a model outside this computer, and since when",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "entity": "chat_sending"
+    },
+    {
+      "path": [
+        "models",
+        "chats",
+        "set"
+      ],
+      "summary": "allowed, ask (the default) or denied; only you make it less strict",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "entity": "chat_sending"
+    },
+    {
+      "path": [
+        "models",
         "list"
       ],
       "summary": "speech, embedding and reranker models: downloaded or not, each kind's default",

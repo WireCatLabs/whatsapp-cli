@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**287 ✅ · 871 ⛔ · 0 ❌** — 381 commands, 777 options.
+**287 ✅ · 876 ⛔ · 0 ❌** — 383 commands, 780 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -253,6 +253,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `polls create` | `--operation-id` | ✅ |  |
 | `models keys set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `models keys remove` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models chats show` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models chats set` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
+| `models chats set` | `--from-app` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `models list` |  | ✅ |  |
 | `models download` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
 | `models download` | `--accept-terms` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/models-command.test.ts) |
@@ -362,6 +365,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `conversations links rebuild` |  | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations links rebuild` | `--chat` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations links rebuild` | `--analyze` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations links rebuild` | `--yes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations links rebuild` | `--analysis-provider` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations links rebuild` | `--model` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations links rebuild` | `--base-url` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
@@ -402,6 +406,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `conversations embed` | `--threads` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations embed` | `--concurrency` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations embed` | `--max-tokens` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
+| `conversations embed` | `--yes` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations embed` | `--max-chats` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `conversations embed` | `--max-chunks` | ⛔ | shared cli-core command mounted unchanged, over the store; tested in cli-core (src/cli/messenger/analysis.test.ts and src/services/conversations.test.ts) |
 | `attachments extract` |  | ✅ |  |
