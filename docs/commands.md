@@ -3758,6 +3758,7 @@ wa tasks scan <chat> [options]
 | Option | What it does |
 |---|---|
 | `--last <n>` | read the newest n stored messages of each chat (default 50, at most 1000). |
+| `--yes` | open and close the tasks it lists; otherwise only list them. |
 
 ### `wa tasks status`
 
