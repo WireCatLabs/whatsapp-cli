@@ -372,7 +372,7 @@ describe("wa messages delete", () => {
   it("at ask, asks first, so a script that cannot answer is refused and nothing is deleted", async () => {
     expect((await wa(["actions", "config", "set", "permissions.messages.delete", "ask"])).code).toBe(0)
     const result = await acting(["messages", "delete", seed.dialog, answer.id])
-    expect((await wa(["actions", "config", "unset", "permissions.messages.delete"])).code).toBe(0)
+    expect((await wa(["actions", "config", "set", "permissions.messages.delete", "allow"])).code).toBe(0)
     expect(result.code).not.toBe(0)
     expect(JSON.parse(result.stderr.slice(result.stderr.indexOf("{"))).error.message).toContain("--allow-dangerous")
     expect(result.actions).toEqual([])
