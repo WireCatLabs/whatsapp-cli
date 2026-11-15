@@ -1801,6 +1801,36 @@ wa models keys remove <provider>
 |---|---|---|
 | `provider` | required | openai, anthropic, or a server's host. |
 
+### `wa models chats`
+
+whether chat text may go to a model off this computer: allowed, ask or denied
+
+#### `wa models chats show`
+
+whether chat text may go to a model outside this computer, and since when
+
+```sh
+wa models chats show
+```
+
+#### `wa models chats set`
+
+allowed: no yes needed; ask: --yes needed, an agent may pass it; denied: refused even with --yes. Only you make it less strict
+
+**Changes something on this computer only.**
+
+```sh
+wa models chats set <mode> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `mode` | required | allowed, ask or denied. |
+
+| Option | What it does |
+|---|---|
+| `--from-app` | you did this in WireCat Desktop. |
+
 ### `wa models list`
 
 speech, embedding and reranker models: downloaded or not, each kind's default
@@ -2483,7 +2513,8 @@ wa conversations links rebuild [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
-| `--analyze` | link batches using the configured analysis provider; requires --chat and remembers consent for this chat/provider. |
+| `--analyze` | link batches using the configured analysis provider; requires --chat. A model outside this computer follows the `models chats` setting: under ask, a yes is remembered for this chat and provider. |
+| `--yes` | send this chat's text to the analysis model outside this computer, when `models chats` is ask. |
 | `--analysis-provider <provider>` | analysis: agent, openai or anthropic. |
 | `--model <model>` | analysis model; overrides models.analysis.model. |
 | `--base-url <url>` | analysis API endpoint; overrides models.analysis.base_url. |
@@ -2625,6 +2656,7 @@ wa conversations embed [options]
 | `--threads <n>` | local: threads in all (default: min(8, cores)). |
 | `--concurrency <n>` | remote: requests at once (default: 4). |
 | `--max-tokens <n>` | remote: stop before a run that could send more tokens than this. |
+| `--yes` | remote: send the chunks to the model outside this computer, when `models chats` is ask. |
 | `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
 | `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given, and no limit with --chat. |
 
@@ -2729,7 +2761,7 @@ wa attachments download <dir> [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | only this chat; repeat for more; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). Default: ``. |
-| `--since-time <time>` | include messages from this ISO timestamp with a time zone. |
+| `--since-time <time>` | include messages from this time: ISO 8601, a date, today, yesterday, or 2h, 7d ago. |
 | `--pause <duration>` | pause between history pages. Default: `5s`. |
 
 ### `wa attachments check`
@@ -2767,7 +2799,7 @@ wa attachments jobs install <dir> [options]
 | `--at <HH:mm>` | daily start time. Default: `03:00`. |
 | `--timezone <zone>` | IANA time zone of the daily start time. Default: `UTC`. |
 | `--chat <chat>` | only this chat; repeat for more; a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). Default: ``. |
-| `--since-time <time>` | include messages from this ISO timestamp with a time zone. |
+| `--since-time <time>` | include messages from this time: ISO 8601, a date, today, yesterday, or 2h, 7d ago; fixed when installed. |
 
 #### `wa attachments jobs start`
 
@@ -2840,7 +2872,7 @@ wa attachments move <dir> <archive-dir> [options]
 
 | Option | What it does |
 |---|---|
-| `--before-time <time>` | move images whose message date is before this ISO timestamp with zone. |
+| `--before-time <time>` | move images whose message date is before this time: ISO 8601, a date (its start), today, or 7d ago. |
 | `--dry-run` | show counts and bytes without moving files or creating the destination. |
 
 ## `wa tags`
@@ -2860,7 +2892,7 @@ wa tags rebuild [options]
 | Option | What it does |
 |---|---|
 | `--chat <chat>` | a stored group/channel; repeat to select several. Default: ``. |
-| `--limit <n>` | process at most 1–500 chats. Default: `50`. |
+| `--limit <n>` | process at most 1–500 chats; the configured limit if not given. |
 | `--sync-first` | read current descriptions from the messenger before classifying. |
 | `--dry-run` | preview cached classification without changing the store. |
 
@@ -3134,7 +3166,7 @@ wa metadata sync [options]
 |---|---|
 | `--chat <chat>` | stored group/channel; repeat for several. Default: ``. |
 | `--only-missing` | only chats with no metadata yet; without --chat, every stored group/channel. |
-| `--limit <n>` | process at most 1–500 chats. Default: `50`. |
+| `--limit <n>` | process at most 1–500 chats; the configured limit if not given. |
 
 ## `wa stats`
 
@@ -3190,7 +3222,7 @@ wa stats messages counters show [query] [options]
 | `--timezone <zone>` | IANA timezone for query dates. |
 | `--selection <json>` | pinned counter-targets selection from counters show; conflicts with query and scope. |
 | `--counters <names>` | distinct views,reactions,comments fields; all three by default. |
-| `--limit <n>` | messages, 1–100; 20 by default. |
+| `--limit <n>` | messages, 1–100; the configured limit if not given. |
 | `--max-age <duration>` | maximum fresh observation age; 24h by default. |
 
 #### `wa stats messages counters sync`
@@ -3215,7 +3247,7 @@ wa stats messages counters sync [query] [options]
 | `--timezone <zone>` | IANA timezone for query dates. |
 | `--selection <json>` | pinned counter-targets selection from counters show; conflicts with query and scope. |
 | `--counters <names>` | distinct views,reactions,comments fields; all three by default. |
-| `--limit <n>` | messages, 1–100; 20 by default. |
+| `--limit <n>` | messages, 1–100; the configured limit if not given. |
 | `--max-messages <n>` | maximum messages to refresh, 1–100. |
 | `--sync-time <duration>` | remote refresh budget; 30s by default, maximum 5m. |
 | `--dry-run` | preview exact stored targets and counter capabilities without connecting. |
@@ -3237,7 +3269,7 @@ wa stats messages unanswered [query] [options]
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
-| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--limit <n>` | report rows, 1–100; the configured limit if not given. |
 | `--answerer <person>` | stored name, alias, @username, ID or person:provider/account/id; ambiguous names require a choice; repeat for more. |
 
 #### `wa stats messages discussion`
@@ -3257,7 +3289,7 @@ wa stats messages discussion [query] [options]
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
-| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--limit <n>` | report rows, 1–100; the configured limit if not given. |
 
 #### `wa stats messages responses`
 
@@ -3333,7 +3365,7 @@ wa stats messages evidence <message> [options]
 |---|---|
 | `--selection <json>` | the resolved ranking selection returned in drilldown. |
 | `--component <name>` | the exposed ranking component. |
-| `--limit <n>` | evidence rows, 1–100; 20 if not given. |
+| `--limit <n>` | evidence rows, 1–100; the configured limit if not given. |
 | `--cursor <cursor>` | continue the same component and stored-evidence fingerprint. |
 
 ### `wa stats contacts`
@@ -3357,7 +3389,7 @@ wa stats contacts responses [query] [options]
 | `--source <accounts>` | every held account of this messenger; personal, bots or all. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
-| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--limit <n>` | report rows, 1–100; the configured limit if not given. |
 | `--answerer <person>` | stored name, alias, @username, ID or person:provider/account/id; ambiguous names require a choice; repeat for more. |
 
 #### `wa stats contacts top`
@@ -3398,7 +3430,7 @@ wa stats contacts evidence <person> [options]
 |---|---|
 | `--selection <json>` | the resolved ranking selection returned in drilldown. |
 | `--component <name>` | the exposed ranking component. |
-| `--limit <n>` | evidence rows, 1–100; 20 if not given. |
+| `--limit <n>` | evidence rows, 1–100; the configured limit if not given. |
 | `--cursor <cursor>` | continue the same component and stored-evidence fingerprint. |
 
 ### `wa stats chats`
@@ -3442,7 +3474,7 @@ wa stats chats newcomers <chat> [options]
 | `--within <duration>` | the help window after a known newcomer join. |
 | `--saved <name\|id>` | run a saved report of this kind; typed report options replace stored options. |
 | `--timezone <zone>` | the IANA timezone for calendar date boundaries. |
-| `--limit <n>` | report rows, 1–100; 20 if not given. |
+| `--limit <n>` | report rows, 1–100; the configured limit if not given. |
 | `--answerer <person>` | stored name, alias, @username, ID or person:provider/account/id; ambiguous names require a choice; repeat for more. |
 
 #### `wa stats chats retention`
@@ -3554,8 +3586,8 @@ wa tasks add <message> [options]
 | `--open-new` | open a task from a message the chat's task point already passed (a read again with tasks review --since-time); without it such a read only updates and closes tasks. |
 | `--title <title>` | one line: the action and its object — send Alex the API token. |
 | `--description <text>` | the detail, in Markdown: who owes whom, done when, next step, keywords. |
-| `--due <time>` | when it must be done: an ISO 8601 time or 2h, 3d from now; none clears it. |
-| `--remind-time <time>` | when to look at it again: an ISO 8601 time or 2h, 3d from now; none clears it. |
+| `--due <time>` | when it must be done: an ISO 8601 time, a date (its end), today, or 2h, 3d from now; none clears it. |
+| `--remind-time <time>` | when to look at it again: an ISO 8601 time, a date (its start), today, or 2h, 3d from now; none clears it. |
 | `--assignee <person...>` | who does it: sender (whoever sent the task's message) or person:<id>; none clears it. Leave it out when unsure: a task with no assignee is better than none. |
 
 ### `wa tasks update`
@@ -3579,8 +3611,8 @@ wa tasks update <task> [options]
 | `--parent <id>` | parent task in the same project; none clears it. |
 | `--title <title>` | one line: the action and its object — send Alex the API token. |
 | `--description <text>` | the detail, in Markdown: who owes whom, done when, next step, keywords. |
-| `--due <time>` | when it must be done: an ISO 8601 time or 2h, 3d from now; none clears it. |
-| `--remind-time <time>` | when to look at it again: an ISO 8601 time or 2h, 3d from now; none clears it. |
+| `--due <time>` | when it must be done: an ISO 8601 time, a date (its end), today, or 2h, 3d from now; none clears it. |
+| `--remind-time <time>` | when to look at it again: an ISO 8601 time, a date (its start), today, or 2h, 3d from now; none clears it. |
 | `--assignee <person...>` | who does it: sender (whoever sent the task's message) or person:<id>; none clears it. Leave it out when unsure: a task with no assignee is better than none. |
 
 ### `wa tasks link`
@@ -4003,8 +4035,8 @@ wa search runs [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--limit <n>` | matches per page, at most 100. Default: `20`. |
-| `--page <n>` | result page. Default: `1`. |
+| `--limit <n>` | matches per page, at most 100. |
+| `--page <n>` | result page. |
 
 ## `wa searches`
 
@@ -4208,8 +4240,8 @@ wa runs list [query] [options]
 
 | Option | What it does |
 |---|---|
-| `--limit <n>` | how many to show. Default: `20`. |
-| `--page <n>` | which page, starting at 1. Default: `1`. |
+| `--limit <n>` | how many to show. |
+| `--page <n>` | which page, starting at 1. |
 
 ### `wa runs show`
 

@@ -136,10 +136,11 @@ wa personal chats delete "Book club" --allow-dangerous   # the chat itself
 ```
 
 Both are for your devices alone: the others in the chat keep it and its messages. Without `--allow-dangerous` they ask
-first in a terminal and refuse in a script. WhatsApp deletes up to a message `wa` names: the chat's newest one in the
-local store, so keep `serve` running for it to be current, and a chat the store holds nothing of is refused. `wa`
-asks WhatsApp to leave the photos and files the phone saved from the chat. `wa`'s local store still holds the
-messages afterwards. None of this has been checked on a phone yet.
+first in a terminal and refuse in a script. An MCP app is not offered either one: you run them yourself. WhatsApp
+deletes up to a message `wa` names: the chat's newest one in the local store, so keep `serve` running for it to be
+current, and a chat the store holds nothing of is refused. `wa` asks WhatsApp to leave the photos and files the phone
+saved from the chat. `wa`'s local store still holds the messages afterwards. None of this has been checked on a phone
+yet.
 
 ## Format a message
 
