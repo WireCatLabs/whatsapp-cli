@@ -1,8 +1,9 @@
 ### Changed — may break callers
 
-- **An agent can no longer delete a chat or clear its history over MCP** (cli-core 0.664.0, was 0.662.0). Over MCP
-  an `ask` level went ahead without a question, so an agent could remove a whole chat from your WhatsApp account
-  without asking. `chats delete` and `chats clear` now stay on the command line, where `ask` still asks first.
+- **An agent can no longer delete a chat or clear its history over MCP** (cli-core 0.664.0; built on 0.665.0, was
+  0.662.0). Over MCP an `ask` level went ahead without a question, so an agent could remove a whole chat from your
+  WhatsApp account without asking. `chats delete` and `chats clear` now stay on the command line, where `ask` still asks
+  first.
 - **`store clear --allow-dangerous` is yours alone** (cli-core 0.663.0). Its MCP tool no longer takes
   `allow_dangerous`: an agent previews with `dry_run`, and you run the command in a terminal.
 - **Lists without `--limit` show the configured `defaults.limit`** (20 unless set), so `metadata sync` and
