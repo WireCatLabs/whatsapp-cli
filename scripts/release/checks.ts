@@ -23,7 +23,7 @@ export const PACKED = [
   "package.json",
   "README.md",
   "LICENSE",
-  "skills/whatsapp-cli/SKILL.md",
+  "skills/whatsapp-cli/",
   "scenarios/",
   "contracts/wirecat.json",
 ]
@@ -76,6 +76,7 @@ export const docsRules = (root: string): DocsRules => ({
     ...["README.md", "CHANGELOG.md", "AGENTS.md", "CLAUDE.md", "skills/whatsapp-cli/SKILL.md"].map((name) =>
       join(root, name),
     ),
+    ...markdownFiles(join(root, "skills/whatsapp-cli/references")),
     ...markdownFiles(join(root, "docs")),
   ],
   ids: IDS,

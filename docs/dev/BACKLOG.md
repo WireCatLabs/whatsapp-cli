@@ -35,6 +35,11 @@ What `wa` does today: [`../commands.md`](../commands.md) (generated). How it is 
 - **WA-5** · P1 · live · Closed 2026-11-08: `bin/live-fresh-link spar` linked a second device with its history push
   kept and the own id recorded, `WA-5: PASS`. It ran on the main account, which is what the script is for: it links
   a second device of the owner's account. That device is unlinked again. [Notes](BACKLOG-NOTES.md#wa-5--linking-live-checks)
+- **WA-69** · P1 · ops · **Do not release before this:** build on the cli-base that installs a skill's
+  `references/` (`skill install`, `skill show <part>`; WC-DOC-22, cli-base 0.106.0 or later) and the cli-core that
+  serves them over MCP (`skillResources`). The skill now links `skills/whatsapp-cli/references/*.md`; with cli-base
+  0.103.0 `wa skill install` copies only SKILL.md and `wa skill show search` fails. Check: install into a temporary
+  HOME and list the folder.
 
 ## Next (P2)
 

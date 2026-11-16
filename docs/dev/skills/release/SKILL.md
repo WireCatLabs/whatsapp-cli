@@ -46,8 +46,8 @@ paths. `pnpm docs:check` checks the headings and the ids.
 
 ## 3. The docs against the diff
 
-RELEASING.md, "The docs against the diff": `README.md`, `docs/*.md` and `skills/whatsapp-cli/SKILL.md`, which
-`wa skill show` prints. Each states what the code does now (`WC-DOC-3`). `docs/commands.md` and
+RELEASING.md, "The docs against the diff": `README.md`, `docs/*.md`, `skills/whatsapp-cli/SKILL.md` and its
+`references/`, which `wa skill show` prints. Each states what the code does now (`WC-DOC-3`). `docs/commands.md` and
 `docs/dev/test-matrix.md` are generated: `pnpm generate`, `pnpm test:matrix` (`WC-DOC-4`).
 
 ## 4. The rules
