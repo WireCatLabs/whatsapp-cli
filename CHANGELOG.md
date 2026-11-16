@@ -3,6 +3,22 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## 0.45.0 — 16.11.2026
+
+### Changed — may break callers
+
+- **The agent skill is shorter.** `SKILL.md` keeps what an agent needs on every turn (the profile rule, answering
+  from the chats, the limits on sending, output and exit codes) in about 8 KB instead of 29 KB, and links the rest in
+  `skills/whatsapp-cli/references/`: search, history, sending, the connection, groups, the local store, commands and
+  setup. No rule was dropped. An agent that reads the skill pays about 5,000 fewer tokens on every turn.
+
+### Fixed
+
+- **`wa skill install` installs the skill's `references/` beside `SKILL.md`,** in `~/.claude/skills/whatsapp-cli/`
+  and `~/.agents/skills/whatsapp-cli/`, and `wa skill show <name>` prints one of them (`wa skill show sending`).
+  Before, only `SKILL.md` was installed, and its links to the references led nowhere. wa builds on cli-core 0.681.0
+  and cli-base 0.106.0.
+
 ## 0.44.0 — 16.11.2026
 
 ### Changed — may break callers
