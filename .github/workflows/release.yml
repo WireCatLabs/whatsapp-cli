@@ -58,7 +58,7 @@ jobs:
       contents: read
       actions: read
       security-events: write
-    uses: WireCatLabs/cli-base/.github/workflows/release-checks.yml@183e25196cb9c9b777946b8783d0f7f222bd66f9 # v0.103.0
+    uses: WireCatLabs/cli-base/.github/workflows/release-checks.yml@4dcab561d9187b348b62bbb603e3ab6ea8678997 # cli-base main at #593: every CodeQL action at one version
     with:
       languages: '["actions","javascript-typescript","go"]'
       govulncheck: true
