@@ -6287,7 +6287,7 @@ wa skill show [name] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `name` | optional | one of the skills shipped for a task: follow-ups, link-conversations. |
+| `name` | optional | a part of this skill, or a skill shipped for a task: setup, sending, search, local-store, history, groups, connection, commands, follow-ups, link-conversations. |
 
 | Option | What it does |
 |---|---|
