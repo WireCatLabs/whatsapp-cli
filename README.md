@@ -24,7 +24,7 @@
   <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="License: Apache 2.0"></a>
 </p>
 
-An example conversation (invented people, illustrative output):
+An example conversation:
 
 ```text
 You:    Use wa CLI. Who is waiting for my answer since yesterday?
