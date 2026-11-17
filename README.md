@@ -10,9 +10,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/README.md">Docs</a> ·
-  <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/recipes.md">Examples</a> ·
-  <a href="https://wirecat.dev">WireCat</a>
+  <a href="https://wirecat.dev/en/docs/wa">Docs</a> ·
+  <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/installation.md">Install</a> ·
+  <a href="https://github.com/WireCatLabs/whatsapp-cli/blob/main/docs/usage.md">Usage</a> ·
+  <a href="https://discord.gg/DebENqbRrJ">Discord</a>
 </p>
 
 <p align="center">
