@@ -312,7 +312,8 @@ export const WHATSAPP: Messenger = {
   chatArchive: true,
   chatPin: true,
   chatMarkUnread: true,
-  never: ["endOtherSessions", "removeContact"],
+  // WhatsApp has no scheduled messages.
+  never: ["endOtherSessions", "removeContact", "sendScheduled", "editScheduled", "cancelScheduled"],
   lacks: ["chatEvents", "createFolder", "updateFolder", "deleteFolder", "importContacts"],
   deleteForMe: true,
   privacy: true,
