@@ -3,6 +3,34 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## 0.46.0 — 21.11.2026
+
+### Added
+
+- **`wa server status` says when the store was last current (`current_at` in `--json`).** WhatsApp has no full sync:
+  new messages reach the store only while `wa <profile> serve` runs. `serve` now writes the time when it connects,
+  every minute while it runs and as it stops, and keeps it after it stops. So WireCat Desktop can show how fresh a
+  WhatsApp account's messages are once `serve` is off, and the text answer says "The store was current at …".
+
+### Changed — may break callers
+
+- **Built on cli-core 0.715.0** (was 0.681.0) and cli-base 0.125.1 (was 0.106.0). The shared store moves to version
+  71, so upgrade the other WireCat CLIs that share it too. WhatsApp has no scheduled messages, so wa still has no
+  `messages scheduled` commands. A CRM's client files get their own limits (`crm.<provider>:<account>.files.*` in
+  `wa config set`), and `wa --wcat-describe` now tells WireCat Desktop how to remove an account. See the
+  [cli-core changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+- **The MCP Registry entry asks which profiles to serve.** It started `mcp serve --profiles all`, so a client that
+  installed the server from the registry reached every account on the computer without the owner choosing. Now
+  `--profiles` is a required argument with the example `personal`: the client asks for one profile, a
+  comma-separated list or `all`. Why: a CLI never picks an account for the owner
+  ([WC-MCP-9](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/mcp.md#wc-mcp-9--a-server-serves-the-profiles-it-is-told-with-one-connection-for-each)). Watch for: a client set up from the old entry keeps `--profiles all` until it is set up again; a
+  server added by hand or with `mcp config` does not change.
+
+### Fixed
+
+- **Node 24.22 (SQLite 3.54) no longer breaks the store.** Profiles and account groups saved on it are read whole
+  again, and a search of about 53 words or more answers `query.too-large` instead of a raw SQLite error.
+
 ## 0.45.0 — 16.11.2026
 
 ### Changed — may break callers

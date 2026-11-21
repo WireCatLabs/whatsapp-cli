@@ -141,7 +141,7 @@ wa personal server start  # start serve in the background; answers once it liste
 ```
 
 ```sh
-wa personal server status  # whether it runs, since when, who started it
+wa personal server status  # whether it runs, since when, who started it, and when the store was last current
 ```
 
 ```sh
