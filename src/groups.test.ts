@@ -10,6 +10,7 @@ import { EngineError, type EngineEvent, type WaChat, type WaChatEvent, type What
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
 import { REQUESTER } from "./testing/fake-groups.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 const stranger = "100000000000077@lid"
@@ -28,7 +29,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(signal ? { signal } : {}),
     ...(stdin === undefined ? {} : { stdin: Readable.from([stdin]) }),
   })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), stderr: streams.stderr.join("") }
 }
 
 const PROFILE = "groups"
@@ -852,7 +853,7 @@ describe("wa watch", () => {
       controller.signal,
     )
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.stdout)).toMatchObject({ chatId: seed.busy, chatTitle: "Book club" })
+    expect(watchItems(result.stdout)[0]).toMatchObject({ chat_id: seed.busy, chat_title: "Book club" })
   })
 })
 
@@ -869,7 +870,7 @@ describe("wa chats events", () => {
 
   it("keeps an add seen under watch, lists it once offline though a history push repeats it, and counts it", async () => {
     const printed = await watching([{ event: "chat_event", change: joined }])
-    expect(JSON.parse(printed)).toMatchObject({ event: "chat_event", chatId: seed.busy, chatTitle: "Book club" })
+    expect(watchItems(printed)[0]).toMatchObject({ event: "chat_event", chat_id: seed.busy, chat_title: "Book club" })
     await watching([
       {
         event: "history",

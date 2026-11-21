@@ -142,12 +142,13 @@ wa personal runs list --limit 100 --json | jq '[.items[] | .duration_ms] | add /
 ## Search errors and partial runs
 
 ```sh
-wa personal runs search --error-code authentication_error --json
-wa personal runs search --status partial --since-time 2026-10-01 --json
+wa personal search runs error_code:authentication_error --json
+wa personal search runs status:partial --since-time 2026-10-01 --json
 ```
 
-`runs search` matches literal diagnostic text in the records. `--operation`, `--profile`, `--since-time`, `--limit`
-and `--page` narrow it; each page holds up to 100 runs. It reads only the records and never connects.
+`search runs` matches literal diagnostic text in the records. Query terms such as `operation:`, `profile:`,
+`status:` and `error_code:` narrow the results; `--since-time`, `--limit` and `--page` control the window and
+paging. Each page holds up to 100 runs. It reads only the records and never connects.
 
 ## Next
 

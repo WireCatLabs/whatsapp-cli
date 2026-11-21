@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import type { EngineEvent, WaReaction, WhatsAppEngine } from "./engine/contract.js"
 import { run } from "./program.js"
 import { fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const seed = contractSeed({ ids: whatsAppIds })
 const theirs = seed.messages.find((message) => message.chatId === seed.busy && !message.outgoing) as Message
@@ -25,7 +26,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
   })
-  return { code, stdout: streams.stdout.join(""), lines: streams.stdout, stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), lines: streams.stdout, stderr: streams.stderr.join("") }
 }
 
 /** `wa watch` while the engine pushes `events`, as the phone would, then stops. */
@@ -47,7 +48,7 @@ const watching = async (events: EngineEvent[] = []) => {
   }
   const result = await wa(["reacting", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
-  return result.lines.map((line) => JSON.parse(line))
+  return watchItems(result.lines)
 }
 
 const reactionOf = (reactor: string, reaction: string | null, reactedAt: string, own = false): WaReaction => ({
@@ -88,9 +89,9 @@ describe("reactions from WhatsApp", () => {
     ])
     expect(events.filter((event) => event.event === "person_reaction")).toMatchObject([
       {
-        chatId: seed.busy,
-        messageId: theirs.id,
-        reaction: { person: { id: seed.person }, own: false, reaction: "👍", reactedAt: "2026-09-01T10:01:00.000Z" },
+        chat_id: seed.busy,
+        message_id: theirs.id,
+        reaction: { person: { id: seed.person }, own: false, reaction: "👍", reacted_at: "2026-09-01T10:01:00.000Z" },
       },
       { reaction: { person: { id: other }, own: false, reaction: "👍" } },
       { reaction: { person: { id: self }, own: true, reaction: "🔥" } },

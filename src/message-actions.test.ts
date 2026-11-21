@@ -14,6 +14,7 @@ import {
 } from "./engine/contract.js"
 import { run } from "./program.js"
 import { type FakeEngine, fakeEngine, whatsAppIds } from "./testing/fake-engine.js"
+import { watchItems } from "./testing/watch-records.js"
 
 const base = contractSeed({ ids: whatsAppIds })
 const fresh: Message = {
@@ -132,7 +133,7 @@ const wa = async (argv: string[], engine?: () => WhatsAppEngine, signal?: AbortS
     ...(engine ? { engine } : {}),
     ...(signal ? { signal } : {}),
   })
-  return { code, stdout: streams.stdout.join(""), stderr: streams.stderr.join("") }
+  return { code, stdout: streams.stdout.join("\n"), stderr: streams.stderr.join("") }
 }
 
 const acting = async (argv: string[], { settingsKeys = true } = {}) => {
@@ -524,10 +525,7 @@ const fromThePhone = async (events: EngineEvent[]) => {
   }
   const result = await wa(["actions", "watch", "--events", "--jsonl"], pushing, controller.signal)
   expect(result.code, result.stderr).toBe(0)
-  return result.stdout
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => JSON.parse(line))
+  return watchItems(result.stdout)
 }
 
 const listedIds = async (chat: string, ...filters: string[]) => {
@@ -540,7 +538,13 @@ describe("stars and deletions made on the phone", () => {
   it("prints a star from the phone in watch, and keeps it until the phone takes it off", async () => {
     const star = (starred: boolean): EngineEvent => ({ event: "star", chat: seed.dialog, id: phoneStarred.id, starred })
     expect(await fromThePhone([star(true)])).toEqual([
-      { event: "star", chatId: seed.dialog, chatTitle: expect.any(String), messageId: phoneStarred.id, starred: true },
+      {
+        event: "star",
+        chat_id: seed.dialog,
+        chat_title: expect.any(String),
+        message_id: phoneStarred.id,
+        starred: true,
+      },
     ])
     expect(await listedIds(seed.dialog, "starred:true")).toContain(phoneStarred.id)
 

@@ -295,6 +295,9 @@ wa personal chats mark-read 100000000000001@lid    # the other side sees it: onl
 wa personal watch --jsonl                          # new messages as they arrive; holds the connection
 ```
 
+For `wa personal watch --jsonl`, read messages and events from each item record's `data`, using snake_case
+keys. Wait for the final `type: "end"` record and check `complete`; a missing end means the stream was cut.
+
 An agent without a terminal (Claude Desktop, Cursor) uses the MCP server instead: `wa personal mcp`. The profile's
 `permissions` decide which commands it offers, through `wa_tools_search`, `wa_read` and `wa_write`; there is no
 confirmation form. `wa personal mcp config` prints the entry with full paths. `wa personal mcp --http --public-url

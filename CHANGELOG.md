@@ -11,6 +11,15 @@ Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest firs
   `chats mark-read` clears the unread mark and sends the receipt. The top help points to linking examples
   without promising Windows instructions that setup help does not contain.
 
+### Changed — may break callers
+
+- **Watch uses standard JSONL item and end records.** Message and event fields in each item's `data` use
+  snake_case. Check the final `type: "end"` record's `complete` field; update readers of the former raw records.
+- **Search and list filters share the query language.** Use `search runs status:partial error_code:rate_limited`
+  instead of `runs search` and its status/error flags. Statistics filters use `message_kind:`, `min_messages:`,
+  `min_views:`, `max_replies:` and `older_than:` terms. Shared result schemas now support field discovery and
+  validate JSON field selections before running a command.
+
 ## 0.6.0 — 24.10.2026
 
 ### Added
