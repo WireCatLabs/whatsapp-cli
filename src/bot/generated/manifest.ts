@@ -2,7 +2,7 @@
 // Source: spec/bot/business-messaging-api_v23.0.yaml
 // Run: pnpm bot:generate
 
-import type { ManifestOperation } from "@wirecat/cli-base/codegen"
+import type { ApiServer, ManifestOperation, SecurityScheme } from "@wirecat/cli-base/codegen"
 
 export const operations: readonly ManifestOperation[] = [
   {
@@ -18,6 +18,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Add a preverified phone number to a WhatsApp Business Account. This endpoint is used by\nPartners to create a pool of Partner owned numbers that end clients\ncan purchase.\n\n**Use Cases:**\n- Add new phone numbers to scale messaging operations\n- Set up phone numbers for different business locations\n- Manage phone number inventory for business messaging\n- Configure phone numbers for specific messaging workflows\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Phone Number Requirements:**\n- Must be in E.164 format (e.g., +1555-0104)\n- Must not be already registered to another WhatsApp Business Account\n- Must be capable of receiving SMS for verification\n- Must comply with WhatsApp's business messaging policies\n",
     tags: ["Business Phone Numbers"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Business-ID",
@@ -54,6 +59,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Endpoint reference: [Business](https://developers.facebook.com/docs/marketing-api/reference/business/)",
     tags: ["Business Portfolio"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Business-ID",
@@ -90,6 +100,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve WhatsApp Business Accounts owned by the specified business. This endpoint\nprovides comprehensive information about all WABAs owned by the business, including\naccount details, configuration, and status information.\n\n**Use Cases:**\n- Retrieve all WhatsApp Business Accounts owned by a business\n- Filter accounts by business type\n- Find specific accounts by ID\n- Monitor business portfolio of WhatsApp Business Accounts\n- Manage account access and permissions across multiple WABAs\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nAccount information can be cached for short periods, but status and configuration\nmay change frequently. Implement appropriate cache invalidation strategies.\n",
     tags: ["Owned WhatsApp Business Accounts"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Business-ID",
@@ -190,6 +205,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Block Users](https://developers.facebook.com/docs/business-messaging/whatsapp/block-users)\n    \n- Endpoint reference: [GET WhatsApp Buiness Phone Number > block_users](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account-to-number-current-status/block_users/#Reading)",
     tags: ["Block Users"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -214,6 +234,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Block Users](https://developers.facebook.com/docs/business-messaging/whatsapp/block-users)\n    \n- Endpoint reference: [POST WhatsApp Buiness Phone Number > block_users](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account-to-number-current-status/block_users/#Creating)",
     tags: ["Block Users"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -243,6 +268,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Block Users](https://developers.facebook.com/docs/business-messaging/whatsapp/block-users)\n    \n- Endpoint reference: [DELETE WhatsApp Buiness Phone Number > block_users](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account-to-number-current-status/block_users/#Deleting)",
     tags: ["Block Users"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -272,6 +302,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Check whether you have permission to call a WhatsApp user and what actions are available. This endpoint returns the current permission status for calling a specific user, along with available actions and their limits.\n\n**Permission Status:**\n- `granted`: You have active permission to call this user - `pending`: A permission request has been sent but not yet approved - `denied`: The user has denied call permissions - `expired`: Previous permission has expired\n\n**Available Actions:**\n- `start_call`: Initiate a new call to this user - `send_call_permission_request`: Send a permission request to this user\n\n**Error Handling:**\nThis endpoint may return various error codes including rate limiting errors if too many permission checks are made within a short period.\n",
     tags: ["Call Permissions"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -310,6 +345,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       'Use this endpoint to initiate, accept, reject, or terminate WhatsApp calls.\n\n**For initiating or managing a call:**\nSend a POST request with the appropriate action (connect, pre_accept, accept, reject, terminate).\n\n**For terminating a call:**\nSend a POST request with action "terminate" and the call_id.\n\n**Note:** Response with error code 138006 indicates a lack of a call request permission for this business number from the WhatsApp user.\n',
     tags: ["Calls"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -344,6 +384,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Send marketing template messages using pre-approved templates. Supports optional product policy controls and message activity sharing settings.",
     tags: ["Marketing Messages"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -378,6 +423,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "This request uploads an image as .jpeg. The parameters are specified as **form-data** in the request **body**.",
     tags: ["Media"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -411,6 +461,11 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Send Message.",
     description: "Send Message.",
     tags: ["Messages"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -444,6 +499,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve all message QR codes for a phone number, sorted by creation time (newest first).\nSupports field selection, filtering by code, cursor-based pagination, and QR image generation.\n",
     tags: ["QR Code Collection"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -531,6 +591,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Create a new QR code (without code parameter) or update existing QR code (with code parameter).\nSupports optional QR image generation in PNG or SVG format.\n",
     tags: ["QR Code Collection"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -567,6 +632,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve details for a specific QR code by its unique identifier.\nSupports field selection and QR image generation. Response returns QR code in data array for consistency.\n",
     tags: ["Individual QR Code"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -621,6 +691,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Permanently delete a specific QR code. Once deleted, the QR code and deep link become invalid.\nDeletion cannot be undone and affects any existing marketing materials using the QR code.\n",
     tags: ["Individual QR Code"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -665,6 +740,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Send encrypted messages using JWE (JSON Web Encryption) format. This endpoint provides an additional layer of security on top of existing standard TLS/SSL by accepting pre-encrypted message payloads and returning encrypted responses.\n\n**Important Notes:**\n- Only successful responses will be encrypted\n- Error responses will be returned unencrypted if the underlying JSON is incorrectly formatted\n- Payload encryption must be enabled for the phone number using the `POST /<Phone-Number-ID>/settings` endpoint\n- The encrypted payload must follow the same structure as the original `/messages` endpoint\n\n**Prerequisites:**\n- User Access Token with `whatsapp_business_messaging` permission\n- Valid `Phone-Number-ID` for your registered WhatsApp Business account\n- Payload encryption enabled for the phone number\n- Properly formatted JWE token containing encrypted message payload using supported algorithms\n\n**Supported Algorithms:**\n- **Content Encryption:** A128GCM, A256GCM...",
     tags: ["Encrypted Messages"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -700,6 +780,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve the Official Business Account (OBA) status and related information for a WhatsApp Business Account phone number.\n\n**Use Cases:**\n- Check current OBA verification status\n- Monitor OBA application progress\n- Retrieve status messages for business account verification\n- Validate business credibility status\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nOBA status information can be cached for moderate periods, but status may change\nduring verification processes. Implement appropriate cache invalidation strategies.\n",
     tags: ["Official Business Account"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -741,6 +826,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Update or modify the Official Business Account (OBA) status for a WhatsApp Business Account phone number.\nThis endpoint allows businesses to submit new applications, withdraw existing applications, or resubmit\nafter addressing rejection reasons.\n\n**Use Cases:**\n- Submit initial Official Business Account application\n- Withdraw pending OBA application\n- Resubmit OBA application after addressing rejection feedback\n- Update application data for pending applications\n\n**Application Data Requirements:**\nWhen submitting or resubmitting an OBA application, certain business information may be required\ndepending on the current status and previous submissions.\n\n**Rate Limiting:**\nStandard Graph API rate limits apply with additional restrictions on application submissions\nto prevent abuse. Use appropriate retry logic with exponential backoff.\n\n**Status Transitions:**\n- Applications can only be submitted when no active application exists\n- Withdrawals are only allowed for pending applications\n- Resubmissions are only allowed after rejection\n",
     tags: ["Official Business Account"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -777,6 +867,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve comprehensive information about a WhatsApp Business phone number using its unique ID (CSID).\nThis endpoint provides phone number status, verification details, quality metrics, and configuration information.\n\n**Core Information Returned:**\n- Phone number ID and display format\n- Verification status and verified business name\n- Quality rating based on message delivery performance\n- Code verification status for two-step verification\n- Display name certification status (when requested)\n\n**Quality Rating System:**\nThe quality rating reflects how recipients have been receiving messages from this phone number:\n- **GREEN**: High quality - messages are being delivered and engaged with well\n- **YELLOW**: Medium quality - some delivery or engagement issues detected\n- **RED**: Low quality - significant delivery or engagement problems\n- **NA**: Quality rating not yet determined (new phone numbers)\n\n**Display Name Status:**\nWhen requesting the `name_status` field, you'll receive the current verification status:\n- **APPROVED**: Business display name has been verified and is ready to use\n- **AVAILABLE_WITHOUT_REVIEW**: Display name is ready to use without additional review\n- **DECLINED**: Business display name verification was rejected\n- **EXPIRED**: Display name approval has expired\n- **PENDING_REVIEW**: Display name verification request is under review\n- **NONE**: No display name verification request exists\n\n**Code Verification Status:**\nIndicates the two-step verification status:\n- **VERIFIED**: Phone number has completed two-step verification\n- **UNVERIFIED**: Two-step verification is pending or incomplete\n\n**Use Cases:**\n- Monitor phone number quality and delivery performance\n- Check verification and display name status\n- Validate phone number configuration before sending messages\n- Retrieve display information for business profiles\n- Audit phone number compliance and status\n\nFor more information on quality ratings, see [WhatsApp Business Account Message Quality Rating](https://www.facebook.com/business/help/896873687365001).\n",
     tags: ["Phone Numbers"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -818,6 +913,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Update the status and configuration of a WhatsApp Business Account phone number.\nThis endpoint supports comprehensive phone number management including status updates,\nwebhook configuration, security settings, and business profile management.\n\n**Supported Operations:**\n- Update connection status between WhatsApp Business Account and phone number\n- Configure webhook endpoints for message delivery notifications\n- Set up two-step verification and security notifications\n- Update display names for name verification\n- Configure search visibility and privacy settings\n- Set username for the WhatsApp Business Account\n- Override webhook callback URIs for message notifications\n\n**Business Logic Requirements:**\n- App must be linked to the WhatsApp Business Account\n- Webhook subscription must exist before configuring callback URI overrides\n- Callback URI verification is performed for external URLs\n- Internal URLs are allowed for development environments\n\n**Rate Limiting:**\nWhatsApp use case throttling applies. Use appropriate retry logic with exponential backoff.\n\n**Security Validations:**\n- App-to-WABA linking validation enforced\n- Webhook callback URI verification required for external URLs\n- Business integration system user checks for AI bot onboarding\n- Capability checks for first-party app access\n",
     tags: ["Phone Numbers"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -854,6 +954,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Deregister a WhatsApp Business phone number from the Facebook Hosted System.\nThis operation removes the phone number from the WhatsApp Business Platform\nand makes it available for re-registration if needed.\n\n\n**Important Notes:**\n- Phone number must be currently linked in Facebook Hosted System\n- Phone number must be registered on the WhatsApp Business Platform\n- Cannot deregister phone numbers associated with SMB accounts\n- Rate limiting is enforced to prevent abuse\n- Deregistration triggers activity logging for audit purposes\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply with additional restrictions for registration\noperations. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nDeregistration status changes are immediate and should not be cached.\n",
     tags: ["Phone Number Management"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -885,6 +990,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve paginated message history for a WhatsApp Business Account phone number,\nincluding delivery status events, timestamps, and webhook update information.\n\n\n**Use Cases:**\n- Track message delivery status and events\n- Monitor webhook delivery and update states\n- Retrieve historical message delivery information\n- Debug message delivery issues and webhook failures\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nMessage history data can be cached for moderate periods, but delivery status events\nmay change frequently. Implement appropriate cache invalidation strategies.\n\n\n**Pagination:**\nThis endpoint supports cursor-based pagination. Use the `after` and `before` cursors\nfrom the response to navigate through results.\n",
     tags: ["Message History"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -968,6 +1078,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Register a WhatsApp Business phone number for messaging capabilities and enable\ntwo-step verification. This is a required step before sending messages through\nthe WhatsApp Business Cloud API.\n\n\n**Registration Process:**\n1. Phone number must be in UNVERIFIED status\n2. Provide a 6-digit PIN for two-step verification\n3. Optionally provide backup data for account migration\n4. Registration activates messaging capabilities\n\n\n**Migration Support:**\nFor migrating from on-premises WhatsApp Business API, include backup data\nwith password and encrypted account information.\n\n\n**Rate Limiting:**\nRegistration attempts are rate-limited to prevent abuse. Standard Graph API\nrate limits apply with additional restrictions for registration endpoints.\n\n\n**Security Requirements:**\n- Two-step verification is mandatory for all registered numbers\n- PIN must be securely stored and managed by the business\n- Registration enables webhook delivery and message sending capabilities\n",
     tags: ["Phone Number Registration"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1004,6 +1119,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Request a verification code for a WhatsApp Business phone number via SMS or voice call.\nThis is the first step in the phone number verification process.\n\n\n**Use Cases:**\n- Initial verification of newly added phone numbers\n- Re-verification when phone number status requires it\n- Switching between SMS and voice verification methods\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Additional rate limiting may be enforced\nfor verification code requests to prevent abuse.\n\n**Security:**\nVerification codes are sent only to the registered phone number and expire\nafter a short time period. Multiple failed attempts may result in temporary blocking.\n",
     tags: ["Phone Number Verification"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1040,6 +1160,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve current settings for a WhatsApp Business phone number.\nReturns calling settings, payload encryption settings, and data\nstorage configurations.\n",
     tags: ["Settings"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1078,6 +1203,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Update various settings for a WhatsApp Business phone number.\nYou can configure calling settings, user identity change settings,\npayload encryption, and data storage configurations.\nOnly one feature setting can be specified per request.\n",
     tags: ["Settings"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1111,6 +1241,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Verify a phone number verification code for a WhatsApp Business Account phone number.\nThis endpoint is used to complete the phone number verification process by submitting\nthe verification code received via SMS or voice call.\n\n\n**Use Cases:**\n- Complete phone number verification during initial setup\n- Verify phone number ownership for messaging capabilities\n- Finalize phone number registration process\n- Complete phone number migration verification\n\n\n**Rate Limiting:**\nVerification attempts are rate-limited to prevent abuse. Failed attempts may result\nin temporary blocking. Use appropriate retry logic with exponential backoff.\n\n\n**Security:**\nVerification codes are time-limited (typically 10 minutes) and single-use.\nMultiple failed attempts may trigger additional security measures.\n",
     tags: ["Phone Number Verification"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1147,6 +1282,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve the current business public key and its signature verification status.\n\nThis endpoint returns the public key that is currently configured for encrypting\nmessage payloads and indicates whether the stored signature is valid or has a mismatch.\n\n**Use Cases:**\n- Verify current encryption configuration\n- Check public key signature validation status\n- Retrieve public key for client-side encryption setup\n- Monitor encryption key status for security compliance\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nPublic key information can be cached for moderate periods, but signature status\nmay change and should be checked regularly for security validation.\n",
     tags: ["Flows", "Setup Endpoint Encryption", "Business Encryption"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1188,6 +1328,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Upload and configure a business public key for message payload encryption.\n\nThis endpoint accepts a business public key in PEM format, validates it,\nand stores it with a cryptographic signature for future use in encrypting\nmessage payloads and data channel requests.\n\n**Use Cases:**\n- Initial setup of encryption for WhatsApp Business messaging\n- Update existing public key for key rotation\n- Enable secure payload encryption for sensitive business communications\n- Configure encryption keys for compliance requirements\n\n**Key Requirements:**\n- Must be a valid RSA public key in PEM format\n- Key must meet Meta's security standards for encryption\n- Only one active public key per phone number at a time\n- Previous keys are replaced when new ones are uploaded\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Key uploads may have additional\nsecurity-related rate limiting to prevent abuse.\n",
     tags: ["Business Encryption"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1225,6 +1370,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve comprehensive information about a WhatsApp Business Profile, including\nbusiness details, contact information, and profile settings.\n\n\n**Use Cases:**\n- Retrieve current business profile information\n- Check business contact details and settings\n- Verify business vertical and website information\n- Get profile picture URL and about section\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nBusiness profile information can be cached for moderate periods, but should be\nrefreshed periodically to ensure accuracy.\n",
     tags: ["WhatsApp Business Profile"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1266,6 +1416,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Update WhatsApp Business Profile information including business details,\ncontact information, and profile settings.\n\n\n**Use Cases:**\n- Update business description and contact information\n- Modify business address and website information\n- Change business vertical classification\n- Update profile picture using Resumable Upload API\n- Update profile picture and about section\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Profile Picture Updates:**\nTo update the profile picture, first use the Resumable Upload API to obtain a\nprofile_picture_handle, then include it in the request.\n",
     tags: ["WhatsApp Business Profile"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1302,6 +1457,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Sell Products & Services](https://developers.facebook.com/docs/business-messaging/whatsapp/catalogs/sell-products-and-services) (Cloud API)\n- Guide: [Sell Products & Services](https://developers.facebook.com/docs/whatsapp/on-premises/guides/commerce-guides) (On-Premises API)\n- Endpoint reference: [WhatsApp Business Phone Number > WhatsApp Commerce Settings](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account-to-number-current-status/whatsapp_commerce_settings)",
     tags: ["Commerce Settings"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1330,6 +1490,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Sell Products & Services](https://developers.facebook.com/docs/business-messaging/whatsapp/catalogs/sell-products-and-services) (Cloud API)\n- Guide: [Sell Products & Services](https://developers.facebook.com/docs/whatsapp/on-premises/guides/commerce-guides) (On-Premises API)\n- Endpoint reference: [WhatsApp Business Phone Number > WhatsApp Commerce Settings](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account-to-number-current-status/whatsapp_commerce_settings)",
     tags: ["Commerce Settings"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1374,6 +1539,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve comprehensive business compliance information for a WhatsApp Business Account phone number,\nincluding entity details, registration status, and required contact information for regulatory compliance.\n\n\n**Use Cases:**\n- Retrieve business compliance information for regulatory reporting\n- Verify business entity registration status and contact details\n- Access grievance officer and customer care information\n- Support compliance audits and regulatory verification processes\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nCompliance information can be cached for moderate periods, but should be refreshed regularly\nto ensure accuracy for regulatory purposes. Implement appropriate cache invalidation strategies.\n",
     tags: ["Business Compliance"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1415,6 +1585,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       'Create or update comprehensive business compliance information for a WhatsApp Business Account phone number,\nincluding entity details, registration status, and required contact information for regulatory compliance.\n\n\n**Use Cases:**\n- Set business compliance information for regulatory reporting\n- Update business entity registration status and details\n- Configure grievance officer and customer care contact information\n- Ensure compliance data accuracy for regulatory purposes\n- Support compliance setup for new business operations\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Validation Rules:**\n- `entity_name` is required and must be between 2 and 128 characters\n- `entity_type` is required and must be a valid entity type enum value\n- `entity_type_custom` is mandatory when `entity_type` is "Other"\n- `entity_type_custom` cannot be used with non-"Other" entity types\n- `is_registered` can only be used with "Other" or "Partnership" entity types\n- `grievance_officer_details` is required with complete contact information\n- `customer_care_details` is required with contact information\n- Phone numbers must be valid international format with country code\n- Email addresses must be valid format and under 128 characters\n',
     tags: ["Business Compliance"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1451,6 +1626,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "To retrieve your media’s URL, make a **GET** call to **`/{{Media-ID}}`**. Use the returned URL to download the media file. Note that clicking this URL (i.e. performing a generic GET) will not return the media; you must include an access token. For more information, see [Download Media](https://developers.facebook.com/docs/business-messaging/whatsapp/business-phone-numbers/media#download-media).\n\nYou can also use the optional query **`?phone_number_id`** for **`Retrieve Media URL`** and **`Delete Media`**. This parameter checks to make sure the media belongs to the phone number before retrieval or deletion.\n\n#### Response\n\nA successful response includes an object with a media URL. The URL is only valid for 5 minutes. To use this URL, see [Download Media](https://developers.facebook.com/docs/business-messaging/whatsapp/business-phone-numbers/media#download-media).",
     tags: ["Media"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Media-ID",
@@ -1488,6 +1668,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "To delete media, make a **DELETE** call to the ID of the media you want to delete.\n\n## Prerequisites\n- [User Access Token](https://developers.facebook.com/docs/facebook-login/access-tokens#usertokens) with **`whatsapp_business_messaging`** permission\n- Media object ID from either uploading media endpoint or media message Webhooks",
     tags: ["Media"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Media-ID",
@@ -1526,6 +1711,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve paginated message delivery status events for a specific message history entry,\nincluding delivery status occurrences, timestamps, and application information.\n\n\n**Use Cases:**\n- Track detailed message delivery status events and transitions\n- Monitor delivery status occurrence timestamps\n- Retrieve application information for delivery events\n- Debug message delivery issues and status changes\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nMessage history events can be cached for short periods, but delivery status events\nmay change frequently. Implement appropriate cache invalidation strategies.\n\n\n**Pagination:**\nThis endpoint supports cursor-based pagination. Use the `after` and `before` cursors\nfrom the response to navigate through results.\n",
     tags: ["Message History Events"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Message-History-ID",
@@ -1610,6 +1800,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve WhatsApp Business Accounts that have been assigned to a specific user.\nThis endpoint provides information about account assignments, permissions, and\ncurrent status corresponding to the GraphAssignedWhatsAppBusinessAccountsEdge node.\n\n\n**Use Cases:**\n- Retrieve all WhatsApp Business Accounts assigned to a user\n- Check user permissions for specific accounts\n- Monitor account assignment status and changes\n- Validate user access before performing business operations\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nAssignment information can be cached for short periods, but permissions and status\nmay change frequently. Implement appropriate cache invalidation strategies.\n",
     tags: ["Assigned WhatsApp Business Accounts"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "User-ID",
@@ -1681,6 +1876,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve comprehensive details about a WhatsApp Account Number, including its current status,\nverification information, quality rating, and configuration settings.\n\n**Use Cases:**\n- Monitor account number status and quality rating\n- Verify account number configuration before messaging operations\n- Check verification and approval status\n- Retrieve display name and business profile information\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nAccount number details can be cached for short periods, but status information may change\nfrequently. Implement appropriate cache invalidation strategies.\n",
     tags: ["WhatsApp Account Numbers"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WhatsApp-Account-Number-ID",
@@ -1722,6 +1922,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve a list of users assigned to the WhatsApp Business Account with their permissions\nand user details. This endpoint supports pagination and filtering capabilities.\n\n\n**Use Cases:**\n- Audit user access to WhatsApp Business Account\n- Retrieve user permission assignments for compliance\n- List all users with access for management purposes\n- Monitor user access patterns and assignments\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nUser assignment data can be cached for short periods, but permission changes may occur\nfrequently. Implement appropriate cache invalidation strategies.\n",
     tags: ["WhatsApp Business Account Users"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WhatsApp-Business-Account-ID",
@@ -1803,6 +2008,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Add a user to the WhatsApp Business Account with specified permission tasks.\nThis operation grants the user access to perform specific actions on the account\nbased on the provided permission tasks.\n\n\n**Use Cases:**\n- Grant user access to WhatsApp Business Account management\n- Assign specific permission tasks for granular access control\n- Add new team members to WhatsApp Business Account operations\n- Configure user permissions for different business roles\n\n\n**Permission Tasks:**\nDifferent permission tasks grant access to different WhatsApp Business Account features:\n- MANAGE: General account management permissions\n- DEVELOP: Development and API access permissions\n- MANAGE_TEMPLATES: Message template management\n- MANAGE_PHONE: Phone number management\n- MESSAGING: Send and receive messages\n- FULL_CONTROL: Complete access to all account features\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n",
     tags: ["WhatsApp Business Account Users"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WhatsApp-Business-Account-ID",
@@ -1840,6 +2050,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Remove a user's access from the WhatsApp Business Account. This operation revokes\nall permissions and access rights for the specified user on the account.\n\n\n**Use Cases:**\n- Revoke user access when they leave the organization\n- Remove temporary access grants\n- Clean up user permissions for security compliance\n- Manage user lifecycle and access control\n\n\n**Important Notes:**\n- This operation removes ALL permissions for the user on this WhatsApp Business Account\n- The user will lose access to all account features and data\n- This action cannot be undone - the user must be re-added if access is needed again\n- Webhooks may be triggered to notify of user access changes\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n",
     tags: ["WhatsApp Business Account Users"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WhatsApp-Business-Account-ID",
@@ -1877,6 +2092,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Configure conversational automation settings for a WhatsApp Business Account phone number,\nincluding welcome messages, conversation prompts (ice breakers), and bot commands.\n\n\n**Use Cases:**\n- Set up automated welcome messages for new customer conversations\n- Configure conversation prompts to guide customer interactions\n- Define bot commands for common customer service scenarios\n- Update existing automation settings\n- Enable or disable specific automation features\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Validation:**\n- Command names must be unique within the same phone number\n- Prompts and command descriptions must comply with WhatsApp Business policies\n- Maximum limits are enforced for prompts and commands\n",
     tags: ["Conversational Automation"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Phone-Number-ID",
@@ -1913,6 +2133,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Endpoint reference: [Business > Extendedcredits](https://developers.facebook.com/docs/marketing-api/reference/extended-credit/)",
     tags: ["Billing"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "Business-ID",
@@ -1941,6 +2166,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve all phone numbers associated with a WhatsApp Business Account, including their\nstatus, verification details, and configuration information.\n\n**Use Cases:**\n- List all phone numbers in a WhatsApp Business Account\n- Monitor phone number status and verification progress\n- Check phone number quality ratings and messaging limits\n- Retrieve phone number configuration details\n\n**Filtering:**\nYou can filter results using the `filtering` parameter with JSON-encoded filter conditions.\nSupported filters include account_mode, messaging_limit_tier, and is_official_business_account.\n\n**Sorting:**\nResults can be sorted by creation_time or last_onboarded_time in ascending or descending order.\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nPhone number data can be cached for short periods, but status information may change\nfrequently. Implement appropriate cache invalidation strategies.\n",
     tags: ["Phone Number Management"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2033,6 +2263,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Create a new phone number registration within a WhatsApp Business Account. This endpoint\ninitiates the phone number onboarding process, including verification and business name approval.\n\n**Use Cases:**\n- Add new phone numbers to a WhatsApp Business Account\n- Migrate phone numbers from on-premises to Cloud API\n- Register pre-verified phone numbers for BSP scenarios\n- Initiate phone number verification and business name approval process\n\n**Prerequisites:**\n- WhatsApp Business Account must have available phone number slots\n- Phone number must not be already registered with WhatsApp Business\n- Business must meet WhatsApp Business API requirements\n- Appropriate permissions and app review completion\n\n**Process Flow:**\n1. Submit phone number and business name for registration\n2. Phone number verification code will be sent (if not pre-verified)\n3. Business name will be submitted for review\n4. Monitor status through GET endpoint until approval\n\n**Rate Limiting:**\nPhone number creation is subject to strict rate limits to prevent abuse.\nStandard Graph API rate limits also apply.\n\n**Migration Support:**\nSet migrate_phone_number=true when migrating from on-premises API to Cloud API.\nAdditional validation and migration-specific logic will be applied.\n",
     tags: ["Phone Number Management"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2069,6 +2304,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve all schedules associated with a WhatsApp Business Account, including their\nconfiguration, status, and execution details.\n\n**Use Cases:**\n- List all schedules in a WhatsApp Business Account\n- Monitor schedule status and performance\n- Check schedule configuration and timing details\n- Retrieve schedule execution history and metrics\n\n**Filtering:**\nYou can filter results using the `filtering` parameter with JSON-encoded filter conditions.\nSupported filters include status, schedule_type, and is_active.\n\n**Sorting:**\nResults can be sorted by created_time or updated_time in ascending or descending order.\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nSchedule data can be cached for short periods, but status information may change\nfrequently. Implement appropriate cache invalidation strategies.\n",
     tags: ["Schedule Management"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2161,6 +2401,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Create a new schedule configuration within a WhatsApp Business Account. This endpoint\nallows businesses to set up automated scheduling for various operations such as business hours,\nautomated responses, and maintenance windows.\n\n**Use Cases:**\n- Create business hours schedules for automated responses\n- Set up maintenance windows for system operations\n- Configure automated message campaigns with timing\n- Establish recurring schedule patterns for business operations\n\n**Prerequisites:**\n- WhatsApp Business Account must have scheduling feature enabled\n- Appropriate permissions for schedule management\n- Valid timezone and time format specifications\n- Business must meet WhatsApp Business API requirements\n\n**Process Flow:**\n1. Submit schedule configuration with timing and recurrence details\n2. System validates schedule parameters and conflicts\n3. Schedule is created and activated based on is_active flag\n4. Monitor schedule status through GET endpoint\n\n**Rate Limiting:**\nSchedule creation is subject to rate limits to prevent abuse.\nStandard Graph API rate limits also apply.\n\n**Validation:**\n- Start time must be before end time\n- Timezone must be valid IANA timezone identifier\n- Days of week must be valid if specified\n- Recurrence pattern must be consistent with schedule type\n",
     tags: ["Schedule Management"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2197,6 +2442,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve a list of all applications currently subscribed to webhook events\nfor the specified WhatsApp Business Account.\n\n\n**Use Cases:**\n- Monitor which apps are subscribed to WABA webhook events\n- Audit subscription configurations and permissions\n- Verify subscription status before making changes\n- Retrieve subscription details for troubleshooting\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nSubscription data can be cached for short periods, but may change when apps\nsubscribe or unsubscribe. Implement appropriate cache invalidation strategies.\n",
     tags: ["Webhook Subscriptions"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2238,6 +2488,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Subscribe your application to webhook events for the specified WhatsApp Business Account.\nThis enables your app to receive real-time notifications for events such as message\ndeliveries, status updates, and other WABA activities.\n\n\n**Use Cases:**\n- Enable webhook notifications for your app\n- Configure custom callback URLs for webhook delivery\n- Set up webhook verification tokens for security\n- Override default app webhook settings for specific WABAs\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Subscription operations may have additional\nthrottling to prevent abuse.\n\n\n**Security:**\nAlways use HTTPS endpoints for webhook callbacks. Verify webhook authenticity\nusing the provided verification tokens and signature validation.\n",
     tags: ["Webhook Subscriptions"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2274,6 +2529,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Unsubscribe your application from webhook events for the specified WhatsApp Business Account.\nThis will stop your app from receiving webhook notifications for this WABA.\n\n\n**Use Cases:**\n- Disable webhook notifications when no longer needed\n- Clean up subscriptions during app decommissioning\n- Temporarily disable webhooks for maintenance\n- Remove subscriptions for WABAs no longer managed by your app\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Unsubscription operations are typically\nprocessed immediately.\n\n\n**Important:**\nUnsubscribing will immediately stop all webhook deliveries for this WABA.\nEnsure your application can handle the cessation of webhook events gracefully.\n",
     tags: ["Webhook Subscriptions"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2305,6 +2565,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Message Templates](https://developers.facebook.com/docs/business-messaging/whatsapp/templates/overview)\n- Guide: [How To Monitor Quality Signals](https://developers.facebook.com/docs/whatsapp/guides/how-to-monitor-quality-signals)\n- Endpoint reference: [WhatsApp Message Template](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-hsm/)",
     tags: ["Templates"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "TEMPLATE_ID",
@@ -2333,6 +2598,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Message Templates](https://developers.facebook.com/docs/business-messaging/whatsapp/templates/overview)\n- Guide: [How To Monitor Quality Signals](https://developers.facebook.com/docs/whatsapp/guides/how-to-monitor-quality-signals)\n- Endpoint reference: [WhatsApp Message Template](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-hsm/)",
     tags: ["Templates"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "TEMPLATE_ID",
@@ -2366,6 +2636,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Message Templates](https://developers.facebook.com/docs/business-messaging/whatsapp/templates/overview)\n- Guide: [How To Monitor Quality Signals](https://developers.facebook.com/docs/whatsapp/guides/how-to-monitor-quality-signals)\n- Endpoint reference: [WhatsApp Business Account > Message Templates](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/message_templates/)",
     tags: ["Templates"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2402,6 +2677,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Authentication Templates with OTP Buttons](https://developers.facebook.com/docs/business-messaging/whatsapp/templates/authentication-templates/authentication-templates)\n- Guide: [Message Templates](https://developers.facebook.com/docs/business-messaging/whatsapp/templates/overview)\n- Guide: [How To Monitor Quality Signals](https://developers.facebook.com/docs/whatsapp/guides/how-to-monitor-quality-signals)\n- Endpoint reference: [WhatsApp Business Account > Message Templates](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/message_templates/)",
     tags: ["Flows", "Send Flow"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2435,6 +2715,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "- Guide: [Message Templates](https://developers.facebook.com/docs/business-messaging/whatsapp/templates/overview)\n- Guide: [How To Monitor Quality Signals](https://developers.facebook.com/docs/whatsapp/guides/how-to-monitor-quality-signals)\n- Endpoint reference: [WhatsApp Business Account > Message Templates](https://developers.facebook.com/docs/graph-api/reference/whats-app-business-account/message_templates/)",
     tags: ["Templates"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2480,6 +2765,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve activity logs and audit trails for a WhatsApp Business Account.\nThis endpoint returns a chronological list of activities performed on the account,\nincluding administrative actions, configuration changes, and operational events.\n\n**Use Cases:**\n- Monitor account configuration changes and administrative actions\n- Generate compliance and audit reports for regulatory requirements\n- Track user activities and permission modifications\n- Investigate security incidents and unauthorized access attempts\n- Monitor API usage patterns and operational events\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nActivity data can be cached for short periods, but recent activities may change\nfrequently. Implement appropriate cache invalidation strategies.\n",
     tags: ["WhatsApp Business Account Activities"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2578,6 +2868,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve comprehensive details about a WhatsApp Business Account, including its\nconfiguration, status, and settings.\n\n**Use Cases:**\n- Retrieve WhatsApp Business Account configuration and details\n- Monitor account status and verification state\n- Check account ownership and business information\n- Validate account state before messaging operations\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n**Caching:**\nAccount details can be cached for moderate periods, but verification status may change.\nImplement appropriate cache invalidation strategies.\n",
     tags: ["WhatsApp Business Account"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2619,6 +2914,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Update configuration and settings for a WhatsApp Business Account.\n\n**Use Cases:**\n- Update WhatsApp Business Account name and configuration\n- Modify account settings and preferences\n- Update business information and verification details\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n",
     tags: ["WhatsApp Business Account"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-ID",
@@ -2655,6 +2955,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve comprehensive details about a WhatsApp Business Bot, including its prompts,\ncommands, and welcome message configuration.\n\n\n**Use Cases:**\n- Retrieve bot configuration and automated response settings\n- Monitor available bot commands and their descriptions\n- Check welcome message enablement status\n- Validate bot state before implementing automation\n- Audit bot configuration for business compliance\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nBot details can be cached for moderate periods, but configuration may change\nwhen bot settings are updated. Implement appropriate cache invalidation strategies.\n",
     tags: ["WhatsApp Business Bot"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WABA-Bot-ID",
@@ -2696,6 +3001,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieve comprehensive details about a WhatsApp Business Profile, including business information,\ncontact details, and profile configuration.\n\n\n**Use Cases:**\n- Retrieve business profile information and metadata\n- Verify profile configuration and contact details\n- Check profile status and business information\n- Validate profile state before business operations\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n\n\n**Caching:**\nProfile details can be cached for moderate periods, but business information may change\noccasionally. Implement appropriate cache invalidation strategies.\n",
     tags: ["WhatsApp Business Profiles"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WhatsApp-Business-Profile-ID",
@@ -2737,6 +3047,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Update the WhatsApp Business Profile information such as business description, email, address,\nand other profile details. This operation corresponds to the GraphWhatsAppBusinessProfilePost functionality.\n\n\n**Use Cases:**\n- Update business profile information and metadata\n- Modify contact details and business description\n- Change business vertical classification\n- Update website URLs and profile picture\n- Maintain current business profile information\n\n\n**Profile Picture Upload:**\nIt is recommended to use the Resumable Upload API to obtain an upload ID, then use this\nupload ID to obtain the picture handle for the `profile_picture_handle` field.\n\n\n**Rate Limiting:**\nStandard Graph API rate limits apply. Use appropriate retry logic with exponential backoff.\n",
     tags: ["WhatsApp Business Profiles"],
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     parameters: [
       {
         name: "WhatsApp-Business-Profile-ID",
@@ -2761,3 +3076,20 @@ export const operations: readonly ManifestOperation[] = [
     },
   },
 ]
+
+export const servers: readonly ApiServer[] = [
+  {
+    url: "https://graph.facebook.com",
+    description: "Production Graph API server",
+  },
+]
+
+export const securitySchemes: Readonly<Record<string, SecurityScheme>> = {
+  bearerAuth: {
+    description:
+      "System user access token with whatsapp_business_management permission. Format: Bearer YOUR_SYSTEM_USER_ACCESS_TOKEN\n",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+    type: "http",
+  },
+}

@@ -856,7 +856,38 @@ export const ActionObject: v.GenericSchema<unknown, T.ActionObject> = v.union([
   }),
   v.looseObject({
     name: v.picklist(["flow"]),
-    parameters: v.union([v.looseObject({}), v.looseObject({})]),
+    parameters: v.union([
+      v.looseObject({
+        flow_message_version: v.picklist(["3"]),
+        flow_id: v.string(),
+        flow_name: v.optional(v.string()),
+        flow_cta: v.pipe(v.string(), v.maxLength(30)),
+        mode: v.optional(v.picklist(["draft", "published"])),
+        flow_token: v.optional(v.string()),
+        flow_action: v.optional(v.picklist(["navigate", "data_exchange"])),
+        flow_action_payload: v.optional(
+          v.looseObject({
+            screen: v.optional(v.string()),
+            data: v.optional(v.looseObject({})),
+          }),
+        ),
+      }),
+      v.looseObject({
+        flow_message_version: v.picklist(["3"]),
+        flow_id: v.optional(v.string()),
+        flow_name: v.string(),
+        flow_cta: v.pipe(v.string(), v.maxLength(30)),
+        mode: v.optional(v.picklist(["draft", "published"])),
+        flow_token: v.optional(v.string()),
+        flow_action: v.optional(v.picklist(["navigate", "data_exchange"])),
+        flow_action_payload: v.optional(
+          v.looseObject({
+            screen: v.optional(v.string()),
+            data: v.optional(v.looseObject({})),
+          }),
+        ),
+      }),
+    ]),
   }),
   v.looseObject({
     name: v.picklist(["call_permission_request"]),
@@ -2207,7 +2238,7 @@ export const OBOMobilityIntentRequest: v.GenericSchema<unknown, T.OBOMobilityInt
   target_solution_id: v.optional(v.string()),
   mobility_reason: v.optional(v.pipe(v.string(), v.maxLength(500))),
   scheduled_execution_time: v.optional(v.string()),
-  metadata: v.optional(v.looseObject({})),
+  metadata: v.optional(v.record(v.string(), v.unknown())),
 })
 
 export const MobilityIntentType: v.GenericSchema<unknown, T.MobilityIntentType> = v.picklist([
@@ -2494,7 +2525,7 @@ export const WhatsAppBusinessAccountActivity: v.GenericSchema<unknown, T.WhatsAp
     actor_id: v.optional(v.string()),
     actor_name: v.optional(v.string()),
     description: v.optional(v.string()),
-    details: v.optional(v.looseObject({})),
+    details: v.optional(v.record(v.string(), v.unknown())),
     ip_address: v.optional(v.string()),
     user_agent: v.optional(v.string()),
   })
