@@ -100,13 +100,10 @@ wa personal account update --photo ~/me.jpg                     # the profile ph
 ```
 
 The name goes to the phone and your other devices at once. Other people probably see it only once the phone next
-comes online: a device tells WhatsApp its name when it says it is online, and `wa` never does (not checked yet). A
+comes online: a device tells WhatsApp its name when it says it is online, and `wa` never does. A
 device linked a few minutes ago may not have WhatsApp's settings keys yet; keep `serve` running a while and try again.
 
-`wa` takes the photo as a square JPEG of 190 to 720 pixels a side, the sides it takes for a group; whether WhatsApp
-takes other sides for your own photo is not checked. `wa` does not convert or crop one, and a PNG or WebP is refused by
-its content, before anything changes. Given together, the name goes first, then the about, then the
-photo; if a later one fails, the error says which changed. Removing the photo is done on the phone.
+For a profile photo, `wa` requires a square JPEG from 190 to 720 pixels per side, using the same validation as for a group photo. `wa` does not convert or crop images and rejects PNG or WebP content before changing anything. When name, about and photo are supplied together, they are changed in that order; a later error names the changes already made. Remove the photo from the phone.
 
 `wa personal session end` removes the device **on WhatsApp's side too**: it disappears from the phone's list of linked
 devices. It leaves the local store as it is. While `serve` runs for the profile, it refuses (exit code `12`): stop
@@ -192,7 +189,7 @@ What each profile is for: [profiles](profiles.md).
 | settings | `~/.config/whatsapp-cli/config.json`; never a secret |
 
 `WA_CONFIG_DIR`, `WA_STATE_DIR` and `WA_CACHE_DIR` move the three folders ([configuration
-reference](configuration-reference.md)).
+reference](./configuration-reference.md)).
 
 ## Next
 

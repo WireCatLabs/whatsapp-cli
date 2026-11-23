@@ -69,7 +69,7 @@ Two kinds of message have no keys, so `wa` cannot save or forward their file:
 - **A message stored before `wa` handled files.** It names its file, but cannot fetch it.
 
 WhatsApp keeps a file on its servers only for a limited time. When a download finds it gone, `wa` asks your phone
-to upload it again, as WhatsApp's own apps do, and fetches the new copy. Your phone must be online and still hold the
+to upload it again, as WhatsApp's own apps do, and attempts to fetch the new copy. Your phone must be online and still hold the
 file: one deleted from the phone is gone for good.
 
 **Known limitation: an old file does not download yet.** On the phones tried, the phone uploads the file again but

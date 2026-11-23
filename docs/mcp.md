@@ -1,7 +1,7 @@
 # The MCP server
 
 This page helps when you want an AI app without a terminal to work with your WhatsApp, for example Claude Desktop or
-the chat in Cursor. It also helps when you want the app itself to ask you before each action. After reading it, you
+the chat in Cursor. It also helps when you want the app itself, not `wa`, to ask you before each action. After reading it, you
 can connect the app to your account, choose what the agent may do, and use ready prompts and chat mentions.
 
 A few terms first:
@@ -24,11 +24,12 @@ permissions again. With a named profile, CLI help and discovery also show availa
 ## Do you need it
 
 An AI agent that can run commands in a terminal (for example Claude Code, Codex, Cursor's agent or Gemini CLI) does
-not need MCP. It calls `wa` directly, which costs the same tokens and can do the same things; it learns how from the
+not need MCP. It calls `wa` directly, which exposes the same commands; it learns how from the
 skill that `wa skill show` prints. MCP is for:
 
 - apps without a terminal, such as Claude Desktop or Cursor's chat;
-- anyone who wants the app to ask before each send.
+- anyone who wants the app to ask before each send. The app asks, not `wa`: over MCP a write set to `ask` runs
+  without a question.
 
 For ChatGPT or Claude **in the browser**, use `wa personal mcp serve --http` — see
 [ChatGPT, Codex or Claude in the browser](remote.md).
@@ -49,9 +50,16 @@ runs, with exit code `2` and a message that says so.
 
 Commands that change future permissions or automation require `permissions.mcp.authority` set to `allow`; raw
 Cloud API calls require `permissions.bot.api` set to `allow`. Both keys default to `deny` over MCP. Set them from your
-own terminal, outside the agent: since 0.25.0 a `config set` run over MCP or in an agent's shell may only tighten a
+own terminal, outside the agent: a `config set` run over MCP or in an agent's shell may only tighten a
 permission, and these two keys stay the owner's. Other writes
 remain subject to their command permissions, recipient lists and send limits.
+
+<details>
+<summary>Commands kept in the terminal</summary>
+
+The personal-account MCP server never offers `wa session`, `wa setup`, `wa complete` or `wa mcp` and their subcommands, nor the long-running `wa watch` and `wa serve`, which never return an answer to an agent. Business-bot commands (`wa bot …`) are served by their own server, `wa bot mcp`. Every other command is listed with its availability.
+
+</details>
 
 ## Connecting
 
@@ -175,7 +183,7 @@ wa agent config set permissions.messages.send allow
 Here `agent` is the name of a profile. Writes keep the recipient list, the hourly limit and the send journal
 (`wa agent sends list`). Marking read is a separate write, under `chats.mark-read`: the other side sees it. An agent
 never deletes for everyone, whatever the level: `messages delete` through MCP is for the owner only (`wa` asks
-WhatsApp to take the messages from the owner's devices; not yet checked on a phone) and has no `--for-everyone`.
+WhatsApp to take the messages from the owner's devices) and has no `--for-everyone`.
 Deleting for everyone stays the owner's `wa <profile> messages delete --for-everyone`. `--permission key=level`
 narrows a level for this server process only; one that would loosen the profile stops the server at startup.
 

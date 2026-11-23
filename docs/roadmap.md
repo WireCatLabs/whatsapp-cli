@@ -18,6 +18,7 @@ with integrity checks. Invite previews, device ids, custom Lists and stored comm
 ## Next
 
 - **Files in channels**: saving one from a post, and an album to a channel you run.
+- **Old files**: downloading a file that WhatsApp no longer keeps on its servers, from your phone.
 - **Business accounts**: WhatsApp Business labels, and another business's profile.
 - **A guide command** that walks you through common tasks step by step.
 

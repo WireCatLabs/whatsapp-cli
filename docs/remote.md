@@ -1,9 +1,6 @@
 # ChatGPT, Codex or Claude in the browser
 
-Use this page when you want an AI app that runs in the browser or on your phone, for example ChatGPT, Codex web or
-Claude, to read and answer your WhatsApp messages. Such an app cannot start `wa` on your computer, so you give it an
-internet address instead. At the end, the app is connected to `wa` through a private HTTPS address, it can do only
-what your profile permits, and you know how to stop it or take its access back.
+Connect a browser or phone MCP app, such as ChatGPT or Claude, to `wa` running on a computer you control. This guide connects the app through an HTTPS tunnel with sign-in, explains which actions the `wa` profile allows, and shows how to stop the connection or revoke access.
 
 Terms used on this page:
 
@@ -50,13 +47,15 @@ ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal 
   one more linked device on your phone.
 - **Who can add a remote connector:**
 
-| App | Plans | Documentation |
-|---|---|---|
-| ChatGPT | Plus, Pro, Business, Enterprise, Education — in developer mode | [developer mode](https://developers.openai.com/api/docs/guides/custom-mcp-server) |
-| Claude | any; one custom connector on the free plan | [custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) |
-| Gemini | only adults in the US with a personal Google account | [connected apps](https://support.google.com/gemini/answer/17209137?hl=en) |
+Your account must be able to add a remote MCP connector. Check the app’s current account and region requirements before starting the tunnel.
 
-The setup steps for each operating system have not all been tried on that system. If a step does not work,
+| App | Connector prerequisites |
+|---|---|
+| ChatGPT | [Connection guide](https://developers.openai.com/api/docs/guides/custom-mcp-server) |
+| Claude | [Connection guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) |
+| Gemini | [Connection guide](https://support.google.com/gemini/answer/17209137?hl=en) |
+
+If a step does not work,
 [open an issue](https://github.com/WireCatLabs/whatsapp-cli/issues).
 
 ## Start the tunnel and server

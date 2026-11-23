@@ -70,7 +70,7 @@ wa personal search notes 'budget source:internal'  # only notes written in memo
 
 `search all` says what each hit is — a message (`msg:…`) or a note (`note:…`). `wa` never searches mail:
 `memo search mail` does. When a field does not apply — `chat:`/`from:` for notes — `search all` skips that resource
-and explains why. Mail and notes reach the store through memo: `memo sync --mail` and `memo import`. Without them,
+and explains why. Mail and notes reach the store through memo: `memo sync --only mail` and `memo sync --only notes`. Without them,
 `search all` searches messages only.
 
 Notes match any part of a word, in any letter case, and their titles are searched too. A search of one or two
