@@ -20,7 +20,7 @@ Start with reading, and allow changes only when you need them.
 |---|---|
 | `deny` | The action is refused, including reading. |
 | `readonly` | Reading works; changes are refused. |
-| `ask` | A change asks in the terminal. |
+| `ask` | A change asks first in the terminal. Over MCP it runs without asking. |
 | `allow` | The action can run without another question. |
 
 With no `permissions` set, everything is allowed, except deleting and a few other changes, which ask. A refusal
@@ -39,8 +39,8 @@ Replace `work` with your profile. For a default that allows reading messages and
 wa work config set permissions.messages readonly
 ```
 
-More specific keys win: `permissions.messages.send ask` still permits sending, with a question in the terminal and
-without a server form over MCP. Set that key to `readonly` to refuse sends. Check other exceptions with
+More specific keys win: `permissions.messages.send ask` still permits sending. In the terminal it asks first. Over
+MCP it does not ask, and the agent's send goes ahead. Set that key to `readonly` to refuse sends. Check other exceptions with
 `wa work config show`.
 
 This controls messages. Other actions have their own keys: `reactions` for reactions, `polls` for polls and votes,
@@ -90,13 +90,13 @@ allowed ([limits](limits.md)).
 Add `--permission messages.send=readonly` to the server's start command to stop sending for that process. Saved
 settings stay the same. `--permission` only narrows: one that would loosen the profile — `readonly` to `allow`, a
 `deny` to anything — stops the server at startup with `validation_error` naming the key. To let an agent do more,
-set the level in the profile itself. Over MCP, `ask` does not require a server form: the app controls its own
-approvals and may allow a call without asking again. Use `deny` or `readonly` to refuse changes.
+set the level in the profile itself. Over MCP, a change set to `ask` runs without asking you: nobody is at a terminal
+to answer, and the server shows no form. Only the agent app may still ask, if you leave its write tool unapproved there. Use `deny` or `readonly` to refuse changes.
 [The MCP server](mcp.md) and [the browser setup](remote.md) explain the full connection.
 
 ## Limits and detailed rules
 
-Since 0.25.0 an agent can only tighten these settings with `config set`: run over MCP or in its own shell (where
+An agent can only tighten these settings with `config set`: run over MCP or in its own shell (where
 `AI_AGENT`, `CLAUDECODE` or `OPENCLAW_SHELL=exec` is set), it may only lower a level, and removing a permission accepts
 only `deny`. You loosen them in your own terminal, outside the agent. An agent that can edit configuration files
 directly or run unrestricted terminal commands may still be able to change them. Pin it to one profile with `WA_PROFILE_LOCK` ([profiles in linking](sessions.md#profiles)), and read

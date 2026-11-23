@@ -131,7 +131,7 @@ WhatsApp's from disk, without starting anything:
   to do: reinstall `wa` with optional packages on, set `WA_ENGINE`, or in a source checkout run `pnpm engine:build`.
 - **`device`** — whether the device keys exist, and whether `private.db`, its `-wal` and `-shm` files or their folder
   can be read by other users of this machine. Each such file comes with the `chmod` command that fixes it. `doctor`
-  never opens the keys and never changes a file mode itself. Windows is not checked.
+  never opens the keys and never changes a file mode itself. Unix file-mode checks are skipped on Windows.
 - **`lock`** — who last held the device's one connection (`serve (pid 4242)`), and whether that process still runs.
   The engine never clears the name, so a holder counts as running only while its process does.
 - **`phone`** — when the engine last saw the phone online (`last_seen`, from the phone's own read receipts and file
@@ -147,7 +147,7 @@ be, never the value itself. All but invalid JSON come with the `config unset` co
 `0600`) and its folder (`0700`), the store with its `-wal` and `-shm` files, the send journal and the runs folder. Each
 problem is `{ path, mode, want }`, and stderr prints the `chmod` that fixes it: `to make it private: chmod 600
 '<path>'`. With no profile named, or when the settings are refused, `files` checks the config file and its folder only.
-`doctor` never changes a file mode itself. Windows is not checked.
+`doctor` never changes a file mode itself. Unix file-mode checks are skipped on Windows.
 
 `--online` connects once. While `serve` runs, it uses `serve`'s connection instead
 ([one connection per device](sessions.md#one-connection-per-device)).

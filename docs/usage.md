@@ -61,9 +61,9 @@ wa personal chats mark-read "Book club"
 ```
 
 WhatsApp names a message by who sent it as well as by its id, so these work on messages the local store holds; keep
-`serve` running. An edit works on your own message within 20 minutes of sending. A deletion is for you only: `wa`
+`serve` running. Edit your own text messages within 15 minutes of sending; see [WhatsApp’s editing help](https://faq.whatsapp.com/6614640168569481/). A deletion is for you only: `wa`
 asks WhatsApp to take it from your phone and your other devices, to leave it with the others in the chat, and to
-keep the photos and files the phone saved from it. That is not yet checked on a phone. `--for-everyone` removes it
+keep the photos and files the phone saved from it. `--for-everyone` removes it
 for everyone. Every pin tells the chat's members: WhatsApp has no quiet pin, so no flag is needed. A pin lasts 24
 hours, 7 days or 30 days (`--expire-time 24h`, `7d`, `30d`); without `--expire-time`, `wa` pins for 7 days. Nothing
 is marked read by reading commands. Use `chats mark-read` to send a read receipt explicitly.
@@ -79,8 +79,7 @@ A star is your own mark, which WhatsApp syncs to your other devices; nobody in t
 needs the message in the local store. The local store keeps a star you set with `wa`:
 `wa personal messages list "Book club" starred:true` and `wa personal search messages is:starred` find those
 messages. While `serve` or `watch` runs, a star you set or take off on the phone reaches the store too, and
-`watch --events` prints it; so do the stars of the messages the phone pushes right after linking. Whether the phone
-shows a star set with `wa` has not been checked yet.
+`watch --events` prints it; so do the stars of the messages the phone pushes right after linking.
 Star a channel's post on the phone.
 
 ## Mute a chat
@@ -91,8 +90,7 @@ wa personal chats mute "Book club" --until 8h   # or until a time: --until 2026-
 wa personal chats unmute "Book club"
 ```
 
-Muting is your own setting, which WhatsApp syncs to your other devices; nobody in the chat is told. Whether the phone
-applies it to a one-to-one chat has not been checked yet. A device linked a few minutes ago may not have WhatsApp's
+Muting is your own setting, which WhatsApp syncs to your other devices; nobody in the chat is told. A device linked a few minutes ago may not have WhatsApp's
 settings keys yet; keep `serve` running a while and try again. Mute a channel on the phone.
 
 While `serve` or `watch` runs, a mute made on the phone is saved with its end, so `inbox` and `review` leave the
@@ -108,15 +106,13 @@ wa personal chats mark-unread "Book club"
 
 These are your own settings too, synced to your other devices; nobody in the chat is told. `chats pin` pins the
 chat, not a message. Archiving a chat also unpins it (whatsmeow's archive patch does both). WhatsApp's apps keep
-three pinned chats; `wa` does not count them, and what the phone does with a fourth has not been checked. Archive,
+three pinned chats; `wa` does not count them. Archive,
 unarchive and mark-unread name the chat's newest message in the local store, as `chats delete` does, so a chat the
-store holds nothing of is refused. Channels are refused. A chat marked unread sends no read receipt. In your own chat
-the phone shows pin, unpin, archive, unarchive and mark-unread (checked 2026-10-18); other chats are not checked yet.
+store holds nothing of is refused. Channels are refused. A chat marked unread sends no read receipt.
 
 `chats mark-read` first sends the same settings change with "read", up to the newest stored message (or
 `--until-id`), then the read receipt; a receipt alone leaves a mark-unread on the phone. Until WhatsApp has sent the
-settings keys it is refused and sends neither. A channel gets the receipt only. That the phone takes the mark off
-this way is not checked yet.
+settings keys it is refused and sends neither. A channel gets the receipt only.
 
 While `serve` or `watch` runs, a chat you read on the phone gets an unread count of 0 in the local store and loses
 its unread mark, so `inbox` stops showing it. Each new message from someone else that `serve` or `watch` saves then
@@ -202,12 +198,11 @@ one, the settings sent before it stay changed and the error says so; run `show` 
   hidden; `--last-seen everyone` instead chooses who. Give one of the two, not both.
 - **`--read-receipts off`** works both ways, as on the phone: others no longer see when you read their messages,
   and you no longer see when they read yours. `chats mark-read` then marks a chat read on your own devices only
-  (whatsmeow sends a read receipt only to your devices while receipts are off; read in its code, not checked on a
-  real account).
+  (whatsmeow sends a read receipt only to your devices while receipts are off).
 - **`--chat-invites`** takes everyone or contacts: WhatsApp is reported to refuse nobody, so `wa` refuses it. A
   setting kept with exceptions on the phone is left out of `show`.
 - **`--calls contacts`** is meant as the phone's "silence unknown callers" (calls from people you do not know arrive
-  without ringing); this is not yet checked on a real account. WhatsApp has no `--calls nobody`, so `wa` refuses it.
+  without ringing). WhatsApp has no `--calls nobody`, so `wa` refuses it.
 
 WhatsApp has no setting for who finds you by your number or who sees it, so `wa` does not offer `--find-by-phone` or
 `--phone-number`.
@@ -314,7 +309,9 @@ Not built yet:
 
 - more files in one message than a photo and a video, which go as one album;
 - listing a community's groups, and adding a group to one or taking it out ([communities](groups.md#communities));
-- making a channel (`chats create --channel`).
+- making a channel (`chats create --channel`);
+- downloading a file WhatsApp no longer keeps: the phone uploads it again under a key it does not share, so the
+  download ends with `media.retry-failed` and saves nothing ([file attachments](./attachments.md)).
 
 WhatsApp has no such thing, or keeps it on the phone:
 
