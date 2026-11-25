@@ -158,7 +158,7 @@ export const UNTESTED: Untested[] = [
       "src/program.test.ts («commands WhatsApp has no counterpart for») drives the refusal, cli-core " +
       "src/cli/messenger/command-capabilities.test.ts the rule",
   })),
-  ...cliCore("src/services/account-list.test.ts", [["account list"]]),
+  ...cliCore("src/services/account-list.test.ts", [["session list"]]),
   ...cliCore("src/cli/messenger/attachments.test.ts", [["messages download", "--attachment"]]),
   ...cliCore("src/services/history-limits.test.ts and src/cli/messenger/stored.test.ts", [
     ["messages sync", "--full-history"],

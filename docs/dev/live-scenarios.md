@@ -86,7 +86,7 @@ also say the phone answered the LID chat under another id, such as its phone num
 
 These checks are scripts in `bin/`; most need a person at the phone. Only the owner runs them, from a terminal;
 an agent never does (`WC-TEST-18`). Each takes the profile as its first argument and never picks one: without it, or
-with a name that is not there, it stops and lists the profiles `account list` knows (`WC-ACCT-3`). Each runs the
+with a name that is not there, it stops and lists the profiles `session list` knows (`WC-ACCT-3`). Each runs the
 main checkout's `bin/wa`, the one whose `serve` holds the device, with `--json`, `--no-input` and a `--timeout`
 (`WC-LIFE-5`). Some calls differ: the restarted `serve` runs without a timeout, `live-fresh-link` runs
 `session start` through `node` with a throwaway store, in human mode on the terminal so that wa draws the QR code
@@ -121,7 +121,7 @@ Confirm the plan once at the terminal. No phone typing is needed in this mode; o
 alone does not create the marker and control messages. Without `--sender-profile`, the script instead prompts
 you to send both words from the phone's Message yourself chat. Both modes use the main checkout's installed build.
 
-1. Read both accounts' LIDs from `account list`, without printing them. Automatic mode refuses missing profiles
+1. Read both accounts' LIDs from `session list`, without printing them. Automatic mode refuses missing profiles
    and profiles for the same account. Verify receiver `serve` and its engine by the device lock and process
    arguments; stop nothing if they cannot be restored the same way. For a persistent systemd user service,
    verify its MainPID and use the same service to stop and start. An implicit profile must be set by the unit's
@@ -151,7 +151,7 @@ The owner deletes the two probe messages from the phone afterwards. The script c
 recipient lists and sends no read receipts. While receiver `serve` is stopped, other incoming messages queue too.
 
 **`live-poll-vote`** needs `serve` running, so its writes go through it and no one-shot connection takes the
-device. It reads the own chat's id from `account list` (it must be in LID form) and never prints it. Then:
+device. It reads the own chat's id from `session list` (it must be in LID form) and never prints it. Then:
 `polls create` with a question carrying a fresh run number and the answers `yes` and `no`; `polls show` for the
 answer ids; `polls vote` for `yes`; `polls show` again after 10 s; `messages delete --for-everyone`. It prints the
 votes per answer and whether the owner's vote is the chosen one, from the vote's answer and from the store.
@@ -181,7 +181,7 @@ and checks `serve` as `live-oneshot-drop` does (the helpers are shared in `bin/l
    is no verdict: the store may already hold the chat's start, or the phone was offline.
 6. The `EXIT` trap deletes the log.
 
-**`live-fresh-link`** refuses a profile that `account list` shows or that has device keys. It says plainly that it
+**`live-fresh-link`** refuses a profile that `session list` shows or that has device keys. It says plainly that it
 links a second device and goes on only after `yes`. It runs `session start qr --timeout 15m` in human mode, with the
 terminal attached and nothing redirected, so wa draws the QR code in the terminal as tg and max do; Ctrl+C there
 ends the history wait, not the script. That run's own lines name the account, so only the result block is pasted.
@@ -189,20 +189,20 @@ The device keys go to the main checkout's `.wa/state`, like any profile there. T
 store, removed at the end, because the store keys an account by its WhatsApp id and not by its profile: the push would
 otherwise land in the owner's store. The result block holds `session start`'s exit code and the chats and messages in
 that store, read afterwards with `doctor --json`: distinct rows, which can be fewer than the pushed batches held, and
-whether `account list` recorded the profile's own id in LID form (the id itself is not printed). The last line is
+whether `session list` recorded the profile's own id in LID form (the id itself is not printed). The last line is
 `WA-5: PASS` only for exit 0, the own id and more than 0 chats and messages; the exit code follows it. On
 every exit, Ctrl-C included, it removes the throwaway store and, while the new profile has device keys, says how to
 unlink it. A store that was never created reads "nothing", not a count.
 
 When `session start` fails but the device is linked, the result block says to run `--finish`. That refuses a profile
 without device keys and one whose lock is held, and goes on only after `yes`. It asks for the device keys, not for
-`account list`: a link that ended early may never have saved the account record, and the `watch` connection saves
+`session list`: a link that ended early may never have saved the account record, and the `watch` connection saves
 it. It runs `watch --jsonl --timeout 5m` with stdout to `/dev/null` and the same throwaway store, so whatever the
 phone still pushes, and whatever WhatsApp queued for that device, lands there and is counted the same way.
 `--jsonl`, because a stdout that is not a terminal gets `--json`, which `watch` refuses. It is only for a profile
 this script linked: the queued messages are gone with the throwaway store.
 
-**`live-chat-state`** needs `serve` running, and works in the own chat only, by its LID id from `account list`,
+**`live-chat-state`** needs `serve` running, and works in the own chat only, by its LID id from `session list`,
 never printed. After each step it asks the owner what the phone shows and records yes or no:
 
 1. `account privacy show`, read only. It prints each setting that came back with its value (`everyone`,

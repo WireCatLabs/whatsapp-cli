@@ -42,7 +42,7 @@ wa [profile] [options] <resource> <verb> [arguments]
 profile \`work\`. \`WA_PROFILE\` does the same for a whole shell session; no setting in the config file
 picks one. **No profile is assumed**, not even the only one: without either, a command
 that uses an account stops with exit 2 and lists the profiles on this computer. Commands that use no
-account (\`--help\`, \`--version\`, \`commands\`, \`skill show\`, \`account list\`, \`config show\`) run
+account (\`--help\`, \`--version\`, \`commands\`, \`skill show\`, \`session list\`, \`config show\`) run
 without one.`,
     globalHeading: "Options for every command",
     globalIntro: "",
