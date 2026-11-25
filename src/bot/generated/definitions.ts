@@ -2,7 +2,7 @@
 // Source: spec/bot/business-messaging-api_v23.0.yaml
 // Run: pnpm bot:generate
 
-import type { SchemaNode } from "@wirecat/cli-base/codegen"
+import type { SchemaNode } from "@wirecat/cli-base/codegen/runtime"
 
 export const definitions: Readonly<Record<string, SchemaNode>> = {
   ConnectedClientBusiness: {
