@@ -2255,8 +2255,12 @@ bring the store up to this build's schema, then normalize, index and stem the me
 **Changes something on this computer only.**
 
 ```sh
-wa store migrate
+wa store migrate [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--no-backup` | migrate even when no rollback copy can be written; older tools then cannot open the store again. |
 
 ### `wa store rebuild`
 
@@ -4013,6 +4017,7 @@ wa search conversations <query> [options]
 | `--dims <n>` | remote: the vector size — needed with --base-url; shortens an OpenAI model's. |
 | `--max-chats <n>` | at most this many chats in one run; 20 if not given. |
 | `--max-chunks <n>` | at most this many chunks embedded in one run; 2000 if not given. |
+| `--like <text>` | a made-up reply that would answer the query, one sentence: searched by meaning too, which finds an answer worded unlike the question. |
 | `--chat <chat>` | only this chat: a chat: its name, or its WhatsApp id (…@lid, …@g.us, …@newsletter). |
 | `--since-time <time>` | only those still going at this ISO 8601 time, or 30m / 2h / 1d ago, or later. |
 | `--filter <query>` | strict Lucene filter: any message in a conversation must match; does not change the meaning query. |

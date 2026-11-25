@@ -85,8 +85,8 @@ const artifacts = generate(
   [
     typesGenerator({ path: "src/bot/generated/types.ts" }),
     valibotGenerator({ path: "src/bot/generated/schemas.ts", typesImport: "./types.js" }),
-    manifestGenerator({ path: "src/bot/generated/manifest.ts", coreImport: "@wirecat/cli-base/codegen/runtime" }),
-    definitionsGenerator({ path: "src/bot/generated/definitions.ts", coreImport: "@wirecat/cli-base/codegen/runtime" }),
+    manifestGenerator({ path: "src/bot/generated/manifest.ts" }),
+    definitionsGenerator({ path: "src/bot/generated/definitions.ts" }),
     coverageGenerator({
       path: "docs/dev/bot-api-coverage.md",
       title: "WhatsApp Cloud API coverage",
