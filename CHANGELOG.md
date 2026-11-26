@@ -3,6 +3,23 @@
 Notable changes to `@wirecat/whatsapp-cli`. One section per version, newest first; versions follow
 [semantic versioning](https://semver.org), so before `1.0.0` the command interface may still change.
 
+## 0.48.0 — 26.11.2026
+
+### Added
+
+- **`wa <profile> session status` says whether the profile is logged in, and as whom**, from this computer alone.
+  `--check` asks the messenger whether the session still works, and leaves the phone number out (`account show`
+  has it). From cli-core 1.3.0 (was 1.0.0).
+
+### Changed — may break callers
+
+- **`wa session list` lists the profiles on this computer, and `wa account list` is gone** (WC-ACCT-12, WC-CMD-8).
+  It answers the same rows, takes the same query (`profile:`, `current:`) and needs no profile. There is no alias:
+  a script that runs `wa account list` must say `wa session list`. `account show`, `account update`,
+  `account sessions` and the rest of `account` stay.
+- **The store moves to version 77** on its first open (cli-core 1.1.0 and 1.2.0). Like every store migration it only
+  goes forward.
+
 ## 0.47.0 — 25.11.2026
 
 ### Changed — may break callers
