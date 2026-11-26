@@ -9,6 +9,7 @@ import {
   logsInOrOut,
   mayRevoke,
   messengerContext,
+  messengerSessionCommands,
   printItem,
   REMOTE_WRITE,
   refuseCommandName,
@@ -123,6 +124,7 @@ const sessionCommandDefinition = (): Command => {
       printItem(context, answer)
     })
 
+  for (const command of messengerSessionCommands(WHATSAPP)) session.addCommand(command)
   return session
 }
 

@@ -93,7 +93,7 @@ since the plain shape is the one seen to group.
 A fresh `session start` must keep the history push, and `self()` must be set right after pairing: the engine's
 `link` answers with `me()`, which fails while WhatsApp has not given the account its LID, so a `session start` that
 exits 0 has one. `bin/live-fresh-link` links a new profile, counts what the push left in a throwaway store and
-checks that `account list` recorded the own id in LID form; its last line is `WA-5: PASS` or `FAIL`. The owner's run
+checks that `session list` recorded the own id in LID form; its last line is `WA-5: PASS` or `FAIL`. The owner's run
 of 2026-11-08 linking a spare account (profile `spar`) ended `WA-5: PASS`.
 
 ## WA-11 · How long a rate limit and a ban hold writes

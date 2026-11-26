@@ -598,3 +598,16 @@ describe("wa session end", () => {
     expect(JSON.parse(result.stdout).item).toEqual({ profile: "never", ended: false })
   })
 })
+
+describe("session status", () => {
+  it("**says a profile that was never linked is not logged in**, even with --check, starting no engine", async () => {
+    for (const argv of [
+      ["never", "session", "status", "--json"],
+      ["never", "session", "status", "--check", "--json"],
+    ]) {
+      const result = await wa(argv, never)
+      expect(result.code).toBe(0)
+      expect(JSON.parse(result.stdout).item).toMatchObject({ profile: "never", signed_in: false, verified: false })
+    }
+  })
+})

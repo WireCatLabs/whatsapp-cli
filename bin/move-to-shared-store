@@ -7,7 +7,7 @@
 #   bin/move-to-shared-store <profile> compare   after the re-sync: the old counts beside the shared store's
 #
 # Before the backup only `config show`, `doctor` and `server status` touch the shared file, and they open it without
-# migrating. `account list` and every messages or store command (other than `store backup`) migrate it to this
+# migrating. `session list` and every messages or store command (other than `store backup`) migrate it to this
 # build's schema, which cannot be undone, so none of them runs before the backup.
 # shellcheck disable=SC2016 # json takes JavaScript, whose ${} is its own
 set -eu
@@ -99,7 +99,7 @@ What is left, by hand:
 1. Start serve: $wa $profile serve   (or $wa $profile server start, with a service)
 2. From the phone, send yourself one message in your own chat. A sync counts back from the oldest message held,
    so an empty chat cannot be asked about.
-3. Your own chat's id is the …@lid value under "account" in: $wa account list --json
+3. Your own chat's id is the …@lid value under "account" in: $wa session list --json
 4. Keep WhatsApp open on the phone. Run, until it brings nothing new:
    $wa $profile messages sync <own chat id>
 5. Compare: $main/bin/move-to-shared-store $profile compare

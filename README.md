@@ -189,7 +189,7 @@ link once, from the phone, and the device keys go to one file only your user can
 wa personal session start               # a QR code: WhatsApp → Settings → Linked devices → Link a device
 wa personal session start phone         # or your number, then a pairing code you type on the phone
 wa personal account show                # who this profile is linked as
-wa account list                         # every profile here, and who each is linked as
+wa session list                         # every profile here, and who each is linked as
 wa personal session end                 # unlink, and delete the device keys here
 ```
 

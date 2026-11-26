@@ -76,12 +76,12 @@ json() {
 }
 
 profiles() {
-  wa_json account list --timeout 30s | json 'd.items.map((one) => one.profile).join(" ")'
+  wa_json session list --timeout 30s | json 'd.items.map((one) => one.profile).join(" ")'
 }
 
 # Never picks a profile: a missing or unknown one stops with the choices.
 need_profile() {
-  known=$(profiles) || die "wa account list failed"
+  known=$(profiles) || die "wa session list failed"
   [ -n "${1:-}" ] || die "name the profile: $(basename -- "$0") <profile> — profiles here: ${known:-none}"
   case " $known " in
     *" $1 "*) ;;
@@ -91,7 +91,7 @@ need_profile() {
 
 # The account's own chat, as the profile recorded it at login. Kept in a variable by the caller; never printed.
 own_chat() {
-  own=$(wa_json account list --timeout 30s | json 'd.items.find((one) => one.profile === a)?.account' "$1")
+  own=$(wa_json session list --timeout 30s | json 'd.items.find((one) => one.profile === a)?.account' "$1")
   case "$own" in
     *@lid) printf '%s\n' "$own" ;;
     *) die "profile $1 has no recorded own id in LID form — run $wa $1 account show once" ;;

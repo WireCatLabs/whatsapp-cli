@@ -32,6 +32,29 @@
     },
     {
       "path": [
+        "session",
+        "status"
+      ],
+      "summary": "show whether this profile is logged in, and as whom",
+      "effects": {
+        "remote": "read",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "session",
+        "list"
+      ],
+      "summary": "list the profiles on this computer and the account each is logged in as",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "entity": "account_profile"
+    },
+    {
+      "path": [
         "setup"
       ],
       "summary": "set up WhatsApp and connect your agent",
@@ -40,19 +63,6 @@
         "local": "write"
       },
       "entity": "setup"
-    },
-    {
-      "path": [
-        "account",
-        "list"
-      ],
-      "summary": "profiles on this computer and their signed-in accounts",
-      "effects": {
-        "remote": "read",
-        "local": "read"
-      },
-      "permission": "account.list",
-      "entity": "account_profile"
     },
     {
       "path": [
@@ -5224,6 +5234,8 @@
         "label",
         "list",
         "is",
+        "type",
+        "reach",
         "chat",
         "date",
         "source",
@@ -5267,6 +5279,8 @@
         "label",
         "list",
         "is",
+        "type",
+        "reach",
         "chat",
         "date",
         "source",
@@ -5481,7 +5495,7 @@
     "tagline": "Your WhatsApp account, searchable on your computer",
     "profiles": {
       "args": [
-        "account",
+        "session",
         "list",
         "--no-record",
         "--json"

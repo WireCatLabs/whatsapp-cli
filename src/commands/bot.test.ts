@@ -373,12 +373,12 @@ describe("a bot profile beside the accounts", () => {
     ).toMatchObject({ phone_number_id: long })
   })
 
-  it("**is no account in `account list`**, and `bot list` names it with no profile word", async () => {
+  it("**is no account in `session list`**, and `bot list` names it with no profile word", async () => {
     const sandboxProfile = process.env.WA_PROFILE
     delete process.env.WA_PROFILE
     const unnamed = async () => {
       try {
-        return { accounts: await wa(["account", "list", "--json"]), bots: await wa(["bot", "list", "--json"]) }
+        return { accounts: await wa(["session", "list", "--json"]), bots: await wa(["bot", "list", "--json"]) }
       } finally {
         process.env.WA_PROFILE = sandboxProfile
       }

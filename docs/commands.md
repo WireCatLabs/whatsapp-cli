@@ -17,7 +17,7 @@ wa [profile] [options] <resource> <verb> [arguments]
 profile `work`. `WA_PROFILE` does the same for a whole shell session; no setting in the config file
 picks one. **No profile is assumed**, not even the only one: without either, a command
 that uses an account stops with exit 2 and lists the profiles on this computer. Commands that use no
-account (`--help`, `--version`, `commands`, `skill show`, `account list`, `config show`) run
+account (`--help`, `--version`, `commands`, `skill show`, `session list`, `config show`) run
 without one.
 
 ## Options for every command
@@ -76,6 +76,30 @@ unlink this device on WhatsApp's side and delete its keys here
 wa session end
 ```
 
+### `wa session status`
+
+show whether this profile has a session on this computer and the account it was logged in as; --check asks the messenger whose the session is, without the phone number (`account show` has it)
+
+```sh
+wa session status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--check` | ask the messenger whether the session still works, and whose it is. |
+
+### `wa session list`
+
+every account profile on this computer, and the account each is logged in as; a name that is only a bot is left out (`bot list` has it), one that is a bot too says `bot: true`; asks the messenger nothing
+
+```sh
+wa session list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
 ## `wa setup`
 
 set up WhatsApp and connect your agent
@@ -94,18 +118,6 @@ wa setup [options]
 ## `wa account`
 
 the logged-in account
-
-### `wa account list`
-
-every account profile on this computer, and the account each is logged in as; a name that is only a bot is left out (`bot list` has it), one that is a bot too says `bot: true`; asks the messenger nothing
-
-```sh
-wa account list [query]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 ### `wa account show`
 

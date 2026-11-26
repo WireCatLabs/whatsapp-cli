@@ -26,7 +26,7 @@ case "$mode" in
   "" | --finish) ;;
   *) die "usage: $(basename -- "$0") <new-profile>, or $(basename -- "$0") <profile> --finish" ;;
 esac
-known=$(profiles) || die "wa account list failed"
+known=$(profiles) || die "wa session list failed"
 [ -n "$profile" ] || die "name a new profile: $(basename -- "$0") <new-profile> — taken already: ${known:-none}"
 has_device() {
   wa_json "$profile" doctor --timeout 30s | json 'd.item.whatsapp.device.exists'
@@ -120,7 +120,7 @@ kept=$(fresh "$profile" doctor --json --no-input --timeout 30s 2>/dev/null |
 chats=${kept%% *}
 messages=${kept##* }
 # The id itself names the account, so only whether it was recorded, in LID form, leaves this script.
-self=$(fresh account list --json --no-input --timeout 30s 2>/dev/null |
+self=$(fresh session list --json --no-input --timeout 30s 2>/dev/null |
   json 'd.items.find((one) => one.profile === a)?.account?.endsWith("@lid") ? "yes" : "no"' "$profile") || self="no"
 
 verdict=FAIL

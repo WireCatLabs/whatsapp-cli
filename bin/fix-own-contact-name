@@ -94,7 +94,7 @@ cleanup() {
   # The keys stay if WhatsApp did not answer; they go anyway, and the phone can still remove the device.
   drop_keys
   rmdir -- "$state/profiles/$profile" 2>/dev/null || true
-  # session end leaves the account record, which holds the main account's id and keeps fix-own in `account list`.
+  # session end leaves the account record, which holds the main account's id and keeps fix-own in `session list`.
   rm -f -- "$state/accounts/$profile.json"
   rm -rf -- "$store"
   echo "device unlinked: $unlinked"

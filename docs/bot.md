@@ -25,7 +25,7 @@ no WhatsApp account.
 | `bot mcp serve` | The bot's commands as MCP tools for an agent. |
 | `bot list` | Every bot profile on this computer that has a token; `--check` asks Meta which number each is. Needs no profile word. |
 
-A bot profile is not one of your accounts: `wa account list` leaves out a name that only a bot uses, and marks a
+A bot profile is not one of your accounts: `wa session list` leaves out a name that only a bot uses, and marks a
 name that is your account and a bot too with `bot: true`.
 
 A chat is the person's phone number in digits, such as `70000000001`. Meta names some people only by a

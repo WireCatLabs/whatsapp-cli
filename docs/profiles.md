@@ -14,7 +14,7 @@ know how to pick a profile for a command and how to give it its own settings.
 | Use two WhatsApp accounts on one computer | Link once per profile: `wa work session start` |
 | Give your agent fewer rights than you have | A profile with its own [permissions](permissions.md) |
 | Keep an agent on that one profile | `WA_PROFILE_LOCK` ([profiles in linking](sessions.md#profiles)) |
-| See every profile on this computer | `wa account list` |
+| See every profile on this computer | `wa session list` |
 
 ## Choose a profile
 
@@ -24,7 +24,7 @@ Put the profile name before the command:
 wa work config show
 ```
 
-`wa account list` shows every profile on this computer and the account each is linked as; `wa work session end`
+`wa session list` shows every profile on this computer and the account each is linked as; `wa work session end`
 unlinks the profile `work`.
 
 A setting under `profiles.work` in the config file applies to that profile; values under `defaults` apply when it

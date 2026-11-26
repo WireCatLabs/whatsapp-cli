@@ -33,7 +33,7 @@ if (args[0] === "__stop") {
 } else if (args[0] === "__lock") {
   if (!state.running && mode === "lock-unreadable") process.exit(1)
   console.log(state.running ? "serve (pid 102)|102|true" : "||false")
-} else if (args[0] === "account" && args[1] === "list") {
+} else if (args[0] === "session" && args[1] === "list") {
   answer({ items: Object.entries(accounts).map(([profile, account]) => ({ profile, account })) })
 } else {
   const [profile, root, command] = args

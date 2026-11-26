@@ -87,7 +87,7 @@ news and says so in one more `"step":"waiting"` line: keep WhatsApp open on the 
 
 ```sh
 wa personal account show     # who this profile is linked as; the phone number shows only its last four digits
-wa account list              # every profile on this computer, and the account each is linked as
+wa session list              # every profile on this computer, and the account each is linked as
 wa personal session end      # unlink the device on WhatsApp's side, and delete its keys here
 ```
 
@@ -171,7 +171,7 @@ a digit.
 
 The order, first match wins: the first word, then `WA_PROFILE`. With neither, a command that uses an account stops
 with exit code `2` and lists the profiles on this computer. `wa` never picks one, not even the only one. Commands
-that use no account run without a profile: `--help`, `--version`, `commands`, `skill show`, `account list` and
+that use no account run without a profile: `--help`, `--version`, `commands`, `skill show`, `session list` and
 `config show`.
 
 **`WA_PROFILE_LOCK` pins a process to one profile.** Set it where an agent runs, and a first word or `WA_PROFILE`
