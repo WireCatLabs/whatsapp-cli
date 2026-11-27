@@ -249,7 +249,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: openclaw/clawhub/.github/workflows/skill-publish.yml@a1567fb752e07d2b5951e4fd48e2e7351da89874 # main, 2026-10-25
+    uses: openclaw/clawhub/.github/workflows/skill-publish.yml@dfb087d90079c84f74ed0c5de27c302696d42178 # main, 2026-10-25
     with:
       skill_path: skills/whatsapp-cli
       owner: wirecat
