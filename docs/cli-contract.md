@@ -1,22 +1,26 @@
 # How wa behaves in scripts
 
-This page is for you when another program runs `wa` for you: a shell script, a scheduled job or an AI agent that
-calls commands in a terminal. It describes the rules every command follows, so that the program can read the result,
-recognise an error and know when it is safe to try again.
+Run `wa` from a shell script, a scheduled job or an AI agent and know what to expect: exact JSON from any command,
+errors a program can recognise, no questions, and a clear rule for when a retry is safe, even after a send whose
+result is not known.
 
-After reading it, you can get exact JSON from any command, keep it small, run commands without questions, and
-handle a send whose result is not known.
+A command writes its result to stdout and messages about the run, such as warnings and errors, to stderr. In machine
+mode the result is JSON for a program instead of text for a person. The exit code, the number a command returns when
+it ends, is `0` for success; any other number names the kind of failure. A one-shot command, such as
+`wa personal messages list`, does one thing and exits; `watch`, `serve` and `mcp serve` keep running until you stop
+them. A write is any command that changes something in WhatsApp: it sends, edits, deletes, reacts or marks read.
 
-A few terms the page uses:
+**On this page:**
 
-- **stdout** and **stderr** are the two output streams of a command. stdout carries the result; stderr carries
-  messages about the run, such as warnings and errors.
-- **Exit code** is the number a command returns when it ends. `0` means success; any other number names the kind of
-  failure.
-- **Machine mode** is output as JSON for a program, instead of text for a person.
-- **One-shot command** does one thing and exits, for example `wa personal messages list`. A **persistent command**
-  keeps running until you stop it: `watch`, `serve` and `mcp serve`.
-- **Write** is any command that changes something in WhatsApp: it sends, edits, deletes, reacts or marks read.
+1. What you can rely on
+2. How commands are named
+3. Output and errors
+4. Exit codes
+5. Running without questions, and limits
+6. Smaller results, and what a command accepts
+7. Previews and safe retries
+8. Names instead of ids
+9. Standards we follow
 
 ## What you can rely on
 
@@ -81,9 +85,9 @@ output too.
 | `11` | `provider_error` | WhatsApp refused the request; the phone answered an error when asked for a file WhatsApp no longer keeps (`media.phone-failed`, `media.phone-answer-unreadable`), or uploaded it again and the new copy did not download (`media.retry-failed`); WhatsApp rejected the message itself (`message.rejected`, its codes 421 and 479); the message then ends with why |
 | `12` | `provider_unavailable` | another `wa` command holds the device's one connection (`device.in-use`) or took it over (`device.replaced`), the engine stopped (`engine.stopped`), WhatsApp no longer accepts this version of `wa` (`client.outdated`), or has not sent this device the keys a settings change needs yet (`settings.keys-missing`: keep `serve` running a few minutes) |
 | `13` | `invalid_response` | WhatsApp answered something `wa` does not understand |
-| `14` | `outcome_unknown` | a write may or may not have happened, also when the engine stopped during it (`engine.stopped-mid-write`) ([below](#previews-and-safe-retries)) |
+| `14` | `outcome_unknown` | a write may or may not have happened, also when the engine stopped during it (`engine.stopped-mid-write`) ([previews and safe retries](#previews-and-safe-retries)) |
 | `15` | `conflict` | a write refused because what it would change moved on since it was read; no `wa` command returns it yet |
-| `130` | `cancelled` | Ctrl-C |
+| `130` | `cancelled` | Ctrl+C |
 
 `wa commands --json` gives the same table under `exit_codes`. Branch on the code and the `reason` in brackets, never
 on the message text.
@@ -102,7 +106,7 @@ only answer the question. All other permission checks still apply.
 A one-shot command has 30 seconds. `--timeout 2m` changes that, and the time spent waiting for stdin counts too.
 Persistent commands and a link at a terminal have no default limit; a link without a terminal (an agent's
 `session start qr`) has 5 minutes, for a person to scan the code elsewhere;
-what `setup` does after the history push then has the usual 30 seconds. Ctrl-C (SIGINT) stops a one-shot
+what `setup` does after the history push then has the usual 30 seconds. Ctrl+C (SIGINT) stops a one-shot
 command with exit code 130 and normally ends a persistent command with 0. SIGTERM exits with 143. If the program
 reading the output closes the pipe, `wa` ends quietly. Whatever started the engine stops it on every exit path, so
 no engine outlives the command.

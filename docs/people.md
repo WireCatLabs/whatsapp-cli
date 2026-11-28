@@ -1,19 +1,26 @@
 # People
 
-Use this page when you want to know more about one person: which chats you share, what they wrote to you or in your
-groups, and your own names and notes about them. You will learn how to read what the local store holds about a
-person, collect their messages for a summary, and keep private names and notes.
+Learn more about one person from what your chats already hold: which chats you share, what they wrote to you or in
+your groups, and the names and notes you keep about them. Your agent can collect their messages for a summary
+without connecting.
 
-Some words on this page:
+Everything here comes from the local store, the copy of your messages `wa` keeps on this computer, filled by the
+phone's history push and by `serve`, so it shows only what arrived. The commands add `--offline` where they could
+otherwise ask WhatsApp: they then never connect and work while `serve` runs.
 
-- **The local store** is the copy of your messages that `wa` keeps on this computer, filled by the phone's history
-  push and by `serve`. Everything on this page comes from it, so it shows only what arrived.
-- **A person** is named by their WhatsApp id or part of their name. WhatsApp names most people by a hidden id that
-  ends in `@lid` (`100000000000001@lid`), not by their phone number. When part of a name matches more than one
-  person, the command stops and lists them; run it again with the id.
+A person is named by their WhatsApp id or part of their name. WhatsApp names most people by a hidden id that ends in
+`@lid` (`100000000000001@lid`), not by their phone number. When part of a name matches more than one person, the
+command stops and lists them; run it again with the id.
 
-The commands below add `--offline` where the command could otherwise ask WhatsApp: it keeps them on the store, so
-they never connect and work while `serve` runs.
+**On this page:**
+
+1. What you can do
+2. Who they are: `contacts show`
+3. What they said: `contacts context`
+4. One person in two messengers: `contacts link`
+5. Your own names and notes: `contacts aliases`, `contacts notes`
+6. Ask WhatsApp about a person
+7. Next step
 
 ## What you can do
 

@@ -1,18 +1,26 @@
 # Groups
 
-Use this page when you take part in WhatsApp groups, or run one, and want help keeping up: find questions nobody
-answered, sum up a week, keep a list of what waits on you and count the group's activity. Reading marks nothing
-read, so checking on a group does not tell its members you looked.
+Keep up with your WhatsApp groups without scrolling them. Your agent finds the questions nobody answered, sums up
+the week and keeps a list of what waits on you, and nobody sees that you looked: reading marks nothing read.
 
-Some words on this page:
+Reports and tasks answer from the local store, the copy of messages `wa` keeps on this computer, filled by the
+phone's history push and by `serve`, so they see only what arrived. A task is something that waits on you, such as a
+question nobody answered; `wa` opens and closes tasks in the local store. Some commands count only your answers and
+those of the group's admins.
 
-- **A group id** ends in `@g.us` (`120363000000000001@g.us`). `wa personal chats list 'kind:group' --offline` lists
-  your groups with their ids; a group's name works too when only one chat has it.
-- **An admin** is a member with rights to manage the group. Some commands count only your answers and the admins'.
-- **The local store** is the copy of messages `wa` keeps on this computer, filled by the phone's history push and by
-  `serve`. Reports and tasks use it, so they see only what arrived.
-- **A task** is something that waits on you, such as a question nobody answered. `wa` opens and closes tasks in the
-  local store.
+A group id ends in `@g.us` (`120363000000000001@g.us`). `wa personal chats list 'kind:group' --offline` lists your
+groups with their ids; a group's name works too when only one chat has it.
+
+**On this page:**
+
+1. What you can do
+2. With an agent
+3. What waits on you
+4. The group's numbers
+5. One group and who is in it
+6. Deleting for everyone
+7. Run a group
+8. Communities
 
 ## What you can do
 
@@ -220,7 +228,7 @@ wa personal chats leave 120363000000000001@g.us
 - **Only people you know are added.** `chats create` and `members add` take someone in your address book or that you
   have written to, and refuse anyone else: WhatsApp bans accounts that add strangers.
 - **An admin has every right.** WhatsApp has one kind of admin, so `admins add` takes no `--can` and gives them all.
-- **One invite link.** A group has one link; `link reset` replaces it, and the old one stops working. Only admins see
+- **One invite link.** A group has one link; `chats links reset` replaces it, and the old one stops working. Only admins see
   it.
 - **Settings.** `update` changes the name, the description, `--only-admins-add`, `--join-approval`,
   `--only-admins-send`, `--only-admins-edit-info` and `--disappear-after`. Messages disappear after 24h, 7d or 90d,
@@ -251,8 +259,8 @@ wa personal chats events 120363000000000001@g.us 'time>=30d' --json
 `chats events` lists who joined, left, was added, removed, promoted or demoted, and each new title, oldest first,
 for 7 days unless the query names a time (`time>=30d`). It answers from the local store and never connects. `wa`
 keeps there what the phone pushes with a group's history (the service messages it shows in the chat) and, while
-`wa serve` or `wa watch` runs, each change as it happens; a change seen both ways is kept once. Someone who came in
-or went out on their own `join`s or `leave`s; anyone else's doing `add`s or `remove`s them. A change from before the
+`wa serve` or `wa watch` runs, each change as it happens; a change seen both ways is kept once. A member who joined
+or left by themselves shows as `join` or `leave`; one added or removed by someone else shows as `add` or `remove`. A change from before the
 link that the phone did not push is not there, so an empty list does not prove nobody joined.
 
 An agent connected over the [MCP server](mcp.md) can run the same commands, as far as the profile's

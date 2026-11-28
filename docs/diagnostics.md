@@ -1,18 +1,28 @@
 # Diagnostics: what a command did
 
-Use this page when a command fails, hangs or takes too long, and you want to see why. By the end you can watch a
-command's operations as they happen, keep a record of a run, check your installation and send a problem report that
-holds no message text.
+See why a command failed, hung or took too long, and send a problem report that holds no message text. You can
+watch a command's operations as it runs, read back what an earlier run did, and check your installation without
+connecting.
 
-A few words this page uses:
+Each run, one call of `wa` from start to exit, leaves a run record: a folder with its command line, its outcome and
+one line per operation, never message text, names or chat titles. `wa personal doctor` checks the version, the
+profile, the settings, the local store and WhatsApp's own parts: the engine, the device keys and the lock. A problem
+report is one JSON file made from `doctor` and a failed run, for you to attach to an issue.
 
-- A **run** is one call of `wa`, from start to exit.
-- A **run record** is a folder that keeps what one run did: its command line, its outcome and one line per operation.
-  Those lines never hold message text, names or chat titles. What it keeps of the command line you typed is under
-  [What you typed](#what-you-typed).
-- **`wa personal doctor`** checks the installation: the version, the profile, the settings, the local store, and
-  WhatsApp's own parts — the engine, the device keys and the lock.
-- A **problem report** is one JSON file made from `wa personal doctor` and a failed run. You attach it to an issue.
+**On this page:**
+
+1. What you can do
+2. Show it: `--trace` and `--debug`
+3. Keep it: `--record`
+4. Every run is kept
+5. When to keep only failed runs
+6. How long it lives
+7. What is never in a record
+8. Check the installation: `wa doctor`
+9. A problem report
+10. What to do with runs
+11. Search errors and partial runs
+12. Next
 
 ## What you can do
 
@@ -63,11 +73,10 @@ files:
 
 ## Every run is kept
 
-Every run is kept without `--record`, a run that worked too. A failed run is kept for every command and every error:
-a bad option, an unknown command, a check before any work, a refusal because another command holds the device. What the record keeps of the command line is
-under [What you typed](#what-you-typed); a run whose settings did not load hides every typed value that may be text.
-
-Every run is recorded, the ones that worked too, so a problem report always has the run to attach.
+Every run is kept without `--record`, a run that worked too, so a problem report always has the run to attach. A
+failed run is kept for every command and every error: a bad option, an unknown command, a check before any work, a
+refusal because another command holds the device. What the record keeps of the command line is under
+[what you typed](#what-you-typed); a run whose settings did not load hides every typed value that may be text.
 `--no-record` keeps nothing for one run; `"record": false` in the settings keeps failed runs only.
 
 Successful searches keep their own history, apart from run records: see
@@ -101,21 +110,16 @@ A run's events and `--trace` carry an operation's name, ids, counts, durations a
 
 ### What you typed
 
-`run.json` also keeps the command line. What it keeps depends on your version of `wa`:
+`run.json` also keeps the command line as you typed it — a chat's name, a search, message text — so you can read
+back what you ran. A secret is always `[redacted]`: the value of an option named for a token, password, passphrase,
+secret, credential, cookie, authorization or API key; a password inside a URL; a long string that looks like a token.
+To hide every typed value that may be text:
 
-- **A version that lists `record_input` in `wa personal config show`** keeps the command line as you typed it — a
-  chat's name, a search, message text — so you can read back what you ran. A secret is always `[redacted]`: the value
-  of an option named for a token, password, passphrase, secret, credential, cookie, authorization or API key; a
-  password inside a URL; a long string that looks like a token. To hide every typed value that may be text again:
+```sh
+wa personal config set record_input false
+```
 
-  ```sh
-  wa personal config set record_input false
-  ```
-
-- **An older version** keeps the command's words and option names, such as `messages send --md`. Every value that may
-  be text, such as what you typed as `<chat>`, is `[redacted]`.
-
-A problem report made from a run hides those typed values in every version.
+A problem report made from a run always hides those typed values.
 
 ## Check the installation: `wa doctor`
 

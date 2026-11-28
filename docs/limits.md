@@ -1,18 +1,17 @@
 # Limits and waits
 
-Use this page when a command waits, stops with a rate-limit error, or is refused because another `wa` command holds
-the account. It explains how fast `wa` talks to WhatsApp, why it sometimes waits, and what to do when it stops. By
-the end you will know which waits are normal, how to change the pace, and when to try again.
+Know which waits are normal, how to change the pace, and when to try again after a refusal. `wa` keeps every profile
+under a pace (requests to WhatsApp per minute) and a send limit (messages in any hour), and lets one command at a
+time hold the device's one connection.
 
-Words this page uses:
+WhatsApp bans accounts that send in bulk or write to strangers. These limits keep a script or an agent far from that.
 
-- **Pace**: how many requests a profile may send to WhatsApp per minute. `wa` keeps every profile under it.
-- **Send limit**: how many messages a profile may send in any hour.
-- **The device's one connection**: WhatsApp allows one connection for each linked device; `wa` lets one command at
-  a time hold it.
+**On this page:**
 
-WhatsApp bans accounts that send in bulk or write to strangers. These limits are there to keep a script or an agent
-far from that.
+1. One connection per device
+2. The pace
+3. Writes
+4. No bulk reads
 
 ## One connection per device
 

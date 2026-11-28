@@ -1,9 +1,21 @@
 # A WhatsApp Business number as a bot
 
-`wa <profile> bot …` speaks for a WhatsApp Business number on Meta's
-[Cloud API](https://developers.facebook.com/documentation/business-messaging/whatsapp/get-started), not for your
-own WhatsApp. It never links a device and never starts the engine that `wa <profile> chats …` uses. It talks to
-`graph.facebook.com` over HTTPS with a token you keep in the system keychain.
+Answer your customers from a WhatsApp Business number with the same tool you use for your own chats. `wa` sends
+and receives through Meta's official
+[Cloud API](https://developers.facebook.com/documentation/business-messaging/whatsapp/get-started), so an agent can
+reply, send approved templates and read incoming messages. You need a Meta developer app with a business or test
+number.
+
+The bot commands (`wa cloudtest bot …`, where `cloudtest` is the profile) never link a device and never start the
+engine that your own WhatsApp uses. They talk to `graph.facebook.com` over HTTPS with a token kept in the system
+keyring.
+
+**On this page:**
+
+1. What you can do
+2. Set up the test number
+3. Receive messages
+4. Permissions
 
 **Never register your own phone number, or any number whose WhatsApp you still use on a phone.** Registering a
 number on the Cloud API deletes that number's WhatsApp account. Use Meta's free test number, or a number that has
@@ -68,7 +80,7 @@ You do these steps once, in Meta's App Dashboard. `wa` cannot do them for you.
    enter the tunnel's address as the Callback URL with the same verify token, and subscribe to the `messages` field.
 
 Check it: `wa bot list` names `cloudtest`, `wa cloudtest bot me` names the test number, and
-`wa cloudtest bot templates send <your verified number> hello_world` arrives on your phone.
+`wa cloudtest bot templates send 15551234567 hello_world`, with your own verified number in place of 15551234567, arrives on your phone.
 
 ## Receive messages
 
@@ -77,7 +89,7 @@ to seven days until that address answers. `bot watch --public-url` is that addre
 `127.0.0.1:8766` on your computer, and your tunnel publishes it.
 
 ```sh
-wa cloudtest bot watch --public-url https://<name>.ts.net:8443
+wa cloudtest bot watch --public-url https://laptop.tail1234.ts.net:8443
 ```
 
 - It answers Meta's subscription check with the verify token you kept.

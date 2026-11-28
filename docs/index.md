@@ -1,18 +1,12 @@
 # wa
 
-`wa` connects your own WhatsApp account to the terminal and to your AI agent (for example Claude Code, Codex, Cursor
-or Gemini CLI). Use it when you want to read, search and answer your chats without opening WhatsApp, or hand that
-work to an agent within limits you set. It links to your account as a device, the way WhatsApp Web does.
+Read, search and answer your WhatsApp chats from the terminal, or hand that work to your AI agent (for example
+Claude Code, Codex, Cursor or Gemini CLI) within limits you set. `wa` links to your account as a device, the way
+WhatsApp Web does, and you can start in about five minutes.
 
-This page tells you what `wa` can do, how to start in about five minutes, and which page answers which question.
-
-Three terms appear on every page:
-
-- **Terminal** (command line): the window where you type commands, such as Terminal on macOS or PowerShell on
-  Windows. `wa` is one command you type there.
-- **AI agent**: a program that does tasks for you and can run commands, such as Claude Code or Codex. It uses `wa`
-  for you.
-- **Skill**: a short instruction file that tells your agent how to use `wa`. Setup installs it.
+You type `wa` in a terminal, the window for commands such as Terminal on macOS or PowerShell on Windows. An AI agent
+is a program that does tasks for you and can run commands; it learns `wa` from its skill, a short instruction file
+that setup installs.
 
 ## What it can do
 
@@ -32,7 +26,7 @@ How `wa` differs from other tools: [compared with other tools](compare.md).
 Every command does one thing, gives the same shape of answer every time, and has a fixed exit code for each kind of
 failure. This is why scripts and agents can rely on it.
 
-`wa` is early: what comes next is on the [roadmap](roadmap.md).
+Planned features are on the [roadmap](roadmap.md).
 
 ## Get started
 

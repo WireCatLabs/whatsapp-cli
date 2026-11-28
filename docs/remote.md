@@ -1,20 +1,29 @@
 # ChatGPT, Codex or Claude in the browser
 
-Connect a browser or phone MCP app, such as ChatGPT or Claude, to `wa` running on a computer you control. This guide connects the app through an HTTPS tunnel with sign-in, explains which actions the `wa` profile allows, and shows how to stop the connection or revoke access.
+Use your WhatsApp from ChatGPT or Claude in the browser or on your phone. The app reaches `wa` on a computer you
+control through a private HTTPS address with a sign-in code, and it can do only what your profile allows.
 
-Terms used on this page:
+The app talks to `wa` over MCP (Model Context Protocol), the standard way an AI app calls outside tools. It connects
+from its own servers, over the internet, so `wa personal mcp serve --http` serves the tools over HTTP on `127.0.0.1`,
+and an HTTPS tunnel gives that port a public address. The examples use
+[Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel), which needs no domain of your own;
+Cloudflare Tunnel also works. The public address, such as `https://laptop.tail1234.ts.net`, goes to `wa` as
+`--public-url`, and the app gets it with `/mcp` at the end. The app's login page asks for a one-time access code that
+`wa` prints in your terminal, so only a person who sees that terminal can connect an app. For apps on your own
+computer, read the [MCP server guide](mcp.md) instead.
 
-- **MCP** (Model Context Protocol) is the standard way an AI app calls outside tools. `wa personal mcp serve` is the MCP
-  server that comes with `wa`; the [MCP server guide](mcp.md) covers apps on your own computer.
-- **Remote connection** means the app connects from its own servers, over the internet, to the address you give it.
-  `wa personal mcp serve --http` serves the same tools over HTTP on `127.0.0.1` for this.
-- **HTTPS tunnel** is a program that gives a port on your computer a public HTTPS address. This page uses
-  [Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel); Cloudflare Tunnel also works. You do not
-  need to buy a domain for Funnel.
-- **Public URL** is that address, for example `https://laptop.tail1234.ts.net`. You pass it to `wa` as
-  `--public-url`, and the app gets it with `/mcp` at the end.
-- **Access code** is a one-time code that `wa` prints in your terminal. The app's login page asks for it, so only a
-  person who sees that terminal can connect an app.
+**On this page:**
+
+1. What you can do
+2. Before you start
+3. Start the tunnel and server
+4. Run several servers together
+5. Webhook receiver for a bot
+6. Alternative: Cloudflare Tunnel
+7. Connect the app
+8. Permissions for this server process
+9. Stop or revoke access
+10. If it does not work
 
 ```text
 ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal mcp serve --http (login) ──▶ WhatsApp
@@ -45,9 +54,8 @@ ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ wa personal 
 - **The computer that runs `wa` must stay on.** To use it from a phone, or from a laptop with nothing installed, run
   all of this on a small server that is always on, and link `wa` there (`wa personal setup --agent none`). That is
   one more linked device on your phone.
-- **Who can add a remote connector:**
-
-Your account must be able to add a remote MCP connector. Check the app’s current account and region requirements before starting the tunnel.
+- **Your app account must be able to add a remote MCP connector.** Check the app's current account and region
+  requirements before you start the tunnel.
 
 | App | Connector prerequisites |
 |---|---|
@@ -149,7 +157,7 @@ With Funnel, publish it on a public port the MCP server does not use, such as `1
 
 ```sh
 tailscale funnel --bg --https=10000 8766
-wa cloudtest bot watch --public-url https://<name>.ts.net:10000
+wa cloudtest bot watch --public-url https://laptop.tail1234.ts.net:10000
 ```
 
 Run `tailscale funnel status` first to see which public ports are taken. With a named Cloudflare Tunnel, add a second
@@ -220,11 +228,11 @@ page.
 
 ## Stop or revoke access
 
-Press Ctrl-C in both terminal windows to stop the server and this tunnel. Start them again with the same commands;
+Press Ctrl+C in both terminal windows to stop the server and this tunnel. Start them again with the same commands;
 app logins survive a normal server restart. Stopping the server also lets go of the device's connection, so `serve`
 can start again.
 
-If you started Funnel with `--bg`, Ctrl-C does not stop that background route. Check `tailscale funnel status` and
+If you started Funnel with `--bg`, Ctrl+C does not stop that background route. Check `tailscale funnel status` and
 turn off only its public port, for example `tailscale funnel --https=443 off`. Do not use `funnel reset` when
 another server uses Funnel: it clears all routes.
 

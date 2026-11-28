@@ -1,25 +1,32 @@
 # Search query language
 
-If you use an AI agent with `wa`, you do not need to learn this language: describe what you want in plain words and
-the agent writes the query. This page is for people who type searches themselves, and for anyone who wants every
-filter: exact operators, every field, presets, date rules and limits.
+Type exact searches yourself, with every filter: operators, fields, presets, date rules and limits. With an AI agent
+you do not need any of it: describe what you want in plain words, and the agent writes the query.
 
-It is the reference for the queries of `wa personal search messages`, `wa personal search all`,
-`wa personal stats messages show` and saved searches. For everyday examples start with [search](search.md).
-
-Terms used on this page:
-
-- **Query**: the text you search for, for example `invoice from:me date:7d`.
-- **Field**: a name and a colon that limit one part of the query to one property of a message, such as `from:` (the
-  sender) or `date:` (when it was sent). Words without a field search the message text.
-- **Operator**: a word or sign that joins conditions, such as `AND`, `OR` and `NOT`.
-- **Word forms**: the same word with different endings. `piso` and `pisos` are forms of one word.
+A query such as `invoice from:me date:7d` works in `wa personal search messages`, `wa personal search all`,
+`wa personal stats messages show` and saved searches. Words without a field search the message text. A field is a name
+and a colon, such as `from:` (the sender) or `date:` (when it was sent); it limits one part of the query to one
+property of a message. Operators such as `AND`, `OR` and `NOT` join conditions, and a search finds the other forms of a word
+too, so `piso` also finds `pisos`. For everyday examples start with [search](search.md).
 
 The language is shared by every WireCat CLI. It is a strict profile of Apache Lucene's query syntax: words, phrases,
 AND/OR/NOT, groups, fields, ranges, bounded wildcards and regular expressions. "Strict" means that anything it does
 not support is an error, never silently ignored. The
 [full reference](https://github.com/WireCatLabs/cli-core/blob/main/docs/search/query-language.md) (in Russian) has
 the generated tables of fields, operators, presets and limits, and executable examples.
+
+**On this page:**
+
+1. What it can do
+2. Operators
+3. Fields
+4. Mentions
+5. Presets
+6. Dates
+7. Words, wildcards and regular expressions
+8. The answer
+9. Over MCP
+10. Next
 
 ## What it can do
 

@@ -1,18 +1,25 @@
 # File attachments
 
-Use this page when you need to send a photo or a document, save a file someone sent, hear a voice note as text, or
-find a message by the text inside its file. You will learn what `wa` sends, what it keeps, what it can fetch again
-later, and what it cannot.
+Send photos and documents from the terminal, save the files people sent you, hear voice notes as text, and find a
+message by the words inside its file. Your agent can then answer from a PDF or a scan that arrived in a chat weeks
+ago.
 
-Some words on this page:
+Sending, downloading and reading are separate steps. A download saves the file on this computer, and reading
+(extracting) gets its text into the search index, so a downloaded scan is still a picture until something reads it.
+The local store never keeps the file itself, only its keys: where WhatsApp holds it and how to decrypt it.
 
-- **Sending** delivers a file to a chat. **Downloading** saves the file's bytes on this computer. **Reading**
-  (extracting) gets the text inside a saved file. These are separate steps: a downloaded scan is still a picture
-  until something reads it.
-- **The file's keys** are what WhatsApp needs to fetch a file again: where it is and how to decrypt it. The local
-  store keeps them, never the file itself.
-- **The search index** keeps the text of each read file next to its message. A search with `content:` finds the
-  message by that text.
+**On this page:**
+
+1. What you can do
+2. What you can send
+3. What the store keeps
+4. Download
+5. Forward
+6. Voice notes and audio files as text
+7. Read the text of files
+8. Files for a remote agent
+9. Keep copies after source deletion
+10. Next step
 
 ## What you can do
 
@@ -68,14 +75,11 @@ Two kinds of message have no keys, so `wa` cannot save or forward their file:
   arrives.
 - **A message stored before `wa` handled files.** It names its file, but cannot fetch it.
 
-WhatsApp keeps a file on its servers only for a limited time. When a download finds it gone, `wa` asks your phone
-to upload it again, as WhatsApp's own apps do, and attempts to fetch the new copy. Your phone must be online and still hold the
-file: one deleted from the phone is gone for good.
-
-**Known limitation: an old file does not download yet.** On the phones tried, the phone uploads the file again but
-encrypts the new copy with a new key that it does not send to linked devices, so `wa` cannot read it. The download
-ends with `media.retry-failed` ("the phone uploaded this file again, but the new copy did not download") and saves
-nothing, rather than a broken file. Open the file on the phone, or ask the sender to send it again.
+WhatsApp keeps a file on its servers only for a limited time, and a file it no longer keeps does not download. `wa`
+asks your phone to upload it again, as WhatsApp's own apps do, but the phone encrypts the new copy with a key it does
+not share with linked devices. The download then ends with `media.retry-failed` ("the phone uploaded this file again,
+but the new copy did not download") and saves nothing, rather than a broken file. Open the file on the phone, or ask
+the sender to send it again.
 
 ## Download
 
@@ -88,11 +92,8 @@ wa personal messages download "Book club" --all --output-dir ./book-club
 
 A download fetches the file with the keys in the store; the message must be there, so keep `serve` running. A place,
 a contact card or a file without keys is named in `skipped` and nothing is saved for it. A file WhatsApp no longer
-keeps is asked of your phone again, and so far fails ([known limitation](#what-the-store-keeps)). The phone has
-about 20 seconds to answer, so with a slow phone give the command a
-longer `--timeout`. The store keeps the new copy's address, so a later download and `messages forward` use it
-without asking the phone again, also after you link the device again and the phone pushes the old address. If the phone no longer has the file, the download ends with exit `6`; ask the sender
-to send it again. `--all` saves every file of the chat, newest first; run it again to continue where it stopped. While
+keeps does not download ([what the store keeps](#what-the-store-keeps)); if the phone no longer has it either, the
+download ends with exit `6`. `--all` saves every file of the chat, newest first; run it again to continue where it stopped. While
 `serve` runs, a download goes through its connection ([one connection per device](sessions.md#one-connection-per-device)).
 
 ## Forward
@@ -118,8 +119,8 @@ wa personal models download parakeet-v3    # once, about 670 MB
 wa personal messages transcribe "Book club" 3EB0A1B2C3D4E5F6A7B8 --local
 ```
 
-WhatsApp has no speech recognition of its own, so `transcribe` always uses a model on this machine; `--local` says
-so explicitly, and `--model` picks one. The recording does not leave your computer. Without a downloaded model the
+On WhatsApp, `transcribe` always uses a model on this machine; `--local` says so
+explicitly, and `--model` picks one. The recording does not leave your computer. Without a downloaded model the
 command stops with exit `6` and names the model to download.
 
 An audio file someone sent is heard the same way: a recording made in another app, such as an iPhone's Voice Memos,
@@ -158,11 +159,12 @@ An agent on this computer opens the saved path. An agent on another computer get
 the optional `@napi-rs/canvas` package installed where `wa` can load it. See
 [from the browser](remote.md) for connecting such an agent.
 
+## Keep copies after source deletion
+
+To keep a file after the sender deletes it, save verified copies in the
+[independent media archive](archive.md#keep-independent-media-copies), with daily backups if you turn them on.
+
 ## Next step
 
 Find a message by its file with `has:file`, `filename:` or `content:` ([search](search.md#files)), and see every
 option on the [commands page](commands.md).
-
-## Keep copies after source deletion
-
-For verified file copies and opt-in daily backups, use the [independent media archive](archive.md#keep-independent-media-copies).

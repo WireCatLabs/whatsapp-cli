@@ -1,11 +1,22 @@
 # Installation
 
-Use this page to install `wa` from npm, keep it up to date, or remove it. You need Node.js 22.16 or a newer 22, or
-24 or newer.
+Install `wa` with one npm command and keep it current with another. You need Node.js 22.16 or a newer 22, or 24 or
+newer.
 
 > ⚠️ **`wa` is an unofficial client of your real WhatsApp account.** WhatsApp may ban an account that uses one, and
 > bans accounts that send in bulk or write to strangers. `wa` writes only when a command asks, limits sends and holds
 > every write when WhatsApp says to slow down. Do not send in bulk or to strangers ([limits](limits.md)).
+
+**On this page:**
+
+1. Install
+2. After linking: keep `serve` running
+3. From source
+4. Where files go
+5. Shell completion
+6. Upgrade
+7. Uninstall
+8. Next
 
 ## Install
 
@@ -31,7 +42,7 @@ wa personal server install                               # writes the unit and e
 wa personal server start
 ```
 
-On macOS, skip the `systemctl` line: `server install` writes a launchd agent instead. Details:
+On Linux `server install` writes a systemd user unit, and on macOS a launchd agent. Details:
 [`serve` as a service](archive.md#as-a-service).
 
 The install itself writes nothing into your agents' folders. To install the agent skill without linking, run

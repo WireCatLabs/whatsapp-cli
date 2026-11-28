@@ -1,33 +1,38 @@
 # Linking, devices and profiles
 
-Read this page when you connect `wa` to your WhatsApp account for the first time, when you add a second account, or
-when `wa` says a profile is not linked. At the end you know how to link, how to check who a profile is, how to
-unlink, and where `wa` keeps what it needs to stay linked.
+Connect `wa` to your WhatsApp account in a few minutes, the way you link WhatsApp Web, and check later who each
+profile is. You scan a QR code or type a pairing code on the phone, and `wa` keeps the history the phone sends.
+
+`wa` on this computer is a linked device: the phone lists it under Settings → Linked devices. A profile is a name for
+one linked device here, with its own keys and settings, so you pick one name at setup (`wa personal setup`) and use
+it from then on ([profiles](#profiles)). The device keys live in one file on this computer. Whoever has that file can
+read and send as you, so treat it like your password.
+
+**On this page:**
+
+1. First run
+2. Linking
+3. Check and unlink
+4. Change your name, about and photo
+5. One connection per device
+6. How long a link lives
+7. Profiles
+8. Where the parts are kept
+9. Next
 
 > ⚠️ **`wa` is an unofficial client of your real WhatsApp account.** WhatsApp may ban an account that uses one, and
 > bans accounts that send in bulk or write to strangers. `wa` writes only when a command asks, limits sends and holds
 > every write when WhatsApp says to slow down. Do not send in bulk or to strangers ([limits](limits.md)).
 
-First, the words this page uses:
-
-- **Linked device**: `wa` on this computer, as WhatsApp sees it. You link it from the phone, the way you link
-  WhatsApp Web, and the phone lists it under Settings → Linked devices. Its keys live in one file on this computer.
-  Whoever has that file can read and send as you, so treat it like your password.
-- **History push**: the copy of your chats the phone sends once after linking, in parts, over several minutes, and
-  only while WhatsApp is open on it. `wa` keeps what arrives; older messages of one chat can be asked of the phone
-  later
-  ([older history](archive.md#older-history-from-your-phone)).
-- **Profile**: a name for one linked device on this computer, with its own keys and settings. Every command that
-  uses an account names it, so you pick one name at setup (`wa personal setup`) and use it from then on
-  ([profiles](#profiles)).
-
 ## First run
 
 `wa personal setup` guides a first run in five steps: this computer's folders, the link, the account, five chats
 from the local store, and the agent skill (`--agent codex`, `cursor`, `claude`, `gemini`, `all` or `none`). Allow
-about five minutes, most of it the history push. Run it in a terminal. A profile linked before is checked without
-linking again, and nothing is asked. Before the QR code or the pairing code, setup and `session start` print the
-warning above on stderr, once per link. `wa personal session start` is the command for the link alone.
+about five minutes, most of it the history push: the copy of your chats the phone sends once after linking, in parts,
+and only while WhatsApp is open on it. Older messages of one chat can be asked of the phone later
+([older history](archive.md#older-history-from-your-phone)). Run it in a terminal. A profile linked before is checked without
+linking again, and nothing is asked. Before the QR code or the pairing code, setup and `session start` print this
+warning on stderr, once per link. `wa personal session start` is the command for the link alone.
 
 ## Linking
 
@@ -99,7 +104,7 @@ wa personal account update --description "Back on Monday"       # the "about" li
 wa personal account update --photo ~/me.jpg                     # the profile photo, a square JPEG
 ```
 
-The name goes to the phone and your other devices at once. Other people probably see it only once the phone next
+The name goes to the phone and your other devices at once. Other people may see it only once the phone next
 comes online: a device tells WhatsApp its name when it says it is online, and `wa` never does. A
 device linked a few minutes ago may not have WhatsApp's settings keys yet; keep `serve` running a while and try again.
 
