@@ -26,6 +26,15 @@ export const DESKTOP: ManifestIdentity & { hosts: readonly string[] } = {
   signIn: {
     gives: "Lets your agent read your WhatsApp chats, and send messages when you allow it.",
     asks: "Your phone: scan a QR code, or type a pairing code in WhatsApp's Linked devices.",
+    methods: [
+      { id: "qr", label: "QR code", words: ["{profile}", "session", "start", "qr", "--json"] },
+      {
+        id: "phone",
+        label: "Phone number",
+        words: ["{profile}", "session", "start", "phone", "--json", "--answer-stdin"],
+      },
+    ],
   },
+  mcpPort: 8768,
   hosts: ["web.whatsapp.com", "graph.facebook.com"],
 }
