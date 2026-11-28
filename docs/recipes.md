@@ -1,23 +1,30 @@
 # Recipes: an agent and your WhatsApp
 
-Use this page when you want your AI agent (for example Claude Code, Codex, Cursor or Gemini CLI) to do regular work
-with your WhatsApp: a morning summary, a report on a chat, who owes what, what you have not answered. Each recipe
-gives you a request to copy, the commands the agent may run, and whether it writes anything to WhatsApp. At the end
-you can run the agent on a schedule, with limits it cannot get around.
+Let your AI agent do regular work with your WhatsApp: a morning summary, a report on a chat, who owes what, what you
+have not answered. Each recipe gives a request to copy, the commands the agent may run, and whether it writes
+anything to WhatsApp, and you can run the agent on a schedule with limits it cannot get around.
 
-Terms on this page:
+The agent, such as Claude Code, Codex, Cursor or Gemini CLI, learns `wa` from its skill, a file that
+`wa skill install` puts where the agent looks. An app without a terminal, such as Claude Desktop, reaches `wa`
+through the MCP server `wa personal mcp serve` instead. For a schedule, the agent runs in headless mode: it takes one
+request, does it and exits (`claude -p` or `codex exec`), started by cron, the scheduler built into Linux and macOS.
 
-- **Agent** — an AI program that runs commands on your computer for you.
-- **Skill** — a file that tells the agent how to use `wa`. `wa skill install` puts it where the agent looks for it.
-- **MCP client** — an AI app without a terminal, such as Claude Desktop. It reaches `wa` through the MCP server
-  `wa personal mcp serve` instead of running commands.
-- **Headless mode** — the agent takes one request, does it and exits, with no conversation. Claude Code calls it
-  `-p` mode; Codex calls it `codex exec`.
-- **cron** — the scheduler built into Linux and macOS. It starts a command at set times.
+**On this page:**
+
+1. What the recipes do
+2. Once, first
+3. What the agent may do
+4. Running on a schedule
+5. Morning summary
+6. Weekly report on a chat
+7. Who owes what
+8. What you have not answered
+9. Find something that was said
+10. Draft a reply
 
 ## What the recipes do
 
-Every recipe below reads the local store, which `wa personal serve` keeps filled from your phone. Reads never connect
+Every recipe reads the local store, which `wa personal serve` keeps filled from your phone. Reads never connect
 to WhatsApp, so they run beside `serve`.
 
 | Recipe | Writes to WhatsApp | Fits a schedule |
@@ -82,7 +89,7 @@ to send, refused ones included, is in `wa personal sends list`. See [permissions
 **Never in bulk, never to strangers.** WhatsApp bans accounts that send to many people at once, or to numbers that
 never wrote to them. No recipe here sends on its own.
 
-**Reading gives nothing away.** No command in the recipes below marks anything read: nobody sees that the agent
+**Reading gives nothing away.** No command in these recipes marks anything read: nobody sees that the agent
 opened a chat. Only `chats mark-read` sends a read receipt.
 
 ## Running on a schedule

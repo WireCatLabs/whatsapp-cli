@@ -1,26 +1,37 @@
 # The local store
 
-`wa` keeps your WhatsApp messages on your computer, and every read answers from there. This page is for when you
-want that saved history to be current: to search it, to let your agent answer without connecting, or to export a
-chat to a file.
+Keep your WhatsApp history on your own computer, where your agent can search it without connecting and you can
+export it or back it up. WhatsApp keeps no history on its servers, so this copy, filled from your phone, is the only
+one you control.
 
-After reading it you know what `wa` saves and where, how to ask your phone for older history, how to
-keep the store current while you are away, how to export and back it up, and how to check it is healthy.
+Your agent answers from it what was said in a chat, even months later, and you see how much of each chat is held
+without gaps. The local store (also called the archive) is one SQLite database file that holds the chats, messages
+and people `wa` has seen; every read, search and export answers from it. To keep it current, `serve`, a `wa` process
+that stays connected, saves new messages, edits and deletions as they happen.
 
-Terms used on this page:
+**On this page:**
 
-- **Local store** (also called the archive): one SQLite database file on this computer that holds the chats,
-  messages and people `wa` has seen. Every read, search and export answers from it without asking WhatsApp.
-- **History push**: the copy of your recent chats the phone sends once, seconds after linking
-  ([linking](sessions.md#linking)).
-- **Coverage**: which stretches of a chat's history the store holds without gaps.
-- **`serve`**: a `wa` process that stays connected and saves new messages, edits and deletions as they happen.
+1. Where the history comes from
+2. What you can do
+3. What it keeps
+4. How much is kept
+5. Keeping it current: `serve`
+6. Search
+7. Export
+8. Evidence for a chat brief
+9. Reading without connecting
+10. Its health, a backup, a restore
+11. Repair and index maintenance
+12. The store and other versions
+13. Keep independent media copies
+14. Next
 
 ## Where the history comes from
 
 WhatsApp has no request for "chats". Three things fill the store, and nothing else:
 
-- **The history push** after linking. `wa <profile> session start` and `setup` keep the connection open and save
+- **The history push**: the copy of your recent chats the phone sends once, right after linking
+  ([linking](sessions.md#linking)). `wa <profile> session start` and `setup` keep the connection open and save
   it, until the phone says its history is complete, or after 5 minutes with nothing new. The phone can send more
   parts later; `serve` saves them, and a part another command heard first waits in the device file until `serve`
   connects. The phone decides how much it
@@ -31,7 +42,7 @@ WhatsApp has no request for "chats". Three things fill the store, and nothing el
   Archiving, muting (with its end) and marking a chat unread on the phone are saved; pinning, deleting or clearing a
   chat is not.
 - **`messages sync <chat>`**: older messages of one chat, asked of your phone
-  ([below](#older-history-from-your-phone)).
+  ([older history from your phone](#older-history-from-your-phone)).
 
 So a chat holds what the phone pushed and what arrived while `serve` ran. A message that arrived while nothing was
 connected may still come when `serve` starts again.
@@ -43,10 +54,9 @@ a request to the phone: "send me the 50 messages of this chat before this one". 
 message of the chat the store already holds, so a chat the store has nothing of cannot be asked about. Such a chat
 fills from its next message: once `serve` has saved one, `messages sync` counts back from it.
 
-**The phone answers only recent history.** Asked for the messages before one, it sends what it keeps close at hand:
-in a test on 2026-11-02 it answered with the days before the newest message of a chat and nothing from a year earlier,
-although the history pushed at linking had those messages. Older history arrives once, in the history push when the
-device is linked. So what the history limits left out comes back by linking again, not by `messages sync`.
+**The phone answers only with recent history**: the days before a chat's newest message, not months. Older history
+arrives once, in the history push when the device is linked. So what the history limits left out comes back by
+linking again, not by `messages sync`.
 
 **Open WhatsApp on your phone first.** The phone answers while the app is open; in the background it keeps the request
 and answers when you next open it. A request it does not answer within 25 seconds fails with `timeout`; the late answer
@@ -353,19 +363,15 @@ the message store was written by a newer version (schema N, needs at least M; th
 
 Update `wa`, `tg` and `max` together so they use the same store.
 
-## Next
-
-- [Search](search.md): find what the store holds.
-- [Recipes](recipes.md): search and export in your agent's daily work.
-- [Security](security.md): what the store means for the privacy of your messages.
-
 ## Keep independent media copies
 
-Use an independent media archive when files must survive deleted messages or expired download links. It keeps
-the bytes in a folder you choose, with a manifest recording each file's identity, size and SHA-256 checksum.
-Ask your agent: “Back up the files from Example group into my media archive, then verify the copies.”
+Keep your own copies of the files people sent, so they survive a deleted message or a file WhatsApp no longer
+keeps. The copies go to a folder you choose, with a manifest that records each file's identity, size and SHA-256
+checksum. Ask your agent: “Back up the files from Example group into my media archive, then verify the copies.”
 
-WhatsApp only archives messages already received into local history. Keep `wa personal serve` running to receive new messages. An expired server copy may need a phone re-upload, which can fail; there is no measured retention guarantee.
+`wa` copies files only from messages the local store already holds, so keep `wa personal serve` running to receive
+new ones. Copy files soon: one WhatsApp no longer keeps does not download
+([file attachments](attachments.md#what-the-store-keeps)).
 
 Save all available chats, or repeat `--chat` to select several. `--since-time` includes messages at or after
 an ISO timestamp with a time zone:
@@ -381,8 +387,8 @@ message and attachment position. No download URL, media key or original filename
 These independent copies are not registered as retained paths in the message store; use ordinary
 `messages download` for files you want `attachments show` or text extraction to find.
 
-A cut run keeps completed files. Run the same command again: an interrupted file restarts from byte zero,
-because messenger streams do not provide the validators needed to append safely. A failed download stops
+A cut run keeps completed files. Run the same command again: an interrupted file starts again from the beginning,
+because WhatsApp gives no way to check that a partial file can be continued safely. A failed download stops
 with an error; an unavailable file is not counted as saved. A missing or changed archived file makes
 verification fail with a nonzero exit code and stops further archiving. Choose a new destination; existing
 files are never overwritten. `complete: true` covers the history available to the selected reader, not proof
@@ -433,6 +439,12 @@ follow the copies and later downloads do not fetch them again. No messenger is c
 
 Keep the other archive available at its recorded path. If it is offline or a copy changes, checks fail
 and downloads stop instead of silently duplicating files. Repeat an interrupted move to finish it.
-Images from earlier draft archives without a message date remain in place and are counted as `undated`;
+Images without a message date remain in place and are counted as `undated`;
 `complete: false` means those images could not be selected by age. File modification times are never used
 as a substitute. The preview reports counts and bytes without creating the destination folder.
+
+## Next
+
+- [Search](search.md): find what the store holds.
+- [Recipes](recipes.md): search and export in your agent's daily work.
+- [Security](security.md): what the store means for the privacy of your messages.

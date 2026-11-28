@@ -1,6 +1,33 @@
 # Usage
 
-Use this page to learn how a `wa` command line is built and where its answers come from.
+Read and answer your WhatsApp chats from the terminal: catch up on what you missed, send, edit and react, and keep
+your chats in order on every device. Reads answer from a copy of your chats on this computer, so they never mark
+anything read.
+
+**On this page:**
+
+1. Set up a profile
+2. Link a profile
+3. Catch up
+4. Send a message
+5. Change a message
+6. Star a message
+7. Mute a chat
+8. Archive, pin or mark a chat unread
+9. Delete or clear a chat
+10. Format a message
+11. Polls
+12. Privacy
+13. Send, save and forward files
+14. Older messages
+15. Channels
+16. Preview links, devices and Lists
+17. Read community comments
+18. Not in wa yet
+19. Keep wa up to date
+20. Where to go next
+
+Every command line has the same shape:
 
 ```sh
 wa <profile> <resource> <verb> [arguments] [options]
@@ -44,6 +71,30 @@ unlinks the device and deletes its keys here.
 Only one `wa` command may connect a profile at a time; WhatsApp would drop the first connection. While `serve` runs,
 a send for the same profile goes through `serve` and uses its connection. It cannot ask there, so at permission
 level `ask` it needs `--yes` ([one connection per device](sessions.md#one-connection-per-device)).
+
+## Catch up
+
+```sh
+wa personal inbox                                   # other people's unread messages, in every chat
+wa personal inbox --new                             # only what arrived since the last --new run
+wa personal review 'date>2d'                        # every message, yours too, in chats that changed in two days
+wa personal messages list "Book club" --limit 20    # one chat, the newest messages
+```
+
+`inbox` leaves out muted and archived chats unless they mention you or reply to you; `--all` brings them in.
+`--new` shows each message once, so it fits a scheduled run. None of these marks anything read: use
+`chats mark-read` for that ([archive, pin or mark a chat unread](#archive-pin-or-mark-a-chat-unread)).
+
+## Send a message
+
+```sh
+wa personal messages send "Book club" "See you at 8"
+wa personal messages send "Ann Lee" "On my way"
+```
+
+A chat is named by its name, when only one chat has it, or by its id. A send goes through the profile's
+[permissions](permissions.md), its recipient list and the hourly [send limit](limits.md#writes). While `serve` runs,
+the send goes through its connection.
 
 ## Change a message
 
@@ -105,7 +156,7 @@ wa personal chats mark-unread "Book club"
 ```
 
 These are your own settings too, synced to your other devices; nobody in the chat is told. `chats pin` pins the
-chat, not a message. Archiving a chat also unpins it (whatsmeow's archive patch does both). WhatsApp's apps keep
+chat, not a message. Archiving a chat also unpins it. WhatsApp's apps keep
 three pinned chats; `wa` does not count them. Archive,
 unarchive and mark-unread name the chat's newest message in the local store, as `chats delete` does, so a chat the
 store holds nothing of is refused. Channels are refused. A chat marked unread sends no read receipt.
@@ -135,8 +186,7 @@ Both are for your devices alone: the others in the chat keep it and its messages
 first in a terminal and refuse in a script. An MCP app is not offered either one: you run them yourself. WhatsApp
 deletes up to a message `wa` names: the chat's newest one in the local store, so keep `serve` running for it to be
 current, and a chat the store holds nothing of is refused. `wa` asks WhatsApp to leave the photos and files the phone
-saved from the chat. `wa`'s local store still holds the messages afterwards. None of this has been checked on a phone
-yet.
+saved from the chat. `wa`'s local store still holds the messages afterwards.
 
 ## Format a message
 
@@ -199,7 +249,7 @@ one, the settings sent before it stay changed and the error says so; run `show` 
 - **`--read-receipts off`** works both ways, as on the phone: others no longer see when you read their messages,
   and you no longer see when they read yours. `chats mark-read` then marks a chat read on your own devices only
   (whatsmeow sends a read receipt only to your devices while receipts are off).
-- **`--chat-invites`** takes everyone or contacts: WhatsApp is reported to refuse nobody, so `wa` refuses it. A
+- **`--chat-invites`** takes everyone or contacts: WhatsApp offers no "nobody" for it, so `wa` refuses that. A
   setting kept with exceptions on the phone is left out of `show`.
 - **`--calls contacts`** is meant as the phone's "silence unknown callers" (calls from people you do not know arrive
   without ringing). WhatsApp has no `--calls nobody`, so `wa` refuses it.
@@ -227,8 +277,8 @@ can be saved and forwarded later, since the store keeps what WhatsApp needs to f
 for a limited time, and a download of one it no longer keeps asks your phone to upload it again, which does not
 work yet ([not in wa yet](#not-in-wa-yet)). A place or a
 contact card is kept too, so it can be forwarded; neither is a file to save. A contact card shows its name and
-phone, and in JSON the attachment has a `contact` field; the vCard itself is never printed. WhatsApp has no speech
-recognition of its own, so `transcribe` uses a model on this machine (`wa models list kind:audio`). What is kept, what
+phone, and in JSON the attachment has a `contact` field; the vCard itself is never printed. On WhatsApp,
+`transcribe` always uses a model on this machine (`wa models list kind:audio`). What is kept, what
 can be fetched again and how to search the text inside files: [file attachments](attachments.md).
 
 ## Older messages

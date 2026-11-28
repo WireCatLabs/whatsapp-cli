@@ -100,7 +100,7 @@ wa personal chats events Hiking 'time>=7d'   # who joined, left, was added or re
 
 ```sh
 wa personal messages send "Book club" "Call at 3?" --reply-to 3EB0A1B2C3D4E5F6A7B8
-wa personal messages edit "Book club" 3EB0A1B2C3D4E5F6A7B8 "Call at 4?"   # your own, within 20 minutes
+wa personal messages edit "Book club" 3EB0A1B2C3D4E5F6A7B8 "Call at 4?"   # your own, within 15 minutes
 wa personal reactions add "Book club" 3EB0A1B2C3D4E5F6A7B8 👍
 wa personal messages delete "Book club" 3EB0A1B2C3D4E5F6A7B8 --for-everyone
 wa personal chats mark-read "Book club"   # the other side sees it
@@ -163,11 +163,11 @@ The message id `3EB0A1B2C3D4E5F6A7B8` is made up; take a real one from `messages
   arrive (`wa personal watch`), older messages of one chat asked of your phone (`wa personal messages sync`), and
   the posts of the channels you follow (`wa personal chats join` with a channel link, then `messages sync`).
 - **Write.** Markdown, replies, one file, photo, video or voice note per message, a photo and a video as one album,
-  edits of your own messages within 20 minutes, forwards, reactions, polls and votes, pins (each one tells the
+  edits of your own messages within 15 minutes, forwards, reactions, polls and votes, pins (each one tells the
   members), deleting for you or for everyone, and marking a chat read.
 - **Your chat list.** Mute, archive, pin or mark a chat unread, star a message, and delete or clear a chat on your
   own devices; nobody in the chat is told.
-- **Voice on your computer.** WhatsApp has no speech recognition of its own, so `wa` runs a speech model on this
+- **Voice on your computer.** `wa` turns voice notes into text with a speech model on this
   machine, downloaded only when you ask.
 - **People.** A person's profile, blocking, whether a number has WhatsApp, the phone's address book into the store,
   and your own names and notes for people.

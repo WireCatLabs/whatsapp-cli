@@ -1,6 +1,7 @@
 # Configuration
 
-Use this page to change how `wa` behaves for one profile or for all of them.
+Change how `wa` behaves for one profile or for all of them with one command, and see where each setting in force
+came from.
 
 ```sh
 wa personal config show                     # each setting in force, and where it came from

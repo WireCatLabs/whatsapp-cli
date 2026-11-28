@@ -1,25 +1,25 @@
 # The MCP server
 
-This page helps when you want an AI app without a terminal to work with your WhatsApp, for example Claude Desktop or
-the chat in Cursor. It also helps when you want the app itself, not `wa`, to ask you before each action. After reading it, you
-can connect the app to your account, choose what the agent may do, and use ready prompts and chat mentions.
+Work with your WhatsApp from an AI app that has no terminal, such as Claude Desktop or the chat in Cursor. The app
+catches you up on unread chats, finds what was said and drafts replies, and it can ask you before each action.
 
-A few terms first:
+The app connects over MCP ([Model Context Protocol](https://modelcontextprotocol.io)), a standard way for an AI app to
+use outside tools. `wa personal mcp serve` is the MCP server, and it comes with `wa`, so there is nothing else to
+install. It offers the agent tools (actions such as read or write), prompts (ready tasks the app shows as commands)
+and resources (data such as one chat, attached to the conversation). By default it talks to the app over stdin and
+stdout; `wa personal mcp serve --http --public-url` serves it on a local port behind your HTTPS tunnel instead. Each
+server works for a [profile](profiles.md), one set of settings and one linked device.
 
-- **MCP** ([Model Context Protocol](https://modelcontextprotocol.io)) is a standard way for an AI app to use outside
-  tools. The app is the **MCP client**; `wa personal mcp serve` is the **MCP server**.
-- A **tool** is one action the server offers the agent, such as "read" or "write".
-- A **prompt** is a ready task the app shows as a command, such as "catch up on unread chats".
-- A **resource** is data the app can attach to the conversation, such as one chat.
-- A **profile** is one set of settings and one linked device in `wa`; see [profiles](profiles.md).
+**On this page:**
 
-The server comes with `wa`; there is nothing else to install. By default it talks to the app over stdin and stdout.
-`wa personal mcp serve --http --public-url` serves it on a local port behind your HTTPS tunnel instead.
-
-Denied permissions do not hide commands. Full listings and searches include each command's
-`availability`: blocked commands have `available: false`, a reason and the relevant permission key;
-permitted commands have `available: true`. Arguments remain visible, and execution checks current
-permissions again. With a named profile, CLI help and discovery also show availability.
+1. Do you need it
+2. What the server gives
+3. Connecting
+4. One connection, shared with `serve`
+5. What an agent may do
+6. Tools
+7. Prompts, and chats by `@`
+8. How it holds the connection
 
 ## Do you need it
 
@@ -79,7 +79,7 @@ Put a profile first, for example `wa work mcp add codex`. Setup uses the app's o
 servers alone. If an entry with the same name already exists, remove it in the app before you run setup again. The
 default profile offers tools that write. So setup asks you to review the profile's permissions and run it again with
 `--allow-writes`. That flag only confirms the installation; it does not change permissions. To limit what the agent
-can do, set the profile's `permissions` first ([below](#what-an-agent-may-do)).
+can do, set the profile's `permissions` first ([what an agent may do](#what-an-agent-may-do)).
 
 `mcp check` reads no messages and does not connect to WhatsApp. A good result means the MCP handshake and the tool
 list work. It does not mean the device is still linked; `wa personal doctor` and `wa personal account show` check
@@ -154,7 +154,7 @@ The MCP server follows the same rule as every other `wa` command:
   permissions and the send guard apply as before. On Windows they do not go through `serve`: there they are refused
   while `serve` runs, and the error names it. The HTTP server never goes through `serve` ([remote](remote.md)).
 - **While the MCP server holds a connection, `serve` cannot start** for that profile. The server lets the connection
-  go after 2 minutes without a call ([below](#how-it-holds-the-connection)).
+  go after 2 minutes without a call ([how it holds the connection](#how-it-holds-the-connection)).
 
 ## What an agent may do
 
@@ -202,7 +202,11 @@ command's own arguments and options in snake_case (`search messages` takes `quer
 {"command":"messages list","arguments":{"chat":"120363000000000001@g.us","limit":20}}
 ```
 
-Search shows only what the profile's permissions allow. Answers are structured JSON: lists keep their pages, and ids
+Search lists every command. One the profile does not allow comes with `available: false`, the reason and the
+permission key that blocks it; one it allows has `available: true`. Its arguments stay visible, and a run checks the
+permissions again. With a named profile, CLI help and discovery show the same availability.
+
+Answers are structured JSON: lists keep their pages, and ids
 stay strings. A failure is `{error:{code,reason,message,details}}`; a name that matches several chats comes with
 `details.candidates`. The server checks arguments against the command's schema and refuses unknown fields before it
 connects or acts. If a write's result is unknown, check the send journal and the chat before you think about a retry.
@@ -238,5 +242,5 @@ without a call, and in any case 5 minutes after it opened. The next call connect
 even when the app sends them together.
 
 Over stdin and stdout, the server exits as soon as the app closes stdin, and closes its connection to WhatsApp. Over
-HTTP it runs until Ctrl-C. `wa personal mcp revoke` ends every login given to a browser app and keeps the linked
+HTTP it runs until Ctrl+C. `wa personal mcp revoke` ends every login given to a browser app and keeps the linked
 device. See [ChatGPT, Codex or Claude in the browser](remote.md).

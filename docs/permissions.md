@@ -1,18 +1,23 @@
 # Permissions
 
-Use this page before you let an AI agent, a script or another person work with your WhatsApp account through `wa`.
-It shows how to decide, for each profile, what may only be read, what asks you first, and what may go ahead without
-a question. By the end you can make a profile read-only, allow one action such as sending, and know which other
-checks still apply.
+Decide what an AI agent, a script or another person may do with your WhatsApp through `wa`: what may only be read,
+what asks you first, and what may go ahead without a question. You can make a profile read-only, allow one action
+such as sending, and still keep the recipient list and the hourly limit.
 
-Words this page uses:
-
-- **Profile**: a named set of settings for one linked account, such as `work` ([profiles](profiles.md)).
-- **Permission key**: the name of a command or a group of commands, such as `messages` or `messages.send`. A longer
-  key is more specific.
-- **Access level**: what happens when that command runs: `deny`, `readonly`, `ask` or `allow`.
+Each [profile](profiles.md), such as `work`, has its own permissions. A permission key names a command or a group of
+commands, such as `messages` or `messages.send`; a longer key is more specific. Its access level is `deny`,
+`readonly`, `ask` or `allow`.
 
 Start with reading, and allow changes only when you need them.
+
+**On this page:**
+
+1. Choose an access level
+2. Allow one action
+3. Questions in scripts
+4. Restrict recipients and repeated sends
+5. A temporary change for an MCP server
+6. Limits and detailed rules
 
 ## Choose an access level
 

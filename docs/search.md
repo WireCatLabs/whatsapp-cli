@@ -1,42 +1,33 @@
 # Search
 
-You need to find something that was written: a message, an agreement, an address from months ago. This page shows
-how to search everything `wa` has saved on this computer — WhatsApp messages, and the notes that
-[memo](https://github.com/WireCatLabs/cli-memo) imported.
+Find anything that was written, even months ago: a message, an agreement, an address. You search everything `wa`
+has saved on this computer, WhatsApp messages and the notes that [memo](https://github.com/WireCatLabs/cli-memo)
+imported, and you can tell a real "not found" from a gap in the saved history.
 
-After reading it you can find messages by words, people, chats and dates, save a search and run it again, count
-matches, and tell a real "not found" from a gap in the saved history. Searching never connects to WhatsApp and
-marks nothing read.
+Search reads only the local store, the database where `wa` keeps every message the phone pushed and `serve` received
+([the local store](archive.md)), so it never connects to WhatsApp and marks nothing read. A query can be plain words
+or words with fields such as `from:` and `date:`. Your AI agent writes queries for you; the full language is in the
+[query language reference](query-language.md).
 
-Terms used on this page:
+**On this page:**
 
-- **Local store** (also called the archive): the database on this computer where `wa` keeps every message the phone
-  pushed and `serve` received ([the local store](archive.md)). Every search reads only this.
-- **Query**: what you search for. It can be plain words, or words with fields such as `from:` and `date:`. Your AI
-  agent writes queries for you; the full language is in the [query language reference](query-language.md).
-- **Coverage**: what a search could see — how many chats and messages were saved.
-
-## When you remember the question rather than its wording
-
-Ask your agent to find messages answering a question and show the supporting messages. For example: "Find when the
-Helix daily export runs in the project chat, and check whether the schedule changed." The agent can use archive
-discovery to find partial word matches and direct replies, then inspect those messages before answering. It does not
-download a model.
-
-For command-line control:
-
-```sh
-wa personal search messages 'What time does Helix export run? chat:120363000000000001@g.us' --discover --json
-```
-
-Chat, sender and date filters still apply. Over MCP, pass `discover: true` to `wa_read` (`command: "search messages"`).
-Each item's `discovery` says how much of the query it matched: `missing_terms` names unmatched terms, and `parent` links
-a reply to its matching parent. A high score is not answer confidence: a question, proposal or old decision can rank
-first. Read the evidence and check [what the store holds](archive.md#how-much-is-kept) before concluding that a fact is
-absent.
-
-Without `--discover`, the usual strict search remains. Boolean syntax, quoted phrases, wildcards, `--exact` and
-`--newest` keep strict behavior.
+1. What you can do
+2. When you remember the question rather than its wording
+3. Try a focused search
+4. What the store can answer
+5. Words and phrases
+6. People and chats
+7. Dates
+8. Links, phones and addresses
+9. Files
+10. Passwords, codes and cards
+11. Tags
+12. Saved searches and history
+13. Counting: `stats messages show`
+14. Messages around a hit
+15. Results as JSON
+16. When nothing is found
+17. Next
 
 ## What you can do
 
@@ -77,6 +68,28 @@ Notes match any part of a word, in any letter case, and their titles are searche
 characters is refused with "search needs at least three characters".
 
 The rest of this page is about searching messages, `wa personal search messages`.
+
+## When you remember the question rather than its wording
+
+Ask your agent to find messages answering a question and show the supporting messages. For example: "Find when the
+Helix daily export runs in the project chat, and check whether the schedule changed." The agent can use discovery search
+(`--discover`) to find partial word matches and direct replies, then inspect those messages before answering. It does not
+download a model.
+
+For command-line control:
+
+```sh
+wa personal search messages 'What time does Helix export run? chat:120363000000000001@g.us' --discover --json
+```
+
+Chat, sender and date filters still apply. Over MCP, pass `discover: true` to `wa_read` (`command: "search messages"`).
+Each item's `discovery` says how much of the query it matched: `missing_terms` names unmatched terms, and `parent` links
+a reply to its matching parent. A high score is not answer confidence: a question, proposal or old decision can rank
+first. Read the evidence and check [what the store holds](archive.md#how-much-is-kept) before concluding that a fact is
+absent.
+
+Without `--discover`, the usual strict search remains. Boolean syntax, quoted phrases, wildcards, `--exact` and
+`--newest` keep strict behavior.
 
 ## Try a focused search
 

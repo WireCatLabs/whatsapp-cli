@@ -1,7 +1,14 @@
 # Configuration reference
 
-Use this page when you need the exact name, default or scope of a setting, or the name of an environment variable.
-It lists every setting `wa` reads and which value wins.
+Find the exact name, default and scope of every setting `wa` reads, the environment variable that overrides it, and
+which value wins when several are set.
+
+**On this page:**
+
+1. Which value wins
+2. The file
+3. A bot profile
+4. Environment variables
 
 No setting can hold a secret: the file has no field for the device keys, a phone number or a chat id.
 
@@ -43,7 +50,7 @@ it. Without either, a command that uses an account stops with exit code `2` and 
 | `runs_size_limit_mb` | `200` | the runs folder's size limit; past it, the oldest runs that worked are removed first | none |
 | `permissions` | everything allowed, except deleting and a few other changes ask | what the profile may do, per command | none; `--yes` only answers `ask`, it never lifts `deny` |
 | `sends_per_hour` | `30` | the most sends in any hour | none |
-| `requests_per_minute` | the CLI's pace | requests a minute, shared by every process of the profile; `0` turns it off | `WA_REQUESTS_PER_MINUTE` |
+| `requests_per_minute` | `20` | requests a minute, shared by every process of the profile; `0` turns it off | `WA_REQUESTS_PER_MINUTE` |
 | `transcribe_with` | `auto` | who turns voice into text: `auto`, `messenger` or `local` | `--local`, or `--model` |
 | `speech_model` | none | which downloaded speech model `--local` uses | `--model` |
 | `read_other_bots` | `false` | accept messages identified as coming from other bots; bot profiles only | none |
@@ -70,7 +77,7 @@ and the `config unset` that removes it. `wa personal doctor` lists every problem
 
 A WhatsApp Business number on Meta's Cloud API (`wa <profile> bot …`) keeps its settings under `bot` in the file:
 `wa <profile> config set --bot <setting> <value>`. They are ids from the App Dashboard's API setup page, not secrets;
-the access token lives in the system keychain ([a WhatsApp Business number as a bot](bot.md)).
+the access token lives in the system keyring ([a WhatsApp Business number as a bot](bot.md)).
 
 | Setting | Default | What it does | Overridden for one run by |
 |---|---|---|---|

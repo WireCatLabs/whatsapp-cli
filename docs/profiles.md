@@ -1,11 +1,11 @@
 # Profiles
 
-A **profile** is a name for one linked device of `wa` on this computer: one WhatsApp account, with its own keys and
-its own settings. `wa` never picks one for you: a command that uses an account names its profile as the first word
-(`wa personal chats list`) or through `WA_PROFILE`, every time, even with only one account.
+Use a second WhatsApp account, or give your AI agent fewer rights than you have, by giving each its own profile. A
+profile is a name for one linked device of `wa` on this computer: one WhatsApp account, with its own keys and its
+own settings.
 
-Read this page when you want a second account, or want your AI agent to have fewer rights than you. At the end you
-know how to pick a profile for a command and how to give it its own settings.
+`wa` never picks one for you: a command that uses an account names its profile as the first word
+(`wa personal chats list`) or through `WA_PROFILE`, every time, even with only one account.
 
 ## What profiles let you do
 
