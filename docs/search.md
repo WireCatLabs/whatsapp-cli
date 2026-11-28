@@ -2,7 +2,7 @@
 
 You need to find something that was written: a message, an agreement, an address from months ago. This page shows
 how to search everything `wa` has saved on this computer — WhatsApp messages, and the notes that
-[memo](https://github.com/WireCatLabs/cli-memo) imported.
+[`files`](https://github.com/WireCatLabs/files-cli) imported.
 
 After reading it you can find messages by words, people, chats and dates, save a search and run it again, count
 matches, and tell a real "not found" from a gap in the saved history. Searching never connects to WhatsApp and
@@ -47,8 +47,8 @@ start with `search all`.
 |---|---|
 | Search messages and notes in one answer | `wa personal search all '<query>'` |
 | Search WhatsApp messages only | `wa personal search messages '<query>'` |
-| Search mail | memo's: install @wirecat/cli-memo, then `memo search mail '<query>'` |
-| Search notes written in memo or imported from a folder | `wa personal search notes '<query>'` |
+| Search mail | install @wirecat/wirecat, then `wcat search mail '<query>'` |
+| Search notes written or imported by `files` | `wa personal search notes '<query>'` |
 | Count matches by chat, sender, day or hour | `wa personal stats messages show '<query>'` |
 | Save a search and run it again later | `wa personal searches create`, `wa personal search messages --saved <name>` |
 
@@ -65,12 +65,12 @@ wa personal search messages 'lease chat:"Book club"'  # WhatsApp messages only, 
 ```
 
 ```sh
-wa personal search notes 'budget source:internal'  # only notes written in memo
+wa personal search notes 'budget source:internal'  # only notes written in files
 ```
 
 `search all` says what each hit is — a message (`msg:…`) or a note (`note:…`). `wa` never searches mail:
-`memo search mail` does. When a field does not apply — `chat:`/`from:` for notes — `search all` skips that resource
-and explains why. Mail and notes reach the store through memo: `memo sync --only mail` and `memo sync --only notes`. Without them,
+`wcat search mail` does. When a field does not apply — `chat:`/`from:` for notes — `search all` skips that resource
+and explains why. Mail reaches the store through `wcat sync --only mail`, notes through `files sync`. Without them,
 `search all` searches messages only.
 
 Notes match any part of a word, in any letter case, and their titles are searched too. A search of one or two
